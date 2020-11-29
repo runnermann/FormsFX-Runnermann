@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1">
+    <center>
+        <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+            <children>
+                <TextFlow fx:id="qTextFlow" prefHeight="300.0" prefWidth="600.0" />
+                <TextFlow fx:id="ansTextFlow" prefHeight="300.0" prefWidth="600.0" />
+            </children>
+        </VBox>
+    </center>
+    <bottom>
+        <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+            <children>
+                <HBox fx:id="navigationPane" prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Button fx:id="firstQButton" mnemonicParsing="false" text="|&lt;" />
+                        <Button fx:id="prevQButton" contentDisplay="CENTER" mnemonicParsing="false" text="&lt;" />
+                        <Button fx:id="nextQButton" mnemonicParsing="false" text="&gt;" />
+                        <Button fx:id="lastQButton" mnemonicParsing="false" text="&gt;|" />
+                    </children>
+                </HBox>
+                <HBox fx:id="gaugePane" prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Button fx:id="backButton" mnemonicParsing="false" text="Back" />
+                        <ProgressIndicator maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="50.0" progress="0.0" />
+                        <ProgressIndicator maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="50.0" progress="0.0" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </bottom>
+   <top>
+      <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+         <children>
+              <HBox prefHeight="48.0">
+                  <children>
+                      <ImageView fitHeight="48.0" pickOnBounds="true" preserveRatio="true">
+                          <image>
+                              <Image url="@../image/icon/FlashMonkey_48.png" />
+                          </image>
+                      </ImageView>
+                      <Label text="FlashMonkey">
+                          <font>
+                              <Font name="Helvetica Neue" size="36.0" />
+                          </font>
+                          <HBox.margin>
+                              <Insets left="10.0" />
+                          </HBox.margin>
+                      </Label>
+                  </children>
+              </HBox>
+            <ComboBox prefWidth="150.0" />
+         </children>
+      </VBox>
+   </top>
+</BorderPane>

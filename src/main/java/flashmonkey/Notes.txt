@@ -1,0 +1,298 @@
+Notes
+
+
+@todo: 2017-6-26 FlashMonkeyV02-2017-06-26: 
+
+Problem: Logic Question.
+     * ??!!! Should current card be in FlashCard??? or in ReadFlash?
+     * Problem,,,, when switching between decks, Current card must be reset, 
+     *       if current card resides in FlashCard, then it belongs to that 
+     *       object. If currentCard is in FlashCard then it does not need 
+     *       to be reset when switching between decks. And while implementing.
+     * Solved... Current card is moved to ReadFlash. 
+     * Proposed ... In the next re-design
+     * Q&A and Test modes will reside in their own classes and each will 
+     * contain their own currentCard and their own flashList. 
+
+1) -Done- Finish Search by adding getQ button on list of questions. IOW in other words
+a way for the authcrypt.user.EncryptedPerson to see (via a button) one of the items that have been
+returned from the search. 
+ - Also create a drop up panel that flys up showing the list of questions available
+for the search that has been returned.
+2) -Done- Add or fix edit in Q&A mode
+3) -Resolved- Fix search in test mode
+    ? Should there be a search while in the test mode? No there are hints already
+!3) Graphic pull bar for edit
+4) -Done- last q and first q from list buttons
+5) Spell help that comes from the AVL tree or Map
+!6) Memory: making use of the remember and forget ... or hide and show values. 
+These require a link to the next remember value. I.e. if 5 is shown but 6 through 
+100 are hidden, then looping through each flashcard to check to see if its remember
+value is not hidden would be O(n). However if a double linked-list type of 
+structure with prev and next variables pointing to the next remembered variable 
+would make finding the next visible flashcard O(1).
+7) -Done- Add capabilities from next button to previous button. 
+8) Delete or hide files from listOfFiles
+9) Update constructors in FlashCard for the added variables rtDate, 
+
+@todo DEBUG
+1) Problem: (Non-issue) When changing from edit mode back to test mode, the select button
+is missing. This is because the authcrypt.user.EncryptedPerson should not have the option to edit a
+question and then answer it. This would allow a form of cheating. Even though
+it's a self driven test.  
+2) Problem: (Fixed) The visible index becomes out of sync and causes an overrun or null pointer
+problem. The back button, is not set to inop. This should be taken care of by 
+placing the current card in the FlashCard class. Since the problem seems to occur
+when switching between decks.  -Fixed ls
+!3) Problem: When deleting cards from the deck. If the last card is deleted the GUI locks
+in place. Reason has not been found.  
+4) Problem: (Fixed) Remove ScrollPane from the create new stack scene. 
+5) Problem: (Fixed) Edit spacing on newFileScene page.
+6) Problem: (Fixed) Text in create flash card pane in answer pane does not delete on click 
+on initial screen. 
+7) Problem: "ClickMe button" not updating after 4 cards are created. 
+8) Problem: Crash when attempting to go into test & Q&A mode and there are no cards in 
+the flashList.  
+ 
+
+// *** MODIFICATION LOG ***
+2017-9-1 Moved showAnsAndScoreButtons from EditFlashPane class to ReadFlash.
+More appropriate use and logical layout of the classes.
+class. -LS
+2017-9-2 Renamed ReadFlash.lastQButton to ReadFlash.prevQButton. For clarity. 
+Last should be end of the array. -LS.
+
+2017-9-11 added gauges and Medusa Gauge library. The medusa library is huge and 
+the gauges add alot of weight/memory usage to the program. Seems unneccessary
+but the medusa gauage library allows alot of flexibility by its design. Unfortunatly
+it adds too much weight and will need to create specific gauges for the program.
+
+2017-9-12 Modifications nearly complete. This copy is published as last copy before 
+adding Gradle.
+
+2017-9-12 Added ScrollPane to listOfFiles in the first shown scene.
+2017-9-18 Removed scrollPane from newFileScene by adding if statements in FlashMonkeyMain(). 
+2017-9-18 Added Last index and First index to the menu buttons. 
+2017-9-18 Reshaped the qButtons to round buttons
+2017-9-19 Removed ScrollPane from newFileScene
+2017-9-19 Created getFirstScene() method that retrieves the first scene. 
+2017-9-19 Created better layout for newFilePane.
+2017-9-19 Fixed bug in create file AnswerPane prompt text. Set another element
+focused so that prompt text would show. Removed extra methods for prompt text 
+to work while in focus that didn't work. 
+2013-9-24 Changed remember in editFlashPane from switch function to display 
+the remember buttons to if statements. This allows remember to be greater 
+than 0 forget less than 0 and normal == 0.  
+
+2017-10-24 Major modifications to enable tree rotation and single node navigation. 
+Added treewalker class which inherits AVLTree. Current tree next and prev
+buttons work. 1st and last buttons do not work. There is no way to get the
+tree root. It moves when the tree rotates. Although when a node is added and the 
+tree rotates while add is active, once adding is complete, it apears that 
+the root is lost. Added a treeRoot, farLeft, and farRight to the base tree class. 
+This might not be an appropriate location for these new values. Look into this
+there might be a better way to track these points. 
+    - @todo for treewalker class. 
+        1) need to track treeRoot, far left, and far right treePoints. This 
+        enables an O(1) access to these points on the tree. 
+        2) need to convert the current tree to a double threaded tree. The 
+        current modification, a threeWayTree, AVLTree with a parent in each node
+    
+2017-11-10 Near completion of single node navigation and Q wrong-add feature. 
+Tree rotation is working, navigation from node to node is working, 
+    Problem with size of tree or the number of nodes in the tree. This impacts 
+    the numbering of nodes when the authcrypt.user.EncryptedPerson walks through the tree. It also impacts
+    any methods that are based on the numbering. 
+
+2017-11-23 Bug correction. Error with correct answer. Does not appear to be 
+updating. Occasionally, the correct answer is not the correct answer, and 
+a wrong answer is correct. -Solved... problem was with the ...object. This was 
+a difficult problem to track down. 
+
+2017-11-27 Working on Test selectAnswerButton colors in ReadFlash. Created method 
+ansQButtonSetting() to disable and set the color of the button while navigating 
+through the tree. The button should be disabled if a questions answer has been 
+viewed in Q&A mode or if it has been answered previously. The method needs to be 
+implemented in lastQButton and firstQButton modes. Need to look at integrating 
+button actions and colors into a single class. IE into the MVC architechture.  
+
+@todo 2017-12-1 set buildFileName() to alpha only. Currently set to read in and filter manually
+however, this could allow anything that is not in the list. 
+
+@todo 2017-12-1 set compareTo in readFlash to aNumber instead of qNumber. qNumber 
+causes a continious loop error. 
+
+@todo 2017-12-1 when should refresh flashList be done now that q&a and test are 
+using the tree?
+    1) After editing?
+    2) After adding new cards
+    3) refreshFlashList should include adding new nodes to the tree? or make 
+        sure to add the edited nodes and added nodes to the tree. 
+
+@todo 2017-12-1 Is the flashCard score variable needed for each flashCard? 
+    Yes, keep it, it may provide a fuzzy priority that the other variables do not. 
+
+@todo 2017-12-5 Problem, seeing cards that were seen the last review session and
+not seeing cards that are further back in the stack. Need to use dateRt to assist
+with reorganizeing the deck so that the cards at the back of the deck are seen
+more frequently. Or.. maybe this is already done with score and remember. No. it 
+is not. Corrected: LS 2017-12-12
+
+@todo 2017-12-12 All known & requested capabilities with exception to
+a selectable forget button in the card have been implemented. All visible & 
+known bugs have been corrected, with exception to re-prioritization of cards
+that have not been seen. There remains a bug in the numbering
+system. It exists after the buildTree method has added it to the tree. 
+FMTree does not appear to add any numbers to the a cards qNumber. Still searching
+for this error. When cards are added to the tree. The correct qNumber appears 
+to be added correctly. When viewing a cards qNumber in the flashCard it apears
+to have been multiplied by another factor of 10 and 1 added to it. ?????!!!!!
+
+see card number 77 below being added in buildTree and FMTree. "I don't see the issue
+anymore" 2017-12-20 
+  
+    adding 77 to tree,
+    parent is 73
+    adding card in build tree
+    getRemember = 0
+    localCard.getRtDate().getDayOfYear();343
+    localCard aNum date is less than lastDate2017-12-09T07:52:00.577-08:00[America/Los_Angeles]
+    QNumber set to 780
+    localCard qNum = 780
+
+    and the results displayed at the card in the gui
+    adding 77 to tree,
+    parent is 73
+    adding card in build tree
+    getRemember = 0
+    localCard.getRtDate().getDayOfYear();343
+    localCard aNum date is less than lastDate2017-12-09T07:52:00.577-08:00[America/Los_Angeles]
+    QNumber set to 780
+    localCard qNum = 780
+
+@todo Bug on edit. When the card is updated in the backUpList it is using
+the QNumber, QNumber is the number given to the card to set it's location
+in the tree, or precedence. aNumber, "not an appropriate name" is the 
+number that is given at the index.  
+
+@todo edit regex match on line809 FlashCard so that it restricts file to 
+letters and digits only. 
+
+@todo bug issue... FM is online & stores files on online server. However, currently 
+attempting to implement uploading and downloading the file only once, download at
+the beginning, and upload on closing. A bug is created and cuauses the program to hang
+when attempting to get a file that has just been created. Multiple linkObj class objects
+are created. for some reason. even though there is only one instatiation at the beginning
+of the FlashCard class. This suggests that the FlashCard class is created mutiple times
+unneccessarily as well. However, this creates an issue, since the file is passed using
+the LinkObj class object. The file is contained in the linkObj. The default constuctor
+causes the linkObj to have a new adress and thus... loosing the file link. Last was looking for
+the locations that are creating new LinkObjs or calling FlashCard unneccissarily. uGGGG!!!
+(FlashMonkey is online!!!)
+
+@todo 2017/02/25 11:06am Working on JUnit Testing in Test folder TestClassTest.java.
+Just moved the extend from Test class to FlashMonkey class. Move was successful,
+however the problems continue. Although treeNodeHasData() is successful,
+firstNodeHasData() causes an error. Meaning that it doesn't fail nor succeed, 
+it causes a runtime error. 
+-The purpose of building the JUnit test is an issue with incorrect answers in the 
+Test.theseAns array. The array should contain 1 correct answer and three from other
+answers. At times, answers are repeated within the array, and at times, there
+is no correct answer. This is an inconsistent error and JUnit will assist
+with automated testing of FlashCard, and Test classes. Goal is to build out testing
+to test the entire class in a monte-carlo type of test.  ** DONE -LS **
+
+@todo 2018/04/21 Problem with ansAry in Test(): Find repeated answers in ansAry.
+Possible problems:
+    1. Problem with instantiation of new Test() or new Test( ... )
+    2. Problem with creation of testAry
+        a. Test in test class to attempt to repeat the problem =
+        ( TestClassTest.find fails ) There is no JavaFX implementation being run
+        in TestClassTest. It is likely either instantiation, or the creation of the testAry
+    - Multiple problems here. Primarily, a loop error where the for loop would not start at 0 when the index was
+    set to 0 in the block. The for loop incremented to the next index thus changing the loop to 0 would result
+    in an increment to 1. Thus the 0 index was skipped. The method would not detect the number in the first element
+    of the array and thus it would frequently be repeated. This was fixed by setting the centurion value to -1 in the block
+    - Other errors with incorrect variable assigned to the index. This is a non-traditional method to avoid repeating
+    values in the array. *** DONE *** Massive problem and hard to debug. Solution was: in some parts of the array, set
+    the index to -1 instead of zero because the index is incremented so that the lowest index, 0, is skipped before
+    it is added to the array.
+    -This method, due to the use of random if a number has been repeated, is extreemly slow.
+    -Must be a better way.
+
+@todo 2018/05/13 Problem with answerSet that is modifiable by the authcrypt.user.EncryptedPerson in the editPane. ansSet was not being added
+to the flashCard object due to a problem in the copy constructor. As well as the set remember using the rdo buttons.
+These have been solved. ** DONE **
+
+@todo 2018/05/13 Problem with flashList. As cards are being added into the stack when the authcrypt.user.EncryptedPerson get's the question wrong,
+these appear to be being added into the file so that. There are several copies of the question when the file has
+just been built.
+@todo 2018/05/13 Need to determin how to descriminate or allow repeated answers that are in the ansSet. IE, if an answer is no or
+false. And if that answer is randomly inserted into answers, then no would be a correct answer in only one of the
+answers when it would be two. Should this answer not be allowed to be inserted into the list of answers? (Descriminate)
+or should it be allowed and the correct letter be added. Seems to be poor form if the word "no" is repeated, or any other
+word is repeated. This is actually poor test writing, however flashcard creators are not professionals. The objective
+of the ansSet is to allow the authcrypt.user.EncryptedPerson to tell FlashMonkey that this questions answer, has other answers that would be
+correct as well. IE if two questions were very similar.
+ -One potential solution is to store answers in a hash and do something if there is a match. IE automatically add it
+ into ansSet. This is not a total solution, since a close match would not be detectable.
+
+ @todo 2018/06/21 UI UPGRADE! Show the create tree in the treeWindow. As the authcrypt.user.EncryptedPerson creates a card, show the new card
+ being inserted and it's naturally ordered location in the tree. Also, allow the authcrypt.user.EncryptedPerson to move/re-order thier cards
+
+ @todo 2018/06/21 II UPGRADE! Allow the authcrypt.user.EncryptedPerson to edit cards from the create window or treeWindow
+
+ @todo 2018/06/24 UI UPGRADE! Co-locate buttons and move selectAnswer button out of the way
+
+ @todo 2018/06/24 UI UPGRADE! Give the authcrypt.user.EncryptedPerson a checkbox to hide question, or to be moved to the front of the stack. IE higher
+ priority.
+
+ @todo 2018/06/24 PERFORMANCE consideration ! Use bit mask to check for odd numbers instead of (N % 2 == 0)
+
+ LEARNNG AND ORGANIZATION, Concept change.
+ PROBLEM: Information overload, caused by a lack of an apparent direction. I.E. Learning addition, subtraction, multiplication
+ and division without any practical understanding of why.... Why do I need to subtract and divide, why do I need to
+ multiply. Perhaps a poor example, but... understand how what is being taught is applied to te overall picture helps to
+ understand the problem being solved.
+
+ Information is simply useless without a practical understanding of why, or a theory of the why. This may stem from th
+ loss of connection in teaching. IE "Class, today we are going to learn to add." Student "Why do I need to know how to
+ add." I have a calculator to do that. Teacher "So you can be smart." Student "I can be smart by knowing how the universe
+ was created. I can be smart by... blah blah blah..." The point being, that without purpose, the information is lost.
+
+ SOLUTION: Organization by task and accomplishment. A tree starting with the product that you are working towards. And
+ groups of tasks that it takes to get there. Thus, like lego blocks, it is easier to organize the information as a student
+ if the goal is understood in the beginning. Studying becomes clear, and teaching becomes clear.
+
+Teacher Edition:
+Teacher writes the question. Student writes the answer and submits.
+
+@todo 2018/07/10 BUG in EditFlashPane: Save card does not save when the authcrypt.user.EncryptedPerson navigates left or right and edits more than on card.
+
+Notes for FlashCardMM
+        PROBLEM:    now that Files are associated with card numbers, and card Numbers should never change? there is a problem with
+        deleting or reorganizing a deck. IE if a card is added to the center of the deck, the deck order changes, the
+        index number has changed and thus, the cardNumber is no longer the index of the question or answer. This is a
+        challenge since the card ID comes from the index when the card is originally created. When cards are inserted
+        and deleted from the center of the deck. The order and index has changed. Files are no longer correctly associated
+        with the index. And otherAnswers are no longer correct.
+
+        SOLUTION:   A possible solution is that a cardID never changes, and is used for files and for associating
+        correctAnswers, and otherAnswerArray. A cards index when it is uploaded from
+        a file into the system becomes the cards ANumber, and the QNumber, as is currently , is used to prioritize the card
+        when it is inserted into the tree.
+
+        The aNumber is replacing the previous Answer.qNum.
+        The FlashCardMM.cardNum or cNum is a non-changable number in a hashmap or array. TBD
+
+
+BUG REPORT 2019/01/21 Bug in FlashCard MM-MT
+        @todo BUG fix image referance for question and answer. LS
+        Problem:   When a flashcard contains images in both the question and the answer sections, when the Question image
+        is clicked on , the answer image is displayed. Ooooooops!!!! lol.
+
+
+
+
+
+
