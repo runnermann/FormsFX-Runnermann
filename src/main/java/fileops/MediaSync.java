@@ -81,7 +81,7 @@ public class MediaSync {
 		CloudOps cloudOps = new CloudOps();
 		
 		// Get file names from media in users S3 bucket
-		ArrayList<CloudLink> remoteNameList = cloudOps.getMediaListFmS3(deckName);
+		ArrayList<CloudLink> remoteNameList = cloudOps.getS3MediaList(deckName);
 		// Create mediaSyncObjects from the remoteNameList
 
 		ArrayList<MediaSyncObj> remoteNames = getRemoteNames(remoteNameList);
@@ -290,12 +290,15 @@ public class MediaSync {
 
 		}
 		if(uploadBool) {
+			co.putMedia(upload);
+			/*
 					long sendTime = System.currentTimeMillis();
 					forallChunked(0, upload.size() - 1, (i) -> {
 						co.connectCloudOut(upload.get(i).getType(), data.getUserName(), upload.get(i).getFileName());
 					});
 					sendTime = (System.currentTimeMillis() - sendTime);
 					LOGGER.info("Total send time in syncCloudMediaAction: {} milliseconds, numElement: {}", sendTime, upload.size());
+			*/
 		}
 		if(deleteBool) {
 			Stream.of(delete)

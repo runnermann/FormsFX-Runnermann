@@ -4,11 +4,9 @@ import authcrypt.UserData;
 import ch.qos.logback.classic.Level;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.PresignedUrlDownloadRequest;
-import com.amazonaws.services.s3.model.S3Object;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
 import flashmonkey.ReadFlash;
@@ -23,6 +21,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
 
+import static habanero.edu.rice.pcdp.PCDP.forallChunked;
+
 //import static habanero.edu.rice.pcdp.PCDP.*;
 
 /**
@@ -35,31 +35,33 @@ import java.util.*;
 
 public class S3GetObjs {
 
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(S3GetObjs.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3PutObjs.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(S3GetObjs.class);
+    //private static final Logger LOGGER = LoggerFactory.getLogger(S3PutObjs.class);
     private static final String BUCKET_NAME = "iooily-flashmonkey";
     private static final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(2))
             .build();
     /**
      * COnstructor
      */
     public S3GetObjs() {
-        // LOGGER.setLevel(Level.DEBUG);
+        LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("S3GetObjs constructor called");
     }
 
+    // ************************* DECK RELATED ************************* //
+
     /**
+     * <p>Retrieves a deck. This method
      * requests a signedURL for the user-selected deck. The first element
-     * must contain the correct username and token.
+     * must contain the correct username and token.</p>
+     * <p> End result is deck is saved to local file, and FlashListMM
+     * is reset to the deck in ReadFlash. </p>
      * @param key
      * @param token
-     * @return Returns the requested flashListMM if successful, otherwise returns an
-     * empty flashListMM.
      */
     public void cloudGetDeckFmS3(String key, String token) {
-
 
         if(! Utility.isConnected()) {
             LOGGER.warn("I am not connected... returning nothing");
@@ -71,7 +73,7 @@ public class S3GetObjs {
 
         // *** Request a signedURL for the deck. We post when using credentials: *** //
         // Retrieve the deck
-        // (1) contact server and get the deck signedURL
+        // (1) contact Vert.x and get the deck signedURL
         // (2) use signedURL to retrieve deck
         // (3) save deck to file
         // (4) handle errors
@@ -96,13 +98,10 @@ public class S3GetObjs {
                 s = s.substring(2, s.length() - 2);
                 LOGGER.debug("response code {}", response.statusCode());
                 LOGGER.debug("response body: {}", s);  // signedUrl
-
-                //@TODO do something on error "failed":"true"
-                //@TODO do something with the returned signedURLs :)
-                //    urlList = response.body();
-                retrieveDeck(s);
+                retrieveDeckHelper(s);
+                //@TODO do something when s == "failed":"true"
             } else {
-                LOGGER.warn("0 objects found in s3 for key: {}", key);
+                LOGGER.warn("WARNING!!! 0 objects found in s3 for key: {}", key);
             }
         } catch (IOException e) {
             LOGGER.warn(e.getMessage());
@@ -120,7 +119,7 @@ public class S3GetObjs {
      * @param key signedURL to access the S3 object.
      * @return An arraylist containing the deck elements.
      */
-    private void retrieveDeck(String key) {
+    private void retrieveDeckHelper(String key) {
 
         ArrayList<FlashCardMM> flashMM = new ArrayList<>();
         if(key.contains("fail")) {
@@ -172,32 +171,29 @@ public class S3GetObjs {
         LOGGER.debug("cloudGetDeck() returned flashListMM with {} cards", flashMM.size());
     }
 
-    private String toDiskDir;
+    // ************************* MEDIA RELATED ************************* //
+
     private String localURL;
     private File diskFile;
-    private String name;
-    URI fileToBeDownloaded = null;
     /**
      * <p>Communicates directly to S3 IAM. Retrieves an object
      * from S3 using a signedUrl as the param. Saves object to file.</p>
      * <p><b>NOTE:</b> Expects that the device is connected. Does
      * not check for a connection before use.</p>
-     * @param mediaObjs request list of media files.
+     * @param mediaObjs request list of media filesNames
      * @param token
      */
-    public void cloudGetMedia(ArrayList<MediaSyncObj> mediaObjs, String token) {
+    public void serialGetMedia(ArrayList<MediaSyncObj> mediaObjs, String token) {
         long getTime = System.currentTimeMillis();
-        LOGGER.debug("cloudGetMedia line 184 called");
-        // 1st we get the signedURL's from Vert.x
-        ArrayList<String> signedUrls = getMediaURLs(mediaObjs, token);
 
-        LOGGER.debug("cloudGetMedia line 187 called");
         // Ensure media directory exists or create it
         String toDiskDir = DirectoryMgr.getMediaPath( 'M');
         diskFile = new File(toDiskDir);
         FileOpsUtil.folderExists(diskFile);
         LOGGER.debug("cloudGetMedia line 192 called");
-//TODO get fileName from signedURL
+
+        // 1st we get the signedURL's from Vert.x
+        ArrayList<String> signedUrls = getMediaURLs(mediaObjs, token);
         LOGGER.debug("cloudGetMedia called. signedURLs length: {}", signedUrls.size());
         // Process signedURLs
         for(String signedurl : signedUrls) {
@@ -234,7 +230,8 @@ public class S3GetObjs {
         }
     }
 
-    /*public void cloudGetMedia(ArrayList<MediaSyncObj> mediaObjs, String token) {
+    /*
+    public void cloudGetMedia(ArrayList<MediaSyncObj> mediaObjs, String token) {
         LOGGER.debug("called cloudGetMedia");
         // Ensure media directory exists or create it
         String toDiskDir = DirectoryMgr.getMediaPath( 'M');

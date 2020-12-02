@@ -148,7 +148,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
      * @param name
      * @param pw
      */
-    public void setObjsFmS3(String name, String pw) { CO.setDecksFmS3(name, pw); }
+    public void setObjsFmS3(String name, String pw) { CO.setS3DeckList(name, pw); }
 
     public void setMediaIsSynced(boolean bool) {
         mediaIsSynced = bool;
@@ -403,7 +403,8 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
         // @TODO change method name, saveFListToFile, to reflect saving to cloud as well
         if(Utility.isConnected()) {
            // CloudOps co = new CloudOps();
-            CO.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
+            CO.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
+            //CO.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
         }
         try {
             RemoveThisTester.testFlashListObject(flashListMM);

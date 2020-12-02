@@ -19,7 +19,21 @@
         <jaxb.api.version>2.3.0</jaxb.api.version>
         <lombok.version>1.18.12</lombok.version>
         <stripe.version>20.2.0</stripe.version>
+        <aws.java.sdk.version>2.13.7</aws.java.sdk.version>
     </properties>
+
+<!--    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.15.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+-->
 
     <dependencies>
         <!-- stripe -->
@@ -89,6 +103,13 @@
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.11.714</version>
         </dependency>
+        <!--<dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.java.sdk.version}</version>
+            <scope>compile</scope>
+        </dependency>-->
+
         <!-- web cam -->
         <dependency>
             <groupId>com.github.sarxos</groupId>
@@ -227,6 +248,11 @@
             <artifactId>testfx-junit5</artifactId>
             <version>4.0.15-alpha</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>1.11.714</version>
         </dependency>
         <!--<dependency>
             <groupId>org.mockito</groupId>

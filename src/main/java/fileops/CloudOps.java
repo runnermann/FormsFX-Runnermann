@@ -12,15 +12,10 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import flashmonkey.FlashCardOps;
 import flashmonkey.ReadFlash;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 
@@ -30,17 +25,9 @@ import java.util.*;
 
 public class CloudOps {
 	
-	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CloudOps.class);
-	private static final Logger LOGGER = LoggerFactory.getLogger(S3ListObjs.class);
-	// ***** AWS *******
-	private BasicAWSCredentials creds = new BasicAWSCredentials(" AKIA3YIX3CI5ZQXD4MHP", "UHLFa7WBS7Cy8mbjNw9t5VtjnCwY13kohnBnYXzH");
-	private AWSCredentialsProvider credProvider = new AWSStaticCredentialsProvider(creds);
-	private final String BUCKET_NAME = "iooily-flashmonkey";
-	private AmazonS3 s3client = AmazonS3ClientBuilder.standard()
-			.withCredentials(credProvider)
-			//.withEndPoint("arn:aws:s3:us-west-2:808040731195:accesspoint/userdecks")// 2020/2/18
-			.withRegion(Regions.US_WEST_2)
-			.build();
+	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CloudOps.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(CloudOps.class);
+
 	// list of deckLinks returned from S3GetList
 	private static ArrayList<CloudLink> cloudLinks = new ArrayList<>(4);
 	// list of mediaLinks returned from s3
@@ -55,7 +42,7 @@ public class CloudOps {
 	 * No args constructor
 	 */
 	public CloudOps() {
-		//	LOGGER.setLevel(Level.DEBUG);
+		LOGGER.setLevel(Level.DEBUG);
 	}
 
 	public static int getNCores() {
@@ -70,14 +57,14 @@ public class CloudOps {
 	protected String getToken() {
 		return this.token;
 	}
-
+	protected void setToken(String tkn) {
+		this.token = tkn;
+	}
 	public ArrayList<CloudLink> getCloudLinks() {
 		return cloudLinks;
 	}
 
-	protected void setToken(String tkn) {
-		this.token = tkn;
-	}
+	// ************************* Deck RELATED ************************* //
 
 	/**
 	 * Sets the list of decks from the users S3 and a token for future
@@ -87,7 +74,7 @@ public class CloudOps {
 	 * @param name The usersname provided by the login form
 	 * @param pw The password provided by the login form
 	 */
-	public void setDecksFmS3(String name, String pw) {
+	public void setS3DeckList(String name, String pw) {
 		// set s3ListDecks
 		if(s3ListObjs == null && token == null) {
 			s3ListObjs = new S3ListObjs();
@@ -112,8 +99,7 @@ public class CloudOps {
 	 * @param deckName
 	 * @return
 	 */
-	public ArrayList<CloudLink> getMediaListFmS3(String deckName) {
-
+	public ArrayList<CloudLink> getS3MediaList(String deckName) {
 		if(s3ListObjs == null && token == null) {
 			s3ListObjs = new S3ListObjs();
 			// we indlude the users name in the token
@@ -135,94 +121,43 @@ public class CloudOps {
 	public void getMedia(ArrayList<MediaSyncObj> downloads) {
 		// Reqst signedURL's for all downloads in one trip to vertx
 		S3GetObjs getObjs = new S3GetObjs();
-		getObjs.cloudGetMedia(downloads, FlashCardOps.getInstance().CO.token);
+		getObjs.serialGetMedia(downloads, FlashCardOps.getInstance().CO.token);
 	}
 
+	/**
+	 * upload media to S3 from CreateFlash when there are only a few uploads
+	 * and the overhead of async is not advantageous.
+	 * @param uploads
+	 * @param numFiles
+	 */
+	public void putMedia(String[] uploads, int numFiles) {
+		LOGGER.debug("putMedia for serial called");
+		S3PutObjs putObjs = new S3PutObjs();
+		ArrayList<String> l = new ArrayList<>(Arrays.asList(uploads));
+		putObjs.serialPutMedia(l, numFiles, FlashCardOps.getInstance().CO.token);
+	}
 
-	protected void putMedia(ArrayList<MediaSyncObj> uploads) {
+	/**
+	 * Uses async upload to upload to S3.
+	 * @param uploads
+	 */
+	public void putMedia(ArrayList<MediaSyncObj> uploads) {
+		// 1) get the list of signedURLs
+		// 2) send the files to s3 storage
+
 		// Reqst signedURL's for all uploads in one trip to vertx
-//		S3PutObjs putObjs = new S3PutObjs();
-
+		S3PutObjs putObjs = new S3PutObjs();
+		putObjs.asyncPutMedia(uploads, FlashCardOps.getInstance().CO.token);
 	}
 
+	public void putDeck(String fileName) {
+		S3PutObjs putObjs = new S3PutObjs();
+		putObjs.putDeck(fileName, FlashCardOps.getInstance().CO.token);
+	}
 
 
 	protected void removeFmCloud(String fileName) {
 		/* stub */
 		//@TODO removeFmCloud
 	}
-
-	
-	private String fullBucketURL;
-	/**
-	 * Uploads a file to S3. type 'd' is for thumbs, 't' is for text or decks,
-     * default is media
-	 * @param fileNames to local file variable length one or an array
-	 */
-	public void connectCloudOut(char type, String userName, String ... fileNames) {
-		LOGGER.info("In connect cloud out");
-		//Thread.dumpStack();
-		if(fileNames.length < 1) {
-			return;
-		}
-		//userName = data.getUserName(); //@todo hash username to unique uuid
-
-		// comment out seperate thread during testing
-		new Thread(() -> {
-			// performance testing
-			long sendTime = System.currentTimeMillis();
-			
-			try {
-				if (s3client.doesBucketExistV2(BUCKET_NAME)) {
-					//@TODO parallelize connectCloudOut
-					File file = null;
-					for (String f : fileNames) {
-						
-						if (f != null) {
-							// get .dat file for card
-							if(type == 'd') {
-							    LOGGER.info("type == 'd'");
-								fullBucketURL = BUCKET_NAME;
-								file = new File(DirectoryMgr.getMediaPath('t') + f);
-							}
-							else if (type == 't') { // if String
-								fullBucketURL = BUCKET_NAME + "/" + userName + "/decks";
-								file = new File(DirectoryMgr.getMediaPath('t') + f);
-								// get media data
-							} else {
-								LOGGER.info("Looking for media at: {}", DirectoryMgr.getMediaPath(type) + f);
-								file = new File(DirectoryMgr.getMediaPath(type) + "/" + f);
-								fullBucketURL = BUCKET_NAME + "/" + userName + "/" + ReadFlash.getInstance().getDeckName();
-							}
-
-							LOGGER.info("connectCloudOut sendFile {} to cloud. fileExists: {}\n fullBucketURL {}", file.getName(), file.exists(), fullBucketURL);
-							
-							try {
-								// bucket name and location, objectKey (aka fileKey) is the deckName, file
-								if(file.length() > 6) {
-								    LOGGER.info("putting file to s3");
-									s3client.putObject(new PutObjectRequest(fullBucketURL, f, file));
-								} else {
-									LOGGER.warn("Attempted to send file to S3 smaller than 6 bytes: " + file.getName());
-								}
-							} catch (AmazonServiceException e) {
-								LOGGER.info("uploadFileTos3bucket().Uploading failed :" + e.getMessage());
-							}
-						} else {
-							LOGGER.warn("connectCloudOut received an empty String name. fileName == null} - Not sent -");
-						}
-					}
-				} else {
-					LOGGER.warn("could not connect to the bucket");
-				}
-			} catch (SdkClientException e) {
-				LOGGER.warn("Could not connect to AWS. ASW SdkClientException: \nMESSAGE = {}", e.getMessage());
-			}
-			finally {
-				sendTime = (System.currentTimeMillis() - sendTime);
-				LOGGER.info("CloudOps send time: {}, num objs: {}", (int) (sendTime / 1000), fileNames.length);
-			}
-		}).start();
-	}
-
 }

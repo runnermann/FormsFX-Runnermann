@@ -94,7 +94,7 @@ public class VanillaTextQA  {
         // Save the creatorList to file, keep the last element
         innerObj.setListinFile(creatorList, '+');
         CloudOps co = new CloudOps();
-        co.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
+        co.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
         //innerObj.
     }
 

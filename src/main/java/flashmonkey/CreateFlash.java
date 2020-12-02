@@ -8,6 +8,7 @@ package flashmonkey;
 
 import authcrypt.UserData;
 import campaign.Report;
+import ch.qos.logback.classic.Level;
 import fileops.CloudOps;
 import fileops.MediaSync;
 import fmannotations.FMAnnotations;
@@ -156,8 +157,8 @@ import java.util.ListIterator;
 
 public final class CreateFlash<C extends GenericCard> {
 
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlash.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(CreateFlash.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlash.class);
+    //private static final Logger LOGGER = LoggerFactory.getLogger(CreateFlash.class);
     // Only one instance of this class may exist within a JVM. Not
     // a 100% solution.
     private static CreateFlash CLASS_INSTANCE;
@@ -256,7 +257,7 @@ public final class CreateFlash<C extends GenericCard> {
      */
     Scene createFlashScene() {  // package private
     
-        //LOGGER.setLevel(Level.DEBUG);
+        LOGGER.setLevel(Level.DEBUG);
         
         LOGGER.debug("called createFlashScene()");
         LOGGER.debug("deckName: {}", ReadFlash.getInstance().getDeckName());
@@ -1158,11 +1159,11 @@ public final class CreateFlash<C extends GenericCard> {
 
                 // upper
                 if(editorU.getMediaFiles() != null) {
-                    co.connectCloudOut('m', data.getUserName(), editorU.getMediaFiles());
+                    co.putMedia(editorU.getMediaFiles(), 2);
                 }
                 if(editorL.getMediaFiles() != null) {
                     // lower
-                    co.connectCloudOut('m', data.getUserName(), editorL.getMediaFiles());
+                    co.putMedia(editorU.getMediaFiles(), 2);
                 }
 
                 // Order is important for proper display of
@@ -1663,7 +1664,8 @@ public final class CreateFlash<C extends GenericCard> {
             // creatorList minus 1. Last card is empty. '-' indicates this.
             FlashCardOps.getInstance().FO.setListinFile(creatorList, minus);
             CloudOps co = new CloudOps();
-            co.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
+            co.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
+            //co.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
             creatorList.clear();
          //   saveDeckButton.setDisable(true);
         } catch (Exception h) {
