@@ -1,6 +1,5 @@
 package forms;
 
-import com.dlsc.formsfx.model.util.ResourceBundleService;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import com.dlsc.formsfx.view.util.ViewMixin;
 
@@ -17,10 +16,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uicontrols.ButtoniKon;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 public class SignUpPane extends Pane implements ViewMixin {
 	
@@ -81,7 +77,6 @@ public class SignUpPane extends Pane implements ViewMixin {
 		msgLabel3 = new Label("before we get started.");
 		
 		displayForm = new FormRenderer(model.getFormInstance());
-		
 	}
 	
 	/**

@@ -1,6 +1,7 @@
 package forms;
 
 
+import authcrypt.UserData;
 import authcrypt.user.EncryptedStud;
 import campaign.db.DBFetchUnique;
 import campaign.db.DBInsert;
@@ -14,6 +15,7 @@ import com.dlsc.formsfx.model.validators.RegexValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
 import flashmonkey.FlashMonkeyMain;
+import forms.utility.Alphabet;
 import forms.utility.StudentDescriptor;
 import org.slf4j.LoggerFactory;
 
@@ -162,7 +164,7 @@ public class StudentModel extends ModelParent {
 		if(doAction(student)) {
 			FlashMonkeyMain.closeActionWindow();
 		} else {
-			LOGGER.warn("Student creation Form failed to be sent to the database for userName: {}", authcrypt.UserData.getUserName());
+			LOGGER.warn("Student data creation Form failed to be sent to the database for userName: {}", UserData.getUserName());
 		}
 	}
 	
@@ -174,16 +176,22 @@ public class StudentModel extends ModelParent {
 	public boolean doAction(final FormData data) {
 		authcrypt.user.EncryptedStud studentData = (EncryptedStud) data;
 
-		// Insert/update database
-		if(studentData.getPersonId() != -1) {
-			return DBUpdate.STUDENT_ENCRYPTED_DATA.doUpdate(studentData, studentData.getPersonId());
-		} else {
-			long studentID = fetchStudentID(studentData);
-			if(studentID != -1) {
-				return DBUpdate.STUDENT_ENCRYPTED_DATA.doUpdate(studentData, studentID);
+		// do insert
+		boolean bool = DBInsert.STUDENT_ENCRYPTED_DATA.doInsert(studentData);
+		if( ! bool ) {
+			LOGGER.debug("student exists, do update. studentID: {}", studentData.getPersonId());
+			//update database
+			if (studentData.getPersonId() != -1) {
+				String whereStatement = " WHERE person_id = '" + studentData.getPersonId() + "'";
+				LOGGER.debug("whereStatement" + whereStatement);
+				return DBUpdate.STUDENT_ENCRYPTED_DATA.doUpdate(studentData, whereStatement);
+			} else {
+				String whereStatement = " WHERE orig_email = '" + Alphabet.encrypt(UserData.getUserName()) + "'";
+				LOGGER.debug("whereStatement" + whereStatement);
+				return DBUpdate.STUDENT_ENCRYPTED_DATA.doUpdate(studentData, whereStatement);
 			}
 		}
-		return DBInsert.STUDENT_ENCRYPTED_DATA.doInsert(studentData);
+		return bool;
 	}
 	
 	

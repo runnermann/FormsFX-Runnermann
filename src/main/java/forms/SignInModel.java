@@ -2,6 +2,7 @@ package forms;
 
 import authcrypt.UserData;
 import authcrypt.Verify;
+import ch.qos.logback.classic.Level;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -10,11 +11,11 @@ import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import fileops.Utility;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
+import forms.utility.Alphabet;
 import forms.utility.FirstDescriptor;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
 
@@ -30,7 +31,8 @@ import java.util.ResourceBundle;
  */
 public class SignInModel {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(SignInModel.class);
+	// private static final Logger LOGGER = LoggerFactory.getLogger(SignInModel.class);
+	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SignInModel.class);
 	private StringProperty field1 = new SimpleStringProperty("");
 	private FirstDescriptor descriptor = new FirstDescriptor();
 	
@@ -52,9 +54,7 @@ public class SignInModel {
 	 * @return Returns the form instance.
 	 */
 	public Form getFormInstance() {
-		LOGGER.info("*** getFormInstance called ***");
-		// reset field1
-//		field1 = new SimpleStringProperty("");
+		LOGGER.setLevel(Level.DEBUG);
 		if (formInstance == null) {
 			createForm();
 		}
@@ -99,28 +99,61 @@ public class SignInModel {
 
 	// validate user information, if successful then return true
 	// else we create a popup and return false.
+	// returns true if not connected and pw username passes. If connected, returns
+	// the response from Vert.x if the pw and username passes.
+	// ifConnected & ifSuccessful, gets deckList from s3 and synchronizes with local list if exists.
 	private boolean validate() {
 		LOGGER.info("validate() called");
+		String errorMessage = "Error";
+
+		// We interface with s3resources here in order to prevent saving unencrypted passwords
+		// in a file.
 		// validate the forms input
 		Verify v = new Verify(field1.get(), descriptor.getSiOrigEmail().toLowerCase());
 		//System.out.println(" didSucceed: " + v.succeeded());
-		if(v.succeeded() == 8675309){
-			// We interface with s3resources here in order to prevent saving passwords
-			// in memory.
-			if(Utility.isConnected()) { FlashCardOps.getInstance().setObjsFmS3(descriptor.getSiOrigEmail(), field1.get()); }
-			return true;
+		if(v.succeeded() == 8675309) {
+			if(! Utility.isConnected()) {
+				return true;
+			}
+			else {
+				LOGGER.info("App is connected");
+				// if unable to login at remote returns false and cannot download any decks
+				int res = FlashCardOps.getInstance().setObjsFmS3(descriptor.getSiOrigEmail(), field1.get());
+				switch(res) {
+						case 1: {
+							return true;
+						}
+						case 0: {
+							LOGGER.debug("Password did not pass remote login.");
+
+							UserData.clear();
+							errorMessage = " There is a problem with your email-password combination in the cloud.\n" +
+									" Use \"Forgot password\" to change the password in the cloud to the password \n" +
+									" on this system and to synchronize your work.";
+
+							break;
+						}
+						default: {
+							LOGGER.warn("ConnectException: <{}> is unable to connect: Server not found", Alphabet.encrypt(UserData.getUserName()));
+							errorMessage = "Wow! That's unusual. The network may be down. " +
+									"\nWait a few minutes and try again.";
+
+						}
+				}
+			}
 		}
 		else {
-			// prevent bug issue #0001
 			UserData.clear();
-			String message = " That email-password combination does not match. " +
+			errorMessage = " That email-password combination does not match. " +
 					"If your user already exists here, try \"Forgot password\"." +
 					" Or, try \"Join now\".";
-			FxNotify.notificationPurple("Ooops!", message, Pos.CENTER, 10,
-					"image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
-			return false;
+
 		}
+		FxNotify.notificationPurple("Ooops!", errorMessage, Pos.CENTER, 5,
+				"image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+		return false;
 	}
+
 	
 	/**
 	 * Sets the locale of the form.

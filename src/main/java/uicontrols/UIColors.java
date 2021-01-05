@@ -5,6 +5,8 @@ import javafx.scene.paint.Color;
 /**
  * Provides String constants for the colors used in
  * FlashMonkey.
+ * <p>For easy conversion: https://www.w3schools.com/colors/colors_converter.asp</p>
+ * <p>For color selection: https://color.adobe.com/create/color-wheel</p>
  * @author Lowell Stadelman
  */
 public class UIColors
@@ -41,6 +43,8 @@ public class UIColors
     public static final String BACKGROUND_ORANGE    = "rgba(232, 150, 32, 1)";  //E89620
     public static final String BUTTON_COMPLIMENT    = "rgba(130,72, 185, 1.0)"; //#8248B9;
     public static final String TRANSPARENT          = "rgba(0, 0, 0, 0.0)";
+    public static final String WEBSITE_GREEN         = "rgb(190, 224, 22)";// #BEE016
+    public static final String WEBSITE_BLUE         = "rgb(0, 100, 225)";// #0064E1
     
     
     /**

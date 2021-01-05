@@ -1,11 +1,15 @@
 package authcrypt;
 
 
+import campaign.db.DBFetchUnique;
 import fileops.DirectoryMgr;
+import fileops.Utility;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
+import javafx.geometry.Pos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uicontrols.FxNotify;
 
 import java.io.File;
 import java.io.Serializable;
@@ -31,44 +35,133 @@ public class Verify implements Serializable {
         if(pw == null || pw.length() < 8 || userName == null || userName.length() < 6) {
             LOGGER.warn("verification failed pw or username is malformed");
         } else {
+            // if the user exists on this system
+            // then validate thier info
             if (userAuthInfo.setUserData()) {
                 userAuthInfo.validateUserInfo(pw, userName);
-            } else {
+            }
+            // else check if they exist in the cloud
+            // @TODO checkUserCloudExists()
+   /*         else if (checkUserCloudExists()){
+                // if they exist in the cloud, and the data is correct
+                // create locally
                 LOGGER.info("verification Failed");
+
+                // if not have them reset their password by email
+
+            } */
+            // else notify them to create a new user on this
+            // system and in the cloud.
+            else {
+                LOGGER.info("user does not exist locally or in the cloud");
             }
         }
     }
 
+    // @TODO finish checkUserCloudExists
+    private boolean checkUserCloudExists() {
+        return false;
+    }
+
     /**
-     * Stores the users data to file
+     * @TODO create syncronization for users pw and userNames.
+     * Stores the users data to file if the user is new to
+     * this system. And if(isConnnected) the user's pw & name
+     * are correct.
      * @param pw
      * @param name
      * @return returns the response if successful or not.
      */
     private File userDir;
+
+
     public String newUser(String pw, String name) {
+        String defaultMsg = "Something isn't right.";
+        // 1. Check that user does not exist locally
+        // 2. Check if user is connected. For this version, user must be connected to initially create the account.
+        // 3. Check s3getUser, if user exists, and password passes then
+        //		a. deck list will be downloaded
+        //		b. and user is validated in one single trip.
+        // 4. If user does not pass remotely, then notify user to retry creating user, or rest remote password.
+        // 5. If user does not exist remotely, !?!?!?!!!! And they are connected.
+        // 		-- create user remotely???
+        String errorMessage = "";
         // save user auth info
         LOGGER.info("Verify.newUser(...) ");
         if(DirectoryMgr.getWorkingDirectory() != null) {
             new DirectoryMgr();
         }
-        // verify if user's directory already exists
+        // verify if user's directory already exists, if not
+        // return to caller
         userDir = new File(DirectoryMgr.getMediaPath('z'));
         if(userDir.exists()) {
-            return "failed: Sorry that email exists. Try resetting the password or create a new user.";
+            return "Sorry that email exists. Try resetting the password or create a new user.";
         }
 
-        UserAuthInfo authInfo = new UserAuthInfo();
-        // sequence is important. Gen Salt is called
-        // and set in setPassword
-        authInfo.setSalt();
-        boolean bool1 = authInfo.setHashUserName(name);
-        boolean bool2 = authInfo.setPassword(pw);
-        // store to file
-        if(bool1 && bool2) {
-            return store(authInfo);
+        if(Utility.isConnected()) {
+            if(existsRemote(name)) {
+                // create local user if local & remote password
+                // are the same.
+                int res = FlashCardOps.getInstance().setObjsFmS3(name, pw);
+                switch (res) {
+                    case 1: {
+                        // successful
+                        UserAuthInfo authInfo = new UserAuthInfo();
+                        // sequence is important. Gen Salt is called
+                        // and set in setPassword
+                        authInfo.setSalt();
+                        boolean bool1 = authInfo.setHashUserName(name);
+                        boolean bool2 = authInfo.setPassword(pw);
+                        // store to file
+                        if (bool1 && bool2) {
+                            return store(authInfo);
+                        }
+                        errorMessage = defaultMsg;
+                        break;
+                    }
+                    case 0: {
+                        UserData.clear();
+                        errorMessage = "There is a problem with your email-password combination in the cloud.\n" +
+                                " Retry your password or use \"reset password\" to reset the cloud password.";
+                        break;
+                    }
+                    case -1: {
+                        errorMessage = "Wow! That's unusual. The network may be down. " +
+                                "\nWait a few minutes and try again.";
+                        break;
+                    }
+                    default: {
+                        errorMessage = defaultMsg;
+                    }
+                }
+            }
+            else {
+                // User's name does not exist in the cloud
+                // errorMessage user that they need to download
+                // the app.
+                UserData.clear();
+                errorMessage = "Please go to https://www.flashmonkey.xyz\n and download the app to this system.\nThanks";
+            }
         }
-        return "failed to create password or userName";
+        else {
+            // errorMessage user that they must be
+            // connected to create a local account.
+            UserData.clear();
+            errorMessage = "The initial configuration requires that you are online when you first install on a new computer.";
+        }
+
+        return errorMessage;
+    }
+
+
+    private boolean existsRemote( String name) {
+        LOGGER.info("App is connected");
+        String[] args = {name};
+        String[] columnData = DBFetchUnique.STUDENTS_UUID.query(args);
+        if(columnData[0].equals("EMPTY")) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -122,7 +215,15 @@ public class Verify implements Serializable {
             num1 = 100;
         }
 
+        /**
+         * if the userAuthInfo is null, returns false,
+         * else, sets the data to the info in other.
+         * @param other
+         * @return if the userAuthInfo is null, returns false,
+         *          else, sets this fields to the data in other.
+         */
         private boolean set(UserAuthInfo other) {
+            // if a directory did not exist, this will be null
             if(other == null) {
                 //LOGGER.info("in set(...), other is null");
                 return false;
@@ -169,7 +270,7 @@ public class Verify implements Serializable {
 
             AuthUtility ut = new AuthUtility();
             String createdPWHash = ut.computeHash(pw, this.s3, "PBKDF2WithHmacSHA512");
-            String createdUName = ut.computeHash(name, this.s3, "PBKDF2WithHmacSHA512");
+            String createdUName =  ut.computeHash(name, this.s3, "PBKDF2WithHmacSHA512");
 
 
             if(createdPWHash.equals(this.s2) && createdUName.equals(this.s1)) {
@@ -216,7 +317,6 @@ public class Verify implements Serializable {
         
         
         private boolean setPassword(String password) {
-
             if(this.s3 != "") {
                 this.s2 = authUtility.computeHash(password, this.s3, "PBKDF2WithHmacSHA512");
                 if(this.s2.length() < 10) {

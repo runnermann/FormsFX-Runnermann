@@ -145,8 +145,8 @@ public class CanvasCell<T extends GenericShape> extends GenericCell implements S
                 // If the image is missing,
                 // check if files are synchronized,
                 // and attempt to download missing files.
-                LOGGER.warn("Calling syncMedia from CanvasCell.processImage. Image is missing");
-                MediaSync.syncMedia();
+               // LOGGER.warn("Calling syncMedia from CanvasCell.processImage. Image is missing");
+               // MediaSync.syncMedia();
             }
 
             //if (scaled) {

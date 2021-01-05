@@ -229,7 +229,7 @@ public enum DBFetchToMapAry {
             CompletableFuture<QueryResult> future = db.getConnection().sendPreparedStatement(strQuery);
             QueryResult queryResult = future.get();
 
-            LOGGER.debug("queryResult size: {}", ((ArrayRowData)queryResult.getRows().get(0)).getColumns().length);
+            LOGGER.debug("queryResult size: {}", ((ArrayRowData) queryResult.getRows().get(0)).getColumns().length);
 
             if (queryResult.getRows().size() == 0) {
                 LOGGER.debug("query result has 0 rows");
@@ -242,6 +242,7 @@ public enum DBFetchToMapAry {
                     map.put(columns[i], res[i].toString());
                     //System.out.println("column " + i + " " + res[i]);
                 }
+                map = decryptNames(map);
             }
         } catch (NullPointerException e) {
             LOGGER.warn("WARNING: Null pointer exception at DBFetchToMapAry.fetchSingleResult(): Deck may not exist. ");
@@ -257,14 +258,22 @@ public enum DBFetchToMapAry {
     // Returns the array of columns formatted correctly
     // for the query.
     private static String formatColumns(String[] elements) {
-
         StringBuilder sb = new StringBuilder();
         // append all but the last element
-        for(int i = 0; i < elements.length -1; i++) {
+        for (int i = 0; i < elements.length - 1; i++) {
             sb.append(elements[i] + ", ");
         }
         // add the last element without the comma
-        sb.append(elements[elements.length -1] + " ");
+        sb.append(elements[elements.length - 1] + " ");
         return sb.toString();
+    }
+
+    private static HashMap<String, String> decryptNames(HashMap<String, String> map) {
+        String encryptedFirst = map.get("first_name");
+        String encryptedLast =  map.get("last_name");
+        map.replace("first_name", Alphabet.decrypt(encryptedFirst));
+        map.replace("lsat_name",  Alphabet.decrypt(encryptedLast));
+        System.out.println("decryptNames first_name is now: " + map.get("first_name") + " and should be: " + Alphabet.decrypt(encryptedFirst));
+        return map;
     }
 }

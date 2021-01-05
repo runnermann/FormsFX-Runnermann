@@ -69,10 +69,6 @@ public enum DBFetchUnique {
 	},
 
 	 */
-
-	
-
-
 	PERSON_ID() {
 		@Override
 		public String[] query(String ...args) {
@@ -91,7 +87,15 @@ public enum DBFetchUnique {
 			return fetchUniqueResult(strQuery);
 		}
 	},
-
+	STUDENTS_UUID {
+		@Override
+		public String[] query(String ...args) {
+			String strQuery = "SELECT uuid " +
+					"FROM students " +
+					"WHERE email = '" + args[0] + "';";
+			return fetchUniqueResult(strQuery);
+		}
+	},
 	/**
 	 * Queries the table provided in the param for the users encrypted data if it exists.
 	 *
@@ -163,7 +167,7 @@ public enum DBFetchUnique {
 				columnData = new String[row.size()];
 
 				for(int i = 0; i < row.size(); i++) {
-					columnData[i] = (String) row.get(i).toString();
+					columnData[i] = row.get(i).toString();
 				}
 				//return columnData;
 				//num = num.replaceAll("\\D", "");
@@ -176,7 +180,7 @@ public enum DBFetchUnique {
 		} catch (InterruptedException e) {
 			LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
 		}
-		LOGGER.debug("returning an empty string");
+
 		return columnData;
 	}
 	

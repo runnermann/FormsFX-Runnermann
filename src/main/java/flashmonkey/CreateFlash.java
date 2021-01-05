@@ -6,11 +6,11 @@ package flashmonkey;
 
 // *** JAVAFX IMPORTS ***
 
-import authcrypt.UserData;
 import campaign.Report;
 import ch.qos.logback.classic.Level;
 import fileops.CloudOps;
 import fileops.MediaSync;
+import fileops.Utility;
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import forms.DeckMetaModel;
@@ -29,7 +29,6 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import metadata.DeckMetaData;
 import org.controlsfx.control.PrefixSelectionComboBox;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
@@ -1145,41 +1144,39 @@ public final class CreateFlash<C extends GenericCard> {
          * DESCRIPTION: Adds flashCard (question and answer objects)
          * to the creatorList arrayList. Send media to the cloud
          */
-        private void addCardAction()
-        {
+        private void addCardAction() {
             LOGGER.info("\n *** addCardAction() *** \n");
             LOGGER.debug("\n\t saved as qID, The qID: {}", currentCard.getCID());
             LOGGER.debug("\t cNum {}", currentCard.getCNumber());
             LOGGER.debug("\t creatorList size: {}", creatorList.size() + 1);
 
             // Create a new flashCardMM
-
+            if(Utility.isConnected()) {
                 CloudOps co = new CloudOps();
-                UserData data = new UserData();
-
                 // upper
-                if(editorU.getMediaFiles() != null) {
+                if (editorU.getMediaFiles().length > 3) {
                     co.putMedia(editorU.getMediaFiles(), 2);
                 }
-                if(editorL.getMediaFiles() != null) {
+                if (editorL.getMediaFiles().length > 3) {
                     // lower
                     co.putMedia(editorU.getMediaFiles(), 2);
                 }
+            }
 
-                // Order is important for proper display of
-                // card number.
-                // update the listIdx
-                listIdx++;
-                // Save this card to the creator list
-                    saveNewCardToCreator();
-                // set the prompt
-                editorU.styleToPrompt();
-                editorU.setPrompt(makeQPrompt(listIdx));
-                editorU.tCell.getTextArea().requestFocus();
+            // Order is important for proper display of
+            // card number.
+            // update the listIdx
+            listIdx++;
+            // Save this card to the creator list
+                saveNewCardToCreator();
+            // set the prompt
+            editorU.styleToPrompt();
+            editorU.setPrompt(makeQPrompt(listIdx));
+            editorU.tCell.getTextArea().requestFocus();
 
-                insertCardButton.setText("New card");
-                // display in the nav tree
-                navButtonDisplay(listIdx);
+            insertCardButton.setText("New card");
+            // display in the nav tree
+            navButtonDisplay(listIdx);
         }
     
     
@@ -1233,10 +1230,6 @@ public final class CreateFlash<C extends GenericCard> {
                 FlashMonkeyMain.buildTreeWindow();
             }
             FlashMonkeyMain.AVLT_PANE.displayTree();
-        
-            //return true;
-            //}
-            //return false;
         }
     
     
@@ -1562,7 +1555,24 @@ public final class CreateFlash<C extends GenericCard> {
             FlashMonkeyMain.setWindowToNav();
             if(! FlashCardOps.getInstance().getMediaIsSynched()) {
                 LOGGER.debug("Calling MediaSync from CreateFlash.saveDeckAction()");
-                MediaSync.syncMedia();
+                if(Utility.isConnected()) {
+                    if (CloudOps.isInValid()) {
+                        // Here we are in a pickle if the token is expired and the user
+                        // is creating a deck. We must indicate that media needs to be
+                        // synchonized.
+                        LOGGER.debug("token is expired, not renewing");
+                        FMAlerts alerts = new FMAlerts();
+                        // method may not be on the same thread. Cannot create an
+                        // alert on another thread.
+                        alerts.sessionRestartPopup();
+
+                    } else {
+                        new Thread(() -> {
+                            LOGGER.info("Calling syncMedia from CreateFlash");
+                            MediaSync.syncMedia();
+                        }).start();
+                    }
+                }
             }
         } else {
         	// There is no content in the upper and lower editors

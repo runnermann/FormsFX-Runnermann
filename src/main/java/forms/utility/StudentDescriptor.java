@@ -35,7 +35,7 @@ public class StudentDescriptor extends PersonDescriptor {
 	 * Constructor
 	 */
 	public StudentDescriptor() {
-		super(); // not sure this is neccessary
+		super();
 		
 		LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("called studentDescriptor constructor");
@@ -129,8 +129,9 @@ public class StudentDescriptor extends PersonDescriptor {
 
 		//String[] args = {Alphabet.encrypt(authcrypt.UserData.getUserName())};
 		String[] args = {authcrypt.UserData.getUserName()}; // may cause an error
-		ArrayList<HashMap<String, String>> response = DBFetchToMapAry.STUDENT_ENCRYPTED_DATA.query(args);
-		if(response.get(0).get("orig_email").isEmpty()) {
+		ArrayList<HashMap<String, String>> response = DBFetchToMapAry.STUDENT_ENCRYPTED_DATA.query(args); // check
+
+		if(response.get(0).get("empty").equals("true")) {
 			LOGGER.debug("response from DB length is EMPTY... NOT processing response.");
 		} else {
 			LOGGER.debug("response from DB length contains data... processing response.");
@@ -148,7 +149,6 @@ public class StudentDescriptor extends PersonDescriptor {
 	 * response provided in the param.
 	 */
 	public String[] parseResponse(String response) {
-
 		// remove fmSplit opening array bracket
 		String sub = response.substring(1);
 		String[] newString = new String[2];

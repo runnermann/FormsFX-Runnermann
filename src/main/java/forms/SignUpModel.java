@@ -10,6 +10,8 @@ import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.RegexValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
+import fileops.Utility;
+import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.FirstDescriptor;
 import javafx.beans.property.SimpleStringProperty;
@@ -55,20 +57,28 @@ public class SignUpModel {
 	 * @return Returns the form instance.
 	 */
 	public Form getFormInstance() {
-		
-		//System.out.println("*** getFormInstance called ***");
-		
 		if (formInstance == null) {
 			createForm();
 		}
 		return formInstance;
+	}
+
+	private void action() {
+		if(Utility.isConnected()) {
+			String message = "You are not online. \nIf the password does not match your online account \nyou will not be able to synchronize with it." +
+					"\nYou may reset the password by clicking\n on \"reset password\" on the sign-in page.";
+			String emojiPath = "image/Flash_hmm_75.png";
+
+			FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 5,
+					emojiPath, FlashMonkeyMain.getWindow());
+		}
+		createForm();
 	}
 	
 	/**
 	 * Provides the form fields with validation and messaging to the user.
 	 */
 	private void createForm() {
-		
 		LOGGER.info("createForm called");
 		String[] pwCheck = new String[1];
 		
@@ -160,22 +170,20 @@ public class SignUpModel {
 	 * Prints a message if successful or not.
 	 */
 	protected boolean saveAction() {
-		
-		Verify v = new Verify();
-
 		//LOGGER.info("In save action and pw is: " + field1.get() + " getUserName is: " + data.getEmail());
 
+		Verify v = new Verify();
 		// Create userFile data
 		String msg = v.newUser(field1.get(), descriptor.getSiOrigEmail());
 		LOGGER.info("saveAction() create newUser : {}",msg);
-		if(msg.contains("Success")) {
+		if(msg.startsWith("Success")) {
 			UserData.setUserName(descriptor.getSiOrigEmail());
 			LOGGER.info("success: " + msg);
 			return true;
 		} else {
 			// Prevent bug issue #0001
 			UserData.clear();
-			FxNotify.notificationPurple("", " Ooops! " + msg, Pos.CENTER, 20,
+			FxNotify.notificationPurple("", " Ooops! " + msg, Pos.CENTER, 30,
 					"image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
 			return false;
 		}

@@ -33,6 +33,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import metadata.DeckMetaData;
 import org.slf4j.LoggerFactory;
+import uicontrols.FMAlerts;
 import uicontrols.UIColors;
 
 import javax.imageio.ImageIO;
@@ -103,7 +104,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     // --- FLAGS ---
     // File synchronization flag. If media files have been synchronized, don't do it again unless
     // there are changes in CreateFlash.
-    private static boolean mediaIsSynced;
+    private static volatile boolean mediaIsSynced;
 
             
 
@@ -147,8 +148,11 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
      * initial signIn.
      * @param name
      * @param pw
+     * @return returns true if pw and name were successful, false otherwise.
      */
-    public void setObjsFmS3(String name, String pw) { CO.setS3DeckList(name, pw); }
+    public int setObjsFmS3(String name, String pw) {
+        return CO.setS3DeckList(name, pw);
+    }
 
     public void setMediaIsSynced(boolean bool) {
         mediaIsSynced = bool;
@@ -160,7 +164,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     // ************************************** GETTERS **************************************
     // ************************************** ******* **************************************
 
-    public static boolean getMediaIsSynched() {
+    public static final boolean getMediaIsSynched() {
         return mediaIsSynced;
     }
     
@@ -171,13 +175,27 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
      */
     @SuppressWarnings("unchecked")
     public ArrayList<MediaSyncObj> getFlashListMedia() {
-        ArrayList<MediaSyncObj> mediaSyncObjs = new ArrayList<>(flashListMM.size());
-        String name;
-    
-        LOGGER.info("in getFlashMedia. flashListMM length: {}",  flashListMM.size());
+        return getMediaHelper(flashListMM);
+    }
 
-        
-        for(FlashCardMM fc : flashListMM) {
+    /**
+     * Returns a list of the media contained in the current flashList;
+     * Used by MediaSync.mediaSync().
+     * @return
+     */
+    public ArrayList<MediaSyncObj> getFlashListMedia(ArrayList<FlashCardMM> flashList) {
+        return getMediaHelper(flashList);
+    }
+
+    /**
+     * @param flashList
+     * @return Returns a list of the media contained in the current flashList;
+     */
+    private ArrayList<MediaSyncObj> getMediaHelper(ArrayList<FlashCardMM> flashList) {
+        LOGGER.info("in getFlashMedia. flashListMM length: {}", flashList.size());
+        ArrayList<MediaSyncObj> mediaSyncObjs = new ArrayList<>(flashList.size());
+        String name;
+        for(FlashCardMM fc : flashList) {
             // Question
             for(int i = 0; i < fc.getQFiles().length; i++) {
                 if(fc.getQFiles()[i] != null) {
@@ -200,11 +218,12 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
         
         return mediaSyncObjs;
     }
+
+
     
     public FileOperations getFO() {
         return this.FO;
     }
-
 
     /**
      * Returns the current threshold determined when the tree was last built.
@@ -392,26 +411,30 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     }
 
     /**
-     * Saves the current flashList to file and the cloud (if connected). Used by
+     * Saves the current flashList to file and the cloud(if connected),
+     * if the file is > 0 cards. Used by
      * ReadFlash.
      */
     public void saveFlashList() {
         LOGGER.debug("*!*!* FlashOps saveFlashlist *!*!*");
 
-        // keep the last element
-        FO.setListinFile(flashListMM, '+');
-        // @TODO change method name, saveFListToFile, to reflect saving to cloud as well
-        if(Utility.isConnected()) {
-           // CloudOps co = new CloudOps();
-            CO.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
-            //CO.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
+        if(flashListMM.size() > 0) {
+            // keep the last element
+            FO.setListinFile(flashListMM, '+');
+            // @TODO change method name, saveFListToFile, to reflect saving to cloud as well
+            if (Utility.isConnected()) {
+                // CloudOps co = new CloudOps();
+                CO.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
+                //CO.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
+            }
+            try {
+                RemoveThisTester.testFlashListObject(flashListMM);
+            } catch (Exception e) {
+                LOGGER.warn("ERROR: line 291: flashlists are not the same\n{}", (Object) e.getStackTrace());
+                System.exit(0);
+            }
         }
-        try {
-            RemoveThisTester.testFlashListObject(flashListMM);
-        } catch (Exception e) {
-            LOGGER.warn("ERROR: line 291: flashlists are not the same\n{}", (Object) e.getStackTrace());
-            System.exit(0);
-        }
+        LOGGER.debug("in saveFlashList and flashListMM is size 0");
     }
 
     /**
@@ -1103,7 +1126,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                 return input.readObject();
 
             } catch(FileNotFoundException e) {
-                LOGGER.warn("\tFile Not Found exception:  getObjFmFile() Line 986 FlashCard");
+                LOGGER.warn("\tFile Not Found exception");
                 LOGGER.warn(e.getMessage());
                 e.printStackTrace();
 
@@ -1309,15 +1332,17 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
             ArrayList<LinkObj> oldList = agrList.getOlderFiles();
     
             LOGGER.info("CurrentFiles.size() {}, olderFiles.size() {}", currentList.size(), oldList.size());
-            LOGGER.info("AGRList.size() {}", agrList.getSize());
+            LOGGER.info("AGRList.size(): {}", agrList.getSize());
     
             // Check if folder exists and has more than one file .
             // first file is default file.
-            if((DECK_FOLDER.exists()) && (agrList.getSize() > 0)) {
+            if(agrList.getSize() > 0) {
+                FileOpsUtil.folderExists(DECK_FOLDER);
                 // output list of files{
                 //If there is a folder that exists and the agregated list of files is greater
                 // than 0, filter out copies -"copy" 2) output the filenames, eliminate the
                 // ".dat" 3) add a radio button 4) add the rdo/actionListener
+                LOGGER.debug("currentList.size(): <{}>", currentList.size());
                 if(currentList.size() > 0) {
                     SelectableRdoField rdoField = new SelectableRdoField();
                     paneForFiles.getChildren().add(recLabel);
@@ -1338,8 +1363,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                     }
                 }
             }
-            else  // create a new file since one does not exist
-            {
+            else { // create a new file since one does not exist
                 paneForFiles = newFile();
             }
         } // END PANE FOR FILES
@@ -1351,27 +1375,63 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
          */
         private void fieldPrimaryAction(LinkObj lObject, String deckName) {
             LOGGER.debug("rdoButton clicked");
-            ReadFlash.getInstance().resetInd();
-            String lObjName = lObject.getDescrpt();
-            // filename without the .dat ending
-            // used by ReadFlash and other classes.
-            ReadFlash.getInstance().setDeckName(deckName);
-            agrList.setLinkObj(lObject);
-            if(lObject.getCloudLink() != null) {
-                System.out.println("CLOUD linkObject clicked, fileName: {}" + lObject.getDescrpt());
-            //@TODO get and use SignedURL :) 11-11-2020
-                fo.setFileName(lObjName);
-                lObject.getCloudLink().retrieveDeckFmCloud();
-            } else {
-                System.out.println("LOCAL linkObject clicked, fileName: {}" + lObjName);
-        
-                fo.setFileName(lObjName);
-                refreshFlashList();
+
+            // ensure token is still valid
+            if(Utility.isConnected() && CO.isInValid()) {
+                LOGGER.warn("Token is expired, login again. ");
+                        FMAlerts alerts = new FMAlerts();
+                        alerts.sessionRestartPopup();
+
+                    }
+            else {
+                LOGGER.debug("token is good or renewed");
+                ReadFlash.getInstance().resetInd();
+                String lObjName = lObject.getDescrpt();
+                // filename without the .dat ending
+                // used by ReadFlash and other classes.
+                ReadFlash.getInstance().setDeckName(deckName);
+                agrList.setLinkObj(lObject);
+                if (lObject.getCloudLink() != null) {
+                    System.out.println("CLOUD linkObject clicked, fileName: {}" + lObject.getDescrpt());
+
+                    fo.setFileName(lObjName);
+                    lObject.getCloudLink().retrieveDeckFmCloud();
+
+                } else {
+                    System.out.println("LOCAL linkObject clicked, fileName: {}" + lObjName);
+
+                    fo.setFileName(lObjName);
+                    refreshFlashList();
+                }
+
+                /* media sync
+                LOGGER.debug("has flashlist been downloaded yet? flashlist size: {}", flashListMM.size() );
+                if(flashListMM.size() > 0) {
+                    // if token is expired, then redirect to login
+                    if (CloudOps.isExpired()) {
+                        LOGGER.debug("token is expired, not renewing");
+                        FMAlerts alerts = new FMAlerts();
+                        // alerts cannot be on another thread!
+                        alerts.sessionRestartPopup();
+                        FlashMonkeyMain.getSignInPane();
+
+                    } else {
+                        // @TODO move thread to MediaSync for async download. Not here
+
+                        //new Thread(() -> {
+                        //    LOGGER.info("Calling syncMedia from FlashCardOps primaryAction");
+                        //    MediaSync.syncMedia();
+                        //}).start();
+                    }
+                   // }
+                }
+                 */
+
+                fileSelected = true;
+                FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
+                // takes User back to main menu
+                FlashMonkeyMain.getWindow().setScene(FlashMonkeyMain.getNavigationScene());
             }
-            fileSelected = true;
-            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
-            // takes User back to main menu
-            FlashMonkeyMain.getWindow().setScene(FlashMonkeyMain.getNavigationScene());
         }
         
         private void fieldSecondaryAction() {

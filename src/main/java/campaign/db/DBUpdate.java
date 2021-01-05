@@ -13,40 +13,40 @@ public enum DBUpdate {
 
     STUDENT_ENCRYPTED_DATA() {
         @Override
-        public boolean doUpdate(EncryptedStud student, long studentID) {
+        public boolean doUpdate(EncryptedStud student, String whereStatement) {
 
-            String btw = "','";
-            String statement = "UPDATE Student SET" +
-                    " person.first_name '" + Alphabet.encrypt(student.getFirstName()) + btw +
-                    " person.last_name '" + Alphabet.encrypt(student.getLastName())  + btw +
-                    " person.middle_name '" + student.getMiddleName() + btw +
-                    " person.age '" + student.getAge() + btw +
-                    " person.phone '" + student.getPhone() + btw +
-                    " person.current_email '" + Alphabet.encrypt(authcrypt.UserData.getUserName()) + btw +
-                    " person.institution '" + student.getInstitution() + btw +
-                    " person.descript '" + student.getDescript() + btw +
-                    " person.photo_link '" + "photo link" + btw +
-                    " student.education_level '" + student.getEducationLevel() + btw +
-                    " student.major '" + student.getMajor() + btw +
-                    " student.minor '" + student.getMinor() + btw +
-                    " student.cv_link '" + student.getCvLink() + btw +
-                    " WHERE person_id =" + studentID + ";";
+            LOGGER.debug("DBUpdate.doUpdate() called");
+ // (Message, column "person" of relation "student" does not exist), (Position, 21), (File, analyze.c), (Line, 2346), (Routine, transformUpdateTargetList)])
+            String btw = "'";
+            String statement = "BEGIN; " +
+                    " UPDATE Person SET " +
+                    " first_name = '" + Alphabet.encrypt(student.getFirstName()) + btw +
+                    ", last_name = '" + Alphabet.encrypt(student.getLastName())  + btw +
+                    ", middle_name = '" + student.getMiddleName() + btw +
+                    ", age = '" + student.getAge() + btw +
+                    ", phone = '" + student.getPhone() + btw +
+                    ", current_email = '" + Alphabet.encrypt(authcrypt.UserData.getUserName()) + btw +
+                    ", institution = '" + student.getInstitution() + btw +
+                    ", descript = '" + student.getDescript() + btw +
+                    ", photo_link = '" + "photo link" + "' " +
+                    whereStatement + ";" +
+                    " UPDATE Student SET " +
+                    " education_level = '" + student.getEducationLevel() + btw +
+                    ", major = '" + student.getMajor() + btw +
+                    ", minor = '" + student.getMinor() + btw +
+                    ", cv_link = '" + student.getCvLink() + btw +
+                    whereStatement + ";" +
+                    " COMMIT;";
 
-            System.out.println("doInsert: " + statement);
+            System.out.println("sending statement: {}" + statement);
 
-            boolean bool = query(statement);
-            if(bool) {
-                return true;
-            }
-
-            return false;
-
+            return query(statement);
         }
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DBUpdate.class);
 
-    public abstract boolean doUpdate(EncryptedStud student, long studentID);
+    public abstract boolean doUpdate(EncryptedStud student, String whereStatement);
     public static boolean query(String statement) {
         DBConnect db = DBConnect.getInstance();
         try{

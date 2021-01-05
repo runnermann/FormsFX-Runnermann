@@ -93,9 +93,9 @@ public enum DBInsert {
 			return true;
 			
 		} catch (ExecutionException e) {
-			LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
+			LOGGER.warn("WARNING: DB ExecutionException, {}\n{}" + e.getMessage(), e.getStackTrace());
 		} catch (InterruptedException e) {
-			LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
+			LOGGER.warn("WARNING: DB InterruptedException, {}\n{}" + e.getMessage(), e.getStackTrace());
 		}
 		LOGGER.debug("returning an empty string");
 		return false;

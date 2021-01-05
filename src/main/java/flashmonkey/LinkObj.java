@@ -81,15 +81,11 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
      * Copy constructor
      * @param original 
      */
-    public LinkObj(LinkObj original)
-    {
-        //LOGGER.setLevel(Level.DEBUG);
+    public LinkObj(LinkObj original) {
         LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("Copy constructor called");
 
-        
-        if(original != null)
-        {
+        if(original != null) {
             this.descrpt = original.descrpt;
     //        this.file    = original.file;
             this.timeInMillis = original.timeInMillis;

@@ -31,8 +31,8 @@ public final class DirectoryMgr
     public DirectoryMgr() { /* no args constructor */}
 
     private static int getUserNameHash() {
-        //LOGGER.debug("DirectoryMgr getUserNameHash() userName:" + UserData.getUserName());
-        return UserData.getUserName().hashCode();
+        LOGGER.debug("DirectoryMgr getUserNameHash() userName:" + UserData.getUserName());
+        return UserData.getUserName().toLowerCase().hashCode();
     }
 
     public static boolean flashmonkeyExists() {

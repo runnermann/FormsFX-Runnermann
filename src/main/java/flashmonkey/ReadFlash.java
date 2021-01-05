@@ -2,8 +2,8 @@ package flashmonkey;
 
 
 import campaign.Report;
+import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
-import fileops.MediaSync;
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import javafx.event.ActionEvent;
@@ -28,8 +28,6 @@ import type.testtypes.*;
 import type.tools.imagery.Fit;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
-
-//import java.sql.BatchUpdateException;
 
 import static java.lang.Math.floor;
 
@@ -176,11 +174,12 @@ public final class ReadFlash {
      *  b) The Test session is the test mode. In test mode the
      * EncryptedUser.EncryptedUser is presented a question and one of the test cards.
      */
-    public Scene readScene()
-    {
+    public Scene readScene() {
         LOGGER.info("\n\n **** createReadScene() called ****");
-       // LOGGER.setLevel(Level.DEBUG);
+        LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("Set ReadFlash LOGGER to debug");
+
+
 
      // NORTH & CENTER PANES read fields
         rpNorth = new HBox(2);
@@ -197,8 +196,8 @@ public final class ReadFlash {
         
         // menu buttons shown in the menu pane
         deckSelectButton = ButtoniKon.getDeckSelectButton();
-        testButton = ButtoniKon.getTestButton();
-        qaButton = ButtoniKon.getQandAButton();
+
+        preRead();
     
         exitButton = ButtoniKon.getExitButton();
         menuButton = ButtoniKon.getMenuButton();
@@ -221,31 +220,9 @@ public final class ReadFlash {
 
         rpNorth.getChildren().add(topLabel);
         
-        FlashCardOps fcOps = FlashCardOps.getInstance();
-        // If the flashList is empty/ or not,
-        // reset the flashList, save first
-        // if not empty.
-        if(fcOps.getFlashList() == null || fcOps.getFlashList().isEmpty()) {
-            fcOps.refreshFlashList();
-        } else {
-            fcOps.saveFlashList();
-            fcOps.refreshFlashList();
-        }
 
-        if(fcOps.getFlashList().size() < 4) {
-            emptyListAction();
-        } else {
-            modeSelectPane = listHasCardsAction();
-            setTree();
-            // sync media with cloud
-            if(!FlashCardOps.getMediaIsSynched()) {
-                new Thread(() -> {
-                    LOGGER.info("Calling syncMedia from ReadFlash.readScene()");
-                    MediaSync.syncMedia();
-                }).start();
-            }
-        }
         // The study menu pane
+        LOGGER.debug("setting window to modePane");
         masterBPane.setCenter(modeSelectPane);
         masterBPane.setBottom(exitBox);
         masterBPane.setId("bckgnd_image");
@@ -302,6 +279,29 @@ public final class ReadFlash {
 
     }    // ******** END OF READ SCENE ********
 
+    private void preRead() {
+        testButton = ButtoniKon.getTestButton();
+        qaButton = ButtoniKon.getQandAButton();
+
+        FlashCardOps fcOps = FlashCardOps.getInstance();
+        // If the flashList is empty/ or not,
+        // reset the flashList, save first
+        // if not empty.
+        if(fcOps.getFlashList() == null || fcOps.getFlashList().isEmpty()) {
+            fcOps.refreshFlashList();
+        } else {
+            fcOps.saveFlashList();
+            fcOps.refreshFlashList();
+        }
+
+        if(fcOps.getFlashList().size() < 4) {
+            emptyListAction();
+        } else {
+            modeSelectPane = listHasCardsAction();
+            setTree();
+        }
+    }
+
 
 
     /**
@@ -310,7 +310,6 @@ public final class ReadFlash {
      * @param e
      */
     private void shortcutKeyActions(KeyEvent e) {
-
         FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
         GenericTestType test = TestList.selectTest( currentCard.getTestType() );
 
@@ -376,6 +375,10 @@ public final class ReadFlash {
         scoreGauge = new MGauges(100, 100);
         pGaugePane = progGauge.makeGauge("COMPLETED", 0, (flSize - 1), 0);
         sGaugePane = scoreGauge.makeGauge("SCORE", 0, flSize * 2, -1 * (flSize * 2));
+        progGauge.moveNeedle(500, flSize - 1);
+        scoreGauge.moveNeedle(500, flSize * 2);
+        progGauge.moveNeedle(500, 0);
+        scoreGauge.moveNeedle(500, 0);
 
         GridPane gPane = new GridPane();
 

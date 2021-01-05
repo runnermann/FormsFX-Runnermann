@@ -91,9 +91,10 @@ public class S3GetObjs {
             HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
 
             String s = response.body();
+            LOGGER.debug("response code {}", response.statusCode());
 
             if(! s.contains("fail")) {
-                LOGGER.debug("prior to parsing, response.body returns: {}", s);
+                LOGGER.debug("prior to parsing, response.body returns: <{}>", s);
 
                 s = s.substring(2, s.length() - 2);
                 LOGGER.debug("response code {}", response.statusCode());
@@ -148,9 +149,11 @@ public class S3GetObjs {
                     //while((readBytes = input.read(readBuffArr)) >= 0) {
                     //    bos.write(readBuffArr, 0, readBytes);
                     //}
+                    /// #! UGLY solution
 
                 } catch (EOFException e) {
                     // do nothing, it is expected.
+
                 } catch (AmazonServiceException e) {
                     LOGGER.info("cloudGetDeck.Downloading failed. " +
                                     "\n\tKey: {} " +
@@ -162,9 +165,16 @@ public class S3GetObjs {
                     LOGGER.warn("\tUnknown Exception: in cloudGetDeck(...) \n" + e.getStackTrace());
                     e.printStackTrace();
                     return;
+                } finally {
+
+                    //if(flashMM.size() > 0) {
+                        // @TODO move MediaSync from GetS3Objs to own thread after this is done.
+                        MediaSync.syncMedia(flashMM);
+                    //}
                 }
                 // save the deck to file
                 FlashCardOps.getInstance().getFO().setListinFile(flashMM, '+');
+
             }).start();
         }
 
@@ -197,9 +207,10 @@ public class S3GetObjs {
         LOGGER.debug("cloudGetMedia called. signedURLs length: {}", signedUrls.size());
         // Process signedURLs
         for(String signedurl : signedUrls) {
+
             LOGGER.debug("cloudGetMedia called. signedURL is null: {}", signedurl == null);
             // make multiple requests using a threadPool.
-            //new Thread(() -> {
+            new Thread(() -> {
                 URI fileToBeDownloaded = null;
                 try {
                     fileToBeDownloaded = new URI(signedurl);
@@ -226,7 +237,7 @@ public class S3GetObjs {
                 LOGGER.warn(e.getMessage());
                 e.printStackTrace();
             }
-            //}).start();
+            }).start();
         }
     }
 
@@ -296,18 +307,32 @@ public class S3GetObjs {
         // create a JsonArray with token and keys
         String json = "[{\"token\":\"" + token + "\"},{\"key\":\"" + keys + "\"}]";
 
-        System.out.println("The JSON string looks like: " + json);
+        LOGGER.debug("The token should not be in JSON format. Token looks like: <{}>", token);
+        LOGGER.debug("The JSON string looks like: " + json);
 
         HttpRequest req = getRequest(json);
         LOGGER.debug("media S3get request built ... sending...");
 
         // send the name list to vertx
         try {
-                HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-                String s = response.body();
-                //s = s.substring(2, s.length() - 2);
-                LOGGER.debug("response code {}", response.statusCode());
-                LOGGER.debug("response body: {}", s);  // signedUrl
+            int count = 0;
+            String s = "";
+                while (s.isEmpty() && count < 5) {
+                    HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+                    s = response.body();
+                    //s = s.substring(2, s.length() - 2);
+                    LOGGER.debug("response code {}", response.statusCode());
+                    LOGGER.debug("response body: {}", s);  // signedUrl
+                    if(s.isEmpty()) {
+                        if(count >= 4) {
+                            LOGGER.warn("failed to download media URLs");
+                            return null;
+                        }
+                        Thread.sleep(200);
+                    }
+                    count++;
+                }
+
                 return httpParse(s);
 
 

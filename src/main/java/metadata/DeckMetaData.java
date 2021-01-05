@@ -225,7 +225,6 @@ public class DeckMetaData implements FormData {
 		setSubj(map.get("subj"));
 		setCat(map.get("section"));
 		setLang(map.get("deck_language"));
-		// remove last character which is a "]"
 		setLastScore(map.get("session_score"));
 		setCreatorEmail(Alphabet.decrypt(map.get("creator_email")));
 	}

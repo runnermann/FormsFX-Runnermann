@@ -23,7 +23,7 @@ public class CloudLink implements Comparable<CloudLink> {
     private long size;
     
     //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CloudLink.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3ListObjs.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudLink.class);
     
     
     public CloudLink(String name, long dateInMillis, long size) {

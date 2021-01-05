@@ -53,7 +53,6 @@ public class SelectableRdoField extends ToggleButton {
 	
 	
 	public HBox buildField(LinkObj lObject) {
-		
 		Image syncImg;
 		Text testDate;// = new Text("16/8/24  2020-7-16 ");
 		HBox deckRdoBox = new HBox(6);

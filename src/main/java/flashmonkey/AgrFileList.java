@@ -3,6 +3,8 @@ package flashmonkey;
 import ch.qos.logback.classic.Level;
 import com.amazonaws.services.s3.model.CSVOutput;
 import fileops.CloudLink;
+import fileops.DirectoryMgr;
+import fileops.FileNaming;
 import fileops.S3ListObjs;
 import fmhashtablechain.PriorityHashTable;
 import org.jetbrains.annotations.NotNull;
@@ -75,10 +77,10 @@ public class AgrFileList
 {
     // THE LOGGER
     // REMOVE BEFORE DEPLOYING
-    // private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AgrFileList.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3ListObjs.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AgrFileList.class);
+    // private static final Logger LOGGER = LoggerFactory.getLogger(AgrFileList.class);
     // 90 days = 5126400000
-    private static final long MINUS_NINETY = System.currentTimeMillis() - (1000l * 60 * 60 * 24 * 90);
+    private static final long MINUS_NINETY = System.currentTimeMillis() - (1000l * 60 * 60 * 24 * 93);
 
     /** files younger than 90 days in numeric order. */
     private ArrayList<LinkObj> recent;     
@@ -111,12 +113,12 @@ public class AgrFileList
      * @param folder 
      */
     public AgrFileList(File folder) {
-        //LOGGER.setLevel(Level.DEBUG);
+        LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("AgrFileList full constructor called. folder: {}", folder.getPath());
         LOGGER.debug("MINUS_NINETY days: {}, currentTimeMillis: {}" , MINUS_NINETY, System.currentTimeMillis());
         //LOGGER.debug("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
         //Thread.dumpStack();
-        //localFiles  = folder.listFiles();
+
         //@TODO uncomment line below after testing!!! if this is still needed
         //FlashCardOps.getInstance().fileExists("default", FlashCardOps.getInstance().getDeckFolder());
         localFiles  = folder.listFiles();
@@ -252,24 +254,25 @@ public class AgrFileList
         if(q.peek().getCloudLink() != null) {
             linkObj1 = new LinkObj(q.poll()); //new LinkObj( q.peek().getDescrpt(), new CloudLink(q.peek().getCloudLink()));
         } else {
+            LOGGER.debug("localFile info: fileName: <{}>, fileDescript: <{}>", q.peek().getFile().getPath(), q.peek().getDescrpt());
             linkObj1 = new LinkObj(q.peek().getDescrpt(), new File(q.peek().getFile().getName()), q.peek().getFile().length());
             q.poll();
         }
         // short circut
         if(linkObj1.getDescrpt() == null || ! linkObj1.getDescrpt().endsWith("dat")) {
             LOGGER.warn("linkObj1 descript was null or did not end with .dat");
-            q.poll(); //
+            q.poll();
             return recentSplit(q);
         }
         LOGGER.info("linkObj deckName: " + (linkObj1.getDescrpt()));
 
         try {
-                if (linkObj1.getFile() != null)
-                {
+                if (linkObj1.getFile() != null) {
+                    LOGGER.debug("localFile.lastModiefied {} > MINUS_NINETY {}: <{}>", linkObj1.getFile().lastModified(), MINUS_NINETY, linkObj1.getFile().lastModified() > MINUS_NINETY);
+                    LOGGER.debug("localfile.exists: <{}>", linkObj1.getFile().toString());
                     //@TODO Fix local file lastModified date issue. "<" should be ">"
-                    if (linkObj1.getFile().lastModified() > MINUS_NINETY)
-                    {
-                        LOGGER.debug("adding local to recent, Date: " + linkObj1.getFile().lastModified());
+                    if (new File(DirectoryMgr.getMediaPath('t') + linkObj1.getFile().getName()).lastModified() > MINUS_NINETY) {
+                        LOGGER.debug("adding local to recent, Date: " + DirectoryMgr.getMediaPath('t') + linkObj1.getFile().lastModified());
                         recent.add(linkObj1);
                     }
                     else {
@@ -279,15 +282,10 @@ public class AgrFileList
                     return recentSplit(q);
                 }
                 else {
-                    //if (linkObj1.getCloudLink() != null)
                     LOGGER.debug("linkObj1.getDescrpt(): " + linkObj1.getDescrpt());
                     LOGGER.debug("linkObj1.getCloudLink().getDateInMillis(): " + linkObj1.getCloudLink().getDateInMillis()  );
-        //            older will not retrieve files ???? other issues with not showing local files. Problem
-        //                is tin the copy constructor. That currently
-		//                we ahve everythig working for cloud files.
                   
-                    if (linkObj1.getCloudLink().getDateInMillis() > MINUS_NINETY)
-                    {
+                    if (linkObj1.getCloudLink().getDateInMillis() > MINUS_NINETY) {
                         LOGGER.debug(linkObj1.getCloudLink().getName() + " added remote to recent list");
                         recent.add(linkObj1);
                     }
@@ -295,19 +293,13 @@ public class AgrFileList
                         LOGGER.debug(linkObj1.getCloudLink().getName() + " added remote to older list");
                         older.add(linkObj1);
                    }
-                    
-                    return recentSplit(q);
+                   return recentSplit(q);
                 }
-    
-            //LOGGER.info("linkObj deckName: " + (linkObj1.getDescrpt()) + " is not a File nor CloudLink");
-               
-            	//return false;
         } catch (NullPointerException e) {
             LOGGER.warn("NullPointerException");
             e.printStackTrace();
             return recentSplit(q);
         }
-        //return true;
     }
 
    
@@ -339,11 +331,11 @@ public class AgrFileList
             
             Map<String, LinkObj> syncMap = new PriorityHashTable<>();
     
-            LOGGER.info(" syncFiles( ... ) called, <localFiles == null: {}> , <remoteLinks == null: {}>", localFiles == null, remoteLinks == null);
+    //        LOGGER.info(" syncFiles( ... ) called, <localFiles size: <{}> , <remoteLinks size: <{}>", localFiles.length, remoteLinks.size());
     
             // If there are local files. Create LinkObj's and
             // Add them to the Map.
-            if(localFiles != null && localFiles.length > 1) {
+            if(localFiles != null && localFiles.length > 0) {
                 
                 LOGGER.info("Adding local files to HashMap");
                 
@@ -356,13 +348,10 @@ public class AgrFileList
                     }
                 }
             }
-            
             // If there are remote files. Create LinkObj's and
             // add them to the Map.
             if(remoteLinks != null && remoteLinks.size() > 0) {
-                
                 LOGGER.debug("Adding remoteFiles to hashMap");
-                
                 for(CloudLink c : remoteLinks) {
                     if( c.getName().endsWith("dat") && c.getSize() > 10) {
                         LOGGER.info("\t cloudFileName: {}", c.getName());
@@ -372,8 +361,7 @@ public class AgrFileList
             }
             
             queue = new PriorityQueue<>(INITIAL_QUEUE_SIZE);
-    
-            LOGGER.debug("syncMap size: " + syncMap.size() + " before conversion.");
+            LOGGER.debug("syncMap size: <" + syncMap.size() + "> before conversion.");
             
             // Return a priorityQueue of the LinkObjs compared by compareTo.
             // This provides the desired property of allowing a deck to exist
@@ -381,6 +369,7 @@ public class AgrFileList
             // have decks as placeholder. But guards against an overwrite
             // from a cloudlink with a 0-card deck.
             Iterator iterator = syncMap.values().iterator();
+
             while(iterator.hasNext()) {
                 LinkObj lo = (LinkObj) iterator.next();
                 
@@ -388,14 +377,12 @@ public class AgrFileList
                     LOGGER.debug("adding cloudLink to linkObj and to queue and descript:  {}", lo.getDescrpt());
                     queue.add(new LinkObj(lo.getDescrpt(), new CloudLink(lo.getCloudLink()), lo.getByteSize()));
                 } else {
+                    LOGGER.debug("adding local file to linkObj and to queue and descript: {}", lo.getDescrpt());
                     queue.add(new LinkObj(lo.getDescrpt(), new File(lo.getFile().getName()), lo.getByteSize()));
                 }
             }
     
             LOGGER.debug("Returning the queue. size: " + queue.size());
-            
-            // All is good to here.
-            //return pQueue;
         }
     }
 }

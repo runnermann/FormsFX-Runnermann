@@ -259,7 +259,6 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 			// Parse the response, set metaAry,
 			// & set the DeckMetaData object.
 			DeckMetaData meta = DeckMetaData.getInstance();
-			//String[] metaStr = parseResponse(response);
 			meta.setDataMap(response.get(0));
 			meta.set(response.get(0));
 		} else {

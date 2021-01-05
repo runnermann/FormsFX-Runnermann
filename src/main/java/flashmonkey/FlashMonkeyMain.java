@@ -6,6 +6,7 @@ package flashmonkey;
 
 import campaign.Report;
 import ecosystem.ConsumerPane;
+import flashmonkey.utility.Sleep;
 import fmannotations.FMAnnotations;
 import forms.*;
 import javafx.application.Application;
@@ -84,7 +85,7 @@ public class FlashMonkeyMain extends Application
 
     // The error message to be displayed in the UI
     private static String errorMsg = "";
-    
+    // FLAGS
     private static boolean isInEditMode;
 
     // THE LOGGER
@@ -125,8 +126,7 @@ public class FlashMonkeyMain extends Application
     
             System.err.println("\n *** Start() primaryStage.focusedProperty() Focus has changed *** \n");
             
-            if(oldValue)
-            {
+            if(oldValue) {
                 try
                 {   // If the user is creating/editing cards
                     if (createFlash.getFlashListChanged()) {
@@ -165,8 +165,9 @@ public class FlashMonkeyMain extends Application
         bckgndImg = new Image(getClass().getResourceAsStream("/image/fm_bckgrnd.png"));
         Image icon = new Image(getClass().getResourceAsStream("/icon/flashMonkey_Icon.png"));
         window.getIcons().add(icon);
-        // For signin pane uncomment
 
+        // Determine if FlashMonkey Data Directory
+        // exists and show signUp or signIn
         if(flashmonkeyExists()) {
             getSignInPane();
         } else {
@@ -187,7 +188,7 @@ public class FlashMonkeyMain extends Application
      */
     public static Scene getFirstScene(GridPane focusPane) {
         LOGGER.debug("*** getFirstScene called ***");
-        
+
         Scene firstScene;
         firstPane = new BorderPane();
         GridPane btnBox = new GridPane();
@@ -249,7 +250,7 @@ public class FlashMonkeyMain extends Application
         firstPane.setBottom(getExitBox());
         firstScene = new Scene(firstPane, SceneCntl.getWd(), SceneCntl.getHt());
         firstScene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
-        
+        Sleep.storeOnDetected(firstScene, window);
         return firstScene;
     }
     
@@ -279,11 +280,10 @@ public class FlashMonkeyMain extends Application
     /**
      * Creates the Navigation/Menu stage. The Navigation/MenuStage provides the buttons
      *   used to navigate to studying, back to the firstScene, create/edit scene. It is second
-     *   scene unless the EncryptedUser.EncryptedUser is creating a new deck.
-     * @return Returns Scene  Navigation Scene
+     *   scene unless the EncryptedUser is creating a new deck.
+     * @return Returns the Navigation Scene
      */
-    public static Scene getNavigationScene()
-    {
+    public static Scene getNavigationScene() {
         Scene mainScene;
         BorderPane mainPane = new BorderPane();
         GridPane tempPane = new GridPane();
@@ -355,7 +355,6 @@ public class FlashMonkeyMain extends Application
      * or from QAndA sessions when the UI should be consistant and the tree structure
      * stable from changes except for modifications due to an incorrect answer.
      */
-
     protected static void buildTreeWindow() {
         LOGGER.debug("called");
 
@@ -376,7 +375,6 @@ public class FlashMonkeyMain extends Application
      * Creates an HBox with the menu and exit buttons.
      * @return HBox
      */
-
     private static GridPane getExitBox() {
         GridPane buttonBox = new GridPane(); // HBox with spacing provided
         buttonBox.setHgap(2);
@@ -478,6 +476,9 @@ public class FlashMonkeyMain extends Application
      */
     //
     private static GridPane getFilePane() {
+
+
+
         Button newDeckButton;
         int width = SceneCntl.getFileSelectPaneWd();
         GridPane gridPane1 = new GridPane();
@@ -519,7 +520,6 @@ public class FlashMonkeyMain extends Application
             buttonBox.setPadding(new Insets(20, 0, 6, 0));
             //buttonBox.setPrefWidth(350);
             buttonBox.getChildren().addAll(newDeckButton, searchRscButton);
-
 
             //@todo file select method. Look at this for efficiency if needed!
             // new file button action
@@ -572,6 +572,7 @@ public class FlashMonkeyMain extends Application
         SignInModel model = new SignInModel();
         SignInPane signInPane = new SignInPane(model);
         model.getFormInstance();
+
         window.setScene(getFirstScene(signInPane.getSignInPane()));
         signInPane.getSignInPane().requestFocus();
     }

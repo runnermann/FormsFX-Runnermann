@@ -2,7 +2,6 @@ package uicontrols;
 
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
-//import org.controlsfx.control.Notifications;
 import uicontrols.api.FMNotifications;
 
 import javafx.geometry.Pos;
@@ -64,5 +63,5 @@ public class FxNotify {
 		notificationBuilder.owner(owner);
 		notificationBuilder.darkStyle();
 		notificationBuilder.show();
-		}
+	}
 }

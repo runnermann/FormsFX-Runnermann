@@ -2,13 +2,17 @@ package video.camera;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import ch.qos.logback.classic.Level;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
 
+import draw.DrawObj;
+import fileops.S3ListObjs;
 import flashmonkey.CreateFlash;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -34,6 +38,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
+import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
 import type.celleditors.SnapShot;
 
@@ -54,8 +59,9 @@ import org.slf4j.LoggerFactory;
 public class CameraCapture extends Application {
 
     private static CameraCapture CLASS_INSTANCE;
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CameraCapture.class);
     //private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-    private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
+    //private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
 
     private SectionEditor parentEditor;
     private static Stage cameraStage;
@@ -66,7 +72,7 @@ public class CameraCapture extends Application {
     private String cameraListPromptText = "Choose Camera";
     private ImageView imgWebCamCapturedImage;
     private Webcam sarxoswebCam = null;
-    private boolean stopCamera = false;
+    private static boolean stopCamera = false;
     //private BufferedImage grabbedImage;
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
     private BorderPane webCamPane;
@@ -93,11 +99,12 @@ public class CameraCapture extends Application {
      * @param editor
      */
     public boolean cameraCaptureBuilder(SectionEditor editor) throws Exception {
+        LOGGER.setLevel(Level.DEBUG);
         LOGGER.info("cameraCaptureBuilder called");
 
-        ;
         //Webcam webcam = Webcam.getDefault(300, TimeUnit.MILLISECONDS);
-        if (Webcam.getWebcams(300).isEmpty()) {
+        List<Webcam> webCams = Webcam.getWebcams(300);
+        if (webCams.isEmpty()) {
             //webcam.close();
             LOGGER.warn("No camera's found");
             //throw new TimeoutException("No webcams found");
@@ -118,17 +125,20 @@ public class CameraCapture extends Application {
 
     @Override
     public void stop() {
+        System.out.println("CameraCapture stope called");
         if(sarxoswebCam != null && sarxoswebCam.isOpen()) {
             sarxoswebCam.close();
             sarxoswebCam = null;
         }
         cameraStage.close();
         SnapShot.getInstance().onClose();
+
         CreateFlash.getInstance().enableButtons();
         btnCameraStart.setDisable(false);
         btnCameraStop.setDisable(true);
         camControl.stopWebCamCamera();
         stopCamera = true;
+        DrawTools.getInstance().justClose();
     }
 
 
@@ -306,7 +316,7 @@ public class CameraCapture extends Application {
 
             stopCamera = false;
 
-            Task<Void> task = new Task<Void>() {
+            Task<Void> task = new Task<>() {
 
                 @Override
                 protected Void call() throws Exception {
@@ -317,6 +327,7 @@ public class CameraCapture extends Application {
                     BufferedImage img = null;
 
                     while (!stopCamera) {
+                        System.out.println("running");
                         try {
                             if ((img = sarxoswebCam.getImage()) != null) {
 
@@ -408,7 +419,9 @@ public class CameraCapture extends Application {
         protected void stopWebCamCamera() {
     
             LOGGER.info("inner class CameraCapture.WebCamControl stopWebCamCamera called");
-            
+
+            // close shapes pane
+
             stopCamera = true;
             btnCameraStart.setDisable(false);
             btnCameraStop.setDisable(true);

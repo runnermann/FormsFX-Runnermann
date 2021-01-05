@@ -1,12 +1,9 @@
 package uicontrols;
 
-import flashmonkey.FMPopUpMessage;
-import flashmonkey.FlashCardMM;
+import flashmonkey.FlashMonkeyMain;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.ImageView;
-
-import java.util.ArrayList;
 
 /**
  * Us
@@ -35,7 +32,7 @@ public class FMAlerts {
 		/* empty constructor */
 	}
 	
-	boolean quitBool;
+	boolean bool;
 	
 	
 	public boolean saveAlertAction(String alertMsg, String emojiPath) {
@@ -59,15 +56,15 @@ public class FMAlerts {
 		alert.showAndWait().ifPresent((btnType) -> {
 			// if user clicks ok button
 			if (btnType == ButtonType.OK) {
-				quitBool = false;
+				bool = false;
 				
 			} else if (btnType == ButtonType.CANCEL) {
 				// else user cancels
 				alert.close();
-				quitBool = true;
+				bool = true;
 			}
 		});
-		return quitBool;
+		return bool;
 	}
 	
 
@@ -85,4 +82,37 @@ public class FMAlerts {
 		alert.getDialogPane().setStyle("-fx-background-color: " + UIColors.BACKGROUND_ORANGE);
 		alert.show();
 	}
+
+	public void sessionRestartPopup() {
+		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+
+		alert.setTitle("Continue Session");
+		alert.setHeaderText(null);
+		alert.setContentText("To continue an online session. You must login again." +
+				"\n You may also continue if you are offline." +
+				"\n Log in?");
+
+		ImageView sunglasses = new ImageView("emojis/flashFaces_sunglasses_60.png");
+		alert.setGraphic(sunglasses);
+		alert.setHeight(190);
+		alert.setWidth(200);
+		alert.getDialogPane().contentTextProperty().toString();//   setStyle(" -fx-text-fill: #FFFFFF");
+		alert.getDialogPane().setStyle(" -fx-background-color: " + UIColors.FM_WHITE);
+
+		alert.showAndWait().ifPresent((btnType) -> {
+			// if user clicks ok button
+			if (btnType == ButtonType.OK) {
+				//bool = true;
+				FlashMonkeyMain.getSignInPane();
+
+			} else if (btnType == ButtonType.CANCEL) {
+				// else user cancels
+				alert.close();
+				bool = false;
+				FlashMonkeyMain.getSignInPane();
+			}
+		});
+		//return bool;
+	}
+
 }

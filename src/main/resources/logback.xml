@@ -26,7 +26,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d %highlight(%level) %logger{10} [%M] - %msg%n</pattern>
+            <pattern>%d %highlight(%level) [%thread] %logger{10} [%M] - %msg%n</pattern>
         </encoder>
     </appender>
 

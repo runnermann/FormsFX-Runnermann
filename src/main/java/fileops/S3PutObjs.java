@@ -132,7 +132,7 @@ public class S3PutObjs {
         long getTime = System.currentTimeMillis();
         LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("serialPutMedia called");
-        // 1st we get the signedURL's from Vert.x
+        // 1st we request the signedURL's from our server
         ArrayList<String> signedUrls = getMediaPutURLs(fileNames, numFiles, token);
         if ((signedUrls.size() < 1) || signedUrls.get(0).substring(0, 4).equals("fail")) {
             LOGGER.warn("serialPutMedia failed");
@@ -140,11 +140,6 @@ public class S3PutObjs {
         }
 
         String toDiskDir = DirectoryMgr.getMediaPath('M');
-
-        final HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .connectTimeout(Duration.ofSeconds(2))
-                .build();
 
         try {
             HttpURLConnection connection;
@@ -159,7 +154,6 @@ public class S3PutObjs {
                 {
                     LOGGER.debug("S3put request built ... sending to s3...");
 
-                    // ------------------- new ---------------------- //
                     byte[] readBuffArr = new byte[4096];
                     int readBytes = 0;
                     while ((readBytes = bin.read(readBuffArr)) >= 0) {
@@ -169,7 +163,7 @@ public class S3PutObjs {
                     LOGGER.debug("response code: {}", connection.getResponseCode());
 
                 } catch (FileNotFoundException e) {
-                    LOGGER.warn("\tFile Not Found exception:  getObjFmFile() Line 986 FlashCard");
+                    LOGGER.warn("\tFile Not Found exception");
                     LOGGER.warn(e.getMessage());
                     e.printStackTrace();
                 }
@@ -182,6 +176,8 @@ public class S3PutObjs {
             LOGGER.warn(e.getMessage());
             e.printStackTrace();
         }
+        getTime = (System.currentTimeMillis() - getTime);
+        System.out.print("Total get time in syncCloudMediaAction: {" + getTime + "} milliseconds, numElement: {" + signedUrls.size() + "}");
     }
 
     /**
@@ -255,7 +251,8 @@ public class S3PutObjs {
         // create a JsonArray with token and keys
         String json = "[{\"token\":\"" + token + "\"},{\"key\":\"" + keys + "\"}]";
 
-        System.out.println("The JSON string looks like: " + json);
+        LOGGER.debug("The token should not be in JSON format. Token looks like: <{}>", token);
+        LOGGER.debug("The JSON string looks like: " + json);
 
         HttpRequest req = getRequest(json);
         LOGGER.debug("media S3get request built ... sending...");
