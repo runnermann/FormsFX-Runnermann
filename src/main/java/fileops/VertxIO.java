@@ -183,13 +183,13 @@ public class VertxIO {
         int[]  primeNumbers = new int[32];
 
         for (int i = 100, j = 0; j < 32; i++) {
-            int counter=0;
-            for(num =i; num>=1; num--) {
-                if(i%num==0) {
+            int counter = 0;
+            for(num = i; num >= 1; num--) {
+                if(i % num == 0) {
                     counter = counter + 1;
                 }
             }
-            if (counter ==2) {
+            if (counter == 2) {
                 //Appended the Prime number to the String
                 primeNumbers[j] = i;
                 j++;

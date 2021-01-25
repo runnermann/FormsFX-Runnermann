@@ -209,7 +209,7 @@ public final class CreateFlash<C extends GenericCard> {
     private DeckMetaData meta;// = new DeckMetaData();
 
     //*** ARRAY List ***
-    private static ArrayList<FlashCardMM> creatorList;//  = new ArrayList<>(20);
+    private static volatile ArrayList<FlashCardMM> creatorList;//  = new ArrayList<>(20);
 
     // The iterator index. Starts at the last existing
     // index prior to the new card added.
@@ -1155,11 +1155,11 @@ public final class CreateFlash<C extends GenericCard> {
                 CloudOps co = new CloudOps();
                 // upper
                 if (editorU.getMediaFiles().length > 3) {
-                    co.putMedia(editorU.getMediaFiles(), 2);
+                    co.putMedia(editorU.getMediaFiles());
                 }
                 if (editorL.getMediaFiles().length > 3) {
                     // lower
-                    co.putMedia(editorU.getMediaFiles(), 2);
+                    co.putMedia(editorU.getMediaFiles());
                 }
             }
 
@@ -1556,10 +1556,9 @@ public final class CreateFlash<C extends GenericCard> {
             if(! FlashCardOps.getInstance().getMediaIsSynched()) {
                 LOGGER.debug("Calling MediaSync from CreateFlash.saveDeckAction()");
                 if(Utility.isConnected()) {
+                    // token related
                     if (CloudOps.isInValid()) {
-                        // Here we are in a pickle if the token is expired and the user
-                        // is creating a deck. We must indicate that media needs to be
-                        // synchonized.
+
                         LOGGER.debug("token is expired, not renewing");
                         FMAlerts alerts = new FMAlerts();
                         // method may not be on the same thread. Cannot create an
@@ -1569,7 +1568,7 @@ public final class CreateFlash<C extends GenericCard> {
                     } else {
                         new Thread(() -> {
                             LOGGER.info("Calling syncMedia from CreateFlash");
-                            MediaSync.syncMedia();
+                            MediaSync.syncMedia(creatorList);
                         }).start();
                     }
                 }
@@ -1665,7 +1664,7 @@ public final class CreateFlash<C extends GenericCard> {
      */
     private void saveDeckActionHelper(char minus) {
 
-        LOGGER.info("saveButtonActionHelper char minus: {}, num cards {}", minus, creatorList.size());
+        LOGGER.info("saveButtonActionHelper char minus: <{}>, num cards <{}>", minus, creatorList.size());
 
         // clear the flashList. creatorList is a deep copy of flashList with
         // new cards added. !!! Important that the original file is maintained

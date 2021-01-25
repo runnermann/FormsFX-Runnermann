@@ -1,14 +1,9 @@
-package flashmonkey;
+package fileops;
 
 import ch.qos.logback.classic.Level;
-import com.amazonaws.services.s3.model.CSVOutput;
-import fileops.CloudLink;
-import fileops.DirectoryMgr;
-import fileops.FileNaming;
-import fileops.S3ListObjs;
+import flashmonkey.FlashCardOps;
+import flashmonkey.Timer;
 import fmhashtablechain.PriorityHashTable;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.*;
@@ -103,7 +98,7 @@ public class AgrFileList
      */
     public AgrFileList()
     {
-       LOGGER.info("no args constructor called");
+       /* no args */
     }
     
     /**
@@ -148,7 +143,7 @@ public class AgrFileList
         LOGGER.debug("AgrFileList() completed");
     }
         
-    protected LinkObj getLinkObj()
+    public LinkObj getLinkObj()
     {
         return this.linkObj;
     }
@@ -158,7 +153,7 @@ public class AgrFileList
      * Note this method returns the variable size.
      * @return The value contained in the variable size
      */
-    protected int getSize()
+    public int getSize()
     {
         return recent.size() + older.size();
     }
@@ -173,7 +168,7 @@ public class AgrFileList
      * @return Numerically ordered list of LinkObjects if their timeMils is more
      * recent than the timeMils set in timeMils.
      */
-    protected ArrayList<LinkObj> getRecentFiles()
+    public ArrayList<LinkObj> getRecentFiles()
     {
         //LOGGER.debug("in AgrFileList, getting alphaFiles ");
         return recent;      
@@ -184,7 +179,7 @@ public class AgrFileList
      * the timeMils set in timeMils.
      * @return 
      */
-    protected ArrayList<LinkObj> getOlderFiles()
+    public ArrayList<LinkObj> getOlderFiles()
     {
         return older;
     }
@@ -193,7 +188,7 @@ public class AgrFileList
      * sets the LinkObj for  this object.
      * @param lo
      */
-    protected void setLinkObj(LinkObj lo)
+    public void setLinkObj(LinkObj lo)
     {
         this.linkObj = lo;
     }
@@ -203,9 +198,9 @@ public class AgrFileList
      * @param strDate Expects "MM/dd/yyyy"
      * @param strTime Expects "HH:mm"
      */
-    protected void setTimeMils(String strDate, String strTime)
+    public void setTimeMils(String strDate, String strTime)
     {
-        Timer timer = Timer.getClassInstance();
+        flashmonkey.Timer timer = Timer.getClassInstance();
         this.timeMils = timer.getMills(strDate, strTime);
     }
     
@@ -353,7 +348,7 @@ public class AgrFileList
             if(remoteLinks != null && remoteLinks.size() > 0) {
                 LOGGER.debug("Adding remoteFiles to hashMap");
                 for(CloudLink c : remoteLinks) {
-                    if( c.getName().endsWith("dat") && c.getSize() > 10) {
+                    if( c.getName().endsWith("dat")) {
                         LOGGER.info("\t cloudFileName: {}", c.getName());
                         syncMap.put(c.getName(), new LinkObj(c.getName(), c, c.getSize()));
                     }

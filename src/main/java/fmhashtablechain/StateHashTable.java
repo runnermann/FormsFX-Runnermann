@@ -1,9 +1,7 @@
 package fmhashtablechain;
 
 
-import fileops.MediaSync;
 import fileops.MediaSyncObj;
-import flashmonkey.LinkObj;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

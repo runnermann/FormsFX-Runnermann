@@ -89,7 +89,6 @@ public class S3ListObjs {
         String destination = "media-s3-list";
         listObjsHelper(json, destination);
 
-
         LOGGER.debug("listMedia returning <{}> names from media-s3", this.cloudLinks.size());
 
         return this.cloudLinks;
@@ -133,7 +132,7 @@ public class S3ListObjs {
                     return 1;
                 }
                 // there was either a log in error == 0
-                // or user did not exist. == 0
+                // or user did not exist == 0
                 return 0;
             }
             //@TODO wait and retry if failed
@@ -196,8 +195,10 @@ public class S3ListObjs {
             // younger element.
             long date = (Long) m.get("date") - 10000;
             cloudLinks.add(new CloudLink((String) m.get("name"), date, (Integer) m.get("size")));
-            LOGGER.debug("part from Vertx: {}", s);
+            //LOGGER.debug("part from Vertx: {}", s);
         }
+
+        System.out.println("adding elements to cloudlinks num = " + cloudLinks.size());
     }
 
     protected String getToken() {

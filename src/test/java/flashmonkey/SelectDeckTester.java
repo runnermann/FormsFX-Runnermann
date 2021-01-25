@@ -45,18 +45,7 @@ public class SelectDeckTester extends ApplicationTest {
 		}
 		
 	} */
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	
 	/*  ROBOT APP TESTING  */
 	@Test

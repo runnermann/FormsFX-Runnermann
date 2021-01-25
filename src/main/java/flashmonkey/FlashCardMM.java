@@ -1,6 +1,5 @@
 package flashmonkey;
 
-import fileops.CloudOps;
 import fileops.FileNaming;
 import multimedia.AnswerMM;
 import multimedia.QuestionMM;
@@ -10,16 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.BitSet;
 
 /**
+ * @copyright Lowell Stadelman, all rights reserved, 2018/08/04
  * Creation date: 2018/08/04
- * Author: Lowell Stadelman
- * Explanation: Class contains the minimal necessary variables and methods for a flashCard and
- * allow flexibility.
- *
- * Class created to seperate FlashCards from FlashCard operations to minimize the number
- * of static variables in the program, and the number of variables stored in a flashcard
  * @author lowell Stadelman
  */
 

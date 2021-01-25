@@ -6,6 +6,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.PresignedUrlDownloadRequest;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
@@ -34,7 +35,6 @@ import static habanero.edu.rice.pcdp.PCDP.forallChunked;
  */
 
 public class S3GetObjs {
-
     private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(S3GetObjs.class);
     //private static final Logger LOGGER = LoggerFactory.getLogger(S3PutObjs.class);
     private static final String BUCKET_NAME = "iooily-flashmonkey";
@@ -47,21 +47,22 @@ public class S3GetObjs {
      */
     public S3GetObjs() {
         LOGGER.setLevel(Level.DEBUG);
-        LOGGER.debug("S3GetObjs constructor called");
+        //LOGGER.debug("S3GetObjs constructor called");
     }
 
     // ************************* DECK RELATED ************************* //
 
-    /**
+
+        /**
      * <p>Retrieves a deck. This method
      * requests a signedURL for the user-selected deck. The first element
      * must contain the correct username and token.</p>
      * <p> End result is deck is saved to local file, and FlashListMM
      * is reset to the deck in ReadFlash. </p>
-     * @param key
+     * @param key the S3 key with deckName. ie idk@idk.com/decks/adcd123Test.dat
      * @param token
      */
-    public void cloudGetDeckFmS3(String key, String token) {
+    public void getDeck(String fileName, String key, String token) {
 
         if(! Utility.isConnected()) {
             LOGGER.warn("I am not connected... returning nothing");
@@ -69,7 +70,7 @@ public class S3GetObjs {
         }
         // a jsonArray
         String json = "[{\"username\":\"" + authcrypt.UserData.getUserName() + "\",\"token\":\"" + token + "\"},{\"key\":\"" + key + "\"}]";
-        LOGGER.debug("cloudGetDeckFmS3 called:userName: {}, key: <{}>, token <{}>", authcrypt.UserData.getUserName(),  key, token);
+        LOGGER.debug("getDeck called. userName: {}, key: <{}>, token <{}>", authcrypt.UserData.getUserName(),  key, token);
 
         // *** Request a signedURL for the deck. We post when using credentials: *** //
         // Retrieve the deck
@@ -78,28 +79,28 @@ public class S3GetObjs {
         // (3) save deck to file
         // (4) handle errors
         // (5) point FlashCardOps.flashListMM to the retrieved deck.
-        HttpRequest req = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create("http://localhost:8080/resource-s3-get"))
-                //@TODO set S3Creds to HTTPS
-                //.uri(URI.create("https://localhost:8080/resource-s3-get"))
-                .header("Content-Type", "application/json")
-                .build();
-        LOGGER.debug("deck S3get request built ... sending...");
 
+        // (1)
+        HttpRequest req = getRequest(json, "deck-s3-get");
+        LOGGER.debug("deck S3get req built ... sending to Vertx...");
         try {
             HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-
-            String s = response.body();
+            //  the signed URL
+            String sURL = response.body();
             LOGGER.debug("response code {}", response.statusCode());
-
-            if(! s.contains("fail")) {
-                LOGGER.debug("prior to parsing, response.body returns: <{}>", s);
-
-                s = s.substring(2, s.length() - 2);
+            String failCheck = sURL.substring(0, 10);
+            if(! failCheck.contains("fail") && response.statusCode() == 200) {
+                LOGGER.debug("prior to parsing, response.body returns: <{}>", sURL);
+                sURL = sURL.substring(2, sURL.length() - 2);
+            // (2)
                 LOGGER.debug("response code {}", response.statusCode());
-                LOGGER.debug("response body: {}", s);  // signedUrl
-                retrieveDeckHelper(s);
+                LOGGER.debug("response body: {}", sURL);  // signedUrl
+                File file = new File(fileName);
+                if(!file.exists()) {
+                    file.createNewFile();
+                    LOGGER.warn("File does not exist: {}", file);
+                }
+                retrieveDeckHelper(file, sURL);
                 //@TODO do something when s == "failed":"true"
             } else {
                 LOGGER.warn("WARNING!!! 0 objects found in s3 for key: {}", key);
@@ -112,6 +113,36 @@ public class S3GetObjs {
         }
     }
 
+    private void retrieveDeckHelper(File file, String signedurl) {
+        LOGGER.debug("called retrieveDeckHelper( file, String)");
+        URI fileToBeDownloaded = null;
+        try {
+            System.out.println("the troubled signedURL: " + signedurl);
+            fileToBeDownloaded = new URI(signedurl);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        AmazonS3URI s3URI = new AmazonS3URI(fileToBeDownloaded);
+        AmazonS3 client = AmazonS3ClientBuilder.standard()
+                .withRegion(s3URI.getRegion())
+                .build();
+        URL url;
+        // download the deck to file
+        try{
+            LOGGER.debug("Attemting to download the deck");
+            url =  new URL(signedurl);
+            PresignedUrlDownloadRequest req = new PresignedUrlDownloadRequest(url);
+            client.download(req, file);
+        }
+        catch (MalformedURLException e) {
+            LOGGER.warn("ERROR when trying to download the deck. message: {}",e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+
 
 
     /**
@@ -121,15 +152,14 @@ public class S3GetObjs {
      * @return An arraylist containing the deck elements.
      */
     private void retrieveDeckHelper(String key) {
-
         ArrayList<FlashCardMM> flashMM = new ArrayList<>();
         if(key.contains("fail")) {
             LOGGER.warn("retrieveDeck failed! the key was empty.");
             return;
         }
         else {
-            LOGGER.info("cloudGetDeck called. deck key: {}", key);
-            if (!Utility.isConnected()) {
+            LOGGER.info("retrieveDeckHelper called. deck key: {}", key);
+            if ( ! Utility.isConnected()) {
                 LOGGER.warn("I am not connected... returning nothing");
                 return;// flashListMM;
             }
@@ -137,20 +167,15 @@ public class S3GetObjs {
             //System.out.println("copyTo directory: " + FlashCardOps.getInstance().getDeckFolder() + "/" + FlashCardOps.getInstance().getFO().getFileName());
 
             // once we get the signedURL, make the request using a separate thread.
-            new Thread(() -> {
+            //new Thread(() -> {
                 try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(new URL(key).openStream()))) {
+
                     int i = 0;
                     while (flashMM.add(( FlashCardMM) input.readObject())) {
                        System.out.println(i++ + " items");
                     }
-                   // ((ArrayList<FlashCardMM>) input.readObject());
-                    //byte[] readBuffArr = new byte[4096];
-                   // int readBytes = 0;
-                    //while((readBytes = input.read(readBuffArr)) >= 0) {
-                    //    bos.write(readBuffArr, 0, readBytes);
-                    //}
-                    /// #! UGLY solution
 
+                    FlashCardOps.getInstance().getFO().setListinFile(flashMM, '+');
                 } catch (EOFException e) {
                     // do nothing, it is expected.
 
@@ -165,19 +190,11 @@ public class S3GetObjs {
                     LOGGER.warn("\tUnknown Exception: in cloudGetDeck(...) \n" + e.getStackTrace());
                     e.printStackTrace();
                     return;
-                } finally {
-
-                    //if(flashMM.size() > 0) {
-                        // @TODO move MediaSync from GetS3Objs to own thread after this is done.
-                        MediaSync.syncMedia(flashMM);
-                    //}
                 }
                 // save the deck to file
-                FlashCardOps.getInstance().getFO().setListinFile(flashMM, '+');
-
-            }).start();
+                //FlashCardOps.getInstance().getFO().setListinFile(flashMM, '+');
+            //}).start();
         }
-
         LOGGER.debug("cloudGetDeck() returned flashListMM with {} cards", flashMM.size());
     }
 
@@ -210,7 +227,7 @@ public class S3GetObjs {
 
             LOGGER.debug("cloudGetMedia called. signedURL is null: {}", signedurl == null);
             // make multiple requests using a threadPool.
-            new Thread(() -> {
+            //new Thread(() -> {
                 URI fileToBeDownloaded = null;
                 try {
                     fileToBeDownloaded = new URI(signedurl);
@@ -234,10 +251,13 @@ public class S3GetObjs {
                     client.download(req, file);
                 }
                 catch (MalformedURLException e) {
-                LOGGER.warn(e.getMessage());
-                e.printStackTrace();
-            }
-            }).start();
+                    LOGGER.warn(e.getMessage());
+                    e.printStackTrace();
+                }
+                catch (AmazonS3Exception e) {
+                    LOGGER.warn("ERROR: something wasn't right when attempting to upload a deck", e.getMessage());
+                }
+           // }).start();
         }
     }
 
@@ -310,7 +330,7 @@ public class S3GetObjs {
         LOGGER.debug("The token should not be in JSON format. Token looks like: <{}>", token);
         LOGGER.debug("The JSON string looks like: " + json);
 
-        HttpRequest req = getRequest(json);
+        HttpRequest req = getRequest(json, "media-s3-get");
         LOGGER.debug("media S3get request built ... sending...");
 
         // send the name list to vertx
@@ -360,10 +380,10 @@ public class S3GetObjs {
         return keyBuilder.toString();
     }
 
-    private HttpRequest getRequest(String json) {
+    private HttpRequest getRequest(String json, String destination) {
         return HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create("http://localhost:8080/media-s3-get"))
+                .uri(URI.create("http://localhost:8080/" + destination))
                 //@TODO set S3Creds to HTTPS
                 //.uri(URI.create("https://localhost:8080/media-s3-get"))
                 .header("Content-Type", "application/json")

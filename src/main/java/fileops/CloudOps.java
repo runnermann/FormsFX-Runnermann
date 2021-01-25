@@ -1,13 +1,22 @@
 package fileops;
 
+import authcrypt.UserData;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import flashmonkey.FlashCardOps;
 import flashmonkey.ReadFlash;
+import forms.utility.Alphabet;
 import org.slf4j.LoggerFactory;
 
 
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 
 //import static habanero.edu.rice.pcdp.PCDP.*;
@@ -146,14 +155,14 @@ public class CloudOps {
 	/**
 	 * upload media to S3 from CreateFlash when there are only a few uploads
 	 * and the overhead of async is not advantageous.
+	 * Ussed by CreateFlash as media is created, card by card.
 	 * @param uploads
-	 * @param numFiles
 	 */
-	public void putMedia(String[] uploads, int numFiles) {
+	public void putMedia(String[] uploads) {
 		LOGGER.debug("putMedia for serial called");
 		S3PutObjs putObjs = new S3PutObjs();
 		ArrayList<String> l = new ArrayList<>(Arrays.asList(uploads));
-		putObjs.serialPutMedia(l, numFiles, FlashCardOps.getInstance().CO.getToken());
+		putObjs.serialPutMedia(l, FlashCardOps.getInstance().CO.getToken());
 	}
 
 	/**
@@ -163,7 +172,7 @@ public class CloudOps {
 	public void putMedia(ArrayList<MediaSyncObj> uploads) {
 		// 1) get the list of signedURLs
 		// 2) send the files to s3 storage
-
+		System.out.println("cloudops put media called");
 		// Reqst signedURL's for all uploads in one trip to vertx
 		S3PutObjs putObjs = new S3PutObjs();
 		String sToken = FlashCardOps.getInstance().CO.getToken();
@@ -174,9 +183,60 @@ public class CloudOps {
 		}
 	}
 
+	public void getDeck(String deckName) {
+		// send token, deckname in Json and send to
+		// getDeck destination
+		//String json = new String("{" +
+		//		"\"token\":\"" + token + "\"" +
+		//		",\"deckname\":\"" + deckName + "\"}");
+//		S3GetObjs getObjs = new S3GetObjs();
+//		getObjs.serialGetDeck(downloads, 'm',FlashCardOps.getInstance().CO.getToken());
+
+		//String destination = "deck-s3-get";
+		//boolean bool = getDeckHelper(json, destination);
+
+		// if successful, set FlashListMM to new deck
+	}
+
 	public void putDeck(String fileName) {
 		S3PutObjs putObjs = new S3PutObjs();
 		putObjs.putDeck(fileName, FlashCardOps.getInstance().CO.getToken());
+	}
+
+
+	private boolean getDeckHelper(String json, String destination) {
+		// get deck from Vert.X
+		final HttpClient client = HttpClient.newBuilder()
+				.version(HttpClient.Version.HTTP_2)
+				.connectTimeout(Duration.ofSeconds(10))
+				.build();
+		// save deck to file
+		final HttpRequest req = HttpRequest.newBuilder()
+				.POST(HttpRequest.BodyPublishers.ofString(json))
+				.uri(URI.create("http://localhost:8080/" + destination))
+				//@TODO set S3Creds to HTTPS
+				//.uri(URI.create("https://localhost:8080/resource-s3-list"))
+				.header("Content-Type", "application/json")
+				.build();
+		try {
+			final HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
+			if(response.statusCode() == 200) { return true; }
+
+		} catch (ConnectException e) {
+			// failed, send user a notification
+			LOGGER.warn("ConnectException: <{}> is unable to connect: Server not found", Alphabet.encrypt(UserData.getUserName()));
+//			return -1;
+		} catch (JsonProcessingException e) {
+			LOGGER.warn("ERROR: while parsing JSON to java message: {}", e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			LOGGER.warn("IOException: " + e.getMessage());
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			LOGGER.debug(e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 

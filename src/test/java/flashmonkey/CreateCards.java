@@ -117,7 +117,6 @@ public class CreateCards extends ApplicationTest {
 
     public void getExistingDeck()
     {
-
         Stage startWindow = FlashMonkeyMain.getWindow();
         // Find the node that is the fileButton in filePane
         System.out.println("finding node");

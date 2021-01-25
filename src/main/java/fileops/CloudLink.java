@@ -95,7 +95,7 @@ public class CloudLink implements Comparable<CloudLink> {
 
         // get the deck from S3 using key and the token,
         // and save the deck to file.
-        getObj.cloudGetDeckFmS3(this.key, FlashCardOps.getInstance().CO.getToken());
+        getObj.getDeck(DirectoryMgr.getMediaPath('t') + "/" + name, this.key, FlashCardOps.getInstance().CO.getToken());
     }
 
     // Compares by dateInMillis
@@ -109,5 +109,4 @@ public class CloudLink implements Comparable<CloudLink> {
             return -1;
         }
     }
-
 }

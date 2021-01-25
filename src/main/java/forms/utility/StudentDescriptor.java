@@ -131,7 +131,7 @@ public class StudentDescriptor extends PersonDescriptor {
 		String[] args = {authcrypt.UserData.getUserName()}; // may cause an error
 		ArrayList<HashMap<String, String>> response = DBFetchToMapAry.STUDENT_ENCRYPTED_DATA.query(args); // check
 
-		if(response.get(0).get("empty").equals("true")) {
+		if(response == null || response.get(0).get("empty").equals("true")) {
 			LOGGER.debug("response from DB length is EMPTY... NOT processing response.");
 		} else {
 			LOGGER.debug("response from DB length contains data... processing response.");

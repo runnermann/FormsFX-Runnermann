@@ -110,13 +110,17 @@
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.11.714</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>${aws.java.sdk.version}</version>
             <scope>compile</scope>
-        </dependency>-->
-
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>1.11.714</version>
+        </dependency>
         <!-- web cam -->
         <dependency>
             <groupId>com.github.sarxos</groupId>
@@ -141,7 +145,7 @@
         </dependency>
 
 
-        <!--
+        <!-- VIDEO custom library
         <dependency>
             <groupId>org.runnermann</groupId>
             <artifactId>jave2-simple</artifactId>
@@ -149,13 +153,11 @@
         </dependency>
         -->
         <!-- icons -->
-
         <!--<dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-fontelico-pack</artifactId>
             <version>11.3.5</version>
         </dependency> -->
-
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-entypo-pack</artifactId>
@@ -255,11 +257,6 @@
             <artifactId>testfx-junit5</artifactId>
             <version>4.0.15-alpha</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-core</artifactId>
-            <version>1.11.714</version>
         </dependency>
         <!--<dependency>
             <groupId>org.mockito</groupId>

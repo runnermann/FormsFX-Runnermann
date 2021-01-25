@@ -1,11 +1,9 @@
-package flashmonkey;
+package fileops;
 
 import java.io.File;
-import java.io.ObjectInputStream;
 import java.util.Comparator;
 
 import ch.qos.logback.classic.Level;
-import fileops.CloudLink;
 import org.slf4j.LoggerFactory;
 
 

@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Level;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
 import flashmonkey.ReadFlash;
+import flashmonkey.Timer;
+import fmannotations.FMAnnotations;
 import forms.SignInModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,24 +22,44 @@ public class MediaSync {
 	//private static final Logger LOGGER = LoggerFactory.getLogger(MediaSync.class);
 	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaSync.class);
 	
-	ArrayList<MediaSyncObj> download = new ArrayList<>();
-	ArrayList<String> delete = new ArrayList<>();
-	ArrayList<MediaSyncObj> upload = new ArrayList<>();
-	ArrayList<MediaSyncObj> cache = new ArrayList<>();
-	boolean downloadBool = false;
-	boolean uploadBool = false;
-	boolean deleteBool = false;
-	boolean cacheBool = false;
-	
+	private ArrayList<MediaSyncObj> download = new ArrayList<>();
+	private ArrayList<String> delete = new ArrayList<>();
+	private ArrayList<MediaSyncObj> upload = new ArrayList<>();
+	private ArrayList<MediaSyncObj> cache = new ArrayList<>();
+	private boolean downloadBool = false;
+	private boolean uploadBool = false;
+	private boolean deleteBool = false;
+	private boolean cacheBool = false;
+
+
 	public MediaSync() {
 		/* no args constructor */
 	}
-	
-	
+
+	// ****** GETTERS ********* //
+	public ArrayList<MediaSyncObj> getDownload() {
+		return download;
+	}
+
+	public ArrayList<String> getDelete() {
+		return delete;
+	}
+
+	public ArrayList<MediaSyncObj> getUpload() {
+		return upload;
+	}
+
+	public ArrayList<MediaSyncObj> getCache() {
+		return cache;
+	}
+
+	// ******* OTHERS ******** //
+
 	/**
 	 * Starts media synchronization
+	 * Called by CreateFlash
 	 */
-	public static void syncMedia() {
+	/*public static void syncMedia() {
 		LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("syncMedia called");
 		MediaSync ms = new MediaSync();
@@ -49,20 +71,62 @@ public class MediaSync {
 		// sync local media with flashList and media in the cloud.
 		ms.syncMedia(flashlistMNames, syncObjs, ReadFlash.getInstance().getDeckName());
 		FlashCardOps.getInstance().setMediaIsSynced(true);
-	}
+	} */
 
 	public static void syncMedia(ArrayList<FlashCardMM> flashList) {
 		LOGGER.setLevel(Level.DEBUG);
-		LOGGER.debug("syncMedia called");
+		LOGGER.debug(" *** syncMedia called ***");
+		Timer.getClassInstance().begin();
 		MediaSync ms = new MediaSync();
 		// get local media
 		ArrayList<MediaSyncObj> syncObjs = ms.getLocalMediaList();
 		// get a list of media from the flashList
 		ArrayList<MediaSyncObj> flashlistMNames = FlashCardOps.getInstance().getFlashListMedia(flashList);
-		LOGGER.debug("flashList mediaName length: <{}>", flashlistMNames.size());
+		LOGGER.debug("flashList media length: <{}>", flashlistMNames.size());
 		// sync local media with flashList and media in the cloud.
-		ms.syncMedia(flashlistMNames, syncObjs, ReadFlash.getInstance().getDeckName());
+		boolean bool = ms.syncMediaHelper(flashlistMNames, syncObjs, ReadFlash.getInstance().getDeckName());
+		if(bool) {
+			// synchronize media
+			ms.syncCloudMediaAction();
+		}
 		FlashCardOps.getInstance().setMediaIsSynced(true);
+		Timer.getClassInstance().end();
+		long time = Timer.getClassInstance().getTotalTime();
+		System.out.println("MediaSync: Time to sync and put files in S3: " + time);
+	}
+
+	/**
+	 * Call to sync media across local files and remote files. This is the single call
+	 * to sync media. End result, Media is saved locally. There is no "in memory" state
+	 * as a result. Media must be accessed through the local file system.
+	 * @param flashListMedia
+	 * @param localNames
+	 * @param deckName
+	 */
+	private boolean syncMediaHelper(ArrayList<MediaSyncObj> flashListMedia, ArrayList<MediaSyncObj> localNames, String deckName) {
+		LOGGER.debug("*** syncMediaHelper called ***");
+		LOGGER.info("flashListMedia.size() {}, localNames.size() {}", flashListMedia.size(), localNames.size());
+
+		CloudOps cloudOps = new CloudOps();
+
+		// Get file names from media in users S3 bucket
+
+		ArrayList<CloudLink> remoteNameList = cloudOps.getS3MediaList(deckName);
+		// Create mediaSyncObjects from the remoteNameList
+		ArrayList<MediaSyncObj> remoteNames = getRemoteNames(remoteNameList);
+		// create the mediaState map by comparing
+		// the remote list with the local list
+		StateHashTable<String, MediaSyncObj> mediaState = setMediaStateMap(flashListMedia, localNames, remoteNames);
+
+		LOGGER.info("mediaState length(): {}", mediaState.size() );
+		// calc media state and synchronize;
+		if(! mediaState.isEmpty()) {
+			calcMediaState(mediaState);
+			return true;
+		} else {
+			LOGGER.info("MediaState is empty " );
+			return false;
+		}
 	}
 	
 	/**
@@ -86,47 +150,7 @@ public class MediaSync {
 		return syncObjs;
 	}
 
-	/**
-	 * Call to sync media across local files and remote files. This is the single call
-	 * to sync media. End result, Media is saved locally. There is no "in memory" state
-	 * as a result. Media must be accessed through the local file system.
-	 * @param flashListMedia
-	 * @param localNames
-	 * @param deckName
-	 */
-	private void syncMedia(ArrayList<MediaSyncObj> flashListMedia, ArrayList<MediaSyncObj> localNames, String deckName) {
-		
-		LOGGER.info("*** syncMedia called ***");
-		LOGGER.info("flashListMedia.size() {}, localNames.size() {}", flashListMedia.size(), localNames.size());
-		
-		CloudOps cloudOps = new CloudOps();
-		
-		// Get file names from media in users S3 bucket
-// xxxxxxxx looks like this is where we have a problem.
 
-		ArrayList<CloudLink> remoteNameList = cloudOps.getS3MediaList(deckName);
-		// Create mediaSyncObjects from the remoteNameList
-
-		ArrayList<MediaSyncObj> remoteNames = getRemoteNames(remoteNameList);
-		int i = 0;
-		for(MediaSyncObj m : remoteNames) {
-			LOGGER.debug("remoteName: {}) {}", i++, m.getFileName());
-		}
-
-		// create the mediaState map by comparing
-		// the remote list with the local list
-		StateHashTable<String, MediaSyncObj> mediaState = setMediaStateMap(flashListMedia, localNames, remoteNames);
-		
-		LOGGER.info("mediaState length(): {}", mediaState.size() );
-		// calc media state and synchronize;
-		if(! mediaState.isEmpty()) {
-			calcMediaState(mediaState);
-			// synchronize media
-			syncCloudMediaAction();
-		} else {
-			LOGGER.info("MediaState is empty " );
-		}
-	}
 	
 	/**
 	 * Sets the media state according to it's location in comparison with
@@ -173,10 +197,10 @@ public class MediaSync {
 			//.of(local)
 					// local adds 2 to value.state
 					//.peek(e -> {
-						LOGGER.debug("for local, size {}", local.size());
+						LOGGER.debug("localMedia files, size {}", local.size());
 						//forallChunked(0, local.size() -1, (i) -> {
 						for(int i = 0; i < local.size(); i++) {
-							LOGGER.debug("idx" + i);
+							//LOGGER.debug("idx" + i);
 							local.get(i).setState(2);
 							// hashMap
 							stateMap.put(local.get(i).getFileName(), local.get(i));
@@ -216,7 +240,7 @@ public class MediaSync {
 	 * @param mediaState StateHashTable<MediaSyncObj, Integer>
 	 * @return Returns a list of mediaNames for local archive.
 	 */
-	protected void calcMediaState(StateHashTable<String, MediaSyncObj> mediaState) {
+	private void calcMediaState(StateHashTable<String, MediaSyncObj> mediaState) {
 		
 		LOGGER.info(" *** calcMediaState called *** \n");
 		
@@ -290,7 +314,7 @@ public class MediaSync {
 		/*
 		 * Future versions should find a way to use async parallel processing
 		 * such as forAll or forAllChunked for downloads. As 11/27/2020, the
-		 * AWSS3Client is not thread safe as stated in their documentation. Attemtps
+		 * AWSS3Client is not thread safe as stated in their documentation. Attempts
 		 * to use Java libriaries for inputStream and the use of signedURLs to create
 		 * temproary links created problems with processing file names. The end soluton
 		 * is to use the S3Client download(...) convienience method. Without studying
@@ -316,6 +340,10 @@ public class MediaSync {
 
 		}
 		if(uploadBool) {
+
+			System.out.println("printing uploadBool");
+			upload.stream().forEach(e -> System.out.println(e.getFileName()));
+
 			co.putMedia(upload);
 			/*
 					long sendTime = System.currentTimeMillis();
@@ -392,5 +420,33 @@ public class MediaSync {
 		
 		return syncObjs;
 	}
-	
+
+	@FMAnnotations.DoNotDeployMethod
+	public MediaSync syncMediaTester(ArrayList<FlashCardMM> flashList, MediaSync ms) {
+		LOGGER.setLevel(Level.DEBUG);
+		LOGGER.debug("syncMedia called");
+		Timer.getClassInstance().begin();
+		//MediaSync ms = new MediaSync();
+		// get local media
+		ArrayList<MediaSyncObj> syncObjs = ms.getLocalMediaList();
+		// get a list of media from the flashList
+		ArrayList<MediaSyncObj> flashlistMNames = FlashCardOps.getInstance().getFlashListMedia(flashList);
+		LOGGER.debug("flashList mediaName length: <{}>", flashlistMNames.size());
+		// sync local media with flashList and media in the cloud.
+		boolean bool = ms.syncMediaHelper(flashlistMNames, syncObjs, ReadFlash.getInstance().getDeckName());
+
+		return  ms;
+	}
+
+	@FMAnnotations.DoNotDeployMethod
+	public void clearMediaStateValues() {
+		download.clear();
+		upload.clear();
+		cache.clear();
+		delete.clear();
+		cacheBool = false;
+		deleteBool = false;
+		downloadBool = false;
+		uploadBool = false;
+	}
 }

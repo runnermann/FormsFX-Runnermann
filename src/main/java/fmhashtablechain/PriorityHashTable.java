@@ -1,15 +1,11 @@
 package fmhashtablechain;
 
-import fileops.CloudLink;
-import flashmonkey.LinkObj;
+import fileops.LinkObj;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 // ***** IMPORTS *****
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 /**

@@ -438,8 +438,6 @@ public class CreateMediaTester extends ApplicationTest {
 
         assertEquals("Image in the right pane does not look correct. ", true, ImageUtility.imagesLookTheSame(" lower pane ", imageL, rPaneiView.getImage()) );
 
-
-
         // create a rectangle & check it is there
         // click on rectangleButton
 

@@ -3,13 +3,10 @@ package flashmonkey.utility;
 //import flashmonkey.FlashMonkeyMain;
 //import flashmonkey.ReadFlash;
 import flashmonkey.FlashMonkeyMain;
-import flashmonkey.LinkObj;
-import javafx.collections.ObservableList;
+import fileops.LinkObj;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -22,17 +19,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import uicontrols.UIColors;
 
-import javafx.geometry.Pos;
-
-import javafx.scene.control.skin.RadioButtonSkin;
-
 import javafx.beans.value.WritableValue;
 import javafx.css.StyleableProperty;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.AccessibleRole;
-
-import javax.xml.bind.annotation.XmlType;
-import java.awt.event.ActionEvent;
 
 public class SelectableRdoField extends ToggleButton {
 	

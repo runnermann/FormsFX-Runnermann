@@ -770,7 +770,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
 
             } catch(IOException e) {
                 LOGGER.warn("\t****** IO Exception in FlashCard.connectBinaryIn() *******");
-                //e.printStackTrace();
+                e.printStackTrace();
 
                 try {
                     LOGGER.warn("\t *** Trying to copy fromFmLastVersion *** ");
@@ -1001,8 +1001,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
             // action
             try
             {
-                output = new ObjectOutputStream(new BufferedOutputStream
-                            (new FileOutputStream(folder + "/" + fileName), 512));
+                output = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(folder + "/" + fileName), 512));
                 if(minus == '-') {
                     for (int i = 0; i < arrayList.size() - 1; i++) {
                         output.writeObject(arrayList.get(i));
@@ -1381,7 +1380,6 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                 LOGGER.warn("Token is expired, login again. ");
                         FMAlerts alerts = new FMAlerts();
                         alerts.sessionRestartPopup();
-
                     }
             else {
                 LOGGER.debug("token is good or renewed");
@@ -1391,41 +1389,31 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                 // used by ReadFlash and other classes.
                 ReadFlash.getInstance().setDeckName(deckName);
                 agrList.setLinkObj(lObject);
+                // if the deck is from the cloud
                 if (lObject.getCloudLink() != null) {
-                    System.out.println("CLOUD linkObject clicked, fileName: {}" + lObject.getDescrpt());
+                    LOGGER.debug("CLOUD linkObject clicked, fileName: {}" + lObject.getDescrpt());
 
                     fo.setFileName(lObjName);
                     lObject.getCloudLink().retrieveDeckFmCloud();
+                    refreshFlashList();
 
                 } else {
-                    System.out.println("LOCAL linkObject clicked, fileName: {}" + lObjName);
+                    LOGGER.debug("LOCAL linkObject clicked, fileName: {}" + lObjName);
 
                     fo.setFileName(lObjName);
                     refreshFlashList();
                 }
 
-                /* media sync
+                // media sync
                 LOGGER.debug("has flashlist been downloaded yet? flashlist size: {}", flashListMM.size() );
-                if(flashListMM.size() > 0) {
-                    // if token is expired, then redirect to login
-                    if (CloudOps.isExpired()) {
-                        LOGGER.debug("token is expired, not renewing");
-                        FMAlerts alerts = new FMAlerts();
-                        // alerts cannot be on another thread!
-                        alerts.sessionRestartPopup();
-                        FlashMonkeyMain.getSignInPane();
-
-                    } else {
-                        // @TODO move thread to MediaSync for async download. Not here
-
-                        //new Thread(() -> {
-                        //    LOGGER.info("Calling syncMedia from FlashCardOps primaryAction");
-                        //    MediaSync.syncMedia();
-                        //}).start();
-                    }
-                   // }
+                if(flashListMM.size() > 0 && Utility.isConnected()) {
+                    // @TODO move thread to MediaSync for async download. Not here
+                    new Thread(() -> {
+                        LOGGER.info("Calling syncMedia from FlashCardOps primaryAction");
+                        MediaSync.syncMedia(flashListMM);
+                    }).start();
                 }
-                 */
+
 
                 fileSelected = true;
                 FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
@@ -1460,8 +1448,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
             box.setSpacing(10);
 
             // Label and prompt displayed if there are no files
-            if(agrList.getSize() == 0)
-            {
+            if(agrList.getSize() == 0) {
                 labelNnf = new Label("Ok,  Let's get you an A\n\n");
                 labelNnf.setTextFill(Paint.valueOf(UIColors.FM_WHITE));
                 plainTxt = new Label("Name your first study deck.");

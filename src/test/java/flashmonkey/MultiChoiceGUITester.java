@@ -93,9 +93,6 @@ public class MultiChoiceGUITester extends ApplicationTest
 	@Override
     public void start(Stage stage) throws Exception
     {
-
-
-
 		// At the beggining of the test session, remove the file
 		// if it exists
 
