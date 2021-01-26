@@ -2,7 +2,6 @@ package authcrypt.user;
 
 import authcrypt.UserData;
 import forms.FormData;
-
 import java.io.Serializable;
 import java.util.HashMap;
 

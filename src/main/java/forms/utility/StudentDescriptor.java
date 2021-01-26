@@ -69,7 +69,7 @@ public class StudentDescriptor extends PersonDescriptor {
 
 	/**
 	 * There is no reason to store user information
-	 * locally. As of 2020-09-16
+	 * locally. See notes; As of 2020-09-16
 	 * Sets the data to the most recent.
 	 */
 	@Override
@@ -83,6 +83,7 @@ public class StudentDescriptor extends PersonDescriptor {
 	//@Override
 	public void setProperties(final EncryptedStud student) {
 		LOGGER.debug("called setProperties(...) with args. student lastname: {}", student.getLastName());
+		// set person (the parent) properties
 		super.setProperties(student);
 		educationLevel = new SimpleStringProperty(student.getEducationLevel());
 		major = new SimpleStringProperty(student.getMajor());

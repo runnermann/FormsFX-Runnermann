@@ -6,6 +6,7 @@ package flashmonkey;
 
 import campaign.Report;
 import ecosystem.ConsumerPane;
+import fileops.Utility;
 import flashmonkey.utility.Sleep;
 import fmannotations.FMAnnotations;
 import forms.*;
@@ -25,6 +26,7 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.ButtoniKon;
+import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
 
 //import java.awt.event.MouseEvent;
@@ -586,14 +588,23 @@ public class FlashMonkeyMain extends Application
     }
     
     public static void getAccountPane() {
-        StudentModel model = new StudentModel();
-        StudentPane stuPane = new StudentPane();
-        model.getFormInstance();
-        Scene scene = new Scene(stuPane.getFormPane());
-        scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
-        actionWindow = new Stage();
-        actionWindow.setScene(scene);
-        actionWindow.show();
+        if(Utility.isConnected()) {
+            StudentModel model = new StudentModel();
+            StudentPane stuPane = new StudentPane();
+            model.getFormInstance();
+            Scene scene = new Scene(stuPane.getFormPane());
+            scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
+            actionWindow = new Stage();
+            actionWindow.setScene(scene);
+            actionWindow.show();
+        } else {
+            // show error message
+            String emojiPath = "image/flashFaces_sunglasses_60.png";
+            String message   = "Oooph!" +
+                    "\n I need to be connected to the cloud \n to create or change your account information.";
+            FxNotify.notificationPurple("Please Connect!", message, Pos.CENTER, 9,
+                    emojiPath, FlashMonkeyMain.getWindow());
+        }
     }
 
     public static void resetActionWindow(Pane pane) {

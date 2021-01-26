@@ -16,42 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public enum DBFetchToMapAry {
-
-
-   /* __DECKS_METADATA_QUERYssss() {
-        @Override
-        public ArrayList<HashMap<String, String>> query(String ... whereStatement) {
-            String strQuery = "SELECT " +
-                    "deck_id, " +
-                    "deck_photoid, " +
-                    "deck_descript, " +
-                    "creator_email, " +
-                    "last_date, " +
-                    "create_date, " +
-                    "subj, " +
-                    "section, " +
-                    "deck_book, " +
-                    "deck_class, " +
-                    "deck_prof, " +
-                    "deck_name, " +
-                    "test_types, " +
-                    "num_cards, " +
-                    "num_imgs, " +
-                    "num_video, " +
-                    "num_audio, " +
-                    "deck_numstars, " +
-                    "num_users, " +
-                    "price " +
-                    "course_id " +
-                    "FROM deckMetadata " +
-                    whereStatement[0];
-
-            LOGGER.info("Report query request: " + strQuery);
-            DBConnect db = DBConnect.getInstance();
-            return fetchMetaDataMap(strQuery);
-        }
-    },
-    */
     DECKS_METADATA_QUERY() {
         @Override
         public ArrayList<HashMap<String, String>> query(String... whereStatement) {
@@ -77,6 +41,9 @@ public enum DBFetchToMapAry {
                     "deck_numstars",
                     "num_users",
                     "price",
+                    "course_code",
+                    "deck_school",
+                    "deck_language",
                     "course_code"
             };
             String strQuery = "SELECT " + formatColumns(columns) +
@@ -171,14 +138,14 @@ public enum DBFetchToMapAry {
                 LOGGER.debug("query result has rows of data");
                 for(int i = 0; i < queryResult.getRows().size(); i++) {
                     // create a new HashMap
-                    mapEl = new HashMap<>(20);
+                    mapEl = new HashMap<>(23);
                     // create the map
                     Object[] res = new Object[19];
                     res = ((ArrayRowData) (queryResult.getRows().get(i))).getColumns();
                     mapEl.put("deck_id", res[0].toString());
                     mapEl.put("deck_photo", res[1].toString());
                     mapEl.put("deck_descript", res[2].toString());
-                    mapEl.put("creator_email", res[3].toString());
+                    mapEl.put("creator_email", Alphabet.decrypt(res[3].toString()));
                     mapEl.put("last_date", res[4].toString());
                     mapEl.put("create_date", res[5].toString());
                     mapEl.put("subj", res[6].toString());
@@ -196,6 +163,10 @@ public enum DBFetchToMapAry {
                     mapEl.put("num_users", res[18].toString());
                     mapEl.put("price", res[19].toString());
                     mapEl.put("course_id", res[20].toString());
+                    mapEl.put("deck_school", res[21].toString());
+                    mapEl.put("deck_language", res[22].toString());
+                    mapEl.put("course_code", res[23].toString());
+
                     // insert the map into the arrayList
                     mapArray.add(mapEl);
                 }
@@ -224,12 +195,13 @@ public enum DBFetchToMapAry {
 
         ArrayList<HashMap<String, String>> mapArray = new ArrayList<>();
         HashMap<String, String> map = new HashMap<>();
+
         try {
             DBConnect db = DBConnect.getInstance();
             CompletableFuture<QueryResult> future = db.getConnection().sendPreparedStatement(strQuery);
             QueryResult queryResult = future.get();
 
-            LOGGER.debug("queryResult size: {}", ((ArrayRowData) queryResult.getRows().get(0)).getColumns().length);
+            LOGGER.debug("queryResult num columns: {}", ((ArrayRowData) queryResult.getRows().get(0)).getColumns().length);
 
             if (queryResult.getRows().size() == 0) {
                 LOGGER.debug("query result has 0 rows");
@@ -240,9 +212,11 @@ public enum DBFetchToMapAry {
                 // create the map array with the results
                 for(int i = 0; i < res.length; i++) {
                     map.put(columns[i], res[i].toString());
-                    //System.out.println("column " + i + " " + res[i]);
+                    System.out.println("column " + i + " " + res[i]);
                 }
-                map = decryptNames(map);
+                if(map.get("last_name") != null) {
+                    map = decryptNames(map);
+                }
             }
         } catch (NullPointerException e) {
             LOGGER.warn("WARNING: Null pointer exception at DBFetchToMapAry.fetchSingleResult(): Deck may not exist. ");
@@ -272,7 +246,7 @@ public enum DBFetchToMapAry {
         String encryptedFirst = map.get("first_name");
         String encryptedLast =  map.get("last_name");
         map.replace("first_name", Alphabet.decrypt(encryptedFirst));
-        map.replace("lsat_name",  Alphabet.decrypt(encryptedLast));
+        map.replace("last_name",  Alphabet.decrypt(encryptedLast));
         System.out.println("decryptNames first_name is now: " + map.get("first_name") + " and should be: " + Alphabet.decrypt(encryptedFirst));
         return map;
     }

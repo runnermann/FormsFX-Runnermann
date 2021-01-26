@@ -1,12 +1,8 @@
 package authcrypt.user;
 
 import authcrypt.UserData;
-import fileops.DirectoryMgr;
 import flashmonkey.FlashCardOps;
-import flashmonkey.ReadFlash;
 import forms.FormData;
-
-import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -62,7 +58,7 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 	// ****** GETTERS AND SETTERS ***** //
 
 	public static EncryptedStud getStudentFmFile() {
-		String personFileName = authcrypt.UserData.getUserName().hashCode()+ "s" + ".met";
+		String personFileName = authcrypt.UserData.getUserName().hashCode()+ "s" + ".met"; // meta
 		EncryptedStud s = new EncryptedStud((EncryptedStud) FlashCardOps.getInstance().getFO().getObjectFmFile(personFileName));
 		return s;
 	}
@@ -122,7 +118,6 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 	 */
 	@Override
 	public void set(HashMap<String, String> map) {
-
 		setMiddleName(map.get("middle_name"));
 		setPhone(map.get("phone"));
 		setAge(map.get("age"));
@@ -135,10 +130,6 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 		setPersonId(Long.parseLong(map.get("person_id").replace("]", "")));
 		UserData.setFirstName(map.get("first_name"));
 		setLastName(map.get("last_name"));
-
-		System.out.println("getFirstName(): " + UserData.getFirstName());
-		System.out.println("getAge(): " + getAge());
-
 	}
 
 	/**

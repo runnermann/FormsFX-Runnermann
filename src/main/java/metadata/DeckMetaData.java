@@ -44,14 +44,12 @@ public class DeckMetaData implements FormData {
 	/* OTHER */
 	private int deckTestInt;
 
-	
 	// flag
 	private static boolean fileExists;
 	// This decks metaData
 	private HashMap<String, String> deckMetaDataMap;
 
 		private static final ArrayList<String> SCORES = new ArrayList<>(1);
-		
 		private long lastDate = 0;
 		private String createDate;
 		private String creatorEmail;
@@ -75,8 +73,6 @@ public class DeckMetaData implements FormData {
 		private String courseCode;
 		private String deckPhotoURL;
 
-
-		
 //		public MetaObj() {
 			/* no args constructor */
 //		}
@@ -222,6 +218,7 @@ public class DeckMetaData implements FormData {
 		setDeckBook(map.get("deck_book"));
 		setDeckClass(map.get("deck_class"));
 		setDeckProf(map.get("deck_prof"));
+		setCourseCode(map.get("course_code"));
 		setSubj(map.get("subj"));
 		setCat(map.get("section"));
 		setLang(map.get("deck_language"));
@@ -245,7 +242,7 @@ public class DeckMetaData implements FormData {
 	 */
 	@Override
 	public void setDataMap(HashMap<String, String> dataMap) {
-		if(deckMetaDataMap.get("creator_email").equals("")) {
+		if(deckMetaDataMap.size() < 1) {
 			LOGGER.warn("WARNING: deckMetaDataMap has not been set");
 		//	this.deckMetaDataAry = null;
 		//	System.exit(0);

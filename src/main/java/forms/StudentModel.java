@@ -205,10 +205,7 @@ public class StudentModel extends ModelParent {
 		String[] response = DBFetchUnique.STUDENT_ENCRYPTED_DATA.query(strs);
 		//String[] strAry = response.split(",");
 
-		System.out.println("fetchStudentID.strAry");
-		//for(String s : strAry) {
-		//	System.out.println(s);
-		//}
+		LOGGER.debug("fetchStudentID.strAry");
 
 		if(response[0].equals("EMPTY")) {
 			return -1;

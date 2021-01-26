@@ -29,6 +29,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import metadata.DeckMetaData;
 import org.controlsfx.control.PrefixSelectionComboBox;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
@@ -714,7 +715,7 @@ public final class CreateFlash<C extends GenericCard> {
     
     /* ------------------------------------------------------- **/
 
-
+    // The "describe this deck" button
     private void sellButtonAction() {
         LOGGER.debug("sellButtonAction clicked");
         //DeckMetaModel model = new DeckMetaModel();
@@ -1592,12 +1593,12 @@ public final class CreateFlash<C extends GenericCard> {
      * DecksMetaData object.
      * @param meta
      */
-    public void updateDeckInfo(DeckMetaData meta) {
-        System.out.println("updateDeckInfo called");
+    public void updateDeckInfo(@NotNull DeckMetaData meta) {
+        LOGGER.debug("updateDeckInfo called");
         
-        //LOGGER.debug("before retrieveDEckMetaData(), meta array is: {}", meta.toString());
+        // LOGGER.debug("before retrieveDEckMetaData(), meta array is: {}", meta.toString());
         // ensure object is updated from file
-        meta.setDataFmFile();
+        //meta.setDataFmFile(); // may be causeing issues with deleting current data
         
         //LOGGER.debug("After retrieveDeckMetaData() from file, and before update, meta array is: {}", meta.toString());
         // reset deck meta to 0;

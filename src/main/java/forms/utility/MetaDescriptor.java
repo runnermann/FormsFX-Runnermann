@@ -3,6 +3,7 @@ package forms.utility;
 import authcrypt.UserData;
 import campaign.db.DBFetchToMapAry;
 import campaign.db.DBFetchUnique;
+import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import flashmonkey.ReadFlash;
 import forms.Descriptor;
@@ -22,7 +23,7 @@ import java.util.HashMap;
  * the MetaDataModel and MetaDataPane. BrCodege between
  * Form and metadata.DeckMetaData.
  */
-public class MetaDescriptor  implements Descriptor<DeckMetaData> {
+public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	
 	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MetaDescriptor.class);
 	
@@ -64,11 +65,28 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 	 */
 	public MetaDescriptor() {
 		super();
-		//this.meta = new DeckMetaData();
+		LOGGER.debug("Calling MetaDescriptor Constructor");
+		LOGGER.setLevel(Level.DEBUG);
+
+/*		TroubleShooting MetaDataForm. It should have data in it. It is either in the form,
+				or it is in the DB. Currently there is no data in the form, but it is in
+				the DB. WEve checked setMostRecent. It is working correctly. That is where we
+				have left off. We made a change and commented out an updateData somewhere.
+
+		May be a problem with the sequence of updating and deck invventory method. IE deck invenventory essetially
+				sets the metadata from the file, updates metadata with the current media and deck inventory, and
+				saves the current to file. This may be the root of the problem. Deleting data after it is uploaded
+				from the DB. and thus clearing the metadata with empty data from the file. ?????
+*/
+
+
+
 		this.setMostRecent();
 	}
+
+
 	
-	/* Deck Meta Data Form Entries */
+	/* MetaData from Form Entries */
 	public String getDeckDescript() { return deckDescript.get(); }
 	public String getDeckSchool() { return deckSchool.get(); }
 	public String getDeckBook() { return deckBook.get();}
@@ -80,8 +98,7 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 	public String getCourseCode() {return courseCode.get();}
 	public String getPhotoURL() {return deckPhotURL.get();}
 	public Integer getNumCards() {return numCards.get();}
-	
-	/* deck metadata properties */
+	/* metadata properties */
 	public StringProperty deckDescriptProperty() {
 		return deckDescript;
 	}
@@ -114,7 +131,7 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 	@Override
 	public void setProperitesDefault() {
 		
-		//System.out.println("setPropertiesDefault()");
+		LOGGER.debug("setPropertiesDefault()");
 		deckDescript = new SimpleStringProperty("");
 		deckSchool = new SimpleStringProperty("");
 		deckBook = new SimpleStringProperty("");
@@ -136,7 +153,7 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 	@Override
 	public void setProperties(final DeckMetaData m) {
 		
-		//System.out.println("Called setProperties() \n Printing meta: " + m.toString());
+		LOGGER.debug("Called setProperties() \n Printing meta: " + m.toString());
 		
 		deckDescript = new SimpleStringProperty(m.getDescript());
 		deckSchool = new SimpleStringProperty(m.getDeckSchool());
@@ -158,7 +175,8 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 	 */
 	@Override
 	public void setMostRecent() {
-		//System.out.println("called setMostRecent()");
+		System.out.println("MetaDescriptor.setMostRecent() called");
+		//LOGGER.debug("called setMostRecent()");
 		DeckMetaData meta = DeckMetaData.getInstance();
 		long localDate = getLocalDataDate();
 		
@@ -170,25 +188,25 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 		
 		long remoteDate = meta.getLastDate() * -1;
 		long num = remoteDate + localDate;
-		
-		System.out.println("remoteDate: " + remoteDate + " localDate " + localDate);
+
+		System.out.println("\tremoteDate: " + remoteDate + " localDate " + localDate);
 		// If this files metadata does not exist yet
 		// chose to set from default.
 		if(num + localDate == 0) {
-			//System.out.print("Chose default");
+			System.out.println("\tChose default");
 			setProperitesDefault();
 		}
 		// If the num value is greater, then chose local
 		else if(num > 0 ) {
 			setToLocalData();
-			//System.out.println("Chose local ");
+			System.out.println("\tChose local ");
 			setProperties(meta);
 			
 		}
 		// Else the db has the most recent version.
 		else  { // (num < 0)
 			// meta is already set to the DB
-			//System.out.println("Chose remote ");
+			System.out.println("\tChose remote ");
 			setProperties(meta);
 		}
 		
@@ -254,7 +272,9 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 		//response = Report.getInstance().queryGetDeckMetaData(user.getUserName(), ReadFlash.getInstance().getDeckName());
 		response = DBFetchToMapAry.DECKS_METADATA_QUERY.query(args);
 
-		if(response.get(0).get("user_email") != null) {
+		LOGGER.debug("response, num Array Elements: {}", response.size());
+
+		if(response.get(0).size() > 0) {
 			LOGGER.debug("response from DB length is GREATER than 10... processing response.");
 			// Parse the response, set metaAry,
 			// & set the DeckMetaData object.
@@ -262,57 +282,9 @@ public class MetaDescriptor  implements Descriptor<DeckMetaData> {
 			meta.setDataMap(response.get(0));
 			meta.set(response.get(0));
 		} else {
-			LOGGER.debug("response from DB length is LESS than 10... NOT processing response.");
+			LOGGER.debug("response from DB length is null... NOT processing response.");
 		}
 	}
-	
-	/**
-	 * Parses the String provided in the param
-	 * using the ",".
-	 * @param response
-	 * @return An array containing the elements of the
-	 * response provided in the param.
-	 */
-	//@Override
-	//public String[] parseResponse(String[] response) {
-
-	//	System.out.println("response: " + response);
-/*
-		for(String s : response) {
-			System.out.println(s);
-		}
-		System.out.println("\n");
-
-
-
-		// First element
-		String orig_email = Alphabet.decrypt(response[0]);
-*/
-		// split the remainder into words
-		//String[] fmSplit = sub.split(",");
-		//String[] finalAry = new String[fmSplit.length + 1];
-
-		// parse loop and add to finalAry
-		//for(int i = 0; i < fmSplit.length; i++) {
-		//	finalAry[i] = fmSplit[i ].strip();
-		//	System.out.println("\t" + i + ") " + finalAry[i]);
-		//}
-
-		// add orig_email to the end of the array
-		//finalAry[fmSplit.length] = orig_email;
-
-		//System.out.println("Metadata.parseResponse() orig_email: " + orig_email);
-
-		//System.out.println("\n\nresult finalAry");
-		//for(String s : finalAry){
-		//	System.out.println(s);
-		//}
-		//System.out.println();
-
-		//return finalAry;
-	//}
-	
-	
 	
 	/**
 	 * Clears the form and sets to default

@@ -134,7 +134,7 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
 		
 		personDescript = new SimpleStringProperty(u.getDescript());
 		firstName = new SimpleStringProperty(u.getFirstName());
-		lastName = new SimpleStringProperty(u.getLastName());
+		lastName = new SimpleStringProperty(Alphabet.decrypt(u.getLastName()));
 		middleName = new SimpleStringProperty(u.getMiddleName());
 		// once orig_email is set, it cannot be changed.
 		//origEmail = new SimpleStringProperty(u.getCurrentUserEmail());

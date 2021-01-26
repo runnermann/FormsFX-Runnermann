@@ -275,7 +275,7 @@ public final class Report {
             String updateDB = "UPDATE deckMetadata SET" +
                     " last_date ='" +      metaObj.getLastDate() + "'" + // lastDate
                     ", deck_descript ='" + metaObj.getDescript() + "'" + // deckDescript
-                    ", course_code ='"     + metaObj.getCourseCode() + "'" +
+                    ", course_code ='"   + metaObj.getCourseCode() + "'" +
                     ", deck_school ='" +   metaObj.getDeckSchool() + "'" +
                     ", deck_book ='" +     metaObj.getDeckBook() + "'" +
                     ", deck_class ='" +    metaObj.getDeckClass() + "'" +

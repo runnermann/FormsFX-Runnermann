@@ -54,10 +54,13 @@ public class Alphabet {
 	public static String decrypt(String encryptNum) {
 		try {
 			System.out.println("decrypting encryptNum123: " + encryptNum);
+			System.out.println("");
 			// remove leading trailing ary brackets
-			int startNum = encryptNum.indexOf("[") + 1;
-			int endNum = encryptNum.indexOf("]");
-			String sub = encryptNum.substring(startNum, (endNum));
+			// may break later, replaced "[" and "]" with "{" and "}"
+			int startNum = encryptNum.indexOf("{") + 1;
+			int endNum = encryptNum.indexOf("}");
+
+			String sub = encryptNum.substring(startNum, endNum);
 			int[] primes = genPrimes();
 			StringBuilder sb = new StringBuilder();
 			String[] strAry = sub.split(",");

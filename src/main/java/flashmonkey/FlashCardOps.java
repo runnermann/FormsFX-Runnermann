@@ -837,8 +837,8 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                 dataOut.writeUTF(m.getSubj());
                 dataOut.writeUTF(m.getCat());
                 dataOut.writeUTF(m.getLang());
-                dataOut.writeUTF(m.getLastScore());
-                dataOut.writeUTF(scoresToArray(m.getScores()));
+                dataOut.writeUTF(m.getLastScore() == null ? "0" : m.getLastScore());
+                dataOut.writeUTF(scoresToArray(m.getScores()) == null ? "0/" : scoresToArray(m.getScores()));
             }
             catch(EOFException e) {
                 //System.out.println(e.getMessage() + "\n" + e.getStackTrace());
@@ -884,9 +884,8 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
         public void setMetaObjFromFile(String filePath) {
 
             LOGGER.debug("getMetaFromFile called");
-            try (DataInputStream dataIn = new DataInputStream(new FileInputStream(filePath))){
-                LOGGER.debug("getMetaFromFile Trying");
-                DeckMetaData obj = DeckMetaData.getInstance();
+            try (DataInputStream dataIn = new DataInputStream(new FileInputStream(filePath))) {
+                DeckMetaData data = DeckMetaData.getInstance();
     
                 System.out.println("Printout from file: \n" +
                                 "1. setLastDate: " + dataIn.readLong() + "\n" +
@@ -910,26 +909,26 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                                 "19. setScores" +dataIn.readUTF()  + "\n");
 
                 
-                obj.setLastDate(dataIn.readLong());
-                obj.setCreateDate(dataIn.readUTF());
-                obj.setCreatorEmail(dataIn.readUTF());
-                obj.setDeckFileName(dataIn.readUTF());
-                obj.setDescript(dataIn.readUTF());
-                obj.setNumImg(dataIn.readInt());
-                obj.setNumVideo(dataIn.readInt());
-                obj.setNumAudio(dataIn.readInt());
-                obj.setNumCard(dataIn.readInt());
-                obj.setNumSessions(dataIn.readInt());
-                obj.setDeckBook(dataIn.readUTF());
-                obj.setDeckClass(dataIn.readUTF());
-                obj.setDeckProf(dataIn.readUTF());
-                obj.setDeckSchool(dataIn.readUTF());
-                obj.setSubj(dataIn.readUTF());
-                obj.setCat(dataIn.readUTF());
-                obj.setLang(dataIn.readUTF());
-                obj.setLastScore(dataIn.readUTF());
+                data.setLastDate(dataIn.readLong());
+                data.setCreateDate(dataIn.readUTF());
+                data.setCreatorEmail(dataIn.readUTF());
+                data.setDeckFileName(dataIn.readUTF());
+                data.setDescript(dataIn.readUTF());
+                data.setNumImg(dataIn.readInt());
+                data.setNumVideo(dataIn.readInt());
+                data.setNumAudio(dataIn.readInt());
+                data.setNumCard(dataIn.readInt());
+                data.setNumSessions(dataIn.readInt());
+                data.setDeckBook(dataIn.readUTF());
+                data.setDeckClass(dataIn.readUTF());
+                data.setDeckProf(dataIn.readUTF());
+                data.setDeckSchool(dataIn.readUTF());
+                data.setSubj(dataIn.readUTF());
+                data.setCat(dataIn.readUTF());
+                data.setLang(dataIn.readUTF());
+                data.setLastScore(dataIn.readUTF());
                 //obj.setTestTypes
-                obj.setScores(scoresReadBack(dataIn.readUTF()));
+                data.setScores(scoresReadBack(dataIn.readUTF()));
 
             } catch (EOFException e) {
                 // end of file exception. Do nothing. this is expected.

@@ -59,7 +59,7 @@ public class EncryptedAcct {
 			getAccountData();
 		} else {
 			if(map.get("account_status").equals("disabled")) {
-				LOGGER.warn("ACOUNT_DISABLED_WARNING: user <{}> attempted to access a disabled account", Alphabet.encrypt(authcrypt.UserData.getUserName()));
+				LOGGER.warn("ACCOUNT_DISABLED_WARNING: user <{}> attempted to access a disabled account", Alphabet.encrypt(authcrypt.UserData.getUserName()));
 				map.put("isCurrent", "false");
 				return false;
 			}

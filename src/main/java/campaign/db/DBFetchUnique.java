@@ -29,7 +29,8 @@ public enum DBFetchUnique {
 	 * <p>Expects user email in plain text</p>
 	 */
 
-	//XXXXXXx this is wrong. MembershipFee is a transaction table. user email is not unique.
+	//XXXXXXx this is wrong. MembershipFee is a transaction table. the user email is not unique.
+	// the user email is repeated for each transaction
 	//	get ACCT_DATA and calculate
 	/*ACCT_STATUS() {
 		@Override

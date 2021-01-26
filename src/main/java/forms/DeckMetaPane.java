@@ -49,7 +49,7 @@ public class DeckMetaPane extends FormParentPane {
     @Override
     public void initializeParts() {
         
-        CreateFlash.getInstance().updateDeckInfo(meta);
+        CreateFlash.getInstance().updateDeckInfo(meta); // seems to be clearing out the form after downloading from file or from DB???
         
         cardNumLabel = new Label("Cards: "  + meta.getNumCard());//model.getDataModel().getNumCards());
         imgNumLabel = new Label("Images: "  + meta.getNumImg());//model.getDataModel().getNumImgs());

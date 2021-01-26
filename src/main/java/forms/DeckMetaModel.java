@@ -1,6 +1,7 @@
 package forms;
 
 import campaign.Report;
+import ch.qos.logback.classic.Level;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -25,8 +26,8 @@ import uicontrols.FxNotify;
  */
 public class DeckMetaModel extends ModelParent {
 	
-	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckMetaModel.class);
-	private static final Logger LOGGER = LoggerFactory.getLogger(DeckMetaModel.class);
+	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckMetaModel.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(DeckMetaModel.class);
 	private MetaDescriptor descriptor = new MetaDescriptor();
 	
 	
@@ -36,7 +37,7 @@ public class DeckMetaModel extends ModelParent {
 	 */
 	@Override
 	public void createForm() {
-		
+		LOGGER.setLevel(Level.DEBUG);
 		LOGGER.info("DeckMetaModel createForm called");
 		//String[] pwCheck = new String[1];
 		// For search by Class, Search by keyword, search by book, search by Prof, search by catagory subcatagory, university bldg classroom
