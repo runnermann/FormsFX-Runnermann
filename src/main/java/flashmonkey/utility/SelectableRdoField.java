@@ -1,7 +1,5 @@
 package flashmonkey.utility;
 
-//import flashmonkey.FlashMonkeyMain;
-//import flashmonkey.ReadFlash;
 import flashmonkey.FlashMonkeyMain;
 import fileops.LinkObj;
 import javafx.geometry.Insets;

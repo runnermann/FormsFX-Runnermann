@@ -1,8 +1,6 @@
 package forms;
 
-import authcrypt.UserData;
 import campaign.db.DBFetchToMapAry;
-import campaign.db.DBFetchUnique;
 import ch.qos.logback.classic.Level;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
@@ -12,8 +10,6 @@ import ecosystem.ConsumerPane;
 import ecosystem.DeckMarketPane;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.SearchRemoteDescriptor;
-import javafx.scene.Scene;
-import metadata.DeckMetaData;
 import org.slf4j.LoggerFactory;
 import uicontrols.SceneCntl;
 
@@ -39,11 +35,9 @@ public class DeckSearchModel extends ModelParent {
 				Field.ofSingleSelectionType(descriptor.tutsProperty(), descriptor.selectedTutProperty())
 						.label("institute_search_label"),
 				Field.ofSingleSelectionType(descriptor.professorsProperty(), descriptor.selectedProfProperty())
-						.label("professor_search_label")
-						.span(ColSpan.HALF),
+						.label("professor_search_label"),
 				Field.ofSingleSelectionType(descriptor.courseCodesProperty(), descriptor.SelectedCourseCodeProperty())
-						.label("coursecode_search_placeholder")
-						.span(ColSpan.HALF));
+						.label("coursecode_search_label"));
 		s.collapse(true);
 		s.collapsedProperty().addListener((observable, oldValue, newValue) -> descriptor.setProfBarProperties(observable, s));
 		s.title("search_prof_bar");
@@ -52,12 +46,9 @@ public class DeckSearchModel extends ModelParent {
 				Field.ofSingleSelectionType(descriptor.subjectsProperty(), descriptor.selectedSubjectProperty())
 						.label("subject_search_label"),
 				Field.ofSingleSelectionType(descriptor.sectionsProperty(), descriptor.selectedSectionProperty())
-						.label("section_search_label")
-				
-				//Field.ofSingleSelectionType(descriptor.subSectionsProperty(), descriptor.selectedSubSectionsProperty())
-				//		.label("subsection_search_label")
-		
-		);
+						.label("section_search_label"));
+		s.collapse(false);
+		s.collapsedProperty().addListener((observable, oldValue, newValue) -> descriptor.setProfBarProperties(observable, s));
 		y.title("search_subject_bar");
 		
 		formInstance = Form.of( s, y )
@@ -154,7 +145,6 @@ public class DeckSearchModel extends ModelParent {
 		LOGGER.debug("DeckSearchModel.query() called");
 
 		StringBuilder sb = new StringBuilder(" WHERE deck_school = '" + searchBy[0] + "'");
-
 		switch(queryType) {
 			// include professor only
 			case 0: {
@@ -162,7 +152,7 @@ public class DeckSearchModel extends ModelParent {
 				
 				System.out.println("sending query: " + sb.toString());
 				
-				return DBFetchToMapAry.DECKS_METADATA_QUERY.query(sb.toString());
+				return DBFetchToMapAry.DECK_METADATA_MULTIPLE.query(sb.toString());
 			}
 			// include class only
 			case 1: {
@@ -170,7 +160,7 @@ public class DeckSearchModel extends ModelParent {
 				
 				System.out.println("sending query: " + sb.toString());
 
-				return DBFetchToMapAry.DECKS_METADATA_QUERY.query(sb.toString());
+				return DBFetchToMapAry.DECK_METADATA_MULTIPLE.query(sb.toString());
 			}
 			// include prof and class
 			case 2: {
@@ -178,7 +168,7 @@ public class DeckSearchModel extends ModelParent {
 				
 				System.out.println("sending query: " + sb.toString());
 
-				return DBFetchToMapAry.DECKS_METADATA_QUERY.query(sb.toString());
+				return DBFetchToMapAry.DECK_METADATA_MULTIPLE.query(sb.toString());
 			}
 			// by school/institute only
 			case 3: {
@@ -186,10 +176,10 @@ public class DeckSearchModel extends ModelParent {
 				
 				System.out.println("sending query: " + sb.toString());
 				System.out.println("query returning: ");
-				return DBFetchToMapAry.DECKS_METADATA_QUERY.query(sb.toString());
+				return DBFetchToMapAry.DECK_METADATA_MULTIPLE.query(sb.toString());
 			}
 		}
-
+		// This should not be reached, but is the default.
 		return new ArrayList<HashMap<String, String>>();
 	}
 }

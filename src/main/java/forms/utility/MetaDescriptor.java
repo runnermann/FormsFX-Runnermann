@@ -2,7 +2,6 @@ package forms.utility;
 
 import authcrypt.UserData;
 import campaign.db.DBFetchToMapAry;
-import campaign.db.DBFetchUnique;
 import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import flashmonkey.ReadFlash;
@@ -270,7 +269,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 		String args = "WHERE user_email = '" + Alphabet.encrypt(user.getUserName()) +
 						"' AND deck_name = '" + ReadFlash.getInstance().getDeckName() + "'";
 		//response = Report.getInstance().queryGetDeckMetaData(user.getUserName(), ReadFlash.getInstance().getDeckName());
-		response = DBFetchToMapAry.DECKS_METADATA_QUERY.query(args);
+		response = DBFetchToMapAry.DECK_METADATA_SINGLE.query(args);
 
 		LOGGER.debug("response, num Array Elements: {}", response.size());
 

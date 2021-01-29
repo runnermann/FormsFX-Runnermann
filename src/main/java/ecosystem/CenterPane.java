@@ -38,7 +38,11 @@ public class CenterPane {
     private static int mapIdx;
 
 
-
+    /**
+     * Constructor, Sets the center pane to the card at the index
+     * @param index Th eindex of the card to be displayed in the center pane
+     * @param dmp THe deck market pane instance
+     */
     CenterPane(int index, DeckMarketPane dmp) {
         LOGGER.setLevel(Level.DEBUG);
         mapIdx = index;
@@ -140,6 +144,10 @@ public class CenterPane {
                     price, fee, calcTotal(fee, price), idx);
             dmp.setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"));
             ImageView img = new ImageView(dmp.getDeckImg(idx));
+            if(img == null) {
+                System.out.println("DeckMarketPane.setData() cloud not fined image");
+                System.exit(1);
+            }
             img.fitWidthProperty().bind(mediaPane.widthProperty());
             img.maxWidth(Double.MAX_VALUE);
             img.setPreserveRatio(true);

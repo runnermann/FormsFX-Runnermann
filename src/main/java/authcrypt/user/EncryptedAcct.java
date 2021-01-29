@@ -2,6 +2,7 @@ package authcrypt.user;
 
 import campaign.db.DBFetchToMapAry;
 import campaign.db.DBFetchUnique;
+import fmannotations.FMAnnotations;
 import forms.utility.Alphabet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,6 @@ public class EncryptedAcct {
 	 * is a problem. Error or bad actor?
 	 */
 	public boolean exists() {
-
 		if(map == null) {
 			// check if user account exists
 			getAccountData();
@@ -125,7 +125,7 @@ public class EncryptedAcct {
 	}
 
 	/**
-	 * Verify if user is current. Determines fees. Should not be used
+	 * Verify if user/member is current. Determines fees. Should not be used
 	 * outside of class.
 	 * @param paidDate
 	 * @param period
@@ -133,7 +133,14 @@ public class EncryptedAcct {
 	 * @return true if user is current
 	 */
 	private boolean verify(String paidDate, String period, String status) {
-		long days = period.equals("year") ? 365 : 31;
+
+		System.out.println("EncryptedAcct.verify: String period: " + period);
+		if(map == null) {
+			System.out.println("EncryptedAcct.verify: map is null, exiting...");
+			System.exit(1);
+		}
+
+		long days = period.equals("year") ? 365l : 31l;
 		long num = 0;
 		if(status.equals("ext_30")) {
 			//System.out.println("status contains ext_30" );
@@ -175,16 +182,19 @@ public class EncryptedAcct {
 		return false;
 	}
 
-	/*public static void main(String[] args) {
+/*	public static void main(String[] args) {
 		System.out.println("Testing verify()");
 		EncryptedAcct acct = new EncryptedAcct();
-		String paydate = "1596265200000";
+		// manipulate payDate to get the expected result
+		String paydate = "1605859200000";
 		String period = "31";
 		String status = "ext_30";
 		boolean bool = acct.verify(paydate, period, status);
 
 		System.out.println(bool + " = acct.verify(paydate, period, status = " + paydate + " " + period + " " + status);
 	}
-	 */
+
+ */
+
 	
 }

@@ -16,40 +16,27 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public enum DBFetchToMapAry {
-    DECKS_METADATA_QUERY() {
+    DECK_METADATA_SINGLE() {
         @Override
         public ArrayList<HashMap<String, String>> query(String... whereStatement) {
             ArrayList<HashMap<String, String>> map;
-            // the columns requested and to be mapped in the return data.
-            String[] columns = {"deck_id",
-                    "deck_photo",
-                    "deck_descript",
-                    "creator_email",
-                    "last_date",
-                    "create_date",
-                    "subj",
-                    "section",
-                    "deck_book",
-                    "deck_class",
-                    "deck_prof",
-                    "deck_name",
-                    "test_types",
-                    "num_cards",
-                    "num_imgs",
-                    "num_video",
-                    "num_audio",
-                    "deck_numstars",
-                    "num_users",
-                    "price",
-                    "course_code",
-                    "deck_school",
-                    "deck_language",
-                    "course_code"
-            };
-            String strQuery = "SELECT " + formatColumns(columns) +
+            String strQuery = "SELECT " + formatColumns(DECK_COLUMNS) +
                     " FROM deckMetadata " + whereStatement[0];
-            map = fetchSingleResult(strQuery, columns);
+            map = fetchSingleResult(strQuery, DECK_COLUMNS);
+
             return map;
+        }
+    },
+
+    DECK_METADATA_MULTIPLE() {
+        @Override
+        public ArrayList<HashMap<String, String>> query(String... whereStatement) {
+            ArrayList<HashMap<String, String>> multiMap;
+            String strQuery = "SELECT " + formatColumns(DECK_COLUMNS) +
+                    " FROM deckMetadata " + whereStatement[0];
+            multiMap = DBFetchToMapAry.fetchMultiResultSerial(strQuery, DECK_COLUMNS);
+
+            return multiMap;
         }
     },
     /**
@@ -72,8 +59,6 @@ public enum DBFetchToMapAry {
                         "FROM Account JOIN PurchaseFeeSched USING(catagory, currency) " +
                         " WHERE orig_email = '" + Alphabet.encrypt(args[0]) + "';";
                 map = fetchSingleResult(strQuery, columns);
-
-                LOGGER.debug("ACCT_DATA query: {}", strQuery);
             return map;
         }
     },
@@ -97,11 +82,37 @@ public enum DBFetchToMapAry {
     };
 
     // --------------------------------- --------------------------------- //
-    // Common fields
+    //                          Common fields
     // --------------------------------- --------------------------------- //
 
     // LOGGING
     private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBFetchToMapAry.class);
+    // the columns requested and to be mapped in the return data.
+    private final static String[] DECK_COLUMNS = {"deck_id",
+            "deck_photo",
+            "deck_descript",
+            "creator_email",
+            "last_date",
+            "create_date",
+            "subj",
+            "section",
+            "deck_book",
+            "deck_class",
+            "deck_prof",
+            "deck_name",
+            "test_types",
+            "num_cards",
+            "num_imgs",
+            "num_video",
+            "num_audio",
+            "deck_numstars",
+            "num_users",
+            "price",
+            "course_code",
+            "deck_school",
+            "deck_language",
+            "course_code"
+    };
 
     /**
      * No args constructor
@@ -111,76 +122,6 @@ public enum DBFetchToMapAry {
     // the query
     public abstract ArrayList<HashMap<String, String>> query(String ... whereStatement);
 
-    /**
-     * Creates an arrayList of hashmaps for a developer friendly
-     * means to access elements of a map without worrying about
-     * what is where in the array. Will require greater use of
-     * memory.
-     * @param strQuery
-     * @return
-     */
-    private static ArrayList<HashMap<String, String>> fetchMetaDataMap(String strQuery) {
-        ArrayList<HashMap<String, String>> mapArray = new ArrayList<>();
-        HashMap<String, String> mapEl;
-
-        LOGGER.setLevel(Level.DEBUG);
-        LOGGER.debug("strQuery: {}", strQuery );
-
-
-        try {
-            DBConnect db = DBConnect.getInstance();
-            CompletableFuture<QueryResult> future = db.getConnection().sendPreparedStatement(strQuery);
-            QueryResult queryResult = future.get();
-
-            if(queryResult.getRows().size() == 0) {
-                LOGGER.debug("query result has 0 rows");
-            } else {
-                LOGGER.debug("query result has rows of data");
-                for(int i = 0; i < queryResult.getRows().size(); i++) {
-                    // create a new HashMap
-                    mapEl = new HashMap<>(23);
-                    // create the map
-                    Object[] res = new Object[19];
-                    res = ((ArrayRowData) (queryResult.getRows().get(i))).getColumns();
-                    mapEl.put("deck_id", res[0].toString());
-                    mapEl.put("deck_photo", res[1].toString());
-                    mapEl.put("deck_descript", res[2].toString());
-                    mapEl.put("creator_email", Alphabet.decrypt(res[3].toString()));
-                    mapEl.put("last_date", res[4].toString());
-                    mapEl.put("create_date", res[5].toString());
-                    mapEl.put("subj", res[6].toString());
-                    mapEl.put("section", res[7].toString());
-                    mapEl.put("deck_book", res[8].toString());
-                    mapEl.put("deck_class", res[9].toString());
-                    mapEl.put("deck_prof", res[10].toString());
-                    mapEl.put("deck_name", res[11].toString());
-                    mapEl.put("test_types", res[12].toString());
-                    mapEl.put("num_cards", res[13].toString());
-                    mapEl.put("num_imgs", res[14].toString());
-                    mapEl.put("num_video", res[15].toString());
-                    mapEl.put("num_audio", res[16].toString());
-                    mapEl.put("deck_numstars", res[17].toString());
-                    mapEl.put("num_users", res[18].toString());
-                    mapEl.put("price", res[19].toString());
-                    mapEl.put("course_id", res[20].toString());
-                    mapEl.put("deck_school", res[21].toString());
-                    mapEl.put("deck_language", res[22].toString());
-                    mapEl.put("course_code", res[23].toString());
-
-                    // insert the map into the arrayList
-                    mapArray.add(mapEl);
-                }
-            }
-        } catch (NullPointerException e) {
-            LOGGER.warn("WARNING: Null pointer exception at DBFetchToMapAry.fetchMap: Deck may not exist. ");
-        } catch (ExecutionException e) {
-            LOGGER.warn("WARNING: {}\n{}" + e.getMessage(), e.getStackTrace());
-        } catch (InterruptedException e) {
-            LOGGER.warn("WARNING: {}\n{}" + e.getMessage(), e.getStackTrace());
-        }
-
-        return mapArray;
-    }
 
     /**
      * Returns an array of hashmaps with the first array-element
@@ -201,25 +142,26 @@ public enum DBFetchToMapAry {
             CompletableFuture<QueryResult> future = db.getConnection().sendPreparedStatement(strQuery);
             QueryResult queryResult = future.get();
 
-            LOGGER.debug("queryResult num columns: {}", ((ArrayRowData) queryResult.getRows().get(0)).getColumns().length);
-
             if (queryResult.getRows().size() == 0) {
                 LOGGER.debug("query result has 0 rows");
                 map.put("empty", "true");
             } else {
+                LOGGER.debug("queryResult num columns: {}", ((ArrayRowData) queryResult.getRows().get(0)).getColumns().length);
+
                 map.put("empty", "false");
                 Object[] res = ((ArrayRowData) (queryResult.getRows().get(0))).getColumns();
                 // create the map array with the results
                 for(int i = 0; i < res.length; i++) {
-                    map.put(columns[i], res[i].toString());
-                    System.out.println("column " + i + " " + res[i]);
+                    map.put(columns[i], res[i] != null ? res[i].toString() : "0");
+                    System.out.println("column " + i + " " + columns[i] + " = " + res[i]);
                 }
-                if(map.get("last_name") != null) {
-                    map = decryptNames(map);
-                }
+ // remove from common method and use where appropriate
+            // if(map.get("last_name") != null) {
+            //        map = decryptNames(map);
+            //    }
             }
         } catch (NullPointerException e) {
-            LOGGER.warn("WARNING: Null pointer exception at DBFetchToMapAry.fetchSingleResult(): Deck may not exist. ");
+            LOGGER.warn("WARNING: Null pointer exception at DBFetchToMapAry.fetchSingleResult(): may mean nothing");
         } catch (ExecutionException e) {
             LOGGER.warn("WARNING: {}\n{}" + e.getMessage(), e.getStackTrace());
         } catch (InterruptedException e) {
@@ -228,6 +170,52 @@ public enum DBFetchToMapAry {
         mapArray.add(map);
         return mapArray;
     }
+
+    private static ArrayList<HashMap<String, String>> fetchMultiResultSerial(String strQuery, String[] columns) {
+        LOGGER.setLevel(Level.DEBUG);
+        LOGGER.debug("strQuery: {}", strQuery );
+
+        ArrayList<HashMap<String, String>> mapArray = new ArrayList<>();
+        HashMap<String, String> map;// = new HashMap<>();
+
+        try {
+            DBConnect db = DBConnect.getInstance();
+            CompletableFuture<QueryResult> future = db.getConnection().sendPreparedStatement(strQuery);
+            QueryResult queryResult = future.get();
+            int size = queryResult.getRows().size();
+
+            if (size == 0) {
+                LOGGER.debug("query result has 0 rows");
+                map = new HashMap<>();
+                map.put("empty", "true");
+                mapArray.add(map);
+            } else {
+                LOGGER.debug("queryResult num columns: {}", ((ArrayRowData) queryResult.getRows().get(0)).getColumns().length);
+
+                for(int j = 0; j < size; j++) {
+                    map = new HashMap<>();
+                    map.put("empty", "false");
+                    Object[] res = ((ArrayRowData) (queryResult.getRows().get(j))).getColumns();
+                    // create the map array with the results
+                    for(int i = 0; i < res.length; i++) {
+                        map.put(columns[i], res[i] != null ? res[i].toString() : "0");
+                        System.out.println("\tcolumn " + i + " " + columns[i] + " = " + res[i]);
+                    }
+                    mapArray.add(map);
+                    System.out.println("added deckMetaData to array");
+                }
+            }
+        } catch (NullPointerException e) {
+            LOGGER.warn("WARNING: Null pointer exception at DBFetchToMapAry.fetchSingleResult(): may mean nothing");
+        } catch (ExecutionException e) {
+            LOGGER.warn("WARNING: {}\n{}" + e.getMessage(), e.getStackTrace());
+        } catch (InterruptedException e) {
+            LOGGER.warn("WARNING: {}\n{}" + e.getMessage(), e.getStackTrace());
+        }
+
+        return mapArray;
+    }
+
 
     // Returns the array of columns formatted correctly
     // for the query.

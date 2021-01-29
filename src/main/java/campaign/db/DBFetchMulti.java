@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
  * use DBFetchUnique.
  */
 public enum DBFetchMulti  {
-	
+	//@TODO implement getSuvjs, getProf, getCodes, getSections in SearchRemonteDescriptor and DBFetchMulti
 	DECK_SUBJECTS() {
 		@Override
 		public ArrayList<String> query(String ... notUsed) {

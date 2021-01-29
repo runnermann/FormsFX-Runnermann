@@ -3,6 +3,7 @@ package ecosystem;
 import authcrypt.UserData;
 import authcrypt.user.EncryptedAcct;
 import ch.qos.logback.classic.Level;
+
 import fileops.CloudOps;
 import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.HPos;
@@ -36,10 +37,10 @@ public class DeckMarketPane {
     private static ArrayList<HashMap<String, String>> mapArray;
     // private String[] acctStatus; / in EncrypytedAcct
     private boolean userExists = false;
-    private EncryptedAcct acct = new EncryptedAcct();
-    private ArrayList<GridPane> teaserPanes;
+    private EncryptedAcct acct;// = new EncryptedAcct();
+    private ArrayList<HBox> teaserPaneList;
     private ScrollPane teaserScroll;
-    private VBox teaserContainer;
+    private VBox teaserVBox;
     private CenterPane centerPane;
     private VBox topBar;
     private VBox lowerBar;
@@ -76,9 +77,11 @@ public class DeckMarketPane {
 
         // Data is set by formAction in DeckSearchModel
         mapArray = new ArrayList<>();
-        teaserPanes = new ArrayList<>();
+        teaserPaneList = new ArrayList<>();
         teaserScroll = new ScrollPane();
         cartList = new ArrayList<>();
+
+        acct = new EncryptedAcct();
 
         //teaserScroll.setStyle("-fx-background-color: #FF5400");
         topBar = new VBox();
@@ -111,10 +114,17 @@ public class DeckMarketPane {
         // should be limited to reduce
         // delay.
         ArrayList<String> strAry = setImgNames(mapArray);
-//        imageAry = clops.getMediaFmS3(strAry);
+        // @TODO get and put thumbs in public s3
+    //    imageAry = clops.getMediaFmS3(strAry);
+        imageAry = new ArrayList<>(1);
+        imageAry.add(new Image("File:/image/Martian.png"));
         setTeaserPanes();
-        teaserScroll.setContent(teaserContainer);
+        int width = SceneCntl.getFileSelectPaneWd();
+        teaserScroll.setContent(teaserVBox);
         teaserScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        teaserScroll.setPrefWidth(width);
+        teaserScroll.setMaxHeight(446);
+        teaserScroll.setId("fileSelectOuter");
         // sets data in Encrypted account and
         // verifies that the user exists.
         userExists = acct.exists();
@@ -131,21 +141,24 @@ public class DeckMarketPane {
     private void setTeaserPanes() {
         LOGGER.debug("setTeaserPanes() called");
 
-
-        teaserContainer = new VBox(4);
+        teaserVBox = new VBox(4);
         HashMap<String, String> map;// : mapArray
+        TeaserPane tPane = new TeaserPane();
 
         for(int i = 0; i < mapArray.size(); i++) {
             map = mapArray.get(i);
             // Set the map to the entries in the teaserPane
-            TeaserPane tPane = new TeaserPane();
-            int finalI = i;
-            tPane.getPane(map, i).setOnMouseClicked(e -> {
+
+            final int finalI = i;
+            HBox h = tPane.buildField(map, i);
+
+            h.setOnMouseClicked(e -> {
+                System.out.println("teaserPane clicked. finalI: " + finalI);
                 centerPane = new CenterPane(finalI, this);
             });
 
-            teaserPanes.add(tPane.getPane(map, i));
-            teaserContainer.getChildren().add(teaserPanes.get(i));
+            teaserPaneList.add(h);
+            teaserVBox.getChildren().add(h);
         }
     }
 
@@ -212,6 +225,8 @@ public class DeckMarketPane {
     Image getDeckImg(int index) {
         // todo get image from cloud
         // todo ensure connected and message if not.
+        //imageAry = new ArrayList<>(1);
+        imageAry.add(new Image("File:/image/Martian.png"));
         return imageAry.get(index);
     }
 
@@ -233,7 +248,8 @@ public class DeckMarketPane {
 
     protected ImageView getStars(String numStars, int width) {
         // @TODO finish getStars
-        ImageView img = new ImageView("/icon/24/stars/stars" + numStars + ".png");
+        Image stars = new Image(getClass().getResourceAsStream("/icon/24/stars/stars3.png")); //new Image("File:/icon/24/stars/stars" + numStars + ".png");
+        ImageView img = new ImageView(stars);
         img.setFitWidth(width);
         img.setPreserveRatio(true);
         img.setSmooth(true);
@@ -266,4 +282,5 @@ public class DeckMarketPane {
     EncryptedAcct getAcct() {
         return this.acct;
     }
+
 }

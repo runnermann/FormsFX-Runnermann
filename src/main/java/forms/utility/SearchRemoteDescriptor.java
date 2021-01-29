@@ -232,7 +232,8 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 	public void setProperties(SearchRemoteDescriptor fm) {
 	
 	}
-	
+
+	//@TODO implement getSubjs, getProf, getCodes, getSections in SearchRemoteDescriptor and DBFetchMulti
 	/**
 	 * Parses the String response from the DB to an
 	 * ArrayList.

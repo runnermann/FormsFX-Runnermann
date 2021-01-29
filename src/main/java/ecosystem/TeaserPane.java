@@ -1,17 +1,27 @@
 package ecosystem;
 
 import ch.qos.logback.classic.Level;
+import flashmonkey.FlashMonkeyMain;
+import forms.utility.Alphabet;
+import javafx.beans.value.WritableValue;
+import javafx.css.StyleableProperty;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.AccessibleAttribute;
+import javafx.scene.AccessibleRole;
+import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.text.Text;
+import javafx.scene.layout.*;
 import org.slf4j.LoggerFactory;
+import uicontrols.UIColors;
 
 import java.util.HashMap;
 
-public class TeaserPane {
+public class TeaserPane extends ToggleButton {
 
     private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TeaserPane.class);
     //private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchModel.class);
@@ -19,50 +29,76 @@ public class TeaserPane {
 
     public TeaserPane() {
         LOGGER.setLevel(Level.DEBUG);
-        System.out.println("TeaserPane no-arg constructor called");
+        initialize();
+    }
+
+    public void initialize() {
+        //getStyleClass().setAll(DEFAULT_STYLE_CLASS);
+        setAccessibleRole(AccessibleRole.LIST_ITEM);
+        // alignment is styleable through css. Calling setAlignment
+        // makes it look to css like the user set the value and css will not
+        // override. Initializing alignment by calling set on the
+        // CssMetaData ensures that css will be able to override the value.
+        ((StyleableProperty<Pos>)(WritableValue<Pos>)alignmentProperty()).applyStyle(null, Pos.CENTER_LEFT);
     }
 
 
 
-    public GridPane getPane(HashMap<String, String> map, int idx) {
-
+    public HBox buildField(HashMap<String, String> map, int idx) {
         LOGGER.debug("getPane() called");
 
-        GridPane gp = new GridPane();
-        gp.setPrefWidth(292);
-        gp.setPrefHeight(164);
+        HBox rdoBox = new HBox(6);
+        GridPane gridP = new GridPane();
+        gridP.setId("teaserPane");
 
-        gp.setStyle("-fx-background-color: #393E46");
-
-        gp = setColLayout(gp);
-        gp.setHgap(4);
-        gp.setVgap(4);
+        gridP = setColLayout(gridP);
+        gridP.setHgap(3);
+        gridP.setVgap(3);
 
         // column one
-            // deck_name
-        Label titlelbl = new Label(map.get("deck_name"));
-        titlelbl.setWrapText(true);
-        gp.add(titlelbl,0,0 );
-            // section descript
-        gp.add(new Label(map.get("section")), 1, 0);
-            // media
-        if(hasMedia(map.get("num_imgs"), map.get("num_video"), map.get("num_audio"))) {
-            gp.add(new Label("Media"), 2, 0);
-        }
-            // stars
-        gp.add(DeckMarketPane.getInstance().getStars(map.get("deck_numstars"), 48), 4, 0);
+        // deck_name
+        Label deckLbl = new Label(map.get("deck_name"));
+        deckLbl.setWrapText(true);
+        gridP.add(deckLbl,0,0 );
+        // section descript
+        gridP.add(new Label("section3"), 0, 1);
+        // media
+  //      if(hasMedia(map.get("num_imgs"), map.get("num_video"), map.get("num_audio"))) {
+            LOGGER.debug("teaserPane has media");
+            gridP.add(new Label("Media"), 0, 2);
+  //      }
+
         // column two
-        ImageView img = new ImageView(DeckMarketPane.getInstance().getDeckImg(idx));
-        img.setFitWidth(126);
+        Image image = new Image(getClass().getResourceAsStream("/image/profDemoMktImg.png"));
+        ImageView img = new ImageView(image); //new ImageView(DeckMarketPane.getInstance().getDeckImg(idx));
+
+        img.setFitWidth(138);
         img.setPreserveRatio(true);
         img.setSmooth(true);
-        gp.add(img, 0, 2, 3, 1);
-        gp.add(getAuthors(map.get("creator_email")), 4, 2);
-        return gp;
+        // columnNum, rowNum, num cols, num rows
+        gridP.add(img, 1, 0, 1, 3);
+
+        // stars
+        // columnNum, rowNum, num cols, num rows
+        //gridP.add(DeckMarketPane.getInstance().getStars(map.get("deck_numstars"), 80), 0, 4, 2, 1);
+        gridP.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("creator_email")), 0, 4, 2, 1);
+        //rdoBox.setId("#teaser" + idx);
+        rdoBox.getChildren().add(gridP);
+
+        rdoBox.setOnMouseEntered(e -> {
+            rdoBox.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.BUTTON_PURPLE_50), CornerRadii.EMPTY, Insets.EMPTY)));
+            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
+        });
+
+        rdoBox.setOnMouseExited(e -> {
+            rdoBox.setBackground(Background.EMPTY);
+            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
+        });
+
+        return rdoBox;
     }
 
     public GridPane setColLayout(GridPane gp) {
-
         LOGGER.debug("setColLayout() called");
 
         ColumnConstraints col1 = new ColumnConstraints(160); // column 0 = 160 wide
@@ -71,15 +107,20 @@ public class TeaserPane {
         return gp;
     }
 
-
-
     private Label getAuthors(String ... authors) {
         StringBuilder sb = new StringBuilder();
+        sb.append("Created by: ");
         for(int i = 0; i < authors.length - 1; i++) {
-            sb.append(authors[i] + ", ");
+            sb.append(Alphabet.decrypt(authors[i]) + ", ");
         }
-        sb.append(authors[authors.length - 1]);
+        sb.append(Alphabet.decrypt(authors[authors.length - 1]));
         return new Label(sb.toString());
+    }
+
+    private HBox getStarPane(String numStars, String numUsers, String creator) {
+        HBox box = new HBox(4);
+        box.getChildren().addAll(DeckMarketPane.getInstance().getStars(numStars, 80), new Label("  " + numUsers + "  "),  getAuthors(creator));
+        return box;
     }
 
 
@@ -88,9 +129,34 @@ public class TeaserPane {
 
 
 
-
     public boolean hasMedia(String imgs, String video, String audio) {
-        return (video != "" | imgs != "" | audio != "");
+        return true;// (video != "" | imgs != "" | audio != "");
+    }
+
+    /**
+     * Toggles the state of the radio button if and only if the RadioButton
+     * has not already selected or is not part of a {@link ToggleGroup}.
+     */
+    @Override public void fire() {
+        // we don't toggle from selected to not selected if part of a group
+        if (getToggleGroup() == null || !isSelected()) {
+            super.fire();
+        }
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Accessibility handling                                                  *
+     *                                                                         *
+     **************************************************************************/
+
+    /** {@inheritDoc} */
+    @Override
+    public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+        switch (attribute) {
+            case SELECTED: return isSelected();
+            default: return super.queryAccessibleAttribute(attribute, parameters);
+        }
     }
 
 

@@ -54,8 +54,7 @@ import static flashmonkey.FlashCardOps.*;
  * @version iOOily: FlashMonkey Multi-Media and Multi-Test
  * @author Lowell Stadelman
  */
-public class FlashMonkeyMain extends Application
-{
+public class FlashMonkeyMain extends Application {
     
     @SuppressWarnings("rawtypes")
     // for serializing objects to file. The serial version.
@@ -105,11 +104,8 @@ public class FlashMonkeyMain extends Application
     public void start(Stage primaryStage) {
         // set to call stop() when stage is closed
         primaryStage.setOnHidden( e -> stop());
-    
-        LOGGER.info("**************   SESSION START   **************");
         // reporting app performace to DB
         Report.getInstance().sessionStart();
-
         // failure flag if authcrypt.user is
         // in edit mode. If true, save work
         // before closing.
@@ -618,11 +614,13 @@ public class FlashMonkeyMain extends Application
     
     public static void getSearchPane() {
         LOGGER.debug("getSearchWindow() called");
-        ConsumerPane cPane = ConsumerPane.getInstance();
-        Scene scene = new Scene(cPane.getConsumerPane());
-        scene.getStylesheets().addAll("css/consumerButtons.css", "css/consumerPane.css");
-        actionWindow = new Stage();
-        actionWindow.setScene(scene);
+        if(actionWindow == null) {
+            ConsumerPane cPane = ConsumerPane.getInstance();
+            Scene scene = new Scene(cPane.getConsumerPane());
+            scene.getStylesheets().addAll("css/consumerButtons.css", "css/consumerPane.css");
+            actionWindow = new Stage();
+            actionWindow.setScene(scene);
+        }
         actionWindow.show();
     }
 

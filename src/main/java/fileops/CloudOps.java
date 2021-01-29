@@ -2,13 +2,28 @@ package fileops;
 
 import authcrypt.UserData;
 import ch.qos.logback.classic.Level;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import flashmonkey.FlashCardOps;
 import flashmonkey.ReadFlash;
 import forms.utility.Alphabet;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
 import org.slf4j.LoggerFactory;
 
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
@@ -27,6 +42,17 @@ public class CloudOps {
 	
 	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CloudOps.class);
 	//private static final Logger LOGGER = LoggerFactory.getLogger(CloudOps.class);
+
+	// -- For thumbs -- //
+	// ***** AWS *******
+	private BasicAWSCredentials creds = new BasicAWSCredentials(" AKIA3YIX3CI5ZQXD4MHP", "UHLFa7WBS7Cy8mbjNw9t5VtjnCwY13kohnBnYXzH");
+	private AWSCredentialsProvider credProvider = new AWSStaticCredentialsProvider(creds);
+	private String bucketName = "iooily.flashmonkey";
+	private AmazonS3 s3client = AmazonS3ClientBuilder.standard()
+			.withCredentials(credProvider)
+			//.withEndPoint("arn:aws:s3:us-west-2:808040731195:accesspoint/userdecks")// 2020/2/18
+			.withRegion(Regions.US_WEST_2)
+			.build();
 
 	// list of deckLinks returned from S3GetList
 	private static ArrayList<CloudLink> cloudLinks = new ArrayList<>(4);
@@ -65,6 +91,67 @@ public class CloudOps {
 	public ArrayList<CloudLink> getCloudLinks() {
 		return cloudLinks;
 	}
+
+	// ************************* THUMBS ******************************* //
+	// @TODO remove getMediaFmS3 and move to own class. Obscure, encrypt and download S3 pw and username for thumbs access.
+	/**
+	 * @param deckThumbs ArrayList of deck image string names
+	 * @return Returns an arrayList of images retrieved from S3 based on the
+	 * input provided in the Parameter. If there is a problem with the connection
+	 * returns an empty arraylist.
+	 */
+	private S3Object s3Object;
+	private String name;
+	public ArrayList<Image> getMediaFmS3(ArrayList<String> deckThumbs)
+	{
+		LOGGER.info("*** getMediaFmS3 *** imageNames: {}", deckThumbs);
+
+		if(!Utility.isConnected()) {
+			return new ArrayList<Image>(0);
+		}
+
+		long getTime; //= System.currentTimeMillis();
+		String bucketName = "iooily.flashmonkey.deck-thumbs";
+		if (s3client.doesBucketExistV2(bucketName)) {
+			LOGGER.debug("bucket name: {}", bucketName);
+			// *** performance testing ***
+			getTime = System.currentTimeMillis();
+
+			ArrayList<Image> imgList = new ArrayList<>(deckThumbs.size());
+			// @TODO parallelize getMediaFmS3
+			// NO NO NO! Try barriers
+			//forallChunked(0, mediaObjs.size() -1, i -> {
+			//ImageInputStream imageInput;
+			for(int i = 0; i < deckThumbs.size(); i++) {
+				name = deckThumbs.get(i);
+				try {
+					// get the mediaFile from s3
+					s3Object = s3client.getObject(bucketName, name);
+					S3ObjectInputStream s3is = s3Object.getObjectContent();
+					ImageInputStream imageInput = ImageIO.createImageInputStream(s3is);
+					BufferedImage buIm = ImageIO.read(imageInput);
+					imgList.add(SwingFXUtils.toFXImage(buIm, null));
+
+				} catch (AmazonServiceException e) {
+					LOGGER.info("getMediaFmS3() Downloading failed :" + e.getMessage());
+					LOGGER.debug("bucket name: {}", bucketName);
+				} catch (Exception e) {
+					LOGGER.warn("\tUnknown Exception: in connectCloudIn(...) \n" + e.getStackTrace());
+					e.printStackTrace();
+				}
+			}
+			getTime = System.currentTimeMillis() - getTime;
+			LOGGER.info("getMediaFmS3: CloudOps time passed: {} milliseconds.", getTime);
+
+			return imgList;
+
+		} else {
+			LOGGER.warn("could not connect to the bucket during download");
+		}
+		return null;
+	}
+
+
 
 	// ************************* Deck RELATED ************************* //
 

@@ -101,8 +101,6 @@ public class ConsumerPane extends StackPane {
 
     public static class EcoPurchase {
 
-
-
         private static void layoutWebView() {
             LOGGER.debug("layoutWebView called");
             EcoPane ePane = new EcoPane();
