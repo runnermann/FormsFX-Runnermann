@@ -50,7 +50,7 @@
 }
 
 .content {
-    -fx-padding: 10;
+    -fx-padding: 0;
 }
 
 .controls {
@@ -129,7 +129,6 @@
     -fx-background-color:  #D9D9D9;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
-    -fx-padding: 10,10,10,10;
 }
 
 #infoPane-label {
@@ -156,12 +155,40 @@
     -fx-pref-height: 40;
 }
 
+#teaserPane, #mediaPane, #scrollPane, #pricePane, #infoPane {
+    -fx-padding: 4,4,4,0;
+    /*-fx-background-color: #d61dcd;*/
+}
+
+#titlePane {
+    -fx-padding: 10,4,4,0;
+}
+
 #teaserPane {
-    -fx-padding: 2,2,4,0;
     -fx-pref-height: 64;
     -fx-pref-width: 128;
-    -fx-background-color: #d61dcd;
 }
+
+#white14 {
+    -fx-text-fill: #D9D9D9;
+    -fx-font-size: 14;
+}
+
+#bold14 {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+#purple14 {
+    -fx-text-fill: #9276AC;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+#purpleRight {
+    -fx-text-fill: #9276AC;
+}
+
 
 
 

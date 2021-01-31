@@ -60,7 +60,7 @@ public class ConsumerPane extends StackPane {
         LOGGER.setLevel(Level.DEBUG);
         mainPane = new StackPane();
 
-        mainPane.setStyle("-fx-background-color: #D20035");
+        //mainPane.setStyle("-fx-background-color: #D20035");
         searchPane = new DeckSearchPane();
         layer1 = new AnchorPane(searchPane.getFormPane());
 

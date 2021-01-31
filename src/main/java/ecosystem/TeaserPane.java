@@ -43,13 +43,13 @@ public class TeaserPane extends ToggleButton {
     }
 
 
-
-    public HBox buildField(HashMap<String, String> map, int idx) {
+    private GridPane gridP;
+    public HBox build(HashMap<String, String> map, int idx) {
         LOGGER.debug("getPane() called");
 
         HBox rdoBox = new HBox(6);
-        GridPane gridP = new GridPane();
-        gridP.setId("teaserPane");
+        gridP = new GridPane();
+   //     gridP.setId("teaserPane");
 
         gridP = setColLayout(gridP);
         gridP.setHgap(3);
@@ -72,7 +72,7 @@ public class TeaserPane extends ToggleButton {
         Image image = new Image(getClass().getResourceAsStream("/image/profDemoMktImg.png"));
         ImageView img = new ImageView(image); //new ImageView(DeckMarketPane.getInstance().getDeckImg(idx));
 
-        img.setFitWidth(138);
+        img.setFitWidth(128);
         img.setPreserveRatio(true);
         img.setSmooth(true);
         // columnNum, rowNum, num cols, num rows
@@ -85,13 +85,13 @@ public class TeaserPane extends ToggleButton {
         //rdoBox.setId("#teaser" + idx);
         rdoBox.getChildren().add(gridP);
 
-        rdoBox.setOnMouseEntered(e -> {
-            rdoBox.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.BUTTON_PURPLE_50), CornerRadii.EMPTY, Insets.EMPTY)));
+        gridP.setOnMouseEntered(e -> {
+            gridP.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.GRID_GREY), CornerRadii.EMPTY, Insets.EMPTY)));
             FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
         });
 
-        rdoBox.setOnMouseExited(e -> {
-            rdoBox.setBackground(Background.EMPTY);
+        gridP.setOnMouseExited(e -> {
+            gridP.setBackground(Background.EMPTY);
             FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
         });
 
@@ -119,7 +119,7 @@ public class TeaserPane extends ToggleButton {
 
     private HBox getStarPane(String numStars, String numUsers, String creator) {
         HBox box = new HBox(4);
-        box.getChildren().addAll(DeckMarketPane.getInstance().getStars(numStars, 80), new Label("  " + numUsers + "  "),  getAuthors(creator));
+        box.getChildren().addAll(DeckMarketPane.getInstance().getStars(numStars, 64), new Label("  " + numUsers + "  "),  getAuthors(creator));
         return box;
     }
 

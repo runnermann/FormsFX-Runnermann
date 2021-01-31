@@ -36,7 +36,7 @@ public class DeckMarketPane {
     // arraylist of DeckMetaData from query
     private static ArrayList<HashMap<String, String>> mapArray;
     // private String[] acctStatus; / in EncrypytedAcct
-    private boolean userExists = false;
+    // private boolean userExists = false;
     private EncryptedAcct acct;// = new EncryptedAcct();
     private ArrayList<HBox> teaserPaneList;
     private ScrollPane teaserScroll;
@@ -117,18 +117,20 @@ public class DeckMarketPane {
         // @TODO get and put thumbs in public s3
     //    imageAry = clops.getMediaFmS3(strAry);
         imageAry = new ArrayList<>(1);
-        imageAry.add(new Image("File:/image/Martian.png"));
+        for(int i = 0; i < 5; i++) {
+            imageAry.add(new Image(getClass().getResourceAsStream("/image/profDemoMktImg.png")));
+        }
         setTeaserPanes();
         int width = SceneCntl.getFileSelectPaneWd();
         teaserScroll.setContent(teaserVBox);
         teaserScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        teaserScroll.setPrefWidth(width);
-        teaserScroll.setMaxHeight(446);
-        teaserScroll.setId("fileSelectOuter");
+//        teaserScroll.setPrefWidth(width);
+//        teaserScroll.setMaxHeight(446);
+//        teaserScroll.setId("fileSelectOuter");
         // sets data in Encrypted account and
         // verifies that the user exists.
-        userExists = acct.exists();
-        if(! userExists) {
+        //userExists = acct.exists();
+        if( !acct.exists()) {
             LOGGER.warn("User does not exist in database when using DeckSearch userName: " + UserData.getUserName());
             // @TODO redirect user to create account on login page ?? or setup account in DB at create new user ???
         }
@@ -138,6 +140,7 @@ public class DeckMarketPane {
         layoutParts();
     }
 
+
     private void setTeaserPanes() {
         LOGGER.debug("setTeaserPanes() called");
 
@@ -146,15 +149,19 @@ public class DeckMarketPane {
         TeaserPane tPane = new TeaserPane();
 
         for(int i = 0; i < mapArray.size(); i++) {
-            map = mapArray.get(i);
+            int idx = i;
+            map = mapArray.get(idx);
             // Set the map to the entries in the teaserPane
 
-            final int finalI = i;
-            HBox h = tPane.buildField(map, i);
+            HBox h = tPane.build(map, i);
 
+            System.out.println("setTeaserPanes idx: " + idx);
             h.setOnMouseClicked(e -> {
-                System.out.println("teaserPane clicked. finalI: " + finalI);
-                centerPane = new CenterPane(finalI, this);
+                System.out.println("teaserPane clicked. idx: " + idx);
+                centerPane.getPane().getChildren().clear();
+                centerPane = new CenterPane(idx, this);
+                gp.getChildren().remove(gp.getChildren().size() - 1);
+                gp.add(centerPane.getPane(), 1, 1, 1, 1); // blue
             });
 
             teaserPaneList.add(h);
@@ -172,9 +179,13 @@ public class DeckMarketPane {
 
     void setTopBar(String institute, String prof, String course) {
         topBar.setId("topBar");
-        topBar.setPadding(new Insets(0,0,0, 510));
+        topBar.setPadding(new Insets(5,0,0, 480));
         Label university = new Label(institute);
-        Label courseLabel = new Label(prof + " " + course);
+        university.setId("white14");
+        Label courseLabel = new Label("Professor: " + prof + ",  Course: " + course);
+        courseLabel.setId("white14");
+        // clear any previous nodes
+        topBar.getChildren().clear();
         topBar.getChildren().addAll(university, courseLabel);
     }
 
@@ -226,7 +237,7 @@ public class DeckMarketPane {
         // todo get image from cloud
         // todo ensure connected and message if not.
         //imageAry = new ArrayList<>(1);
-        imageAry.add(new Image("File:/image/Martian.png"));
+        //imageAry.add(new Image(getClass().getResourceAsStream(mapArray.get(index)));
         return imageAry.get(index);
     }
 
@@ -235,9 +246,9 @@ public class DeckMarketPane {
         LOGGER.debug("layoutParts() called");
         // column, row, col-span, row-span
         gp.add(topBar, 0,0,3,1); // light purple
-        gp.add(centerPane.getPane(), 1, 1, 1, 1); // blue
         gp.add(teaserScroll, 2, 1, 1, 1); // orange
         gp.add(lowerBar, 0, 2, 3, 1); // btn purple
+        gp.add(centerPane.getPane(), 1, 1, 1, 1); // blue
 
         gp.setMinHeight(SceneCntl.getConsumerPaneHt());
         gp.setMinWidth(SceneCntl.getConsumerPaneWd());
@@ -248,7 +259,7 @@ public class DeckMarketPane {
 
     protected ImageView getStars(String numStars, int width) {
         // @TODO finish getStars
-        Image stars = new Image(getClass().getResourceAsStream("/icon/24/stars/stars3.png")); //new Image("File:/icon/24/stars/stars" + numStars + ".png");
+        Image stars = new Image(getClass().getResourceAsStream("/icon/24/stars/stars" + numStars + ".png")); //new Image("File:/icon/24/stars/stars" + numStars + ".png");
         ImageView img = new ImageView(stars);
         img.setFitWidth(width);
         img.setPreserveRatio(true);

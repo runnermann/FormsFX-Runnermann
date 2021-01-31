@@ -3,15 +3,19 @@ package ecosystem;
 import campaign.db.DBFetchMulti;
 import ch.qos.logback.classic.Level;
 import flashmonkey.FlashMonkeyMain;
-import forms.DeckSearchPane;
+import forms.utility.Alphabet;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import org.slf4j.LoggerFactory;
+
 import uicontrols.FxNotify;
 
 import java.time.Instant;
@@ -47,7 +51,7 @@ public class CenterPane {
         LOGGER.setLevel(Level.DEBUG);
         mapIdx = index;
         gp = new GridPane();
-        gp.setStyle("-fx-background-color: BLUE");
+    //    gp.setStyle("-fx-background-color: BLUE");
         gp.setGridLinesVisible(true);
         mediaPane = new VBox();
         titlePane = new GridPane();
@@ -58,21 +62,41 @@ public class CenterPane {
         setData(index, dmp);
     }
 
-    private GridPane setColumns(GridPane gp) {
+    private GridPane setGPColumns(GridPane gp) {
         LOGGER.debug("setColLayout called");
-
         ColumnConstraints col1 = new ColumnConstraints();
         ColumnConstraints col2 = new ColumnConstraints();
-        //col1.setPrefWidth(316);
         col1.setPercentWidth(68);
-        //col2.setPrefWidth(156);
         col2.setPercentWidth(32);
-        //col1.setPercentWidth(70);
-        //col2.setPercentWidth(30);
         gp.getColumnConstraints().addAll(col1, col2);
-        //gp.setMaxWidth(472);
-        //gp.setPrefWidth(400);
-        //gp.setMinWidth(300);
+
+        return gp;
+    }
+
+    private GridPane setTitleColumns(GridPane gp) {
+        ColumnConstraints col1 = new ColumnConstraints();
+        ColumnConstraints col2 = new ColumnConstraints();
+        ColumnConstraints col3 = new ColumnConstraints();
+        col1.setPercentWidth(60);
+        col2.setPercentWidth(30);
+        col3.setPercentWidth(10);
+        gp.getColumnConstraints().addAll(col1, col2, col3);
+
+        RowConstraints row1 = new RowConstraints();
+        RowConstraints row2 = new RowConstraints();
+        row1.setPrefHeight(30);
+        row2.setPrefHeight(15);
+        gp.getRowConstraints().addAll(row1, row2);
+        return gp;
+    }
+
+    private GridPane setDescriptColumns(GridPane gp) {
+        ColumnConstraints col1 = new ColumnConstraints();
+        ColumnConstraints col2 = new ColumnConstraints();
+        //col2.setHgrow(Priority.ALWAYS);
+        col1.setPercentWidth(40);
+        col2.setPercentWidth(60);
+        gp.getColumnConstraints().addAll(col1, col2);
         return gp;
     }
 
@@ -80,7 +104,8 @@ public class CenterPane {
         LOGGER.debug("setRowLayout called");
 
         RowConstraints mediaRow = new RowConstraints(266);
-        RowConstraints titleRow = new RowConstraints(24);
+        // Hard coded to match row1 & row2 in setTitleColumns
+        RowConstraints titleRow = new RowConstraints(45);
         RowConstraints lowerRow = new RowConstraints( );
         lowerRow.setVgrow(Priority.ALWAYS);
         gp.getRowConstraints().addAll(mediaRow, titleRow, lowerRow);
@@ -91,16 +116,21 @@ public class CenterPane {
     private void layoutParts() {
         LOGGER.debug("layoutParts called");
 
-        gp = setColumns(gp);
+        gp = setGPColumns(gp);
         gp = setRowLayout(gp);
         gp.add(mediaPane, 0, 0, 2, 1);
         gp.add(titlePane, 0, 1, 2, 1);
         gp.add(descriptScroll, 0, 2, 1, 1);
         gp.add(pricePane, 1, 2, 1, 1);
 
-        descriptVBox.setMaxWidth(Double.MAX_VALUE);
+        mediaPane.setId("mediaPane");
+        titlePane.setId("titlePane");
+        descriptScroll.setId("scrollPane");
+        pricePane.setId("pricePane");
+
+        //descriptVBox.setMaxWidth(Double.MAX_VALUE);
         descriptScroll.setMaxHeight(Double.MAX_VALUE);
-        GridPane.setHgrow(descriptVBox, Priority.ALWAYS);
+        // GridPane.setHgrow(descriptVBox, Priority.ALWAYS);
         GridPane.setHgrow(pricePane, Priority.ALWAYS);
 
         mediaPane.setMinWidth(300);
@@ -109,64 +139,32 @@ public class CenterPane {
 
     // ************** SETTERS **************
 
-    /**
-     * A deck should know it's index to be added to the
-     * cart.
-     * @param idx
-     */
-    public void setMapIdx(int idx) {
-        this.mapIdx = idx;
-    }
-
-    /**
-     * Sets the data in the panes.
-     * @param idx
-     */
-    private void setData(int idx, DeckMarketPane dmp) {
-        LOGGER.debug("setData called");
-
-        // hashmap is set in DBFetchToMapAry
-        if(dmp.getMapArray().isEmpty()) {
-            String message = " I was unable to find anything for that search." +
-                    "\nTry a different spelling or a broader search.";
-            FxNotify.notificationPurple("Oooph!", message, Pos.CENTER, 10,
-                    "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
-        } else {
-            HashMap<String, String> map = dmp.getMapArray().get(idx);
-            setTitlePane(dmp, map.get("deck_name"), map.get("deck_numstars"), map.get("num_users"), getFriends(map.get("deck_id")),
-                    getClassMates(map.get("deck_id")));
-            setDescriptPane(map.get("deck_descript"), map.get("num_users"), map.get("creator_email"), map.get("create_date"),
-                    map.get("last_date"));
-
-            double fee = dmp.getAcct().getFee();
-            double price = Double.parseDouble(map.get("price"));
-            setPricePane(dmp, map.get("num_cards"), map.get("num_video"), map.get("num_imgs"), map.get("num_audio"),
-                    price, fee, calcTotal(fee, price), idx);
-            dmp.setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"));
-            ImageView img = new ImageView(dmp.getDeckImg(idx));
-            if(img == null) {
-                System.out.println("DeckMarketPane.setData() cloud not fined image");
-                System.exit(1);
-            }
-            img.fitWidthProperty().bind(mediaPane.widthProperty());
-            img.maxWidth(Double.MAX_VALUE);
-            img.setPreserveRatio(true);
-            img.setSmooth(true);
-            mediaPane.getChildren().add(img);
-        }
-    }
 
 
-
-    /* called  by setData() */
+    /*
+    The set of panes underneath the title pane and to the left of the price panes. Contains the TextArea with
+    the long description of the deck. ANd underneath many of the other metrics such as number of users cards, media
+    etc...
+    called  by setData() */
+    GridPane grid;
     private void setDescriptPane(String descript, String numUsers, String authors, String createDate, String lastUsed) {
 
         LOGGER.debug("setDescriptPane called");
+        grid = new GridPane();
+        grid = setDescriptColumns(grid);
 
-        TextArea descriptArea = new TextArea(descript);
-        descriptArea.setWrapText(true);
-        Label users = new Label("Num. Users" + numUsers);
-        Label auth = new Label("Authors: " + authors);
+        Label textArea = new Label(descript);
+        textArea.setWrapText(true);
+        // set padding below textArea to provide a boundary between
+        // text area and other data.
+        textArea.setPadding(new Insets(10,0,20,0));
+
+        //textArea.prefWidthProperty().bindBidirectional(descriptScroll.prefWidthProperty());
+        Label ul = new Label("Users: ");
+        Label un = new Label(numUsers);
+        Label al = new Label("Authors: " );
+        Label an = new Label(Alphabet.decrypt(authors));
+
         // date related
 
         LOGGER.debug("createDate {}", createDate );
@@ -176,24 +174,50 @@ public class CenterPane {
         Label created = new Label("Since: " + format.format(date));
         date = Instant.ofEpochMilli(Long.valueOf(lastUsed)).atZone(ZoneId.systemDefault()).toLocalDate();
         Label last = new Label("Last used: " + format.format(date));
-        VBox vBox  = new VBox(2);
-        //vBox.setPrefWidth(264);
 
-        vBox.getChildren().addAll(descriptArea, users, auth, created, last);
+        //vBox.setPrefWidth(264);
+        grid.add(textArea, 0, 0, 1, 2);
+        grid.add(ul, 0, 2, 1, 1);
+        grid.add(un, 1, 2, 1, 1);
+        grid.add(al, 0, 3, 1, 1);
+        grid.add(an, 1, 3, 1, 1);
+        grid.add(created, 0, 4, 1, 1);
+        grid.add(last, 0, 5, 1, 1);
+
+        grid.setGridLinesVisible(true);
+
+        ul.setId("purple14");
+        al.setId("purple14");
+        un.setId("purpleRight");
+        an.setId("purpleRight");
+
         descriptScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        descriptScroll.setContent(vBox);
+        descriptScroll.setContent(grid);
+
+        // Set textArea min and max width... to be adjustable ... PITA!!!
+        descriptScroll.widthProperty().addListener((obs, oldval, newVal) -> {
+            System.out.println("descriptScroll new width: " + newVal.doubleValue() );
+            textArea.setMinWidth(newVal.doubleValue() - 8);
+            textArea.setMaxWidth(newVal.doubleValue() - 8);
+
+            grid.setMinWidth(newVal.doubleValue() - 8);
+            grid.setMaxWidth(newVal.doubleValue() - 8);
+        });
     }
 
-    /* called  by setData() */
+    /* The title pane underneath the image in the CenterPane called  by setData() */
     private void setTitlePane(DeckMarketPane dmp, String deckName, String numStars, String numUsers, String friends, String classMates) {
         LOGGER.debug("setTitlePane called");
+         Label deckLabel = new Label(deckName);
+         deckLabel.setId("bold14");
 
-        titlePane.add(new Label(deckName), 0, 0, 1, 1);
-        titlePane.add(dmp.getStars(numStars, 64), 1, 0, 1, 1);
+        titlePane = setTitleColumns(titlePane);
+        titlePane.add(deckLabel, 0, 0, 1, 1);
+        titlePane.add(dmp.getStars(numStars, 100), 1, 0, 1, 1);
         titlePane.add(new Label(numUsers), 2, 0, 1, 1);
         // 2nd row
-        titlePane.add(new Label(friends ), 1, 1, 1, 1);
-        titlePane.add(new Label(classMates ), 2, 1, 1, 1);
+        titlePane.add(new Label(friends ), 1, 1, 1, 2);
+        titlePane.add(new Label(classMates ), 2, 1, 1, 2);
     }
 
     /* called by setData() */
@@ -235,6 +259,55 @@ public class CenterPane {
     }
 
 
+    /**
+     * A deck should know it's index to be added to the
+     * cart.
+     * @param idx
+     */
+    public void setMapIdx(int idx) {
+        this.mapIdx = idx;
+    }
+
+    /**
+     * Sets the data in the panes.
+     * @param idx
+     */
+    private void setData(int idx, DeckMarketPane dmp) {
+        LOGGER.debug("setData called");
+
+        // hashmap is set in DBFetchToMapAry
+        if(dmp.getMapArray().isEmpty()) {
+            String message = " I was unable to find anything for that search." +
+                    "\nTry a different spelling or a broader search.";
+            FxNotify.notificationPurple("Oooph!", message, Pos.CENTER, 10,
+                    "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+        } else {
+            HashMap<String, String> map = dmp.getMapArray().get(idx);
+            setTitlePane(dmp, map.get("deck_name"), map.get("deck_numstars"), map.get("num_users"), getFriends(map.get("deck_id")),
+                    getClassMates(map.get("deck_id")));
+            setDescriptPane(map.get("deck_descript"), map.get("num_users"), map.get("creator_email"), map.get("create_date"),
+                    map.get("last_date"));
+
+            double fee = dmp.getAcct().getFee();
+            double price = Double.parseDouble(map.get("price"));
+            setPricePane(dmp, map.get("num_cards"), map.get("num_video"), map.get("num_imgs"), map.get("num_audio"),
+                    price, fee, calcTotal(fee, price), idx);
+            dmp.setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"));
+
+            ImageView img = new ImageView(dmp.getDeckImg(idx));
+            if(img == null) {
+                System.out.println("DeckMarketPane.setData() cloud not find image");
+                System.exit(1);
+            }
+            img.fitWidthProperty().bind(mediaPane.widthProperty());
+            //         img.maxWidth(mediaPane.getBoundsInLocal().getWidth() - 10);
+            img.setPreserveRatio(true);
+            img.setSmooth(true);
+            mediaPane.getChildren().add(img);
+        }
+    }
+
+
 
 
     // ********* GETTERS **********
@@ -254,7 +327,7 @@ public class CenterPane {
         DBFetchMulti.DECK_FRIENDS.query(deck_id);
         LOGGER.warn("Called DECK_FREINDS that has not been implemented . Returning empty");
 
-        String empty = "";
+        String empty = "Friends: ";
         return empty;
     }
 
@@ -264,7 +337,7 @@ public class CenterPane {
         DBFetchMulti.DECK_CLASSMATES.query(deck_id);
         LOGGER.warn("Called DECK_CLASSMATES that has not been implemented . returning empty");
 
-        String empty = "";
+        String empty = "ClassMates: ";
         return empty;
     }
 
