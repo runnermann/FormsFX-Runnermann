@@ -25,12 +25,12 @@
 /* FONTS */
 @font-face{
     font-family: 'Raleway-Medium';
-    src: url("font/Roboto-Medium.ttf");
+    src: url("../font/Roboto-Medium.ttf");
 }
 
 @font-face{
     font-family: 'Raleway';
-    src: url("font/Roboto-Regular.ttf");
+    src: url("../font/Roboto-Regular.ttf");
 }
 
 

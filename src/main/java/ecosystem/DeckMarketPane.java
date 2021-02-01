@@ -48,8 +48,7 @@ public class DeckMarketPane {
     private static ArrayList<Image> imageAry;
     // cartItems
     private static ArrayList<HashMap<String, String>> cartList;
-
-
+    // buttons
     private Button purchaseButton;
 
     // Double-checked locking for singleton class. There are no guarantees
@@ -65,6 +64,9 @@ public class DeckMarketPane {
         }
         return CLASS_INSTANCE;
     }
+
+
+    // ******* Singleton private constructor ********* //
 
     private DeckMarketPane() {
         LOGGER.setLevel(Level.DEBUG);
@@ -118,7 +120,7 @@ public class DeckMarketPane {
     //    imageAry = clops.getMediaFmS3(strAry);
         imageAry = new ArrayList<>(1);
         for(int i = 0; i < 5; i++) {
-            imageAry.add(new Image(getClass().getResourceAsStream("/image/profDemoMktImg.png")));
+            imageAry.add(new Image(getClass().getResourceAsStream("/image/professorLg.png")));
         }
         setTeaserPanes();
         int width = SceneCntl.getFileSelectPaneWd();
@@ -145,6 +147,7 @@ public class DeckMarketPane {
         LOGGER.debug("setTeaserPanes() called");
 
         teaserVBox = new VBox(4);
+        teaserVBox.setPadding(new Insets(10, 0, 10, 4));
         HashMap<String, String> map;// : mapArray
         TeaserPane tPane = new TeaserPane();
 
@@ -198,7 +201,6 @@ public class DeckMarketPane {
 
 
     public GridPane setColumns(GridPane gp) {
-
         LOGGER.debug("setColLayout() called");
 
         ColumnConstraints col1 = new ColumnConstraints(); // column 0 = spacer
@@ -209,6 +211,7 @@ public class DeckMarketPane {
         col1.setPercentWidth(38);
         //col2.setPrefWidth(476);
         col2.setPercentWidth(38);
+        col2.setHgrow(Priority.NEVER);
         //col3.setPrefWidth(400);
         col3.setPercentWidth(24);
         gp.getColumnConstraints().addAll(col1, col2, col3);
@@ -216,7 +219,6 @@ public class DeckMarketPane {
     }
 
     public GridPane setRowLayout(GridPane gp) {
-
         LOGGER.debug("setRowLayout called");
 
         RowConstraints top = new RowConstraints(48);
@@ -228,9 +230,6 @@ public class DeckMarketPane {
         return gp;
     }
 
-    protected void addToCart(HashMap<String, String> deckMap) {
-        this.cartList.add(deckMap);
-    }
 
     /* called  by setData() */
     Image getDeckImg(int index) {
@@ -278,6 +277,12 @@ public class DeckMarketPane {
         this.mapArray = mapAry;
     }
 
+    // ***** Cart or Account related ***** //
+
+    protected void addToCart(HashMap<String, String> deckMap) {
+        this.cartList.add(deckMap);
+    }
+
     public void setAcctData() {
         // @TODO validate this public method
         EncryptedAcct acct = new EncryptedAcct();
@@ -285,13 +290,13 @@ public class DeckMarketPane {
 
     }
 
-    public void onClose() {
-        LOGGER.debug("DeckMarketPane.onClose() called");
-      //  this.CLASS_INSTANCE = null;
-    }
-
     EncryptedAcct getAcct() {
         return this.acct;
+    }
+
+    public void onClose() {
+        LOGGER.debug("DeckMarketPane.onClose() called");
+        //  this.CLASS_INSTANCE = null;
     }
 
 }

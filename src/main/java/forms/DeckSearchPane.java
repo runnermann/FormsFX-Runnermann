@@ -84,7 +84,7 @@ public class DeckSearchPane extends FormParentPane {
 				"classmate or previous student created for the courses " +
 				"you are taking.";
 		String lbl = "Find a study deck";
-		String imgPath = "/emojis/rose.png";
+		String imgPath = "/emojis/blue_tulip.png";
 		super.layoutParts();
 		super.setInfoPane(lbl, msg, imgPath);
 		// LOGGER.warn("called");

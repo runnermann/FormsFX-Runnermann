@@ -16,7 +16,6 @@
 
 package gaugeLib.hansolo.medusa;
 
-import gaugeLib.hansolo.medusa.Gauge.SkinType;
 import gaugeLib.hansolo.medusa.GaugeDesign.GaugeBackground;
 import gaugeLib.hansolo.medusa.skins.GaugeSkin;
 import javafx.scene.control.Skin;
@@ -65,7 +64,7 @@ public class FGauge extends Region {
         this(GAUGE, DESIGN, GaugeBackground.DARK_GRAY);
     }
     public FGauge(final Gauge GAUGE, final GaugeDesign DESIGN, final GaugeBackground BACKGROUND) {
-        getStylesheets().add(getClass().getResource("framed-gauge.css").toExternalForm());
+        getStylesheets().add(getClass().getResource("css/framed-gauge.css").toExternalForm());
         getStyleClass().setAll("framed-gauge");
         gauge           = GAUGE;
         gaugeDesign     = DESIGN;

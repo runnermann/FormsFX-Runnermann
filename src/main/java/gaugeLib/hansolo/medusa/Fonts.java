@@ -61,21 +61,21 @@ public class Fonts {
 
     static {
         try {
-            digitalName                = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/digital.ttf"), 10).getName();
-            digitalReadoutName         = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/digitalreadout.ttf"), 10).getName();
-            digitalReadoutBoldName     = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/digitalreadoutb.ttf"), 10).getName();
-            elektraName                = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/elektra.ttf"), 10).getName();
-            robotoThinName             = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Roboto-Thin.ttf"), 10).getName();
-            robotoLightName            = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Roboto-Light.ttf"), 10).getName();
-            robotoRegularName          = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Roboto-Regular.ttf"), 10).getName();
-            robotoMediumName           = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Roboto-Medium.ttf"), 10).getName();
-            robotoBoldName             = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Roboto-Bold.ttf"), 10).getName();
-            robotoLightCondensedName   = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/RobotoCondensed-Light.ttf"), 10).getName();
-            robotoRegularCondensedName = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/RobotoCondensed-Regular.ttf"), 10).getName();
-            robotoBoldCondensedName    = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/RobotoCondensed-Bold.ttf"), 10).getName();
-            latoLightName              = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Lato-Lig.otf"), 10).getName();
-            latoRegularName            = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Lato-Reg.otf"), 10).getName();
-            latoBoldName               = Font.loadFont(Fonts.class.getResourceAsStream("/gaugeLib/hansolo/medusa/Lato-Bol.otf"), 10).getName();
+            digitalName                = Font.loadFont(Fonts.class.getResourceAsStream("/font/digital.ttf"), 10).getName();
+            digitalReadoutName         = Font.loadFont(Fonts.class.getResourceAsStream("/font/digitalreadout.ttf"), 10).getName();
+            digitalReadoutBoldName     = Font.loadFont(Fonts.class.getResourceAsStream("/font/digitalreadoutb.ttf"), 10).getName();
+            elektraName                = Font.loadFont(Fonts.class.getResourceAsStream("/font/elektra.ttf"), 10).getName();
+            robotoThinName             = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Thin.ttf"), 10).getName();
+            robotoLightName            = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Light.ttf"), 10).getName();
+            robotoRegularName          = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Regular.ttf"), 10).getName();
+            robotoMediumName           = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Medium.ttf"), 10).getName();
+            robotoBoldName             = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Bold.ttf"), 10).getName();
+            robotoLightCondensedName   = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Light.ttf"), 10).getName();
+            robotoRegularCondensedName = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Regular.ttf"), 10).getName();
+            robotoBoldCondensedName    = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Bold.ttf"), 10).getName();
+            latoLightName              = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Lig.otf"), 10).getName();
+            latoRegularName            = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Reg.otf"), 10).getName();
+            latoBoldName               = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Bol.otf"), 10).getName();
         } catch (Exception exception) { }
         DIGITAL_NAME                  = digitalName;
         DIGITAL_READOUT_NAME          = digitalReadoutName;

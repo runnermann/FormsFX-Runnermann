@@ -2100,7 +2100,7 @@ public class Clock extends Control {
     }
 
     @Override public String getUserAgentStylesheet() {
-        return getClass().getResource("clock.css").toExternalForm();
+        return getClass().getResource("css/clock.css").toExternalForm();
     }
 
     public ClockSkinType getSkinType() { return skinType; }

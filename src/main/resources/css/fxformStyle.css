@@ -4,7 +4,7 @@
 
 @font-face {
     font-family: 'Flaticon';
-    src: url(font/flaticon.ttf);
+    src: url(../font/flaticon.ttf);
 }
 .field-label-description,
 .field-value-description {

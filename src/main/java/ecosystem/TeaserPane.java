@@ -49,7 +49,7 @@ public class TeaserPane extends ToggleButton {
 
         HBox rdoBox = new HBox(6);
         gridP = new GridPane();
-   //     gridP.setId("teaserPane");
+        gridP.setId("teaserPane");
 
         gridP = setColLayout(gridP);
         gridP.setHgap(3);
@@ -86,12 +86,12 @@ public class TeaserPane extends ToggleButton {
         rdoBox.getChildren().add(gridP);
 
         gridP.setOnMouseEntered(e -> {
-            gridP.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.GRID_GREY), CornerRadii.EMPTY, Insets.EMPTY)));
+            //gridP.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.GRID_GREY), CornerRadii.EMPTY, Insets.EMPTY)));
             FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
         });
 
         gridP.setOnMouseExited(e -> {
-            gridP.setBackground(Background.EMPTY);
+            //gridP.setBackground(Background.EMPTY);
             FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
         });
 

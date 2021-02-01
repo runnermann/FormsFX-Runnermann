@@ -5223,7 +5223,7 @@ public class Gauge extends Control {
         String resource = "";
         try
         {
-            resource = getClass().getResource("gauge.css").toExternalForm();
+            resource = getClass().getResource("css/gauge.css").toExternalForm();
         }
         catch (NullPointerException e)
         {

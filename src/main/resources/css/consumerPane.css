@@ -2,22 +2,37 @@
  * GENERAL STYLING *
  *******************/
 
-@font-face {
-    font-family: 'Flaticon';
-    src: url(font/flaticon.ttf);
-}
 .field-label-description,
 .field-value-description {
     -fx-text-fill: red;
 }
 .root-pane {
     -fx-padding: 0;
-    -fx-font-family: 'Arial';
 }
 
+@font-face {
+    font-family: 'Roboto';
+    src: url('/font/Roboto-Medium.ttf');
+}
+@font-face {
+    font-family: 'CenturyGothicPro';
+    src: url('/font/Century Gothic.ttf');
+}
+@font-face {
+    font-family: 'Helvetica-Bold';
+    src: url('/font/WarowniaBd.otf')
+}
+@font-face {
+    font-family: 'Helvetica';
+    src: url('/font/Warownia.otf')
+}
+
+
+/*
 .flaticon .text {
     -fx-font-family: 'Flaticon';
-}
+}*/
+
 
 .lang-button {
     -fx-border-color: dimgrey;
@@ -132,13 +147,13 @@
 }
 
 #infoPane-label {
-    -fx-font-family: Raleway-Medium;
+    -fx-font-family: "Raleway-Medium.ttf";
     -fx-font-size: 16;
     -fx-font: #393E46; /* fm grey */
 }
 
 #infoPane-message {
-    -fx-font-family: "Raleway";
+    /*-fx-font-family: "Raleway-Medium.ttf";*/
     -fx-font-size: 12;
     -fx-wrap-text: true;
     -fx-font: #393E46; /* fm grey */
@@ -155,18 +170,30 @@
     -fx-pref-height: 40;
 }
 
-#teaserPane, #mediaPane, #scrollPane, #pricePane, #infoPane {
-    -fx-padding: 4,4,4,0;
+#teaserPane {
+    -fx-padding: 4,20,4,0;
     /*-fx-background-color: #d61dcd;*/
 }
 
+#infoPane {
+    -fx-padding: 10,4,0,4;
+}
+
+#pricePane {
+    -fx-padding: 10,0,0,0;
+}
+
 #titlePane {
-    -fx-padding: 10,4,4,0;
+    -fx-padding: 10,0,10,4;
 }
 
 #teaserPane {
     -fx-pref-height: 64;
     -fx-pref-width: 128;
+    -fx-background-color: #e2e2e2;
+}
+#teaserPane:hover {
+    -fx-background-color: #FFFFFF;
 }
 
 #white14 {
@@ -174,12 +201,20 @@
     -fx-font-size: 14;
 }
 
-#bold14 {
-    -fx-font-size: 14;
+#norm16 {
+    -fx-font-family: "Helvetica";
+    -fx-font-size: 16;
+}
+
+/* deckTitle */
+#bold16 {
+    -fx-font-family: "Helvetica-Bold";
+    -fx-font-size: 16;
     -fx-font-weight: bold;
 }
 
 #purple14 {
+    /*-fx-font-family: "Raleway-Medium.ttf";*/
     -fx-text-fill: #9276AC;
     -fx-font-size: 14;
     -fx-font-weight: bold;
@@ -187,6 +222,18 @@
 
 #purpleRight {
     -fx-text-fill: #9276AC;
+}
+
+#description {
+    -fx-font-family: "CenturyGothicPro";
+    -fx-font-size: 14;
+    -fx-text-fill: #4d4d4d;
+}
+
+#title {
+    -fx-font-family: "Helvetica-Bold";
+    -fx-font-size: 16;
+    -fx-text-fill: #4d4d4d;
 }
 
 

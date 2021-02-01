@@ -11,9 +11,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import org.slf4j.LoggerFactory;
 
 import uicontrols.FxNotify;
@@ -52,11 +49,11 @@ public class CenterPane {
         mapIdx = index;
         gp = new GridPane();
     //    gp.setStyle("-fx-background-color: BLUE");
-        gp.setGridLinesVisible(true);
+        //gp.setGridLinesVisible(true);
         mediaPane = new VBox();
         titlePane = new GridPane();
-        pricePane = new VBox(4);
-        descriptVBox = new VBox(4);
+        pricePane = new VBox();
+        descriptVBox = new VBox();
         descriptScroll = new ScrollPane();
         layoutParts();
         setData(index, dmp);
@@ -68,6 +65,8 @@ public class CenterPane {
         ColumnConstraints col2 = new ColumnConstraints();
         col1.setPercentWidth(68);
         col2.setPercentWidth(32);
+        col1.setHgrow(Priority.NEVER);
+        col2.setHgrow(Priority.NEVER);
         gp.getColumnConstraints().addAll(col1, col2);
 
         return gp;
@@ -124,6 +123,7 @@ public class CenterPane {
         gp.add(pricePane, 1, 2, 1, 1);
 
         mediaPane.setId("mediaPane");
+        mediaPane.setPadding(new Insets(20,0,20,0));
         titlePane.setId("titlePane");
         descriptScroll.setId("scrollPane");
         pricePane.setId("pricePane");
@@ -155,9 +155,8 @@ public class CenterPane {
 
         Label textArea = new Label(descript);
         textArea.setWrapText(true);
-        // set padding below textArea to provide a boundary between
-        // text area and other data.
-        textArea.setPadding(new Insets(10,0,20,0));
+        textArea.setId("description");
+        textArea.setPadding(new Insets(10,0,40,0));
 
         //textArea.prefWidthProperty().bindBidirectional(descriptScroll.prefWidthProperty());
         Label ul = new Label("Users: ");
@@ -184,7 +183,7 @@ public class CenterPane {
         grid.add(created, 0, 4, 1, 1);
         grid.add(last, 0, 5, 1, 1);
 
-        grid.setGridLinesVisible(true);
+        //grid.setGridLinesVisible(true);
 
         ul.setId("purple14");
         al.setId("purple14");
@@ -209,15 +208,22 @@ public class CenterPane {
     private void setTitlePane(DeckMarketPane dmp, String deckName, String numStars, String numUsers, String friends, String classMates) {
         LOGGER.debug("setTitlePane called");
          Label deckLabel = new Label(deckName);
-         deckLabel.setId("bold14");
+         deckLabel.setId("bold16");
+         Label numLabel = new Label(numUsers);
+         numLabel.setId("norm16");
+         Label classLabel = new Label(classMates);
+         classLabel.setId("purple14");
+         Label friendsLabel = new Label(friends);
+         friendsLabel.setId("purple14");
 
         titlePane = setTitleColumns(titlePane);
         titlePane.add(deckLabel, 0, 0, 1, 1);
         titlePane.add(dmp.getStars(numStars, 100), 1, 0, 1, 1);
-        titlePane.add(new Label(numUsers), 2, 0, 1, 1);
+        titlePane.add(numLabel, 2, 0, 1, 1);
         // 2nd row
-        titlePane.add(new Label(friends ), 1, 1, 1, 2);
-        titlePane.add(new Label(classMates ), 2, 1, 1, 2);
+        titlePane.add(classLabel, 1, 1, 1, 2);
+        titlePane.add(friendsLabel, 2, 1, 1, 2);
+
     }
 
     /* called by setData() */
@@ -299,8 +305,9 @@ public class CenterPane {
                 System.out.println("DeckMarketPane.setData() cloud not find image");
                 System.exit(1);
             }
-            img.fitWidthProperty().bind(mediaPane.widthProperty());
-            //         img.maxWidth(mediaPane.getBoundsInLocal().getWidth() - 10);
+            img.fitWidthProperty().bind(mediaPane.widthProperty().subtract(8));
+            //img.maxWidth(676 - 8);
+            //img.minWidth(676 - 8);
             img.setPreserveRatio(true);
             img.setSmooth(true);
             mediaPane.getChildren().add(img);
@@ -337,7 +344,7 @@ public class CenterPane {
         DBFetchMulti.DECK_CLASSMATES.query(deck_id);
         LOGGER.warn("Called DECK_CLASSMATES that has not been implemented . returning empty");
 
-        String empty = "ClassMates: ";
+        String empty = "Class Mates: ";
         return empty;
     }
 
