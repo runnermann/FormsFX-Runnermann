@@ -4,6 +4,7 @@ import campaign.db.DBFetchMulti;
 import ch.qos.logback.classic.Level;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.Alphabet;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Hyperlink;
@@ -11,9 +12,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import org.slf4j.LoggerFactory;
 
 import uicontrols.FxNotify;
+import uicontrols.SceneCntl;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -33,8 +37,8 @@ public class CenterPane {
     private GridPane gp;
     private VBox mediaPane;
     private GridPane titlePane;
-    private VBox pricePane;
-    private VBox descriptVBox;
+    private GridPane pricePane;
+
     private ScrollPane descriptScroll;
     private static int mapIdx;
 
@@ -49,11 +53,10 @@ public class CenterPane {
         mapIdx = index;
         gp = new GridPane();
     //    gp.setStyle("-fx-background-color: BLUE");
-        //gp.setGridLinesVisible(true);
+    //    gp.setGridLinesVisible(true);
         mediaPane = new VBox();
         titlePane = new GridPane();
-        pricePane = new VBox();
-        descriptVBox = new VBox();
+        pricePane = new GridPane();
         descriptScroll = new ScrollPane();
         layoutParts();
         setData(index, dmp);
@@ -63,8 +66,8 @@ public class CenterPane {
         LOGGER.debug("setColLayout called");
         ColumnConstraints col1 = new ColumnConstraints();
         ColumnConstraints col2 = new ColumnConstraints();
-        col1.setPercentWidth(68);
-        col2.setPercentWidth(32);
+        col1.setPercentWidth(58);
+        col2.setPercentWidth(40);
         col1.setHgrow(Priority.NEVER);
         col2.setHgrow(Priority.NEVER);
         gp.getColumnConstraints().addAll(col1, col2);
@@ -101,13 +104,13 @@ public class CenterPane {
 
     private GridPane setRowLayout(GridPane gp) {
         LOGGER.debug("setRowLayout called");
-
+        RowConstraints spacer = new RowConstraints(10);
         RowConstraints mediaRow = new RowConstraints(266);
         // Hard coded to match row1 & row2 in setTitleColumns
         RowConstraints titleRow = new RowConstraints(45);
         RowConstraints lowerRow = new RowConstraints( );
         lowerRow.setVgrow(Priority.ALWAYS);
-        gp.getRowConstraints().addAll(mediaRow, titleRow, lowerRow);
+        gp.getRowConstraints().addAll(spacer, mediaRow, spacer, titleRow, lowerRow);
         gp.setMinHeight(300);
         return gp;
     }
@@ -117,13 +120,12 @@ public class CenterPane {
 
         gp = setGPColumns(gp);
         gp = setRowLayout(gp);
-        gp.add(mediaPane, 0, 0, 2, 1);
-        gp.add(titlePane, 0, 1, 2, 1);
-        gp.add(descriptScroll, 0, 2, 1, 1);
-        gp.add(pricePane, 1, 2, 1, 1);
+        gp.add(mediaPane, 0, 1, 2, 1);
+        gp.add(titlePane, 0, 3, 2, 1);
+        gp.add(descriptScroll, 0, 4, 1, 1);
+        gp.add(pricePane, 1, 4, 1, 1);
 
         mediaPane.setId("mediaPane");
-        mediaPane.setPadding(new Insets(20,0,20,0));
         titlePane.setId("titlePane");
         descriptScroll.setId("scrollPane");
         pricePane.setId("pricePane");
@@ -183,7 +185,7 @@ public class CenterPane {
         grid.add(created, 0, 4, 1, 1);
         grid.add(last, 0, 5, 1, 1);
 
-        //grid.setGridLinesVisible(true);
+    //    grid.setGridLinesVisible(true);
 
         ul.setId("purple14");
         al.setId("purple14");
@@ -229,6 +231,9 @@ public class CenterPane {
     /* called by setData() */
     private void setPricePane(DeckMarketPane dmp, String numCard, String numVid, String numImg, String numAud, double price, double nonPreemFee, double total, int idx) {
         LOGGER.debug("setPricePane() called");
+        pricePane = setPriceColumns(pricePane);
+        //pricePane.setGridLinesVisible(true);
+        pricePane.setPadding(new Insets(10, 0, 0,0));
 
         Hyperlink preemLink = new Hyperlink("Get premium");
         preemLink.setId("link");
@@ -249,19 +254,58 @@ public class CenterPane {
         spacer1.setPrefHeight(40);
         spacer2.setPrefHeight(60);
 
-        Label card = new Label("DECK SIZE: " + numCard + " cards");
-        Label vid = new Label("video: " + numVid);
-        Label aud = new Label("audio: " + numAud);
-        Label img = new Label("image: " + numImg);
+        Text card = new Text("DECK SIZE: ");
+        Text cardNum = new Text(numCard + " cards");
+        pricePane.add(card, 0,0);
+        pricePane.add(cardNum, 1,0);
 
-        VBox totalsBox = new VBox(2);
-        totalsBox.setId("totalsBox");
-        Label p = new Label("Price: $" + price);
-        Label f = new Label("Non-premium Fee: $" + nonPreemFee);
-        Label t = new Label("Total: $" + total);
-        totalsBox.getChildren().addAll(p, f, t, spacer2, preemLink, cartLink);
+        Text vidLbl = new Text("video:" );
+        Text vidNum = new Text(numVid);
+        pricePane.add(vidLbl, 0, 1);
+        pricePane.add(vidNum, 1, 1);
 
-        pricePane.getChildren().addAll(card, vid, img, aud, spacer1, totalsBox);
+        Text audLbl = new Text("audio:");
+        Text audNum = new Text(numVid);
+        pricePane.add(audLbl, 0,2);
+        pricePane.add(audNum, 1, 2);
+
+        Text imgLbl = new Text("image:");
+        Text imgNum = new Text(numVid);
+        pricePane.add(imgLbl, 0,3);
+        pricePane.add(imgNum, 1, 3);
+
+        Region space = new Region();
+        Region space1 = new Region();
+        space.setPrefHeight(20);
+        space1.setPrefHeight(20);
+        pricePane.add(space, 0, 4, 2,2);
+
+        Text p = new Text("Price:" );
+        Text pp = new Text("$" + price);
+        Text f = new Text("Non-premium Fee:");
+        Text ff = new Text("$" + nonPreemFee);
+        Label t = new Label("Total:");
+        Text tt = new Text("$" + total);
+        pricePane.add(p, 0, 6);
+        pricePane.add(pp, 1, 6);
+        pricePane.add(f, 0, 7);
+        pricePane.add(ff, 1, 7);
+        pricePane.add(t, 0, 8);
+        pricePane.add(tt, 1, 8);
+        pricePane.add(space1, 0,9,2,1);
+        pricePane.add(preemLink, 0, 10);
+        pricePane.add(cartLink, 0, 11);
+    }
+
+    private GridPane setPriceColumns(GridPane gp) {
+        ColumnConstraints col1 = new ColumnConstraints();
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setHgrow(Priority.ALWAYS);
+        col1.setPercentWidth(60);
+        col2.setPercentWidth(40);
+        col2.setHalignment(HPos.RIGHT);
+        gp.getColumnConstraints().addAll(col1, col2);
+        return gp;
     }
 
 
@@ -305,12 +349,17 @@ public class CenterPane {
                 System.out.println("DeckMarketPane.setData() cloud not find image");
                 System.exit(1);
             }
-            img.fitWidthProperty().bind(mediaPane.widthProperty().subtract(8));
+            double wd = SceneCntl.getConsumerPaneWd() * .38;
+
+            img.fitWidthProperty().bind(mediaPane.widthProperty());
             //img.maxWidth(676 - 8);
             //img.minWidth(676 - 8);
             img.setPreserveRatio(true);
             img.setSmooth(true);
             mediaPane.getChildren().add(img);
+            mediaPane.setMaxWidth(wd);
+            mediaPane.setAlignment(Pos.CENTER);
+
         }
     }
 

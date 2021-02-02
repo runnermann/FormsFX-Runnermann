@@ -147,14 +147,14 @@
 }
 
 #infoPane-label {
-    -fx-font-family: "Raleway-Medium.ttf";
-    -fx-font-size: 16;
+    -fx-font-family: "Times New Roman";
+    -fx-font-size: 24;
     -fx-font: #393E46; /* fm grey */
 }
 
 #infoPane-message {
-    /*-fx-font-family: "Raleway-Medium.ttf";*/
-    -fx-font-size: 12;
+    -fx-font-family: "Times New Roman";
+    -fx-font-size: 16;
     -fx-wrap-text: true;
     -fx-font: #393E46; /* fm grey */
 }
@@ -179,12 +179,8 @@
     -fx-padding: 10,4,0,4;
 }
 
-#pricePane {
-    -fx-padding: 10,0,0,0;
-}
-
 #titlePane {
-    -fx-padding: 10,0,10,4;
+    -fx-padding: 0,20,0,4;
 }
 
 #teaserPane {

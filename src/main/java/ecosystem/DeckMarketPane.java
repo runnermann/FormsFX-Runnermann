@@ -75,7 +75,7 @@ public class DeckMarketPane {
 
         gp = new GridPane();
         // gp.setStyle("-fx-background-color: #32CD32");
-        gp.setGridLinesVisible(true);
+    //    gp.setGridLinesVisible(true);
 
         // Data is set by formAction in DeckSearchModel
         mapArray = new ArrayList<>();
