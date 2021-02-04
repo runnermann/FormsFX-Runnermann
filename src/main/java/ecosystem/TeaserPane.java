@@ -17,7 +17,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import org.slf4j.LoggerFactory;
-import uicontrols.UIColors;
 
 import java.util.HashMap;
 
@@ -43,29 +42,31 @@ public class TeaserPane extends ToggleButton {
     }
 
 
-    private GridPane gridP;
+    private GridPane teaserGrid;
     public HBox build(HashMap<String, String> map, int idx) {
         LOGGER.debug("getPane() called");
 
         HBox rdoBox = new HBox(6);
-        gridP = new GridPane();
-        gridP.setId("teaserPane");
+        teaserGrid = new GridPane();
+        teaserGrid.setId("teaserPane");
 
-        gridP = setColLayout(gridP);
-        gridP.setHgap(3);
-        gridP.setVgap(3);
+        teaserGrid = setColLayout(teaserGrid);
+        //teaserGrid.setHgap(3);
+        //teaserGrid.setVgap(3);
+        teaserGrid.setPadding(new Insets(4,10,4,20));
 
         // column one
         // deck_name
         Label deckLbl = new Label(map.get("deck_name"));
         deckLbl.setWrapText(true);
-        gridP.add(deckLbl,0,0 );
+        deckLbl.setId("deckLbl");
+        teaserGrid.add(deckLbl,0,0 );
         // section descript
-        gridP.add(new Label("section3"), 0, 1);
+        teaserGrid.add(new Label("section3"), 0, 1);
         // media
   //      if(hasMedia(map.get("num_imgs"), map.get("num_video"), map.get("num_audio"))) {
             LOGGER.debug("teaserPane has media");
-            gridP.add(new Label("Media"), 0, 2);
+            teaserGrid.add(new Label("Media"), 0, 2);
   //      }
 
         // column two
@@ -76,21 +77,21 @@ public class TeaserPane extends ToggleButton {
         img.setPreserveRatio(true);
         img.setSmooth(true);
         // columnNum, rowNum, num cols, num rows
-        gridP.add(img, 1, 0, 1, 3);
+        teaserGrid.add(img, 1, 0, 1, 3);
 
         // stars
         // columnNum, rowNum, num cols, num rows
         //gridP.add(DeckMarketPane.getInstance().getStars(map.get("deck_numstars"), 80), 0, 4, 2, 1);
-        gridP.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("creator_email")), 0, 4, 2, 1);
+        teaserGrid.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("creator_email")), 0, 4, 2, 1);
         //rdoBox.setId("#teaser" + idx);
-        rdoBox.getChildren().add(gridP);
+        rdoBox.getChildren().add(teaserGrid);
 
-        gridP.setOnMouseEntered(e -> {
+        teaserGrid.setOnMouseEntered(e -> {
             //gridP.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.GRID_GREY), CornerRadii.EMPTY, Insets.EMPTY)));
             FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
         });
 
-        gridP.setOnMouseExited(e -> {
+        teaserGrid.setOnMouseExited(e -> {
             //gridP.setBackground(Background.EMPTY);
             FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
         });

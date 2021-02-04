@@ -14,12 +14,14 @@ public class DeckSearchPane extends FormParentPane {
 	
 	private DeckSearchModel model;
 	private DeckSearchData searchData;
-	private Label label;
-
 	
 	public DeckSearchPane() {
 		super(); // FormParent
 	    LOGGER.info("DeckMetaModel called.");
+	}
+
+	public void onClose() {
+		model = null;
 	}
 	
 	/**
@@ -29,7 +31,6 @@ public class DeckSearchPane extends FormParentPane {
 	public void initializeSelf() {
 		// getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 		// LOGGER.warn("called");
-		label = new Label();
 		model = new DeckSearchModel();
 		searchData = new DeckSearchData();
 		this.initialize(model, searchData);

@@ -149,14 +149,14 @@
 #infoPane-label {
     -fx-font-family: "Times New Roman";
     -fx-font-size: 24;
-    -fx-font: #393E46; /* fm grey */
+    -fx-text-fill: #393E46; /* fm grey */
 }
 
 #infoPane-message {
     -fx-font-family: "Times New Roman";
     -fx-font-size: 16;
     -fx-wrap-text: true;
-    -fx-font: #393E46; /* fm grey */
+    -fx-text-fill: #393E46; /* fm grey */
 }
 
 /* consumerPane */
@@ -170,9 +170,10 @@
     -fx-pref-height: 40;
 }
 
-#teaserPane {
-    -fx-padding: 4,20,4,0;
-    /*-fx-background-color: #d61dcd;*/
+#cart {
+    -fx-font-family: "Helvetica";
+    -fx-text-fill: #D9D9D9;
+    -fx-font-size: 14;
 }
 
 #infoPane {
@@ -183,13 +184,21 @@
     -fx-padding: 0,20,0,4;
 }
 
+#pricePane {
+    -fx-pref-height: 40;
+    -fx-pref-width: 60;
+    -fx-background-color: #e2e2e2;
+}
+
 #teaserPane {
     -fx-pref-height: 64;
     -fx-pref-width: 128;
     -fx-background-color: #e2e2e2;
+    -fx-cursor: default;
 }
 #teaserPane:hover {
     -fx-background-color: #FFFFFF;
+    -fx-cursor: hand;
 }
 
 #white14 {
@@ -230,6 +239,13 @@
     -fx-font-family: "Helvetica-Bold";
     -fx-font-size: 16;
     -fx-text-fill: #4d4d4d;
+}
+
+#deckLbl {
+    -fx-font-family: "Helvetica-Bold";
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3d3d3d;
 }
 
 

@@ -42,6 +42,15 @@ public class CenterPane {
     private ScrollPane descriptScroll;
     private static int mapIdx;
 
+    public void onClose() {
+        gp = null;
+        mediaPane = null;
+        titlePane = null;
+        pricePane = null;
+        descriptScroll = null;
+        mapIdx = 0;
+    }
+
 
     /**
      * Constructor, Sets the center pane to the card at the index
@@ -400,5 +409,7 @@ public class CenterPane {
     private double calcTotal(double price, double fee) {
         return price + fee;
     }
+
+
 
 }

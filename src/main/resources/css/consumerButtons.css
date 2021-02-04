@@ -1,4 +1,8 @@
 .root {
+
+    -fx-base: #ECECEC;
+    -fx-control-inner-background: derive(-fx-base,80%);
+
     FM_RED_WRONG: #D20035;
     FM_RED_FAINT: #D2003522;
     FM_GREEN_RIGHT: #32CD32;
@@ -13,11 +17,13 @@
 
     GREY_LT: #E8E8E8; /*lt purple*/
     GREY_BUTTON: #B3B3B3; /* 48206E 3F0B70*/
-    BUTTON_COMPLIMENT: #E3E3E3;//
     FLASH_RED: #FC3C3C;
     ROSE_RED: #E32E68;
     FLASH_WHITE: #FFF4E0;
-    BUTTON_PURPLE_50: FM_GREY;
+    BUTTON_GREY: #D9D9D9;
+    BUTTON_PURPLE: #48206E; /* 48206E 3F0B70*/
+    BUTTON_COMPLIMENT: #D9D9D9;
+    /*BUTTON_COMPLIMENT: #8248B9;//*/
     FOCUS_BLUE: #0096C9;
 
 }
@@ -174,7 +180,7 @@
     -fx-font-weight: 900;
     -fx-background-radius: 0, 0, 0, 0;
     -fx-background-color: ROSE_RED;
-    /*-fx-text-fill: FLASH_WHITE;*/
+    -fx-text-fill: FLASH_WHITE;
 }
 #roseButtonSquare:hover {
     -fx-base: ROSE_RED;
@@ -199,14 +205,14 @@
 
 
 
-#signInButton {
-    -fx-base: BUTTON_PURPLE;
+#resetButton {
+    -fx-base: BUTTON_GREY;
     -fx-font-weight: 900;
-    -fx-background-color: derive(-fx-base,50%);
+    -fx-background-color: -fx-base; /* derive(-fx-base,50%); */
    /* -fx-text-fill: FLASH_WHITE;*/
 }
-#signInButton:hover {
-    -fx-base: BUTTON_PURPLE;
+#resetButton:hover {
+    -fx-base: BUTTON_GREY;
     -fx-font-weight: 900;
     -fx-background-color: derive(-fx-base,40%);
 }

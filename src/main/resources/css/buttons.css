@@ -169,7 +169,7 @@
 }
 
 
-
+/*
 #roseButtonSquare {
     -fx-font-weight: 900;
     -fx-background-radius: 0, 0, 0, 0;
@@ -181,6 +181,7 @@
     -fx-font-weight: 900;
     -fx-background-color: derive(-fx-base,40%);
 }
+ */
 
 #sellButton {
     -fx-border-radius: 3 3 3 3;

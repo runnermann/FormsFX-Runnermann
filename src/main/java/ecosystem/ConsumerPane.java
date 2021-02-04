@@ -29,22 +29,33 @@ public class ConsumerPane extends StackPane {
     /* VERSION */
     public static final long VERSION = FlashMonkeyMain.VERSION;
     /* SINGLETON */
-    private static volatile ConsumerPane CLASS_INSTANCE = null;
+    private static ConsumerPane CLASS_INSTANCE = null;
 
     static StackPane mainPane;
     private AnchorPane layer1; // Search
     private DeckSearchPane searchPane;
     private DeckMarketPane layer0; // everything else
 
+    public void onClose() {
+        searchPane.onClose();
+        LOGGER.debug("ConsumerPane.onClose() called");
+        layer0.onClose();
+        layer1 = null;
+        mainPane.getChildren().clear();
+        mainPane = null;
+        CLASS_INSTANCE = null;
+    }
+
 
     // Double-checked locking for singleton class
     public static synchronized ConsumerPane getInstance() {
-
+        System.out.println("ConsumerPane getInstance called");
         if(CLASS_INSTANCE == null) {
+            System.out.println("ConsumerPane outer called new instance");
             synchronized (ConsumerPane.class) {
                 if (CLASS_INSTANCE == null) {
                     CLASS_INSTANCE = new ConsumerPane();
-                    //System.out.println("DeckMetaData called new instance");
+                    System.out.println("ConsumerPane inner called new instance");
                 }
             }
         }
@@ -111,17 +122,12 @@ public class ConsumerPane extends StackPane {
             layoutWebView();
         }
 
+
     }
 
 
     public StackPane getConsumerPane() {
         return this.mainPane;
-    }
-
-    public void onClose() {
-        LOGGER.debug("ConsumerPane.onClose() called");
-    //    this.CLASS_INSTANCE = null;
-    //    DeckMarketPane.getInstance().onClose();
     }
 
 }

@@ -582,7 +582,10 @@ public class FlashMonkeyMain extends Application {
         window.setScene(getFirstScene(signUpPane.getSignUpPane()));
         signUpPane.getSignUpPane().requestFocus();
     }
-    
+
+    /**
+     * The users account pane
+     */
     public static void getAccountPane() {
         if(Utility.isConnected()) {
             StudentModel model = new StudentModel();
@@ -610,13 +613,17 @@ public class FlashMonkeyMain extends Application {
 
     public static void closeActionWindow() {
         actionWindow.close();
+        actionWindow = null;
     }
-    
+
+    /**
+     * The deck search and econ panes
+     */
     public static void getSearchPane() {
         LOGGER.debug("getSearchWindow() called");
         if(actionWindow == null) {
-            ConsumerPane cPane = ConsumerPane.getInstance();
-            Scene scene = new Scene(cPane.getConsumerPane());
+            //ConsumerPane cPane = ConsumerPane.getInstance();
+            Scene scene = new Scene(ConsumerPane.getInstance().getConsumerPane());
             scene.getStylesheets().addAll("css/consumerButtons.css", "css/consumerPane.css");
             actionWindow = new Stage();
             actionWindow.setScene(scene);
@@ -634,7 +641,6 @@ public class FlashMonkeyMain extends Application {
     public static Stage getWindow() {
         return window;
     }
-    // public static Stage getActionWindow() {return actionWindow; }
 
     /**
      * Returns the Main Window's current XY location

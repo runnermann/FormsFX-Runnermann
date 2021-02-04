@@ -19,8 +19,6 @@ import java.security.GeneralSecurityException;
 
 public class EcoPane extends BorderPane {
 
-    private BorderPane main;
-
     protected BorderPane getEcoPane() {
         // @TODO remove self signed certificate
         // @TODO remove self signed certificate
@@ -71,10 +69,11 @@ public class EcoPane extends BorderPane {
         // need to come from the server.
         //	File f = new File(getClass().getClassLoader().getResource("java/main/index.html").getFile());
         //	engine.load(f.toURI().toString());
-
+// @TODO change engine.load from local server to remote
         // Load web page from remote
-        engine.load("https://www.flashmonkey.xyz/101/1013549384");
-        //engine.load("https://localhost:8080/1013549384");
+    //    engine.load("https://www.flashmonkey.xyz/101/1013549384");
+        engine.load("https://localhost:8080/1013549384");
+
 
         engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
             if(Worker.State.SUCCEEDED.equals(newValue)) {
@@ -139,5 +138,4 @@ public class EcoPane extends BorderPane {
 
         return bPane;
     }
-
 }

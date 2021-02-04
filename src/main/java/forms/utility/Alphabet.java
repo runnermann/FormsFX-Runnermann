@@ -57,8 +57,17 @@ public class Alphabet {
 			System.out.println("");
 			// remove leading trailing ary brackets
 			// may break later, replaced "[" and "]" with "{" and "}"
-			int startNum = encryptNum.indexOf("{") + 1;
-			int endNum = encryptNum.indexOf("}");
+
+			int startNum = encryptNum.indexOf("{");
+			int endNum = -1;
+			if(startNum != -1) {
+				startNum += 1;
+				endNum = encryptNum.indexOf("}");
+			} else {
+				startNum = encryptNum.indexOf("[") + 1;
+				endNum = encryptNum.indexOf("]");
+			}
+
 
 			String sub = encryptNum.substring(startNum, endNum);
 			int[] primes = genPrimes();

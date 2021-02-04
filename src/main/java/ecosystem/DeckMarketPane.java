@@ -16,7 +16,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import org.slf4j.LoggerFactory;
+import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class DeckMarketPane {
     /* VERSION */
     public static final long VERSION = FlashMonkeyMain.VERSION;
     /* SINGLETON */
-    private static volatile DeckMarketPane CLASS_INSTANCE = null;
+    private static DeckMarketPane CLASS_INSTANCE = null;
 
     private GridPane gp;
     // arraylist of DeckMetaData from query
@@ -46,10 +48,22 @@ public class DeckMarketPane {
     private VBox lowerBar;
     private CloudOps clops = new CloudOps();
     private static ArrayList<Image> imageAry;
-    // cartItems
+    // cartItems decks
     private static ArrayList<HashMap<String, String>> cartList;
     // buttons
     private Button purchaseButton;
+
+    public void onClose() {
+        LOGGER.debug("DeckMarketPane called onClose");
+        centerPane.onClose();// = null;
+        teaserPaneList = null;
+        acct = null;
+        mapArray = null;
+        teaserVBox = null;
+        imageAry = null;
+        cartList = null;
+        CLASS_INSTANCE = null;
+    }
 
     // Double-checked locking for singleton class. There are no guarantees
     // that only one singleton will exist. Always check.
@@ -89,14 +103,15 @@ public class DeckMarketPane {
         topBar = new VBox();
         lowerBar = new VBox();
 
-        purchaseButton = new Button("purchase");
-        purchaseButton.setId("purchButton");
+        purchaseButton = ButtoniKon.getPurchasButton();
         purchaseButton.setOnAction(e -> {
             ConsumerPane.EcoPurchase.purchaseAction(cartList);
         });
         setLowerBar();
         //lowerBar.getChildren().add(purchaseButton);
     }
+
+
 
     // ******* GETTERS *********
 
@@ -277,10 +292,41 @@ public class DeckMarketPane {
         this.mapArray = mapAry;
     }
 
+    /**
+     * If the returned data from the query is empty.
+     * @return true if there is not any data stored in the map.
+     */
+    public boolean isEmpty() {
+        return (this.mapArray == null || ! this.mapArray.get(0).get("empty").equals("false"));
+    }
+
     // ***** Cart or Account related ***** //
 
     protected void addToCart(HashMap<String, String> deckMap) {
         this.cartList.add(deckMap);
+    }
+
+    private Pane cartDisplay() {
+        Pane pane = new Pane();
+        pane.setId("cart");
+        String s = "Cart: " + cartList.size() + " decks $" + getTotal(this.cartList);
+        Label l = new Label(s);
+        return new Pane(l);
+    }
+
+    /**
+     * Calculates the total cost including deck price that were added to the list
+     * as well as the non-preem fee's per deck.
+     * @param deckList
+     * @return
+     */
+    private double getTotal(ArrayList<HashMap<String, String>> deckList) {
+        double t = 0;
+        for(HashMap<String, String> m : deckList) {
+            t += Double.parseDouble(m.get("price"));
+            t += getAcct().getFee();
+        }
+        return t;
     }
 
     public void setAcctData() {
@@ -292,11 +338,6 @@ public class DeckMarketPane {
 
     EncryptedAcct getAcct() {
         return this.acct;
-    }
-
-    public void onClose() {
-        LOGGER.debug("DeckMarketPane.onClose() called");
-        //  this.CLASS_INSTANCE = null;
     }
 
 }

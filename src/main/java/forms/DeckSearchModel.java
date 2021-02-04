@@ -10,7 +10,9 @@ import ecosystem.ConsumerPane;
 import ecosystem.DeckMarketPane;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.SearchRemoteDescriptor;
+import javafx.geometry.Pos;
 import org.slf4j.LoggerFactory;
+import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
 
 import java.util.ArrayList;
@@ -110,14 +112,23 @@ public class DeckSearchModel extends ModelParent {
 			}
 
 //			dm.setAcctStat(acctStatQuery());
+		if(dm.isEmpty()) {
+			String message = " I was unable to find anything for that search." +
+					"\nTry a broader search or use different information.";
+			FxNotify.notificationPurple("Oooph!", message, Pos.CENTER, 10,
+					"image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+		} else {
 			dm.build();
 			ConsumerPane.getInstance().layoutConsumer();
-		FlashMonkeyMain.getActionWindow().setMinWidth(SceneCntl.getConsumerPaneWd());
-		FlashMonkeyMain.getActionWindow().setMinHeight(SceneCntl.getConsumerPaneHt());
-		FlashMonkeyMain.getActionWindow().minWidthProperty().bind(ConsumerPane.getInstance().widthProperty());
-		FlashMonkeyMain.getActionWindow().minHeightProperty().bind(ConsumerPane.getInstance().heightProperty());
-
-
+			FlashMonkeyMain.getActionWindow().setMinWidth(SceneCntl.getConsumerPaneWd());
+			FlashMonkeyMain.getActionWindow().setMinHeight(SceneCntl.getConsumerPaneHt());
+			FlashMonkeyMain.getActionWindow().minWidthProperty().bind(ConsumerPane.getInstance().widthProperty());
+			FlashMonkeyMain.getActionWindow().minHeightProperty().bind(ConsumerPane.getInstance().heightProperty());
+			FlashMonkeyMain.getActionWindow().setOnHidden( e -> {
+				ConsumerPane.getInstance().onClose();
+				FlashMonkeyMain.closeActionWindow();
+			});
+		}
 	}
 	
 	private String[] clean(String[] ary) {

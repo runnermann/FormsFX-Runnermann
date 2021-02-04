@@ -34,7 +34,6 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 	protected FormRenderer formRenderer;
 	
 	
-	
 	/**
 	 * <pre>
 	 *     Order of initialization for ViewMixin.init()
@@ -145,11 +144,11 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 		
 		resetButton.setMaxWidth(120);
 		resetButton.setMinWidth(120);
-		resetButton.setId("signInButton");
+		resetButton.setId("resetButton");
 		
 		clearButton.setMaxWidth(120);
 		clearButton.setMinWidth(120);
-		clearButton.setId("signInButton");
+		clearButton.setId("resetButton");
 		
 		resetHBox.setAlignment(Pos.CENTER_RIGHT);
 		resetHBox.getChildren().addAll(clearButton, resetButton);

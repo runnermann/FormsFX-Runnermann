@@ -54,7 +54,8 @@ public enum ButtoniKon { //extends Button {
 	CREATE_Q_NEXT("", "Next card\n Saves edits to the \n current card", Entypo.CHEVRON_RIGHT, UIColors.FOCUS_BLUE_OPAQUE),
 	UNDO_CHANGES("", "undo changes in \nthis card", Entypo.REPLY, UIColors.FOCUS_BLUE_OPAQUE),
 	//SELL_BUTTON("Sell in Market", "Earn money and credibility from your hard work.", Entypo.CREDIT, UIColors.FM_WHITE);
-	SELL_BUTTON("Describe this deck", "Describe this deck.", Entypo.REPLY, UIColors.FM_WHITE);
+	SELL_BUTTON("Describe this deck", "Describe this deck.", Entypo.REPLY, UIColors.FM_WHITE),
+	PURCHASE(" CHECKOUT ", "Go to checkout.", Entypo.SHOPPING_CART, UIColors.FM_WHITE);
 	// --------------------------------- --------------------------------- //
 	//                             CONSTRUCTORS
 	// --------------------------------- --------------------------------- //
@@ -384,6 +385,12 @@ public enum ButtoniKon { //extends Button {
 		b.setId("navButtonBlue");
 		b.setFocusTraversable(false);
 		b.setDisable(false);
+		return b;
+	}
+
+	public static Button getPurchasButton() {
+		Button b = PURCHASE.get();
+		b.setId("roseButtonSquare");
 		return b;
 	}
 }

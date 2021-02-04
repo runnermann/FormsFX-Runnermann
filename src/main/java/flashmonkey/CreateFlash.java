@@ -616,7 +616,6 @@ public final class CreateFlash<C extends GenericCard> {
             editorU.tCell.getTextArea().requestFocus();
         });
         
-        
         // Save button & Action.
         // Exits createFlash scene
         saveDeckButton = ButtoniKon.getSaveDeckButton();
