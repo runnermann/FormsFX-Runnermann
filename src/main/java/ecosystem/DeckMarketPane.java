@@ -44,14 +44,18 @@ public class DeckMarketPane {
     private ScrollPane teaserScroll;
     private VBox teaserVBox;
     private CenterPane centerPane;
-    private VBox topBar;
+    private GridPane topBar;
     private VBox lowerBar;
     private CloudOps clops = new CloudOps();
     private static ArrayList<Image> imageAry;
+
     // cartItems decks
     private static ArrayList<HashMap<String, String>> cartList;
+//    private static Text cartText;
+    private static VBox cartPane;
     // buttons
     private Button purchaseButton;
+    private static double total;
 
     public void onClose() {
         LOGGER.debug("DeckMarketPane called onClose");
@@ -88,6 +92,8 @@ public class DeckMarketPane {
         //System.out.println("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
 
         gp = new GridPane();
+        cartPane = new VBox();
+        cartPane.setId("cartPane");
         // gp.setStyle("-fx-background-color: #32CD32");
     //    gp.setGridLinesVisible(true);
 
@@ -96,11 +102,11 @@ public class DeckMarketPane {
         teaserPaneList = new ArrayList<>();
         teaserScroll = new ScrollPane();
         cartList = new ArrayList<>();
-
         acct = new EncryptedAcct();
+        //cartText = new Text("Cart: " + cartList.size() + " decks $" + total);
 
         //teaserScroll.setStyle("-fx-background-color: #FF5400");
-        topBar = new VBox();
+        //topBar = new GridPane();
         lowerBar = new VBox();
 
         purchaseButton = ButtoniKon.getPurchasButton();
@@ -141,6 +147,7 @@ public class DeckMarketPane {
         int width = SceneCntl.getFileSelectPaneWd();
         teaserScroll.setContent(teaserVBox);
         teaserScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
 //        teaserScroll.setPrefWidth(width);
 //        teaserScroll.setMaxHeight(446);
 //        teaserScroll.setId("fileSelectOuter");
@@ -195,16 +202,51 @@ public class DeckMarketPane {
         return imgNames;
     }
 
-    void setTopBar(String institute, String prof, String course) {
-        topBar.setId("topBar");
-        topBar.setPadding(new Insets(5,0,0, 480));
+    void setTopBar(String institute, String prof, String course, int cartsize, double total) {
+        if(topBar == null) {
+            topBar = new GridPane();
+            topBar.setId("topBar");
+            topBar = setTopColumns(topBar);
+        } else {
+            topBar.getChildren().clear();
+        }
+
+        //topBar.setPadding(new Insets(5,40,0, 480));
+
         Label university = new Label(institute);
         university.setId("white14");
         Label courseLabel = new Label("Professor: " + prof + ",  Course: " + course);
         courseLabel.setId("white14");
+        VBox profBox = new VBox(2);
+        //profBox.getChildren().clear();
+        profBox.getChildren().addAll(university, courseLabel);
+        profBox.setAlignment(Pos.CENTER_LEFT);
         // clear any previous nodes
-        topBar.getChildren().clear();
-        topBar.getChildren().addAll(university, courseLabel);
+        //topBar.getChildren().clear();
+        topBar.add(profBox, 1,0);
+        //cartText = new Text("Cart: " + cartList.size() + " decks $" + total);
+        Label cartLbl = new Label("Cart: " + cartsize + " decks $" + total);
+
+        VBox cartBox = new VBox();
+        cartBox.getChildren().addAll(cartLbl);
+        cartBox.setId("cartPane");
+
+        //setCartPane(cartText);
+        topBar.add(cartBox, 2, 0);
+
+    }
+
+    private GridPane setTopColumns(GridPane gp) {
+        ColumnConstraints col1 = new ColumnConstraints(); // column 0 = spacer
+        ColumnConstraints col2 = new ColumnConstraints(); // column 1 = main
+        ColumnConstraints col3 = new ColumnConstraints(); // teaser
+        col1.setPercentWidth(38);
+        col2.setPercentWidth(38);
+        col2.setHalignment(HPos.RIGHT);
+        col3.setPercentWidth(20);
+        col3.setHalignment(HPos.RIGHT);
+        gp.getColumnConstraints().addAll(col1, col2, col3);
+        return gp;
     }
 
     void setLowerBar() {
@@ -297,36 +339,37 @@ public class DeckMarketPane {
      * @return true if there is not any data stored in the map.
      */
     public boolean isEmpty() {
-        return (this.mapArray == null || ! this.mapArray.get(0).get("empty").equals("false"));
+        return (this.mapArray.size() == 0 || ! this.mapArray.get(0).get("empty").equals("false"));
     }
 
     // ***** Cart or Account related ***** //
 
-    protected void addToCart(HashMap<String, String> deckMap) {
+    protected void addToCart(HashMap<String, String> deckMap, int idx) {
         this.cartList.add(deckMap);
+        HashMap<String, String> map = mapArray.get(idx);
+        calcTotal();
+        setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"), this.cartList.size(), total);
     }
 
-    private Pane cartDisplay() {
-        Pane pane = new Pane();
-        pane.setId("cart");
-        String s = "Cart: " + cartList.size() + " decks $" + getTotal(this.cartList);
-        Label l = new Label(s);
-        return new Pane(l);
-    }
+ //   public void setCartPane(Text txt) {
+
+        //Text s = new Text("Cart: " + cartList.size() + " decks $" + total);
+//        cartPane.getChildren().clear();
+ //       cartPane.getChildren().add(txt);
+       // return new Pane(l);
+ //   }
 
     /**
      * Calculates the total cost including deck price that were added to the list
      * as well as the non-preem fee's per deck.
-     * @param deckList
-     * @return
      */
-    private double getTotal(ArrayList<HashMap<String, String>> deckList) {
-        double t = 0;
-        for(HashMap<String, String> m : deckList) {
-            t += Double.parseDouble(m.get("price"));
-            t += getAcct().getFee();
+    public void calcTotal() {
+        total = 0;
+        for(HashMap<String, String> m : cartList) {
+            total += Double.parseDouble(m.get("price"));
+            total += getAcct().getFee();
         }
-        return t;
+        System.out.println("total: " + total);
     }
 
     public void setAcctData() {

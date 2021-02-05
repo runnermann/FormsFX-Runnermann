@@ -36,6 +36,10 @@ public class ConsumerPane extends StackPane {
     private DeckSearchPane searchPane;
     private DeckMarketPane layer0; // everything else
 
+    /**
+     * Closes this pane and calls searchPane.onClose,
+     * and sets the class_instance to null.
+     */
     public void onClose() {
         searchPane.onClose();
         LOGGER.debug("ConsumerPane.onClose() called");
@@ -121,8 +125,6 @@ public class ConsumerPane extends StackPane {
         public static void purchaseAction(ArrayList<HashMap<String, String>> cartList) {
             layoutWebView();
         }
-
-
     }
 
 

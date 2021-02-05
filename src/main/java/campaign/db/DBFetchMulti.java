@@ -3,8 +3,11 @@ package campaign.db;
 import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
+import flashmonkey.FlashMonkeyMain;
+import javafx.geometry.Pos;
 import org.apache.http.MethodNotSupportedException;
 import org.slf4j.LoggerFactory;
+import uicontrols.FxNotify;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,14 +117,22 @@ public enum DBFetchMulti  {
 		} catch (NullPointerException e) {
 			LOGGER.warn("WARNING: Null pointer exception at DBFetch.fetchMultiResult: Deck may not exist. ");
 		} catch (ExecutionException e) {
+			connectionErrorMessage();
 			LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
 		} catch (InterruptedException e) {
+			connectionErrorMessage();
 			LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
 		}
 		// If causing an error here, check if there
 		// are courses in the Courses DB. 
-		LOGGER.debug(returnAry.get(0));
+		// LOGGER.debug(returnAry.get(0));
 		
 		return returnAry;
+	}
+
+	private static void connectionErrorMessage() {
+		String msg = " Something went wrong. Check you connection and try again.";
+		FxNotify.notificationPurple("", " OUCH! " + msg, Pos.CENTER, 30,
+				"emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
 	}
 }

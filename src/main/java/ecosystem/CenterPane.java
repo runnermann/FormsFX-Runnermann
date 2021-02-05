@@ -253,9 +253,7 @@ public class CenterPane {
         cartLink.setId("link");
         cartLink.setOnAction(e -> {
             // add to cart
-            dmp.addToCart(dmp.getMapArray().get(idx));
-            // show in cart box
-            // TODO update/show items in cart box
+            dmp.addToCart(dmp.getMapArray().get(idx), idx);
         });
 
         Region spacer1 = new Region();
@@ -351,7 +349,7 @@ public class CenterPane {
             double price = Double.parseDouble(map.get("price"));
             setPricePane(dmp, map.get("num_cards"), map.get("num_video"), map.get("num_imgs"), map.get("num_audio"),
                     price, fee, calcTotal(fee, price), idx);
-            dmp.setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"));
+            dmp.setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"), 0, 0);
 
             ImageView img = new ImageView(dmp.getDeckImg(idx));
             if(img == null) {
@@ -368,7 +366,6 @@ public class CenterPane {
             mediaPane.getChildren().add(img);
             mediaPane.setMaxWidth(wd);
             mediaPane.setAlignment(Pos.CENTER);
-
         }
     }
 
