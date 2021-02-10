@@ -228,10 +228,11 @@ public class DeckMarketPane {
         Label cartLbl = new Label("Cart: " + cartsize + " decks $" + total);
 
         VBox cartBox = new VBox();
+        cartBox.setId("cartBox");
+        cartBox.setMaxWidth(120);
         cartBox.getChildren().addAll(cartLbl);
-        cartBox.setId("cartPane");
+        cartBox.setAlignment(Pos.CENTER_RIGHT);
 
-        //setCartPane(cartText);
         topBar.add(cartBox, 2, 0);
 
     }
@@ -243,7 +244,7 @@ public class DeckMarketPane {
         col1.setPercentWidth(38);
         col2.setPercentWidth(38);
         col2.setHalignment(HPos.RIGHT);
-        col3.setPercentWidth(20);
+        col3.setPercentWidth(23);
         col3.setHalignment(HPos.RIGHT);
         gp.getColumnConstraints().addAll(col1, col2, col3);
         return gp;
@@ -327,6 +328,17 @@ public class DeckMarketPane {
 
     protected GridPane getMarketPane() {
         return gp;
+    }
+
+    public double getHeight() {
+        return this.gp.getBoundsInLocal().getHeight();
+    }
+
+    public double getX() {
+        return this.gp.getLayoutX();
+    }
+    public double getY() {
+        return this.gp.getLayoutY();
     }
 
     public void setMapArray(ArrayList<HashMap<String, String>> mapAry) {

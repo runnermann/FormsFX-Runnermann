@@ -163,6 +163,7 @@
 #topBar {
     -fx-background-color: #9276AC;
     -fx-pref-height: 40;
+    -fx-padding: 10,40,0,0;
 }
 
 #lowerBar {
@@ -170,11 +171,11 @@
     -fx-pref-height: 40;
 }
 
-#cartPane {
+#cartBox {
     -fx-font-family: "Helvetica";
     -fx-background-color: #D9D9D9;
     -fx-font-size: 14;
-    -fx-pref-width: 120;
+    -fx-alignment: CENTER;
 }
 
 #infoPane {
@@ -200,6 +201,11 @@
 #teaserPane:hover {
     -fx-background-color: #FFFFFF;
     -fx-cursor: hand;
+}
+
+#payPane {
+    -fx-border-color: darkBlue;
+;
 }
 
 #white14 {
@@ -247,6 +253,12 @@
     -fx-font-size: 14;
     -fx-font-weight: bold;
     -fx-text-fill: #3d3d3d;
+}
+
+#link {
+    -fx-font-family: "Helvetica-Bold";
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
 }
 
 

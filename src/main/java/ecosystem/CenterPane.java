@@ -191,8 +191,8 @@ public class CenterPane {
         grid.add(un, 1, 2, 1, 1);
         grid.add(al, 0, 3, 1, 1);
         grid.add(an, 1, 3, 1, 1);
-        grid.add(created, 0, 4, 1, 1);
-        grid.add(last, 0, 5, 1, 1);
+        grid.add(created, 0, 4, 2, 1);
+        grid.add(last, 0, 5, 2, 1);
 
     //    grid.setGridLinesVisible(true);
 
@@ -246,11 +246,13 @@ public class CenterPane {
 
         Hyperlink preemLink = new Hyperlink("Get premium");
         preemLink.setId("link");
+        preemLink.setPadding(new Insets(0,10,0,30));
         preemLink.setOnAction(e -> {
-            // @TODO go to getPreemium stripe page
+            ConsumerPane.EcoOnboard.onboardAction();
         });
         Hyperlink cartLink = new Hyperlink("Add to cart");
         cartLink.setId("link");
+        cartLink.setPadding(new Insets(4,0,0,30));
         cartLink.setOnAction(e -> {
             // add to cart
             dmp.addToCart(dmp.getMapArray().get(idx), idx);
@@ -300,8 +302,8 @@ public class CenterPane {
         pricePane.add(t, 0, 8);
         pricePane.add(tt, 1, 8);
         pricePane.add(space1, 0,9,2,1);
-        pricePane.add(preemLink, 0, 10);
-        pricePane.add(cartLink, 0, 11);
+        pricePane.add(preemLink, 0, 10, 2,1);
+        pricePane.add(cartLink, 0, 11, 2,1);
     }
 
     private GridPane setPriceColumns(GridPane gp) {

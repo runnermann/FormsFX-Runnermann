@@ -3,17 +3,11 @@ package ecosystem;
 import ch.qos.logback.classic.Level;
 import flashmonkey.FlashMonkeyMain;
 import forms.DeckSearchPane;
-import forms.FormParentPane;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import metadata.DeckMetaData;
 import org.slf4j.LoggerFactory;
-import uicontrols.SceneCntl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +25,7 @@ public class ConsumerPane extends StackPane {
     /* SINGLETON */
     private static ConsumerPane CLASS_INSTANCE = null;
 
-    static StackPane mainPane;
+    static StackPane mainStackPane;
     private AnchorPane layer1; // Search
     private DeckSearchPane searchPane;
     private DeckMarketPane layer0; // everything else
@@ -45,8 +39,8 @@ public class ConsumerPane extends StackPane {
         LOGGER.debug("ConsumerPane.onClose() called");
         layer0.onClose();
         layer1 = null;
-        mainPane.getChildren().clear();
-        mainPane = null;
+        mainStackPane.getChildren().clear();
+        mainStackPane = null;
         CLASS_INSTANCE = null;
     }
 
@@ -73,7 +67,7 @@ public class ConsumerPane extends StackPane {
     //xxxxx maparray build by search results and used by CenterPane and TeaserPane
     public void init() {
         LOGGER.setLevel(Level.DEBUG);
-        mainPane = new StackPane();
+        mainStackPane = new StackPane();
 
         //mainPane.setStyle("-fx-background-color: #D20035");
         searchPane = new DeckSearchPane();
@@ -87,18 +81,18 @@ public class ConsumerPane extends StackPane {
 
     private void layoutSearch() {
         LOGGER.debug("layoutSearch called");
-        mainPane.getChildren().clear();
+        mainStackPane.getChildren().clear();
         layer1.setTopAnchor(searchPane.getFormPane(), 0.0);
         layer1.setLeftAnchor(searchPane.getFormPane(), 0.0);
         // set 20 from left and 50 from top
         //layer1.getFormPane().setPadding(new Insets(20,0,0,50));
-        mainPane.getChildren().add(layer1);
+        mainStackPane.getChildren().add(layer1);
     }
 
 
     public void layoutConsumer() {
         LOGGER.debug("layoutConsumer called");
-        mainPane.setAlignment(Pos.TOP_LEFT);
+        mainStackPane.setAlignment(Pos.TOP_LEFT);
         layer1.setTopAnchor(searchPane.getFormPane(), 20.0);
         layer1.setLeftAnchor(searchPane.getFormPane(), 50.0);
         layer1.setMaxWidth(600);
@@ -107,19 +101,27 @@ public class ConsumerPane extends StackPane {
         //layer0.getMarketPane().setAlignment((Pos.TOP_LEFT));
         //layer1.getFormPane().setAlignment(Pos.CENTER_LEFT);
         //layer1.getFormPane().setPadding(new Insets(0,0,0,50));
-        mainPane.getChildren().clear();
+        mainStackPane.getChildren().clear();
         //
         // mainPane.setAlignment(Pos.TOP_LEFT);
         // StackPane contains layer0 & layer1 that are Objects, need to use getPane().
-        mainPane.getChildren().addAll( layer0.getMarketPane(), layer1);
+        mainStackPane.getChildren().addAll( layer0.getMarketPane(), layer1);
     }
 
     public static class EcoPurchase {
-
+        // Set on layer above visible layers.
         private static void layoutWebView() {
             LOGGER.debug("layoutWebView called");
             EcoPane ePane = new EcoPane();
-            mainPane.getChildren().add(ePane.getEcoPane());
+            BorderPane bp = ePane.getPurchasePane();
+            AnchorPane layer3 = new AnchorPane(bp);
+            DeckMarketPane dmpInstance = DeckMarketPane.getInstance();
+            layer3.setTopAnchor(bp, 60.0);
+            layer3.setLeftAnchor(bp, 370.0);
+            // @TODO setmaxheigth to be responsive
+            bp.setMaxHeight(370);
+            layer3.setMaxHeight(370);
+            mainStackPane.getChildren().add(layer3);
         }
 
         public static void purchaseAction(ArrayList<HashMap<String, String>> cartList) {
@@ -127,9 +129,21 @@ public class ConsumerPane extends StackPane {
         }
     }
 
+    public static class EcoOnboard {
+        private static void layoutWebView() {
+            LOGGER.debug("layoutWebView called");
+            EcoPane ePane = new EcoPane();
+            mainStackPane.getChildren().add(ePane.getOnboardPane());
+        }
+
+        public static void onboardAction() {
+            layoutWebView();
+        }
+    }
+
 
     public StackPane getConsumerPane() {
-        return this.mainPane;
+        return this.mainStackPane;
     }
 
 }
