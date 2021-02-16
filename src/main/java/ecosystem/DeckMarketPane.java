@@ -102,6 +102,7 @@ public class DeckMarketPane {
         teaserPaneList = new ArrayList<>();
         teaserScroll = new ScrollPane();
         cartList = new ArrayList<>();
+        // the users account information
         acct = new EncryptedAcct();
         //cartText = new Text("Cart: " + cartList.size() + " decks $" + total);
 
@@ -356,6 +357,14 @@ public class DeckMarketPane {
 
     // ***** Cart or Account related ***** //
 
+    protected int getCartSize() {
+        return this.cartList.size();
+    }
+
+    protected double getTotal() {
+        return this.total;
+    }
+
     protected void addToCart(HashMap<String, String> deckMap, int idx) {
         this.cartList.add(deckMap);
         HashMap<String, String> map = mapArray.get(idx);
@@ -363,13 +372,6 @@ public class DeckMarketPane {
         setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"), this.cartList.size(), total);
     }
 
- //   public void setCartPane(Text txt) {
-
-        //Text s = new Text("Cart: " + cartList.size() + " decks $" + total);
-//        cartPane.getChildren().clear();
- //       cartPane.getChildren().add(txt);
-       // return new Pane(l);
- //   }
 
     /**
      * Calculates the total cost including deck price that were added to the list

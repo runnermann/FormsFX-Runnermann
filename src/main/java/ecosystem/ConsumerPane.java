@@ -110,22 +110,34 @@ public class ConsumerPane extends StackPane {
 
     public static class EcoPurchase {
         // Set on layer above visible layers.
-        private static void layoutWebView() {
+        private static void layoutWebView(EcoPane eco) {
             LOGGER.debug("layoutWebView called");
-            EcoPane ePane = new EcoPane();
+            EcoPane ePane = eco;
+
             BorderPane bp = ePane.getPurchasePane();
             AnchorPane layer3 = new AnchorPane(bp);
-            DeckMarketPane dmpInstance = DeckMarketPane.getInstance();
+            //DeckMarketPane dmpInstance = DeckMarketPane.getInstance();
             layer3.setTopAnchor(bp, 60.0);
             layer3.setLeftAnchor(bp, 370.0);
             // @TODO setmaxheigth to be responsive
-            bp.setMaxHeight(370);
-            layer3.setMaxHeight(370);
+            //bp.setMaxHeight(370);
+            //layer3.setMaxHeight(370);
             mainStackPane.getChildren().add(layer3);
         }
 
         public static void purchaseAction(ArrayList<HashMap<String, String>> cartList) {
-            layoutWebView();
+
+            EcoPane ePane = new EcoPane();
+            ePane.setDeckIds(getDeckIds(cartList));
+            layoutWebView(ePane);
+        }
+
+        private static String[] getDeckIds(ArrayList<HashMap<String, String>> cartList) {
+            String[] idAry = new String[cartList.size()];
+            for(int i = 0; i < cartList.size(); i++) {
+                idAry[i] = cartList.get(i).get("deck_id");
+            }
+            return idAry;
         }
     }
 

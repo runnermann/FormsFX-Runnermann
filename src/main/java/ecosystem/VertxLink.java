@@ -10,6 +10,7 @@ public enum VertxLink {
             return connect + link;
         }
     },
+    // is anyone using this??? calls for a deck...
     GET_RESOURCE() {
         public String getLink() {
             String link = "/resource";
@@ -21,12 +22,10 @@ public enum VertxLink {
             String link = "/req-purchase";
             return connect + link;
         }
-    }
-
-    ;
+    };
 
     private static String remote = "https://www.flashmonkey.xyz";
-    private static String local = "http://localhost:8080";
+    private static String local  = "http://localhost:8080";
     private static String connect = local;
 
 
@@ -36,6 +35,5 @@ public enum VertxLink {
     VertxLink() { /* empty constructor */ }
 
     public abstract String getLink();
-
 
 }

@@ -96,6 +96,13 @@ public class EncryptedAcct {
 			return Double.parseDouble( map.get("fee"));
 		}
 	}
+
+	public String getCurrency() {
+		if(map == null) {
+			getAccountData();
+		}
+		return map.get("currency");
+	}
 	
 	public boolean join() {
 		// @TODO join

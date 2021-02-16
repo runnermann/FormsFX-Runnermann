@@ -1,26 +1,29 @@
 package ecosystem;
 
+import authcrypt.UserData;
+import authcrypt.user.EncryptedAcct;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.effect.Effect;
+
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.scene.web.WebErrorEvent;
-
 
 import javax.net.ssl.*;
 import java.security.GeneralSecurityException;
 
 
-
 public class EcoPane extends BorderPane {
 
     WebEngine engine = new WebEngine();
+
+    private String[] deckIds = null;
+
+    public void setDeckIds(String[] idAry) {
+        this.deckIds = idAry;
+    }
+
 
     protected BorderPane getPurchasePane() {
         System.out.println("EcoPane.getEcoPane called line 24");
@@ -30,7 +33,12 @@ public class EcoPane extends BorderPane {
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
         engine = webView.getEngine();
-
+        //@todo Create the method to purchase multiple decks at a time.
+        if(deckIds != null) {
+            engine.setUserAgent(getJson(deckIds[0]));
+        } else {
+            // throw error
+        }
 
         System.out.println("EcoPane line 68");
 
@@ -41,7 +49,6 @@ public class EcoPane extends BorderPane {
         //	engine.load(f.toURI().toString());
 // @TODO change engine.load from local server to remote
         // Load web page from remote
-        //    engine.load("https://www.flashmonkey.xyz/101/1013549384");
         engine.load(VertxLink.REQ_PURCHASE.getLink());
 
         System.out.println("EcoPane line 80");
@@ -82,7 +89,7 @@ public class EcoPane extends BorderPane {
         });
 
         VBox rBox = new VBox(webView);
-        rBox.setMaxHeight(DeckMarketPane.getInstance().getMarketPane(). getBoundsInLocal().getHeight());
+        //rBox.setMaxHeight(DeckMarketPane.getInstance().getMarketPane(). getBoundsInLocal().getHeight());
         BorderPane bPane = new BorderPane();
 
        /* String onboardScript = "fetch(\"/-603024299\", {\n" +
@@ -102,26 +109,17 @@ public class EcoPane extends BorderPane {
 
         */
 
-/*        Button purchaseBtn = new Button("buy");
-        purchaseBtn.setOnAction(e -> {
-            // String url = "https://www.flashmonkey.xyz/101/-1780717326";
-            String url = "https://www.flashmonkey.xyz/101/-1780717326";
-            System.out.println("EcoPane purchaseBtn clicked. Requesting pay system URL from vertx");
-            //engine.executeScript(onboardScript);
-            //engine.reload();
-            engine.load(url);
-        });
-
- */
-        //VBox lBox = new VBox(purchaseBtn);
         VBox lBox = new VBox();
         lBox.setMinSize(100, 600);
         lBox.setAlignment(Pos.CENTER);
         bPane.setRight(rBox);
         bPane.setLeft(lBox);
 
-        rBox.setMaxHeight(320);
-        rBox.setMaxWidth(500);
+
+        rBox.maxHeightProperty().bind(DeckMarketPane.getInstance().getMarketPane().heightProperty().subtract(120));
+        rBox.minHeightProperty().bind(DeckMarketPane.getInstance().getMarketPane().heightProperty().subtract(120));
+    //    rBox.setMaxHeight(320);
+        rBox.setMaxWidth(400);
         rBox.setId("payPane");
 
         return bPane;
@@ -129,10 +127,12 @@ public class EcoPane extends BorderPane {
 
 
     protected BorderPane getOnboardPane() {
-        System.out.println("EcoPane getOnblardPane called");
+        System.out.println("EcoPane getOnboardPane called");
         setTrustManager();
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
+
+
         engine = webView.getEngine();
         engine.load(VertxLink.ONBOARD.getLink());
 
@@ -145,7 +145,7 @@ public class EcoPane extends BorderPane {
 
                 System.out.println("location after load: " + engine.getLocation());
 
-                //@todo finish prevent redirects from potential malicious actors
+                //@todo finish, prevent redirects from potential malicious actors
             }
             else {
                 System.out.println("EcoPane. line 108 failed to contact server.");
@@ -205,5 +205,24 @@ public class EcoPane extends BorderPane {
 
 
         // ----------------- end self signed cert --------------------- //
+    }
+
+    //@TODO set getJson to real data
+    private String getJson(String deckId) {
+        EncryptedAcct acct = DeckMarketPane.getInstance().getAcct();
+        String name     = "Jenny Rosen"; // let the user input this information in stripe.
+        String userName = UserData.getUserName();
+        //String deck_id  = "2";
+        String currency = acct.getCurrency();
+
+        String json = "{" +
+                "\"real_name\":\"" + name + "\"" +
+                ",\"user_name\":\"" + userName + "\"" +
+                ",\"deck_id\":\"" + deckId + "\"" +
+                ",\"currency\":\"" + currency + "\"" +
+                "}";
+
+        System.out.println("Json looks like: " + json);
+        return json;
     }
 }
