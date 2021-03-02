@@ -20,13 +20,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class ReportError extends AppenderBase<ILoggingEvent> {
-	// cannot use logger here. Causes an initialization error.
+	// Haaaa Haaaa!!! cannot use logger here. Causes an initialization error.
 	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ReportError.class);
 	
 	private static Connection connect;
 	static int DEFAULT_LIMIT = 10;
 	int counter = 0;
 	int limit = DEFAULT_LIMIT;
+
+	boolean connectedAlready;
+	long connectedTime;
 	
 	private void init() {
 		if(! isConnected()) {
@@ -36,11 +39,11 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 		DBConnect db = DBConnect.getInstance();
 		connect = null;
 		try {
-			System.out.println("@init() attempting connection");
+			//System.out.println("ReportError.init() attempting connection");
 			connect = db.getConnection();
 		}
 		catch (Exception e) {
-			System.out.println("EXCEPTION: @init() did not connect to DB");
+			//System.out.println("ReportError.init() EXCEPTION: @init() did not connect to DB");
 			connect = null;
 			e.printStackTrace();
 		}
@@ -114,22 +117,31 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 	}
 	
 	private boolean isConnected() {
-		try {
-			String url = "https://www.flashmonkey.xyz";
-			HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-			connection.setRequestMethod("HEAD");
-			int responseCode = connection.getResponseCode();
-			
-			if (responseCode != 200) {
-				return false;
-			}
+		long now = System.currentTimeMillis();
+		long result = now - connectedTime;
+		if(connectedAlready && result < 5000) {
 			return true;
-			
-		} catch(ProtocolException e) {
-			//LOGGER.warn(e.getMessage());
-		} catch (IOException e) {
-			//LOGGER.warn(e.getMessage());
+		} else {
+			connectedAlready = false;
+			try {
+				String url = "https://www.google.com";
+				HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+				connection.setRequestMethod("HEAD");
+				int responseCode = connection.getResponseCode();
+
+				if (responseCode != 200) {
+					return false;
+				}
+				connectedAlready = true;
+				connectedTime = System.currentTimeMillis();
+				return true;
+
+			} catch (ProtocolException e) {
+				//LOGGER.warn(e.getMessage());
+			} catch (IOException e) {
+				//LOGGER.warn(e.getMessage());
+			}
+			return false;
 		}
-		return false;
 	}
 }

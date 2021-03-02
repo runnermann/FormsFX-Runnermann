@@ -5,6 +5,7 @@ package flashmonkey;
 
 
 import campaign.Report;
+import ch.qos.logback.classic.Level;
 import ecosystem.ConsumerPane;
 import fileops.Utility;
 import flashmonkey.utility.Sleep;
@@ -83,14 +84,13 @@ public class FlashMonkeyMain extends Application {
     // campaign
     // @TODO Add report back in
     //private static Report report;
-
     // The error message to be displayed in the UI
     private static String errorMsg = "";
     // FLAGS
     private static boolean isInEditMode;
-
     // THE LOGGER
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlashMonkeyMain.class);
+    //private static final Logger LOGGER = LoggerFactory.getLogger(FlashMonkeyMain.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(FlashMonkeyMain.class);
 
     
     /** Testing MemoryChartPane **/
@@ -102,10 +102,13 @@ public class FlashMonkeyMain extends Application {
     // *** Java FX UI *** STAGE *** ***
     @Override
     public void start(Stage primaryStage) {
+        LOGGER.setLevel(Level.DEBUG);
         // set to call stop() when stage is closed
         primaryStage.setOnHidden( e -> stop());
         // reporting app performace to DB
+        //LOGGER.debug("start called");
         Report.getInstance().sessionStart();
+        LOGGER.debug("timeCheck line 111 fmMain. Completed Report.getInstance90.sessionStart()");
         // failure flag if authcrypt.user is
         // in edit mode. If true, save work
         // before closing.
@@ -175,7 +178,7 @@ public class FlashMonkeyMain extends Application {
         window.setTitle("FlashMonkey");
         window.show();
 
-        LOGGER.debug("in FlashMonkeyMain and window x = " + window.getX());
+        //LOGGER.debug("in FlashMonkeyMain and window x = " + window.getX());
     } // ******** END START ******* //
     
     /**
@@ -185,7 +188,7 @@ public class FlashMonkeyMain extends Application {
      * @return Returns the first scene or landing scene999
      */
     public static Scene getFirstScene(GridPane focusPane) {
-        LOGGER.debug("*** getFirstScene called ***");
+        //LOGGER.debug("*** getFirstScene called ***");
 
         Scene firstScene;
         firstPane = new BorderPane();
@@ -566,7 +569,7 @@ public class FlashMonkeyMain extends Application {
     
     
     public static void getSignInPane() {
-        LOGGER.debug("getSignInPane() called");
+        //LOGGER.debug("getSignInPane() called");
         SignInModel model = new SignInModel();
         SignInPane signInPane = new SignInPane(model);
         model.getFormInstance();

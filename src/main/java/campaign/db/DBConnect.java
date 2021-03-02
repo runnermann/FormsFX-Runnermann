@@ -1,5 +1,6 @@
 package campaign.db;
 
+import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
@@ -15,16 +16,23 @@ import java.util.concurrent.ExecutionException;
 
 public final class DBConnect {
 
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBConnect.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(DBConnect.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBConnect.class);
+    // private static final Logger LOGGER = LoggerFactory.getLogger(DBConnect.class);
 
     private static DBConnect  CLASS_INSTANCE;
     private static Connection connection;
+    private static boolean dbIsConnected;
+    private static long connectTime;
 
 
     /*no args constructor */
     private DBConnect() {
-        init();
+        long now = System.currentTimeMillis();
+        long result = now - connectTime;
+        if(!dbIsConnected || result > 6000) {
+            connectTime = System.currentTimeMillis();
+            init();
+        }
     }
 
     public static synchronized DBConnect getInstance() {
@@ -33,24 +41,27 @@ public final class DBConnect {
         }
         return CLASS_INSTANCE;
     }
-
+    //@todo remove password and user name... .encrypt this!!!
     private static void init() {
+        LOGGER.setLevel(Level.DEBUG);
+        LOGGER.debug("init() called");
         try {
             connection = PostgreSQLConnectionBuilder
-                // AWS
+                    // @TODO convert connection pool call to pull from token
+                //    remote db
                    .createConnectionPool("jdbc:postgresql://usa-conus.caws1d0xah4s.us-west-2.rds.amazonaws.com:5432/usa-conus?user=lowell&password=ochCtirAwddThcatemHQzi2002");
-            
                 // new-usa-conus
                 //.createConnectionPool("jdbc:postgresql://localhost:5432/new-usa-conus?user=postgres&password=backSpace01");
-                // old usa-conus
-                //    .createConnectionPool("jdbc:postgresql://localhost:5432/usa-conus?user=postgres&password=backSpace01");
+
         } catch (Exception e) {
             LOGGER.warn("Database Connection Error. Could not connect to the database.");
         }
+        LOGGER.debug("init() completed");
     }
 
 
     public Connection getConnection() {
+       // LOGGER.debug("getting DB connection.");
         if(connection.isConnected()) {
             return this.connection;
         }

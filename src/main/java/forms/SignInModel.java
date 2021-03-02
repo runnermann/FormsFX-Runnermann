@@ -65,7 +65,7 @@ public class SignInModel {
 	 * Creates a new form instance with the required information.
 	 */
 	private void createForm() {
-		LOGGER.info("createForm called");
+		//LOGGER.info("createForm called");
 		formInstance = Form.of(
 				Group.of(
 						Field.ofStringType(descriptor.siOrigEmailProperty())

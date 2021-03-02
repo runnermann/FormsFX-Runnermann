@@ -44,9 +44,10 @@ public final class Report {
     }
 
     public static synchronized Report getInstance() {
-        LOGGER.info("getInstance called");
-    // @TODO remove setLevel
         LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.info("getInstance called");
+    // @TODO remove setLevel
+
         
         if(CLASS_INSTANCE == null) {
             CLASS_INSTANCE = new Report();
@@ -63,7 +64,7 @@ public final class Report {
         fmTimer = Timer.getClassInstance();
         connect = null;
         try {
-            System.out.println("@init() attempting connection");
+            //LOGGER.debug("@init() attempting connection");
             connect = db.getConnection();
             fmTimer = Timer.getClassInstance();
         }
@@ -80,7 +81,7 @@ public final class Report {
      */
     public void sessionStart() {
         fmTimer.begin();
-        LOGGER.info("sessionStart called at: {}" + fmTimer.getBeginTime());
+        //LOGGER.info("sessionStart called at: {}" + fmTimer.getBeginTime());
     }
 
     /**

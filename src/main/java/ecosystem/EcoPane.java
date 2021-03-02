@@ -12,6 +12,8 @@ import javafx.scene.web.WebView;
 
 import javax.net.ssl.*;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class EcoPane extends BorderPane {
@@ -19,9 +21,14 @@ public class EcoPane extends BorderPane {
     WebEngine engine = new WebEngine();
 
     private String[] deckIds = null;
+    private ArrayList<HashMap<String, String>> cartList;
 
     public void setDeckIds(String[] idAry) {
         this.deckIds = idAry;
+    }
+
+    public void setCartList(ArrayList<HashMap<String, String>> cartList) {
+        this.cartList = cartList;
     }
 
 
@@ -35,7 +42,7 @@ public class EcoPane extends BorderPane {
         engine = webView.getEngine();
         //@todo Create the method to purchase multiple decks at a time.
         if(deckIds != null) {
-            engine.setUserAgent(getJson(deckIds[0]));
+            engine.setUserAgent(getJson(cartList));
         } else {
             // throw error
         }
@@ -208,17 +215,24 @@ public class EcoPane extends BorderPane {
     }
 
     //@TODO set getJson to real data
-    private String getJson(String deckId) {
+    private String getJson( ArrayList<HashMap<String, String>> cartList) {
+        //@TODO set this for an array of items
+        HashMap<String, String> map = cartList.get(0);
         EncryptedAcct acct = DeckMarketPane.getInstance().getAcct();
-        String name     = "Jenny Rosen"; // let the user input this information in stripe.
-        String userName = UserData.getUserName();
+        String purchaser   = "Jenny Rosen"; // let the user input this information in stripe.
+        String userName     = UserData.getUserName();
+        String deckId       = map.get("deck_id");
+        String price        = map.get("price");
+        String deckName     = map.get("deck_name");
         //String deck_id  = "2";
         String currency = acct.getCurrency();
 
         String json = "{" +
-                "\"real_name\":\"" + name + "\"" +
+                "\"real_name\":\"" + purchaser + "\"" +
                 ",\"user_name\":\"" + userName + "\"" +
                 ",\"deck_id\":\"" + deckId + "\"" +
+                ",\"deck_price\":\"" + price + "\"" +
+                ",\"deck_name\":\"" + deckName + "\"" +
                 ",\"currency\":\"" + currency + "\"" +
                 "}";
 

@@ -126,9 +126,9 @@ public class ConsumerPane extends StackPane {
         }
 
         public static void purchaseAction(ArrayList<HashMap<String, String>> cartList) {
-
             EcoPane ePane = new EcoPane();
             ePane.setDeckIds(getDeckIds(cartList));
+            ePane.setCartList(cartList);
             layoutWebView(ePane);
         }
 

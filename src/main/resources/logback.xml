@@ -19,7 +19,7 @@
         ~ limitations under the License.
         -->
 
-<configuration debug="true" scan="true">
+<configuration debug="false" scan="false">
 
     <!--<property name="LOG_DIR" value="/Users/localmini/Desktop/logs/flashmonkey-app.txt"/>-->
     <property name="LOG_DIR" value="C:/Users/Me/Desktop/logs/flashmonkey-app"/>
@@ -51,17 +51,15 @@
     -->
 
     <!-- custom reporting to db -->
-   <appender name="ERROR_REPORT" class="campaign.ReportError"/>
-
-
+   <!--<appender name="ERROR_REPORT" class="campaign.ReportError"/>-->
 
     <logger name="CreateFlash" level="warn" >
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE"/>
+        <!--<appender-ref ref="FILE"/>-->
     </logger>
     <logger name="FlashCardOps" level="warn">
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="FILE"/>
+        <!--<appender-ref ref="FILE"/>-->
     </logger>
 
 
@@ -69,8 +67,8 @@
     <!-- WHEN TESTING LOCALLY, COMMENT OUT ERROR_REPORT -->
     <root level="warn">
         <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="ERROR_REPORT"/>
+        <!--<appender-ref ref="FILE"/>-->
+        <!--<appender-ref ref="ERROR_REPORT"/>-->
     </root>
 
 
