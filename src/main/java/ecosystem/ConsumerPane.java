@@ -117,7 +117,7 @@ public class ConsumerPane extends StackPane {
             BorderPane bp = ePane.getPurchasePane();
             AnchorPane layer3 = new AnchorPane(bp);
             //DeckMarketPane dmpInstance = DeckMarketPane.getInstance();
-            layer3.setTopAnchor(bp, 60.0);
+            layer3.setTopAnchor(bp, 30.0);
             layer3.setLeftAnchor(bp, 370.0);
             // @TODO setmaxheigth to be responsive
             //bp.setMaxHeight(370);

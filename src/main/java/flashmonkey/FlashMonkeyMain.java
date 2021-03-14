@@ -163,7 +163,7 @@ public class FlashMonkeyMain extends Application {
  //       flash = new Image(getClass().getResourceAsStream("/image/flash_astronaut_150.png"));
 	    
         flash = new Image(getClass().getResourceAsStream("/image/fm_multiLogo_5.png"));
-        bckgndImg = new Image(getClass().getResourceAsStream("/image/fm_bckgrnd.png"));
+        /*bckgndImg = new Image(getClass().getResourceAsStream("/image/fm_bckgrnd.png"));*/
         Image icon = new Image(getClass().getResourceAsStream("/icon/flashMonkey_Icon.png"));
         window.getIcons().add(icon);
 
@@ -237,12 +237,14 @@ public class FlashMonkeyMain extends Application {
         //gridPane1.addRow(1, spacer);
         gridPane1.addRow(1, focusPane);
         // Here, we set the image directly, in the pane!?!
-        BackgroundSize bSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true);
+        /*BackgroundSize bSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true);
         firstPane.setBackground(new Background(new BackgroundImage(bckgndImg,
                 BackgroundRepeat.REPEAT,
                 BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER,
                 bSize)));
+
+         */
         
         // *************************************
         // The users account set in top
@@ -315,7 +317,7 @@ public class FlashMonkeyMain extends Application {
         tempPane.addRow(2, studyButton);
         tempPane.addRow(3, createButton);
         
-        mainPane.setId("bckgnd_image");
+        /*mainPane.setId("bckgnd_image");*/ // the background image
         mainPane.setTop(getAccountBox());
         mainPane.setCenter(tempPane);
         mainPane.setBottom(getExitBox());        
@@ -477,8 +479,6 @@ public class FlashMonkeyMain extends Application {
      */
     //
     private static GridPane getFilePane() {
-
-
 
         Button newDeckButton;
         int width = SceneCntl.getFileSelectPaneWd();

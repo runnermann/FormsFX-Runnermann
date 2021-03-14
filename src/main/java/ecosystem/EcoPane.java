@@ -2,6 +2,7 @@ package ecosystem;
 
 import authcrypt.UserData;
 import authcrypt.user.EncryptedAcct;
+import authcrypt.user.EncryptedPerson;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
 
@@ -58,14 +59,13 @@ public class EcoPane extends BorderPane {
         // Load web page from remote
         engine.load(VertxLink.REQ_PURCHASE.getLink());
 
-        System.out.println("EcoPane line 80");
+        System.out.println("EcoPane.getPurchasePane line 62");
 
         engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-
-            System.out.println("getLoadWorker called line 86");
+            System.out.println("EcoPane.getPurchasePane getting page called line 65. newValue: " + newValue);
 
             if(Worker.State.SUCCEEDED.equals(newValue)) {
-                System.out.println("worker.state succeeded!");
+                System.out.println("getPurchasePane worker.state succeeded!");
                 // verify address is the correct address and there has not been
                 // a redirect.
                 // if(notRedirect) {
@@ -91,6 +91,8 @@ public class EcoPane extends BorderPane {
                  */
             }
             else {
+                System.out.println("failed");
+                System.out.println("location after load: " + engine.getLocation());
                 System.out.println("EcoPane. line 108 failed to contact server.");
             }
         });
@@ -99,7 +101,8 @@ public class EcoPane extends BorderPane {
         //rBox.setMaxHeight(DeckMarketPane.getInstance().getMarketPane(). getBoundsInLocal().getHeight());
         BorderPane bPane = new BorderPane();
 
-       /* String onboardScript = "fetch(\"/-603024299\", {\n" +
+        /*
+       String onboardScript = "fetch(\"/101/-603024299\", {\n" +
                 "                method: \"POST\",\n" +
                 "                headers: {\n" +
                 "                    \"Content-Type\": \"application/json\"\n" +
@@ -113,8 +116,8 @@ public class EcoPane extends BorderPane {
                 "                        console.log(\"data\", data);\n" +
                 "                    }\n" +
                 "                });";
+    */
 
-        */
 
         VBox lBox = new VBox();
         lBox.setMinSize(100, 600);
@@ -122,9 +125,8 @@ public class EcoPane extends BorderPane {
         bPane.setRight(rBox);
         bPane.setLeft(lBox);
 
-
-        rBox.maxHeightProperty().bind(DeckMarketPane.getInstance().getMarketPane().heightProperty().subtract(120));
-        rBox.minHeightProperty().bind(DeckMarketPane.getInstance().getMarketPane().heightProperty().subtract(120));
+        rBox.maxHeightProperty().bind(DeckMarketPane.getInstance().getMarketPane().heightProperty().subtract(70));
+        rBox.minHeightProperty().bind(DeckMarketPane.getInstance().getMarketPane().heightProperty().subtract(70));
     //    rBox.setMaxHeight(320);
         rBox.setMaxWidth(400);
         rBox.setId("payPane");
@@ -139,23 +141,23 @@ public class EcoPane extends BorderPane {
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
 
-
         engine = webView.getEngine();
         engine.load(VertxLink.ONBOARD.getLink());
 
         engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
 
-            System.out.println("getLoadWorker called line 86");
+            System.out.println("getOnboardPane() getting engine.LoadWorker called line 149");
 
             if(Worker.State.SUCCEEDED.equals(newValue)) {
-                System.out.println("worker.state succeeded!");
+                System.out.println("getOnboardPane worker.state succeeded!");
 
                 System.out.println("location after load: " + engine.getLocation());
 
                 //@todo finish, prevent redirects from potential malicious actors
             }
             else {
-                System.out.println("EcoPane. line 108 failed to contact server.");
+                System.out.println("EcoPane.getOnboardPane line 159 failed to contact server.");
+                System.out.println("EcoPane.getOnboardPane line 160 newValue: <" + newValue + "> & SUCCEEDED was: <" + Worker.State.SUCCEEDED + ">");
             }
         });
 
@@ -218,22 +220,10 @@ public class EcoPane extends BorderPane {
     private String getJson( ArrayList<HashMap<String, String>> cartList) {
         //@TODO set this for an array of items
         HashMap<String, String> map = cartList.get(0);
-        EncryptedAcct acct = DeckMarketPane.getInstance().getAcct();
-        String purchaser   = "Jenny Rosen"; // let the user input this information in stripe.
-        String userName     = UserData.getUserName();
-        String deckId       = map.get("deck_id");
-        String price        = map.get("price");
-        String deckName     = map.get("deck_name");
-        //String deck_id  = "2";
-        String currency = acct.getCurrency();
 
         String json = "{" +
-                "\"real_name\":\"" + purchaser + "\"" +
-                ",\"user_name\":\"" + userName + "\"" +
-                ",\"deck_id\":\"" + deckId + "\"" +
-                ",\"deck_price\":\"" + price + "\"" +
-                ",\"deck_name\":\"" + deckName + "\"" +
-                ",\"currency\":\"" + currency + "\"" +
+                ",\"user_name\":\"" + UserData.getUserName() + "\"" +
+                ",\"deck_id\":\"" + map.get("deck_id") + "\"" +
                 "}";
 
         System.out.println("Json looks like: " + json);

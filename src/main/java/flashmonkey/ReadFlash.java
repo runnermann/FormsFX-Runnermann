@@ -225,7 +225,7 @@ public final class ReadFlash {
         LOGGER.debug("setting window to modePane");
         masterBPane.setCenter(modeSelectPane);
         masterBPane.setBottom(exitBox);
-        masterBPane.setId("bckgnd_image");
+        /*masterBPane.setId("bckgnd_image");*/
 
         masterScene = new Scene(masterBPane, SceneCntl.getWd(), SceneCntl.getHt());
 

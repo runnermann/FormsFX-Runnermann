@@ -6,21 +6,28 @@ public enum VertxLink {
     // hyperlink address
     ONBOARD() {
         public String getLink() {
-            String link = "/onboard";
-            return connect + link;
+            return connect + "/onboard";
         }
     },
     // is anyone using this??? calls for a deck...
     GET_RESOURCE() {
         public String getLink() {
-            String link = "/resource";
-            return connect + link;
+            return connect + "/resource";
         }
     },
     REQ_PURCHASE() {
         public String getLink() {
-            String link = "/req-purchase";
-            return connect + link;
+            return connect + "/req-purchase";
+        }
+    },
+    CANCELLED() {
+        public String getLink() {
+            return connect + "/cancel";
+        }
+    },
+    SUCCESS() {
+        public String getLink() {
+            return connect + "/success";
         }
     };
 

@@ -529,11 +529,13 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 /*  Background image  */
 #bckgnd_image {
-    -fx-background-image: url("/image/fm_bckgrnd.png");
+  /*  -fx-background-image: url("/image/fm_bckgrnd.png");
     -fx-background-repeat: stretch;
     -fx-background-size: 500 810;
     -fx-background-position: center center;
     -fx-effect: dropshadow(gaussian, black, 10, 1.0, 100, 100);
+
+   */
 }
 /*
 .text-area:focused .content {
