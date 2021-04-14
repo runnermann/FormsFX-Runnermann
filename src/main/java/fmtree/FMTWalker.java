@@ -43,14 +43,11 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
       * @return If no other instance of FMTWalker is found,
       * returns a new FMTWalker.
       */
-    public synchronized static FMTWalker getInstance()
-    {
+    public synchronized static FMTWalker getInstance() {
         if(CLASS_INSTANCE == null) {
-
             //System.out.println("in FMTWalker creating NEW instance");
             CLASS_INSTANCE = new FMTWalker();
         }
-
         return CLASS_INSTANCE;
     }
 
@@ -524,19 +521,15 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
          */
         public Node findNode(FMTree.Node localRoot, T target) {
             if (localRoot == null) {
-
                 return null;
             }
             // Compare the target with the data field at the root.
             int compResult = target.compareTo((T) localRoot.data);
             if (compResult == 0) {
-
                 return localRoot;
             } else if (compResult < 0) {
-
                 return findNode(localRoot.left, target);
             } else {
-
                 return findNode(localRoot.right, target);
             }
         }

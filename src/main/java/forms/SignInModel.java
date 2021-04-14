@@ -86,6 +86,9 @@ public class SignInModel {
 	protected void formAction() {
 		getFormInstance().persist();
 		UserData.setUserName(descriptor.getSiOrigEmail());
+
+		LOGGER.debug("formAction() userName from form: {}", descriptor.getSiOrigEmail());
+
 		if(validate()) {
 			UserData.setFirstName(descriptor.getSiFirstName());
 			FlashMonkeyMain.getFileSelectPane();

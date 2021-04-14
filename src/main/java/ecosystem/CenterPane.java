@@ -13,7 +13,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import org.slf4j.LoggerFactory;
 
 import uicontrols.FxNotify;
@@ -248,7 +247,7 @@ public class CenterPane {
         preemLink.setId("link");
         preemLink.setPadding(new Insets(0,10,0,30));
         preemLink.setOnAction(e -> {
-            ConsumerPane.EcoOnboard.onboardAction();
+            ConsumerPane.EcoOnboard.reqSubscription();
         });
         Hyperlink cartLink = new Hyperlink("Add to cart");
         cartLink.setId("link");

@@ -87,7 +87,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
         //aryOfFiles = new String[2][];
         this.cardLayout = CARD_LAYOUT;
         // Card id. Never changes after it's been created
-        this.cID        = createCardHash(ReadFlash.getInstance().getDeckName() + System.currentTimeMillis());
+        this.cID        = createCardHash(ReadFlash.getInstance().getDeckName() + authcrypt.UserData.getUserName()) + "_" +System.currentTimeMillis();
         this.cNumber    = C_NUMBER;     // Card number former qNumber, it's priority in the tree
         this.remember   = REMEMBER;     // priority
         this.isRight    = IS_RIGHT;
@@ -100,7 +100,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
     }
 
     /**
-     * Create card constructor, creates a new FlashCardMM
+     * Create card constructor, creates a new FlashCardMM. Called only once in the life of a card.
      *   for a new card, only need to provide the qNum, aNum, questionTxt, questionType, mmQfileName,
      *   answerTxt, answerType, answerMMFileName, Array of like answers, and card layout. All
      *   other varaibles are the defaults.

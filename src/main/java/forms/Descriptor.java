@@ -17,7 +17,7 @@ public interface Descriptor<E extends FormData> {
 	
 	public void setToLocalData();
 	
-	public void setToRemoteData();
+	public boolean setToRemoteData();
 	
 	//public String[] parseResponse(String[] response);
 	
@@ -35,7 +35,5 @@ public interface Descriptor<E extends FormData> {
 	 * to default values.
 	 */
 	public void clear();
-	
-	
-	
+
 }

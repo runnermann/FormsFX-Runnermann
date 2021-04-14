@@ -72,7 +72,7 @@ public final class DBConnect {
     }
 
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+ /*   public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         DBConnect db = DBConnect.getInstance();
         Connection connect = db.getConnection();
@@ -88,6 +88,7 @@ public final class DBConnect {
                 " INSERT INTO Student (orig_email, education_level, major, minor, cv_link ) VALUES ( '{139,218,453,1268,695,654,1057,2344,963,1730,163}', '3rd year bachelors student', 'Astro Physics', 'Mathmatics', 'cvLink here');" +
                 " COMMIT;"
         );*/
+    /*
         CompletableFuture<QueryResult> future = connect.sendQuery("INSERT INTO Student (first_name, last_name, middle_name, orig_email, current_email, phone, age, ip_connect, institution, descript, photo_link, education_level, major, minor, cv_link) " +
                 " VALUES ('{27,117,223,113,197}', '{27,117,223,113,197}', 'A', '{139,218,453,1268,695,654,1057,2344,963,1730,163}', '{139,218,453,1268,695,654,1057,2344,963,1730,163}', '650.334.7654', 21, '101.110.1234/32', 'FlashMonkey Inc.', " +
                 "'I am a happy monkey descript', 'my photo link', '3rd year bachelors student', 'Astro Physics', 'Mathmatics', 'cvLink here');"
@@ -124,8 +125,9 @@ public final class DBConnect {
         des.parseResponse(returned);
         // end test 2
 
-     */
+     */ /*
     }
+    */
 
  
 }

@@ -62,7 +62,7 @@ public class S3ListObjs {
         String json = new String("{" +
                 "\"username\":\"" + name + "\"" +
                 ",\"password\":\"" + pw + "\"}");
-        String destination = "deck-s3-333"; // list
+        String destination = "/deck-s3-333"; // list
         return listObjsHelper(json, destination);
     }
 
@@ -76,7 +76,7 @@ public class S3ListObjs {
         LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("S3Creds constructor called for token.");
         String json = new String("{\"token\":\"" + token + "\"}");
-        String destination = "decks-s3-747"; // token
+        String destination = "/decks-s3-747"; // token
         return listObjsHelper(json, destination);
     }
 
@@ -86,7 +86,7 @@ public class S3ListObjs {
         String json = new String("{" +
                 "\"token\":\"" + token + "\"" +
                 ",\"deckname\":\"" + deckName + "\"}");
-        String destination = "media-s3-list";
+        String destination = "/media-s3-list";
         listObjsHelper(json, destination);
 
         LOGGER.debug("listMedia returning <{}> names from media-s3", this.cloudLinks.size());
@@ -103,6 +103,7 @@ public class S3ListObjs {
     private int listObjsHelper(String json, String destination) {
         LOGGER.debug("json: {}", json );
         LOGGER.debug("destination; {}", destination);
+        LOGGER.debug("link plus destination: {}", Connect.LINK.getLink() + destination);
 
         final HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
@@ -113,7 +114,7 @@ public class S3ListObjs {
         // we post when using passwords:
         final HttpRequest req = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create("http://localhost:8080/" + destination))
+                .uri(URI.create(Connect.LINK.getLink() + destination))
                 //@TODO set S3Creds to HTTPS
                 //.uri(URI.create("https://localhost:8080/resource-s3-list"))
                 .header("Content-Type", "application/json")
@@ -182,6 +183,7 @@ public class S3ListObjs {
         this.token = ((String) n.get("token"));
         return elements;
     }
+
     // Used to parse decks
     //Traced problem to here. How many elements are processed here???
     private void setCloudLinks(ArrayList<String> elements) throws JsonProcessingException {

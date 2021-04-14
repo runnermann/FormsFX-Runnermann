@@ -2,16 +2,10 @@ package forms.utility;
 
 import authcrypt.user.EncryptedStud;
 import campaign.db.DBFetchToMapAry;
-import campaign.db.DBFetchUnique;
 import ch.qos.logback.classic.Level;
-import fileops.DirectoryMgr;
-import flashmonkey.ReadFlash;
-import forms.FormData;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -40,8 +34,10 @@ public class StudentDescriptor extends PersonDescriptor {
 		LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("called studentDescriptor constructor");
 		this.setProperitesDefault();
-		this.setToRemoteData();
-		this.setProperties(student);
+		boolean hasData = this.setToRemoteData();
+		if(hasData) {
+			this.setProperties(student);
+		}
 	}
 	
 	// Student info from form entries
@@ -120,7 +116,7 @@ public class StudentDescriptor extends PersonDescriptor {
 	 * it as is.
 	 */
 	@Override
-	public void setToRemoteData() {
+	public boolean setToRemoteData() {
 		student = new EncryptedStud();
 		LOGGER.debug("called getRemoteData()");
 		// @TODO complete getRemoteData, need studentHash in query
@@ -134,63 +130,12 @@ public class StudentDescriptor extends PersonDescriptor {
 
 		if(response == null || response.get(0).get("empty").equals("true")) {
 			LOGGER.debug("response from DB length is EMPTY... NOT processing response.");
+			return false;
 		} else {
 			LOGGER.debug("response from DB length contains data... processing response.");
 			student.set(response.get(0));
+			return true;
 		}
-	}
-
-
-	
-	/**
-	 * Parses the String provided in the param
-	 * using the ",".
-	 * @param response
-	 * @return An array containing the elements of the
-	 * response provided in the param.
-	 */
-	public String[] parseResponse(String response) {
-		// remove fmSplit opening array bracket
-		String sub = response.substring(1);
-		String[] newString = new String[2];
-		int startNum;
-		int endNum;
-		
-		System.out.println("\n\n");
-		
-		for(int i = 0; i < 2; i++) {
-			startNum = sub.indexOf("[") + 1;
-			endNum = sub.indexOf("]");
-			newString[i] = sub.substring(startNum, (endNum));
-			System.out.println(newString[i]);
-			// remove the comma
-			sub = sub.substring(endNum + 2);
-		}
-		// First element
-		String lastN = Alphabet.decrypt(newString[0]);
-		String firstN = Alphabet.decrypt(newString[1]);
-		// split into words
-		String[] fmSplit = sub.split(",");
-		String[] finalAry = new String[fmSplit.length + 2];
-		// parse loop and add to finalAry
-		for(int i = 0; i < fmSplit.length; i++) {
-			finalAry[i] = fmSplit[i].strip();
-			System.out.println("\t" + i + ") " + finalAry[i]);
-		}
-		// add lastName and firstName to finalAry
-		finalAry[fmSplit.length] = lastN;
-		finalAry[fmSplit.length + 1] = firstN;
-
-		System.out.println("StudentDescriptor.parseResponse() lastName: " + lastN);;
-		System.out.println("firstName: " + firstN);
-		
-		System.out.println("\n\nresult finalAry");
-		for(String s : finalAry){
-			System.out.println(s);
-		}
-		System.out.println();
-		
-		return finalAry;
 	}
 	
 	/**

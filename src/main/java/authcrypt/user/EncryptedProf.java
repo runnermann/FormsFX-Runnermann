@@ -1,11 +1,8 @@
 package authcrypt.user;
 
-import fileops.DirectoryMgr;
 import flashmonkey.FlashCardOps;
 import forms.FormData;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -33,7 +30,7 @@ public class EncryptedProf extends EncryptedPerson implements Serializable, Form
 
 	public EncryptedProf(EncryptedProf orig) {
 		super.setAll(orig.getPersonId(), orig.getPhone(), orig.getFirstName(), orig.getLastName(), orig.getMiddleName(), orig.getCurrentUserEmail(),
-				orig.getOrig_user_email(), orig.getSchool(), orig.getAge(), orig.getDescript(), orig.getInstitution(), orig.getPhotoLink());
+				orig.getOrigUserEmail(), orig.getAge(), orig.getDescript(), orig.getInstitution(), orig.getPhotoLink());
 		setAll(orig.profEmail, orig.educationLevel, orig.position, orig.numStars, orig.website, orig.cvLink, orig.pay, orig.recruiterInfo);
 	}
 	

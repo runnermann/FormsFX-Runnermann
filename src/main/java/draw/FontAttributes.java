@@ -41,9 +41,9 @@ public abstract class FontAttributes<T extends FontAttributes> extends GenericSh
 		this.lineSpacing = 6;
 		this.textAlign  = TextAlignment.LEFT;
 		// works in windows!!!
-		URL url = this.getClass().getClassLoader().getResource("css/font/" + fontFamily +".ttf");
+		URL url = this.getClass().getClassLoader().getResource("font/" + fontFamily +".ttf");
 		
-		System.out.println("FontAtributes urlString: css/font/" + fontFamily + ".ttf");
+		System.out.println("FontAtributes urlString: font/" + fontFamily + ".ttf");
 		
 		String urlStr = url.toExternalForm();
 		this.font = Font.loadFont(urlStr, fontSize);

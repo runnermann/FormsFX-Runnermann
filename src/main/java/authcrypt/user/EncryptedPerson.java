@@ -18,12 +18,11 @@ public class EncryptedPerson implements Serializable, FormData {
 //    private String firstName;
     private String lastName;
     private String middleName;
-    private String current_user_email;
-    private String orig_user_email;
-    private String school;
+    private String currentUserEmail;
+    private String origUserEmail;
     private String age;
     private String phone;
-    private String Descript;
+    private String descript;
     private String institution;
     private String photoLink;
 
@@ -40,8 +39,8 @@ public class EncryptedPerson implements Serializable, FormData {
      * @param person
      */
     public EncryptedPerson(EncryptedPerson person) {
-        setAll(person.person_id, person.phone, person.getFirstName(), person.lastName, person.middleName, person.current_user_email,
-                person.orig_user_email, person.school, person.age, person.Descript, person.institution, person.photoLink);
+        setAll(person.person_id, person.phone, person.getFirstName(), person.lastName, person.middleName, person.currentUserEmail,
+                person.origUserEmail, person.age, person.descript, person.institution, person.photoLink);
     }
     
     @Override
@@ -51,12 +50,11 @@ public class EncryptedPerson implements Serializable, FormData {
 //        firstName = UserData.getFirstName();
         lastName = "";
         middleName = "";
-        current_user_email = "";
-        orig_user_email = "";
-        school = "";
+        currentUserEmail = "";
+        origUserEmail = "";
         age = "";
         phone = "";
-        Descript = "";
+        descript = "";
         institution = "";
         photoLink = "";
     }
@@ -75,17 +73,16 @@ public class EncryptedPerson implements Serializable, FormData {
     // *** SETTERS GETTERS AND OTHER *** //
 
 
-    protected void setAll(long personID, String phn, String firstNm, String lastNm, String middle,
-          String currentMail, String origMail, String school, String age, String descript,
+    public void setAll(long personID, String phn, String firstNm, String lastNm, String middle,
+          String currentMail, String origMail, String age, String descript,
           String institute, String photoLnk) {
         setPersonId(personID);
         setPhone(phn);
         setFirstName(firstNm);
         setLastName(lastNm);
         setMiddleName(middle);
-        setCurrent_user_email(currentMail);
-        setOrig_user_email(origMail);
-        setSchool(school);
+        setCurrentUserEmail(currentMail);
+        setOrigUserEmail(origMail);
         setAge(age);
         setDescript(descript);
         setInstitution(institute);
@@ -125,27 +122,20 @@ public class EncryptedPerson implements Serializable, FormData {
     
     // Stored in plain text
     public String getCurrentUserEmail() {
-        return current_user_email;
+        return currentUserEmail;
     } // used to set data.
 
     // encrypt
-    public void setCurrent_user_email(String current_user_email) {
-        this.current_user_email = current_user_email;
+    public void setCurrentUserEmail(String currentUserEmail) {
+        this.currentUserEmail = currentUserEmail;
     }
     // Encrypted
-    public String getOrig_user_email() {
-        return orig_user_email;
+    public String getOrigUserEmail() {
+        return origUserEmail;
     }
     // Encrypt
-    public void setOrig_user_email(String orig_user_email) {
-        this.orig_user_email = orig_user_email;
-    }
-    
-    public String getSchool() {
-        return school;
-    }
-    public void setSchool(String school) {
-        this.school = school;
+    public void setOrigUserEmail(String origUserEmail) {
+        this.origUserEmail = origUserEmail;
     }
 
     public String getAge() {
@@ -156,10 +146,10 @@ public class EncryptedPerson implements Serializable, FormData {
     }
 
     public String getDescript() {
-        return this.Descript;
+        return this.descript;
     }
     public void setDescript(String descript) {
-        Descript = descript;
+        this.descript = descript;
     }
     
     public String getInstitution() {

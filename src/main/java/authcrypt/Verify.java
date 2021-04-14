@@ -140,7 +140,7 @@ public class Verify implements Serializable {
                 // errorMessage user that they need to download
                 // the app.
                 UserData.clear();
-                errorMessage = "Please go to https://www.flashmonkey.xyz\n and download the app to this system.\nThanks";
+                errorMessage = "Ooops!! We need to check if your real. \nPlease go to https://www.flashmonkey.xyz\n and download the app.\nThanks";
             }
         }
         else {

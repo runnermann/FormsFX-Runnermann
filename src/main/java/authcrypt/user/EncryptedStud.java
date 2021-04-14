@@ -3,6 +3,8 @@ package authcrypt.user;
 import authcrypt.UserData;
 import flashmonkey.FlashCardOps;
 import forms.FormData;
+import forms.utility.Alphabet;
+
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -33,7 +35,7 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 
 	public EncryptedStud(EncryptedStud orig) {
 		super.setAll(orig.getPersonId(), orig.getPhone(), orig.getFirstName(), orig.getLastName(), orig.getMiddleName(), orig.getCurrentUserEmail(),
-				orig.getOrig_user_email(), orig.getSchool(), orig.getAge(), orig.getDescript(), orig.getInstitution(), orig.getPhotoLink());
+				orig.getOrigUserEmail(), orig.getAge(), orig.getDescript(), orig.getInstitution(), orig.getPhotoLink());
 		setAll( orig.educationLevel, orig.major, orig.minor, orig.cvLink);
 	}
 	
@@ -118,6 +120,7 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 	 */
 	@Override
 	public void set(HashMap<String, String> map) {
+		System.out.println("firstName1" + map.get("first_name"));
 		setMiddleName(map.get("middle_name"));
 		setPhone(map.get("phone"));
 		setAge(map.get("age"));
@@ -130,6 +133,8 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 		setPersonId(Long.parseLong(map.get("person_id").replace("]", "")));
 		UserData.setFirstName(map.get("first_name"));
 		setLastName(map.get("last_name"));
+		setPhotoLink(map.get("photo_link"));
+		setPhone(map.get("phone"));
 	}
 
 	/**

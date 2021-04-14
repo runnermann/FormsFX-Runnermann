@@ -79,15 +79,7 @@ public enum DBFetchUnique {
 			return fetchUniqueResult(strQuery);
 		}
 	},
-	STUDENT_ID() {
-		@Override
-		public String[] query(String ...args) {
-			String strQuery = "SELECT person_id " +
-					"FROM student " +
-					"WHERE orig_email = '" + Alphabet.encrypt(args[0]) + "';";
-			return fetchUniqueResult(strQuery);
-		}
-	},
+
 	STUDENTS_UUID {
 		@Override
 		public String[] query(String ...args) {
@@ -181,7 +173,6 @@ public enum DBFetchUnique {
 		} catch (InterruptedException e) {
 			LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
 		}
-
 		return columnData;
 	}
 	

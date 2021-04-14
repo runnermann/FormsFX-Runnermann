@@ -1,8 +1,14 @@
 package ecosystem;
 
-import javafx.scene.control.Hyperlink;
+import fileops.Connect;
 
 public enum VertxLink {
+
+    REQ_MEMBER() {
+        public String getLink() {
+            return connect + "/req-membership";
+        }
+    },
     // hyperlink address
     ONBOARD() {
         public String getLink() {
@@ -29,11 +35,14 @@ public enum VertxLink {
         public String getLink() {
             return connect + "/success";
         }
+    },
+    REQ_ACCT() {
+        public String getLink() {
+            return connect + "/req-acct";
+        }
     };
 
-    private static String remote = "https://www.flashmonkey.xyz";
-    private static String local  = "http://localhost:8080";
-    private static String connect = local;
+    private static String connect = Connect.LINK.getLink();
 
 
     // --------------------------------- --------------------------------- //

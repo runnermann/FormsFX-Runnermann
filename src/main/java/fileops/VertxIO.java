@@ -76,13 +76,13 @@ public class VertxIO {
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
 
-        // @todo change lochost:8080 to vertx call
+        // @todo change localhost:8080 to vertx call
         // vertx expects router.post("/resource-s3-list")
         // we post when using tokens:
         final HttpRequest req = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 //@TODO set to HTTPS
-                .uri(URI.create("http://localhost:8080" + destination))
+                .uri(URI.create(Connect.LINK.getLink() + destination))
                 .header("Content-Type", "application/json")
                 .build();
         try {

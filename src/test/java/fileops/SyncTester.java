@@ -308,7 +308,7 @@ public class SyncTester extends ApplicationTest {
 
         String json = "[{\"keys\":\"" + keys + "\"}]";
 
-        String destination = "media-s3-delete";
+        String destination = "/media-s3-delete";
 
         final HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
@@ -319,7 +319,7 @@ public class SyncTester extends ApplicationTest {
         // we post when using passwords:
         final HttpRequest req = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create("http://localhost:8080/" + destination))
+                .uri(URI.create(Connect.LINK.getLink() + destination))
                 //@TODO set S3Creds to HTTPS
                 //.uri(URI.create("https://localhost:8080/resource-s3-list"))
                 .header("Content-Type", "application/json")

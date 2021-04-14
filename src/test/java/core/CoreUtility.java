@@ -12,6 +12,24 @@ public class CoreUtility {
     //private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreUtility.class);
 
+    private static int delta_X = 0;
+    private static int delta_Y = 10;
+
+    /* *** GETTERS SETTERS *** */
+    public static int getDeltaX() {
+        return delta_X;
+    }
+    public static void setDeltaX(int x) {
+        delta_X = x;
+    }
+
+    public static int getDeltaY() {
+        return delta_Y;
+    }
+    public static void setDeltaY(int y) {
+        delta_Y = y;
+    }
+
     /**
      * The escapeKey while FxRobot is running
      * @param e

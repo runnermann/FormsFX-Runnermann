@@ -81,7 +81,7 @@ public class S3GetObjs {
         // (5) point FlashCardOps.flashListMM to the retrieved deck.
 
         // (1)
-        HttpRequest req = getRequest(json, "deck-s3-get");
+        HttpRequest req = getRequest(json, "/deck-s3-get");
         LOGGER.debug("deck S3get req built ... sending to Vertx...");
         try {
             HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
@@ -130,7 +130,7 @@ public class S3GetObjs {
         URL url;
         // download the deck to file
         try{
-            LOGGER.debug("Attemting to download the deck");
+            LOGGER.debug("Attempting to download the deck");
             url =  new URL(signedurl);
             PresignedUrlDownloadRequest req = new PresignedUrlDownloadRequest(url);
             client.download(req, file);
@@ -330,7 +330,7 @@ public class S3GetObjs {
         LOGGER.debug("The token should not be in JSON format. Token looks like: <{}>", token);
         LOGGER.debug("The JSON string looks like: " + json);
 
-        HttpRequest req = getRequest(json, "media-s3-get");
+        HttpRequest req = getRequest(json, "/media-s3-get");
         LOGGER.debug("media S3get request built ... sending...");
 
         // send the name list to vertx
@@ -383,9 +383,8 @@ public class S3GetObjs {
     private HttpRequest getRequest(String json, String destination) {
         return HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create("http://localhost:8080/" + destination))
+                .uri(URI.create(Connect.LINK.getLink() + destination))
                 //@TODO set S3Creds to HTTPS
-                //.uri(URI.create("https://localhost:8080/media-s3-get"))
                 .header("Content-Type", "application/json")
                 .build();
     }

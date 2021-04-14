@@ -59,8 +59,7 @@ public class FMCircle extends GenericShape<FMCircle> implements Serializable
      * @param shapeAryIdx
      */
     public FMCircle (double x1, double y1, double radX, double radY ,
-                     double strokeW, String stroke, String fill, int shapeAryIdx)
-    {
+                     double strokeW, String stroke, String fill, int shapeAryIdx) {
         this.x = x1;
         this.y = y1;
         this.radiusX = radX;
@@ -78,8 +77,7 @@ public class FMCircle extends GenericShape<FMCircle> implements Serializable
      * HIGHLIGHT_PINK</@code> and fill to <@code>UIColors.TRANSPARENT</@code></p>
      * @param e A Java ellipse
      */
-    public FMCircle(Ellipse e)
-    {
+    public FMCircle(Ellipse e) {
         this.x = e.getCenterX();
         this.y = e.getCenterY();
         this.strokeWidth = e.getStrokeWidth();
@@ -94,8 +92,7 @@ public class FMCircle extends GenericShape<FMCircle> implements Serializable
      * From a circle
      * @param c
      */
-    public FMCircle(Circle c)
-    {
+    public FMCircle(Circle c) {
         this.x = c.getCenterX();
         this.y = c.getCenterY();
         this.strokeWidth = c.getStrokeWidth();
@@ -111,8 +108,7 @@ public class FMCircle extends GenericShape<FMCircle> implements Serializable
      * Copy constructor
      * @param other
      */
-    public FMCircle(FMCircle other)
-    {
+    public FMCircle(FMCircle other) {
         this.x = other.x;
         this.y = other.y;
         this.strokeWidth = other.strokeWidth;
@@ -154,8 +150,7 @@ public class FMCircle extends GenericShape<FMCircle> implements Serializable
      * @return Retruns a circle from this object
      */
     @Override
-    public Ellipse getShape()
-    {
+    public Ellipse getShape() {
         Ellipse e = new Ellipse(this.getX(), this.getY(), this.radiusX, this.radiusY);
         
         e.setStrokeWidth(this.getStrokeWidth());
@@ -174,10 +169,8 @@ public class FMCircle extends GenericShape<FMCircle> implements Serializable
      * @return
      */
     @Override
-    public Ellipse getScaledShape(double scaleY)
-    
+    public Ellipse getScaledShape(double scaleY) {
     //       imageHt is correct when set in the right pane. Need to set the scale for the shapes... :P
-    {
         System.out.println("\n *** FMCIRCLE getScaledShape() ***"
                 + "\t Ellipse scaleY: " + scaleY);
         

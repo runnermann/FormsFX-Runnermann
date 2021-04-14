@@ -182,7 +182,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 		// Sets the meta object to the DB if
 		// it exists && the user is connected.
 		if(fileops.Utility.isConnected()) {
-			setToRemoteData() ;
+			setToRemoteData(); // returns a boolean if needed.
 		}
 		
 		long remoteDate = meta.getLastDate() * -1;
@@ -262,7 +262,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	 * it as is.
 	 */
 	@Override
-	public void setToRemoteData() {
+	public boolean setToRemoteData() {
 		UserData user = new UserData();
 		// get meta from DB
 		ArrayList<HashMap<String, String>> response;// = new String[1];
@@ -280,8 +280,10 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 			DeckMetaData meta = DeckMetaData.getInstance();
 			meta.setDataMap(response.get(0));
 			meta.set(response.get(0));
+			return true;
 		} else {
 			LOGGER.debug("response from DB length is null... NOT processing response.");
+			return false;
 		}
 	}
 	

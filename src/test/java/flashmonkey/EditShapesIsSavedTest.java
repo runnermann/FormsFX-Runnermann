@@ -43,10 +43,8 @@ public class EditShapesIsSavedTest extends ApplicationTest {
     //private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private static final Logger LOGGER = LoggerFactory.getLogger(EditShapesIsSavedTest.class);
     
-    private int delta_X = 0;
-    private int delta_Y = 10;
-
-
+    private int delta_X = CoreUtility.getDeltaX();
+    private int delta_Y = CoreUtility.getDeltaY();
 
 
 

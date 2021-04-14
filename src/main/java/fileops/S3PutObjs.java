@@ -217,7 +217,6 @@ public class S3PutObjs {
         // 1st we get the signedURL from Vert.x. Using an array
         // due to method output. Will only need first element.
         ArrayList<String> signedUrl = getDeckURL(key, token);
-        //outWriterUploader(signedUrl.get(0));
 
         if(signedUrl.isEmpty() || signedUrl.get(0).startsWith("fail")) {
             LOGGER.warn("put deck failed: SignedUrls was empty or returned fail");
@@ -563,7 +562,7 @@ public class S3PutObjs {
     private HttpRequest deckRequest(String json) {
         return HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create("http://localhost:8080/deck-s3-put"))
+                .uri(URI.create(Connect.LINK.getLink() + "/deck-s3-put"))
                 //@TODO set S3Creds to HTTPS
                 //.uri(URI.create("https://localhost:8080/media-s3-get"))
                 .header("Content-Type", "application/json")
@@ -575,7 +574,7 @@ public class S3PutObjs {
     private HttpRequest mediaRequest(String json) {
         return HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create("http://localhost:8080/media-s3-put"))
+                .uri(URI.create(Connect.LINK.getLink() + "/media-s3-put"))
                 //@TODO set S3Creds to HTTPS
                 //.uri(URI.create("https://localhost:8080/media-s3-get"))
                 .header("Content-Type", "application/json")

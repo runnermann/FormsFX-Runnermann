@@ -64,6 +64,8 @@ public class CloudOps {
 	private S3ListObjs s3ListObjs;
 	//private static ArrayList<CloudLink> cloudLinks;
 
+
+
 	/**
 	 * No args constructor
 	 */
@@ -270,27 +272,17 @@ public class CloudOps {
 		}
 	}
 
-	public void getDeck(String deckName) {
-		// send token, deckname in Json and send to
-		// getDeck destination
-		//String json = new String("{" +
-		//		"\"token\":\"" + token + "\"" +
-		//		",\"deckname\":\"" + deckName + "\"}");
-//		S3GetObjs getObjs = new S3GetObjs();
-//		getObjs.serialGetDeck(downloads, 'm',FlashCardOps.getInstance().CO.getToken());
-
-		//String destination = "deck-s3-get";
-		//boolean bool = getDeckHelper(json, destination);
-
-		// if successful, set FlashListMM to new deck
-	}
 
 	public void putDeck(String fileName) {
 		S3PutObjs putObjs = new S3PutObjs();
 		putObjs.putDeck(fileName, FlashCardOps.getInstance().CO.getToken());
 	}
 
-
+	/**
+	 * @param json
+	 * @param destination Should include the "/"
+	 * @return
+	 */
 	private boolean getDeckHelper(String json, String destination) {
 		// get deck from Vert.X
 		final HttpClient client = HttpClient.newBuilder()
@@ -300,9 +292,8 @@ public class CloudOps {
 		// save deck to file
 		final HttpRequest req = HttpRequest.newBuilder()
 				.POST(HttpRequest.BodyPublishers.ofString(json))
-				.uri(URI.create("http://localhost:8080/" + destination))
+				.uri(URI.create(Connect.LINK.getLink() + destination))
 				//@TODO set S3Creds to HTTPS
-				//.uri(URI.create("https://localhost:8080/resource-s3-list"))
 				.header("Content-Type", "application/json")
 				.build();
 		try {

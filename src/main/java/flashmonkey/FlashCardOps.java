@@ -932,28 +932,18 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
 
             } catch (EOFException e) {
                 // end of file exception. Do nothing. this is expected.
-
             } catch(FileNotFoundException e) {
                 LOGGER.warn("\tFile Not Found exception:  getObjFmFile() Line 986 FlashCard");
                 LOGGER.warn(e.getMessage());
                 e.printStackTrace();
-
             } catch(IOException e) {
                 LOGGER.warn("\t****** IO Exception in FlashCard. getObjFmFile() *******");
                 e.printStackTrace();
-
             } catch(Exception e) {
-                // Set errorMsg in FlashMonkeyMain and let the ReadFlash class
-                // handle the error in createReadScene()
-                //        FlashMonkeyMain.setErrorMsg(" --   Oooph my bad!!!   --\n" +
-                //                "The flash card deck you chose \n\"" + ReadFlash.getDeckName()
-                //                + "\"\n will not work with this version of FlashMonkey" );
-
                 LOGGER.warn("\tUnknown Exception in getMetaFromFile: ");
                 e.printStackTrace();
             }
-            
-            //return null;
+
         }
     
         /**

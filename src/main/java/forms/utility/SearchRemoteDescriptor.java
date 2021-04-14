@@ -223,8 +223,8 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 	}
 	
 	@Override
-	public void setToRemoteData() {
-	
+	public boolean setToRemoteData() {
+		return false;
 	}
 
 	

@@ -158,6 +158,8 @@ public class StudentModel extends ModelParent {
 		student.setMajor(descriptor.getMajor());
 		student.setMinor(descriptor.getMinor());
 		student.setCvLink(descriptor.getCVLink());
+		student.setOrigUserEmail(descriptor.getOrigEmail());
+		student.setCurrentUserEmail(descriptor.getCurrentEmail());
 		
 		// We are not storing personal information to the users system
 		// It is sent to the cloud.
@@ -169,7 +171,8 @@ public class StudentModel extends ModelParent {
 	}
 	
 	/**
-	 * sends studentData to the db.
+	 * sends studentData to the db. If the student exists
+	 * it attempts an update, otherwise it conducts an insert.
 	 * returns true if successful else false.
 	 */
 	@Override
@@ -178,15 +181,17 @@ public class StudentModel extends ModelParent {
 
 		// do insert
 		boolean bool = DBInsert.STUDENT_ENCRYPTED_DATA.doInsert(studentData);
+		// If successful, skip, otherwise do update
 		if( ! bool ) {
 			LOGGER.debug("student exists, do update. studentID: {}", studentData.getPersonId());
-			//update database
-			if (studentData.getPersonId() != -1) {
+			// Update database. If the user is in the database and their id is NOT returned.
+			if (studentData.getPersonId() == -1) {
+					String whereStatement = " WHERE orig_email = '" + Alphabet.encrypt(UserData.getUserName()) + "'";
+					LOGGER.debug("whereStatement" + whereStatement);
+					return DBUpdate.STUDENT_ENCRYPTED_DATA.doUpdate(studentData, whereStatement);
+			}
+			else {
 				String whereStatement = " WHERE person_id = '" + studentData.getPersonId() + "'";
-				LOGGER.debug("whereStatement" + whereStatement);
-				return DBUpdate.STUDENT_ENCRYPTED_DATA.doUpdate(studentData, whereStatement);
-			} else {
-				String whereStatement = " WHERE orig_email = '" + Alphabet.encrypt(UserData.getUserName()) + "'";
 				LOGGER.debug("whereStatement" + whereStatement);
 				return DBUpdate.STUDENT_ENCRYPTED_DATA.doUpdate(studentData, whereStatement);
 			}
@@ -200,8 +205,9 @@ public class StudentModel extends ModelParent {
 		return descriptor;
 	}
 
+	// REMOVE THIS.... It is not used.
 	private long fetchStudentID(EncryptedStud student) {
-		String[] strs = {student.getOrig_user_email()};
+		String[] strs = {student.getOrigUserEmail()};
 		String[] response = DBFetchUnique.STUDENT_ENCRYPTED_DATA.query(strs);
 		//String[] strAry = response.split(",");
 

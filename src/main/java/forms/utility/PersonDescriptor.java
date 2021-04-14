@@ -36,7 +36,7 @@ import java.io.File;
  */
 public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
 	
-	
+	// XXXXXXXXX Issue with DB Person....
 	// Logging reporting level is set in src/main/resources/logback.xml
 	// Use for detailed logging and use setLevel(Level.debug)
 	// Slows app performance significantly!!!
@@ -84,8 +84,7 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
 	public String getPhotoLink() { return photoLink.get(); }
 	public String getInstitution() { return institution.get(); }
 	
-	
-	
+
 	// person properties
 	public StringProperty personDescriptProperty() { return personDescript; }
 	public StringProperty firstNameProperty() { return firstName; } // in MetaParent
@@ -99,16 +98,12 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
 	public StringProperty photoLinkProperty() { return photoLink; }
 	public StringProperty institutionProperty() { return institution; }
 	
-	
-	
+
 	// Prevent multiple upload and downloads
 	// iF person data has been set, set to true.
 	public boolean personDataIsSet = false;
 	
-	
-	
-	
-	
+
 	@Override
 	public void setProperitesDefault() {
 		LOGGER.debug("called setPropertiesDefault() ");
@@ -118,30 +113,33 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
 		lastName = new SimpleStringProperty("");
 		middleName  = new SimpleStringProperty("");
 		// once orig_email is set, it cannot be changed.
-		//origEmail = new SimpleStringProperty(UserData.getUserName());
-		currentEmail = new SimpleStringProperty("");
+		origEmail = new SimpleStringProperty(UserData.getUserName());
+		currentEmail = new SimpleStringProperty(UserData.getUserName());
+		LOGGER.debug("Printing UserData.getUserName: {}",UserData.getUserName() );
 		//private StringProperty joinDate;
 		//	taxID;
 		phone = new SimpleStringProperty("");;
 		age = new SimpleStringProperty("0");
-		//	photoLink = new SimpleStringProperty("");;
+		photoLink = new SimpleStringProperty("");;
 		institution = new SimpleStringProperty("");;
 	}
 	
 	@Override
 	public void setProperties(final EncryptedPerson u) {
+
 		LOGGER.debug("called setProperties with args");
-		
 		personDescript = new SimpleStringProperty(u.getDescript());
-		firstName = new SimpleStringProperty(u.getFirstName());
+		firstName = new SimpleStringProperty(Alphabet.decrypt(u.getFirstName()));
 		lastName = new SimpleStringProperty(Alphabet.decrypt(u.getLastName()));
 		middleName = new SimpleStringProperty(u.getMiddleName());
 		// once orig_email is set, it cannot be changed.
-		//origEmail = new SimpleStringProperty(u.getCurrentUserEmail());
+		// origEmail = new SimpleStringProperty(u.getCurrentUserEmail());
 		currentEmail = new SimpleStringProperty(u.getCurrentUserEmail());
 		phone = new SimpleStringProperty(u.getPhone());
 		age = new SimpleStringProperty(u.getAge());
 		institution = new SimpleStringProperty(u.getInstitution());
+		photoLink = new SimpleStringProperty(u.getPhotoLink());
+		phone = new SimpleStringProperty(u.getPhone());
 	}
 	
 	/**
@@ -158,6 +156,7 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
 	 */
 	@Override
 	public long getLocalDataDate() {
+		LOGGER.debug("getLocalData called");
 		String folder = DirectoryMgr.getMediaPath('t');
 
 		String personFileName = authcrypt.UserData.getUserName().hashCode()+ "p" + ".met";
@@ -211,6 +210,6 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
 		phone.setValue("");
 		age.setValue("");
 		institution.setValue("");
+		photoLink.setValue("");
 	}
-
 }

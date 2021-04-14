@@ -46,6 +46,9 @@ public class ProfessorDescriptor extends PersonDescriptor {
 	private IntegerProperty pay;
 	private StringProperty recruiterInfo;
 	private EncryptedProf prof;
+
+	// flag set by DB response
+	boolean hasData;
 	
 	/**
 	 * Constructor
@@ -55,6 +58,7 @@ public class ProfessorDescriptor extends PersonDescriptor {
 		LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("called ProfessorDescriptor constructor");
 		this.setMostRecent();
+		hasData = false;
 	}
 	
 	// Professor data from form entries
@@ -114,25 +118,32 @@ public class ProfessorDescriptor extends PersonDescriptor {
 		// it exists && the user is connected.
 		long remoteDate = 0;// = meta.getLastDate() * -1;
 		if(fileops.Utility.isConnected()) {
-			setToRemoteData();
-			remoteDate = prof.getLastDate() * -1;
+			hasData = setToRemoteData();
+			if(! hasData) {
+				remoteDate = prof.getLastDate() * -1;
+			}
 		}
 
 		long localDate = getLocalDataDate();
-		long num = remoteDate + localDate;
-		// If this files metadata does not exist yet
-		// chose to set from default.
-		if(num + localDate == 0) {
-			//System.out.print("Chose default");
+		if(hasData) {
+			long num = remoteDate + localDate;
+			// If this files metadata does not exist yet
+			// chose to set from default.
+			if (num + localDate == 0) {
+				//System.out.print("Chose default");
+				setProperitesDefault();
+			} else if (num > 0) {
+				setToLocalData();
+				//System.out.println("Chose local ");
+				setProperties(prof);
+			} else { // (num < 0)
+				// meta is already set to the DB
+				//System.out.println("Chose remote ");
+				setProperties(prof);
+			}
+		}
+		else {
 			setProperitesDefault();
-		} else if(num > 0 ) {
-			setToLocalData();
-			//System.out.println("Chose local ");
-			setProperties(prof);
-		} else  { // (num < 0)
-			// meta is already set to the DB
-			//System.out.println("Chose remote ");
-			setProperties(prof);
 		}
 	}
 	
@@ -170,7 +181,7 @@ public class ProfessorDescriptor extends PersonDescriptor {
 	 * it as is.
 	 */
 	@Override
-	public void setToRemoteData() {
+	public boolean setToRemoteData() {
 		
 		// @TODO complete getRemoteData, need professorHash in query
 		
@@ -188,11 +199,14 @@ public class ProfessorDescriptor extends PersonDescriptor {
 			//String[] dataStr = parseResponse(response);
 			data.setDataAry(response);
 			data.set(response);
+			return true;
 		} else {
 			LOGGER.debug("response from DB length is LESS than 10... NOT processing response.");
+			return false;
 		}
 		
 	 */
+		return false;
 	}
 
 	

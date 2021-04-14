@@ -10,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.security.GeneralSecurityException;
@@ -18,6 +19,9 @@ import java.util.HashMap;
 
 
 public class EcoPane extends BorderPane {
+
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(EcoPane.class);
+    //private static final Logger LOGGER = LoggerFactory.getLogger(EcoPane.class);
 
     WebEngine engine = new WebEngine();
 
@@ -32,10 +36,15 @@ public class EcoPane extends BorderPane {
         this.cartList = cartList;
     }
 
-
+    /**
+     * <p>Returns a BorderPane containing a JavaFX Browser.</p>
+     * <p>If the browser successfully connects, the user may purchase
+     * the deck which was selected in the ConsumerPane/DeckMarketPane.</p>
+     * @return Returns a BorderPane containing a JavaFX Browser
+     */
     protected BorderPane getPurchasePane() {
         System.out.println("EcoPane.getEcoPane called line 24");
-
+        // @TODO remove All Trusting Manager!!!
         setTrustManager();
 
         // -----------------     start webview    --------------------- //
@@ -46,16 +55,16 @@ public class EcoPane extends BorderPane {
             engine.setUserAgent(getJson(cartList));
         } else {
             // throw error
+            LOGGER.warn("No deckIds were given in if statement to send to WebEngine.UserAgent");
         }
 
-        System.out.println("EcoPane line 68");
+        System.out.println(" EcoPane.getPurchasePane line 56");
 
         // Load from local file.
         // Works to load first page, but following pages
         // need to come from the server.
         //	File f = new File(getClass().getClassLoader().getResource("java/main/index.html").getFile());
         //	engine.load(f.toURI().toString());
-// @TODO change engine.load from local server to remote
         // Load web page from remote
         engine.load(VertxLink.REQ_PURCHASE.getLink());
 
@@ -98,7 +107,6 @@ public class EcoPane extends BorderPane {
         });
 
         VBox rBox = new VBox(webView);
-        //rBox.setMaxHeight(DeckMarketPane.getInstance().getMarketPane(). getBoundsInLocal().getHeight());
         BorderPane bPane = new BorderPane();
 
         /*
@@ -135,14 +143,22 @@ public class EcoPane extends BorderPane {
     }
 
 
-    protected BorderPane getOnboardPane() {
+    /**
+     * <p>Returns a BorderPane containing a JavaFX Browser.</p>
+     * <p>Makes a get request for a Membership Request. If the broswer
+     * successfully connects, the user may enter their details
+     * to create a membership subscription.</p>
+     * @return Returns a BorderPane containing a JavaFX Browser.
+     */
+    protected BorderPane getReqMembershipPane() {
         System.out.println("EcoPane getOnboardPane called");
+        // @TODO remove All Trusting Manager!!!
         setTrustManager();
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
 
         engine = webView.getEngine();
-        engine.load(VertxLink.ONBOARD.getLink());
+        engine.load(VertxLink.REQ_MEMBER.getLink());
 
         engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
 
@@ -174,6 +190,56 @@ public class EcoPane extends BorderPane {
     }
 
 
+    /**
+     * <p>Returns a BorderPane containing a JavaFX Browser</p>
+     * <p>If the browser succesfully connects, makes a request
+     * for the users pay-platform account information. IE
+     * shows the user their account balance and next
+     * deposit date to their account.</p>
+     * @return
+     */
+    protected BorderPane getPayAccount() {
+        System.out.println("EcoPane getPayAccount called");
+        // @TODO remove All Trusting Manager!!!
+        setTrustManager();
+
+        // -----------------     start webview    --------------------- //
+        WebView webView = new WebView();
+
+        engine = webView.getEngine();
+        engine.load(VertxLink.REQ_ACCT.getLink());
+
+        engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+
+            System.out.println("getPayAccount() getting engine.LoadWorker called line 149");
+
+            if(Worker.State.SUCCEEDED.equals(newValue)) {
+                System.out.println("getPayAccount worker.state succeeded!");
+
+                System.out.println("location after load: " + engine.getLocation());
+
+                //@todo finish, prevent redirects from potential malicious actors
+            }
+            else {
+                System.out.println("EcoPane.getPayAccount line 217 failed to contact server.");
+                System.out.println("EcoPane.getPayAccount line 218 newValue: <" + newValue + "> & SUCCEEDED was: <" + Worker.State.SUCCEEDED + ">");
+            }
+        });
+
+        VBox rBox = new VBox(webView);
+        BorderPane bPane = new BorderPane();
+
+        VBox lBox = new VBox();
+        lBox.setMinSize(100, 600);
+        lBox.setAlignment(Pos.CENTER);
+        bPane.setRight(rBox);
+        bPane.setLeft(lBox);
+
+        return bPane;
+
+    }
+
+
     // ***** OTHER ***** //
 
     private void setTrustManager() {
@@ -194,6 +260,7 @@ public class EcoPane extends BorderPane {
                 }
         };
         // Install the all-trusting trust manager
+        // @TODO REMOVE SECURITY HOLE BEFORE DEPLOYMENT
         try {
             SSLContext sc = SSLContext.getInstance("SSL");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
@@ -216,14 +283,33 @@ public class EcoPane extends BorderPane {
         // ----------------- end self signed cert --------------------- //
     }
 
-    //@TODO set getJson to real data
+    /**
+     * Prepares JSON data to send to Vertx
+     * @param cartList
+     * @return
+     */
+
     private String getJson( ArrayList<HashMap<String, String>> cartList) {
-        //@TODO set this for an array of items
+        //@TODO set getJson to real data
+        //@TODO set getJson for an array of items
+        // @TODO in getJson get deck price from Vertx
         HashMap<String, String> map = cartList.get(0);
+        EncryptedAcct acct = DeckMarketPane.getInstance().getAcct();
+        String purchaser   = "Jenny Rosen"; // let the user input this information in stripe.
+        String userName     = UserData.getUserName();   // orig_email the deck is sent to
+        String deckId       = map.get("deck_id");       // id of deck to purchase
+        String price        = map.get("price");         // Does not go forward
+        String deckName     = map.get("deck_name");     // Name to be displayed
+        //String deck_id  = "2";
+        String currency = acct.getCurrency();
 
         String json = "{" +
-                ",\"user_name\":\"" + UserData.getUserName() + "\"" +
-                ",\"deck_id\":\"" + map.get("deck_id") + "\"" +
+                "\"real_name\":\"" + purchaser + "\"" +
+                ",\"user_name\":\"" + userName + "\"" +
+                ",\"deck_id\":\"" + deckId + "\"" +
+                ",\"deck_price\":\"" + price + "\"" +
+                ",\"deck_name\":\"" + deckName + "\"" +
+                ",\"currency\":\"" + currency + "\"" +
                 "}";
 
         System.out.println("Json looks like: " + json);

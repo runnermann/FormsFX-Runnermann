@@ -145,10 +145,10 @@ public class ConsumerPane extends StackPane {
         private static void layoutWebView() {
             LOGGER.debug("layoutWebView called");
             EcoPane ePane = new EcoPane();
-            mainStackPane.getChildren().add(ePane.getOnboardPane());
+            mainStackPane.getChildren().add(ePane.getReqMembershipPane());
         }
 
-        public static void onboardAction() {
+        public static void reqSubscription() {
             layoutWebView();
         }
     }

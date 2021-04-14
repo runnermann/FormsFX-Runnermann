@@ -45,6 +45,7 @@ public class UserData extends Searchable {
 	 * email address.
 	 */
 	public static String getUserName() {
+		System.out.println("UserData.getUserName(): " + userName);
 		return userName;
 	}
 	

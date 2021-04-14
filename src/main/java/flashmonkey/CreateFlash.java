@@ -1189,7 +1189,6 @@ public final class CreateFlash<C extends GenericCard> {
          * @return
          */
         private void saveNewCardToCreator() {
-        
             LOGGER.info("\n *** IN SAVE NEW CARD TO CREATOR *** \n");
         
             //if(checkContent(editorU, editorL) == 1) {
@@ -1262,7 +1261,6 @@ public final class CreateFlash<C extends GenericCard> {
          * @return returns true if there is a test in this card!?!
          */
         private void saveEdtdCardInCreator(FlashCardMM currentCard) {
-        
             LOGGER.debug(" *** CALLED SAVE EDITS IN CREATOR *** ");
             //LOGGER.debug("currentCard is null: " + (currentCard == null));
         
@@ -1403,9 +1401,7 @@ public final class CreateFlash<C extends GenericCard> {
         
     }
     
-    
-    
-    
+
 
     /* ------------------------------------------------------- **/
 
@@ -1417,12 +1413,8 @@ public final class CreateFlash<C extends GenericCard> {
         return currentCard == null;
     }
 
-    
-
-
 
     /* ------------------------------------------------------- **/
-
 
 
     /**
@@ -1444,8 +1436,7 @@ public final class CreateFlash<C extends GenericCard> {
         creatorList.clear();
     }
     
-    
-    
+
     /* ------------------------------------------------------- **/
 
     /**
@@ -1497,10 +1488,8 @@ public final class CreateFlash<C extends GenericCard> {
      *  created from the binary file.
      */
     
-    public void setCreatorList()
-    {
+    public void setCreatorList() {
         FlashCardOps fcOps = FlashCardOps.getInstance();
- //       this.getCreatorList().clear();
         
         creatorList = fcOps.cloneList(fcOps.getFlashList());
         startSize = creatorList.size();
