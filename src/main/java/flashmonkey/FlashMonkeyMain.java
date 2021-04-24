@@ -153,17 +153,16 @@ public class FlashMonkeyMain extends Application {
         });
         
    */
-        
         // Uncomment to create the memory monitor
         //chartWindow = new Stage();
         //buildChartWindow();
         // Getting image resources as a stream is finicky. No more than two dashes per name,
-        // and cannot be under a subdirectory. Although convieniently finds the resource directory
+        // and cannot be under a subdirectory. Although conveniently finds the resource directory
         // on it's own.
- //       flash = new Image(getClass().getResourceAsStream("/image/flash_astronaut_150.png"));
+        //  flash = new Image(getClass().getResourceAsStream("/image/flash_astronaut_150.png"));
 	    
-        flash = new Image(getClass().getResourceAsStream("/image/fm_multiLogo_5.png"));
-        /*bckgndImg = new Image(getClass().getResourceAsStream("/image/fm_bckgrnd.png"));*/
+        flash = new Image(getClass().getResourceAsStream("/image/logo/BLUE_7_128.png"));
+        //bckgndImg = new Image(getClass().getResourceAsStream("/image/student_bkgnd.jpg"));
         Image icon = new Image(getClass().getResourceAsStream("/icon/flashMonkey_Icon.png"));
         window.getIcons().add(icon);
 
@@ -192,14 +191,16 @@ public class FlashMonkeyMain extends Application {
 
         Scene firstScene;
         firstPane = new BorderPane();
-        GridPane btnBox = new GridPane();
+        VBox spacer = new VBox();
+        spacer.setPrefHeight(32);
+    //    GridPane btnBox = new GridPane();
         //exitButton = ButtoniKon.getExitButton();
 
         // For the lower panel on initial window
         ColumnConstraints col0 = new ColumnConstraints();
         col0.setPercentWidth(50);
-        btnBox.getColumnConstraints().add(col0);
-        btnBox.setId("buttonBox");
+    //    btnBox.getColumnConstraints().add(col0);
+    //    btnBox.setId("buttonBox");
         
         // buttons for intial window
  //       exitButton.setOnAction(e -> {
@@ -210,47 +211,37 @@ public class FlashMonkeyMain extends Application {
         GridPane gridPane1 = new GridPane();
 
         // Calculate logo fit height
-        int fitHeight = calcFitHeight((int) focusPane.getPrefHeight());
+        int fitHeight = 128; //calcFitHeight((int) focusPane.getPrefHeight());
         int gapHeight = (int) calcGapHeight(fitHeight);
-    
-        ImageView flashAstronaut = new ImageView(flash);
-        flashAstronaut.setFitHeight(fitHeight);
-        flashAstronaut.setPreserveRatio(true);
-        flashAstronaut.setSmooth(true);
-        HBox imageBox = new HBox();
-        imageBox.getChildren().add(flashAstronaut);
+
+        Label label = new Label("FlashMonkey");
+        label.setId("fmLabel");
+        ImageView iconView = new ImageView(flash);
+        iconView.setFitHeight(fitHeight);
+        iconView.setPreserveRatio(true);
+   //     iconView.setSmooth(true);
+        VBox imageBox = new VBox();
+        imageBox.getChildren().addAll(iconView, label);
         imageBox.setAlignment(Pos.CENTER);
-        //martian.setSmooth(true);
-        //Label label = new Label("", flashAstronaut);
-        //label.setId("fmLabel");
-    
+        imageBox.setSpacing(8);
         
-        gridPane1.setAlignment(Pos.CENTER);
+        gridPane1.setAlignment(Pos.TOP_CENTER);
         gridPane1.setVgap(gapHeight);
-        //gridPane1.setId("mainGridPane");
-        //gridPane1.maxWidthProperty().bind(mainPane.widthProperty());
-        //gridPane1.setPrefWidth(350);
     
         // *** PLACE NODES IN PANE ***
         gridPane1.getChildren().clear();
-        gridPane1.addRow(0, imageBox); // column 0, row 0
-        //gridPane1.addRow(1, spacer);
-        gridPane1.addRow(1, focusPane);
-        // Here, we set the image directly, in the pane!?!
-        /*BackgroundSize bSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true);
-        firstPane.setBackground(new Background(new BackgroundImage(bckgndImg,
-                BackgroundRepeat.REPEAT,
-                BackgroundRepeat.REPEAT,
-                BackgroundPosition.CENTER,
-                bSize)));
+        gridPane1.addRow(0, spacer);
+        gridPane1.addRow(1, imageBox); // column 0, row 1
+        gridPane1.addRow(2, focusPane);
 
-         */
         
         // *************************************
         // The users account set in top
         //firstPane.setTop( getAccountBox() );
         firstPane.setCenter(gridPane1);
-        firstPane.setBottom(getExitBox());
+        // firstPane.setBottom(getExitBox());
+        menuButton = ButtoniKon.getMenuButton();
+        firstPane.setId("bckgnd_image"); // the background image)
         firstScene = new Scene(firstPane, SceneCntl.getWd(), SceneCntl.getHt());
         firstScene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
         Sleep.storeOnDetected(firstScene, window);
@@ -277,7 +268,7 @@ public class FlashMonkeyMain extends Application {
      * @return
      */
     private static double calcGapHeight(int fitHeight) {
-        return fitHeight / 4.5;
+        return fitHeight / 6;
     }
 
     /**
@@ -293,7 +284,6 @@ public class FlashMonkeyMain extends Application {
         tempPane.setAlignment(Pos.CENTER);
         
         LOGGER.debug("\n *** getNavigationScene() ***");
-    	//FlashCard flash = new FlashCard(); // haha!!
 
         // *** CENTER MENU BUTTONS ***
         // go back to file select pane
@@ -317,7 +307,7 @@ public class FlashMonkeyMain extends Application {
         tempPane.addRow(2, studyButton);
         tempPane.addRow(3, createButton);
         
-        /*mainPane.setId("bckgnd_image");*/ // the background image
+        mainPane.setId("bckgnd_image"); // the background image
         mainPane.setTop(getAccountBox());
         mainPane.setCenter(tempPane);
         mainPane.setBottom(getExitBox());        
@@ -381,7 +371,7 @@ public class FlashMonkeyMain extends Application {
     private static GridPane getExitBox() {
         GridPane buttonBox = new GridPane(); // HBox with spacing provided
         buttonBox.setHgap(2);
-        Button exitButton = ButtoniKon.getExitButton();
+   /*     Button exitButton = ButtoniKon.getExitButton();
         exitButton.setOnAction(e -> {
             try {
                 Report.getInstance().endSessionTime();
@@ -393,14 +383,16 @@ public class FlashMonkeyMain extends Application {
             }
             
         });
+
+    */
         menuButton = ButtoniKon.getMenuButton();
         ColumnConstraints col0 = new ColumnConstraints();
         col0.setPercentWidth(50);
         buttonBox.setId("buttonBox");
         buttonBox.getColumnConstraints().add(col0);
         buttonBox.setPadding(new Insets(15, 15, 15, 15));
-        buttonBox.addColumn(1, menuButton);
-        buttonBox.addColumn(2, exitButton);
+        buttonBox.addColumn(2, menuButton);
+        //buttonBox.addColumn(2, exitButton);
         
         return buttonBox;
     }

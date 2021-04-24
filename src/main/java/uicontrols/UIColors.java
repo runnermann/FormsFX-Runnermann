@@ -43,8 +43,13 @@ public class UIColors
     public static final String BACKGROUND_ORANGE    = "rgba(232, 150, 32, 1)";  //E89620
     public static final String BUTTON_COMPLIMENT    = "rgba(130,72, 185, 1.0)"; //#8248B9;
     public static final String TRANSPARENT          = "rgba(0, 0, 0, 0.0)";
-    public static final String WEBSITE_GREEN         = "rgb(190, 224, 22)";// #BEE016
+    public static final String WEBSITE_GREEN        = "rgb(190, 224, 22)";// #BEE016
     public static final String WEBSITE_BLUE         = "rgb(0, 100, 225)";// #0064E1
+    public static final String ICON_BLUE            = "rgb(48, 79, 140)"; // #304F8C
+    public static final String ICON_PURPLE          = "rgb(166, 86, 152)"; // #A65698
+    public static final String ICON_YELLOW          = "rgb(242, 231, 68)"; // #F2E744
+    public static final String ICON_GOLD            = "rgb(242, 199, 68)"; // #F2C744
+    public static final String ICON_ELEC_BLUE       = "rgb(30, 164, 217)"; // #1EA4D9
     
     
     /**

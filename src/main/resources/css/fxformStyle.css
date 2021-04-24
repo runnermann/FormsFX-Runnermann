@@ -1,7 +1,16 @@
 /*******************
  * GENERAL STYLING *
  *******************/
+.root {
+    -fx-base: ececec;
+    -fx-control-inner-background: derive(-fx-base,80%);
+    ICON_BLUE: #304F8C;
+    ICON_PURPLE: #A65698;
+    ICON_YELLOW: #F2E744;
+    ICON_GOLD: #F2C744;
 
+    FX_BACKGROUND: ICON_BLUE;
+}
 @font-face {
     font-family: 'Flaticon';
     src: url(../font/flaticon.ttf);
@@ -120,7 +129,7 @@
 #formPane {
     -fx-border-color: #8248B9;
     -fx-border-width: 2 0 2 0;
-    -fx-background-color: #9276AC;
+    -fx-background-color: ICON_BLUE;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,0,10,0;
@@ -128,7 +137,7 @@
 
 #infoPane {
     -fx-border-color: #9276AC;
-    -fx-background-color: #9276AC;
+    -fx-background-color: ICON_BLUE;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;

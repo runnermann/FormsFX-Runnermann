@@ -34,7 +34,6 @@ public class SignInPane extends Pane implements ViewMixin {
 	private SignInModel model;
 	
 	public SignInPane(SignInModel signInModel) {
-		
 		LOGGER.info("SignInPane constructor called");
 		this.model = signInModel;
 		init();
@@ -161,10 +160,10 @@ public class SignInPane extends Pane implements ViewMixin {
 		
 		spacer.setPrefHeight(20);
 		
-		Label msgLabel = new Label("Let's get started.");
-		msgLabel.setId("fmLabel");
+		Label msgLabel = new Label("Log in");
+		msgLabel.setId("loginLabel");
 		Label signUpLabel = new Label("New to FlashMonkey?");
-		signUpLabel.setStyle("-fx-font-size: 12");
+		//signUpLabel.setStyle("-fx-font-size: 12");
 		
 		signInBtn.setMaxWidth(240);
 		signInBtn.setMinWidth(240);

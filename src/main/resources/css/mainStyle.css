@@ -63,7 +63,11 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
     FLASH_WHITE: #FFF4E0; // FM_WHITE
     BUTTON_WHITE: #FFFFFF;
 
-
+    EVE_BLUE: #0064e1;
+    ICON_BLUE: #304F8C;
+    ICON_PURPLE: #A65698;
+    ICON_YELLOW: #F2E744;
+    ICON_GOLD: #F2C744;
 
     /*linear-gradient( [ [from <point> to <point>] | [ to <side-or-corner>], ]? [ [ repeat | reflect ], ]? <color-stop>[, <color-stop>]+) */
     /*-fx-inner-border-horizontal:  linear-gradient(to top, derive(#ececec,55%) 0%, derive(#ececec,-5%) 50%);
@@ -222,7 +226,6 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 /* remove group outline */
 .formsfx-group {
     -fx-border-width: 0px;
-    /*-fx-border-color: TRANSPARENT;*/
     -fx-border-insets: 0px;
 }
 
@@ -273,10 +276,16 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 /* h1 the FlashMonkey Label */
 #fmLabel {
-    -fx-font-size: 20px;
-    -fx-base: FLASH_PURPLE;
-    /*-fx-text-fill: FM_TEXT_LABEL; */
-    -fx-text-fill: derive(-fx-base,86%);
+    -fx-font-size: 32px;
+    -fx-font-style: bold;
+    /*-fx-base: FLASH_PURPLE;*/
+    -fx-text-fill: ICON_GOLD;
+    /*-fx-text-fill: derive(-fx-base,86%);*/
+}
+
+#loginLabel {
+    -fx-font-size: 24px;
+    -fx-text-fill: FM_TEXT_LABEL;
 }
 
 
@@ -331,10 +340,11 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 /* h1 the FlashMonkey Label */
 #fmLabel {
-    -fx-font-size: 20px;
-    -fx-base: FLASH_PURPLE;
-    /*-fx-text-fill: FM_TEXT_LABEL; */
-    -fx-text-fill: derive(-fx-base,86%);
+    -fx-font-size: 40px;
+    /*-fx-base: FLASH_PURPLE;
+    -fx-text-fill: derive(-fx-base,86%); */
+    -fx-text-fill: FM_TEXT_LABEL;
+
 }
 
 
@@ -391,10 +401,12 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 /* File selection panel on  */
 #fileSelectPane {
+    -fx-base: ICON_BLUE;
     /*-fx-border-color: #00ADB5;
     -fx-background-color: #00ADB5;*/
-    -fx-border-color: #9276AC;
-    -fx-background-color: #9276AC;
+    -fx-border-color: TRANSPARENT;
+    -fx-background-color: #0064e180;
+    -fx-background-radius: 3;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;
@@ -529,13 +541,11 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 /*  Background image  */
 #bckgnd_image {
-  /*  -fx-background-image: url("/image/fm_bckgrnd.png");
+    -fx-background-image: url("/image/blue_collage1.jpg");
     -fx-background-repeat: stretch;
     -fx-background-size: 500 810;
     -fx-background-position: center center;
-    -fx-effect: dropshadow(gaussian, black, 10, 1.0, 100, 100);
-
-   */
+    /*-fx-effect: dropshadow(gaussian, black, 10, 1.0, 100, 100);*/
 }
 /*
 .text-area:focused .content {
