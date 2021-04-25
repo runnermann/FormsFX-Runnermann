@@ -587,6 +587,13 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
     -fx-background-position: center center;
     /*-fx-effect: dropshadow(gaussian, black, 10, 1.0, 100, 100);*/
 }
+
+#bckgnd_image_study {
+    -fx-background-image: url("/image/Ingenuity-helicoptor-jpl.jpg");
+    -fx-background-repeat: stretch;
+    -fx-background-size: 500 810;
+    -fx-background-position: center center;
+}
 /*
 .text-area:focused .content {
     -fx-background-color: transparent, white, transparent, white;

@@ -225,8 +225,7 @@ public final class ReadFlash {
         LOGGER.debug("setting window to modePane");
         masterBPane.setCenter(modeSelectPane);
         masterBPane.setBottom(exitBox);
-        masterBPane.setId("readFlashPane");
-
+        masterBPane.setId("bckgnd_image_study");
         masterScene = new Scene(masterBPane, SceneCntl.getWd(), SceneCntl.getHt());
 
         LOGGER.debug("readflash masterBPane width: " + masterBPane.widthProperty());
@@ -335,8 +334,7 @@ public final class ReadFlash {
      * Builds tree, and sets values in appropriate panes.
      * @return
      */
-    private GridPane listHasCardsAction()
-    {
+    private GridPane listHasCardsAction() {
         LOGGER.debug("listHasCardsAction() called");
 
         int flSize;
@@ -355,13 +353,17 @@ public final class ReadFlash {
         label.setId("label24White");
         GridPane gPane = new GridPane();
         VBox buttonBox = new VBox(2);
+        VBox spacer = new VBox();
+        spacer.setPrefHeight(300);
+        //spacer.setPrefWidth(500);
         buttonBox.setId("studyModePane");
         buttonBox.setAlignment(Pos.TOP_CENTER);
         buttonBox.getChildren().addAll(label, qaButton, testButton);
 
         gPane.setId("rightPaneTransp");
         gPane.setAlignment(Pos.CENTER);
-        gPane.addRow(0, buttonBox);
+        gPane.addRow(0, spacer);
+        gPane.addRow(1, buttonBox);
 
         return gPane;
     }
@@ -689,8 +691,7 @@ public final class ReadFlash {
      * qNavigation buttons are responsible for displaying the next card in the
      * treeWalker navigation tree. :)</p>
      */
-    protected void testButtonAction()
-    {
+    protected void testButtonAction() {
 
         LOGGER.info(" testButtonAction called ");
         Timer.getClassInstance().startTime();
@@ -719,6 +720,8 @@ public final class ReadFlash {
         masterBPane.setTop(topVBox);
         masterBPane.setCenter(rpCenter);
         masterBPane.setBottom(manageSouthPane('t'));
+
+        masterBPane.setId("readFlashPane");
 
         if( ! FlashMonkeyMain.treeWindow.isShowing()) {
             FlashMonkeyMain.buildTreeWindow();

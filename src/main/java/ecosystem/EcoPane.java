@@ -10,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
@@ -285,11 +286,12 @@ public class EcoPane extends BorderPane {
 
     /**
      * Prepares JSON data to send to Vertx
+     * Check that there is data before
      * @param cartList
      * @return
      */
 
-    private String getJson( ArrayList<HashMap<String, String>> cartList) {
+    private String getJson( @NotNull ArrayList<HashMap<String, String>> cartList) {
         //@TODO set getJson to real data
         //@TODO set getJson for an array of items
         // @TODO in getJson get deck price from Vertx
