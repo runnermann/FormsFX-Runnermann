@@ -130,7 +130,6 @@ public class MultiChoice implements GenericTestType<MultiChoice>
         test = new Test(currentCard, FlashCardOps.getInstance().getFlashList(), currentCard.getANumber());
 
         // Buttons//
-        
         if(nextAnsButton == null) {
             nextAnsButton = ButtoniKon.getAnsNext();
         }
@@ -510,21 +509,15 @@ public class MultiChoice implements GenericTestType<MultiChoice>
          * @return Returns an arraylist of AnswerMM of any qualified answers for Multi-Choice
          * test and selected randomly.
          */
-        private AnswerMM[] buildAnswerAry(final AnswerMM correctAnswer, Set<AnswerMM> qualifiedSet)
-        {
+        private AnswerMM[] buildAnswerAry(final AnswerMM correctAnswer, Set<AnswerMM> qualifiedSet) {
 
             LOGGER.debug("\n\n *** in buildAnswerAry *** \n");
 
             // Create a set of all qualified answers and give them a
             // unique hash-number to this iteration/Object of Test
             HashSet<HashObj> ansHashSet = new HashSet<>(1);
-
-
-
             HashObj ho = new HashObj(correctAnswer);
             ansHashSet.add(ho);
-
-
 
             LOGGER.debug("correctAnswer [ " + ho.answerMM + " ] and hashCode [ " + ho.hashCode() + " ]");
 
@@ -579,8 +572,6 @@ public class MultiChoice implements GenericTestType<MultiChoice>
             // In case there are not enough multi-choice cards and the error
             // was not caught previously.
 
-
-
             LOGGER.debug("\nfinished while loop\n\nprinting ansHSet");
             //** PRINT FOR TEST **/
             for(HashObj a : ansHashSet) {
@@ -607,7 +598,6 @@ public class MultiChoice implements GenericTestType<MultiChoice>
             return resultList;
         }
 
-
         /**
          *InnerClass to create a new HashCode per Test iteration.
          */
@@ -629,8 +619,6 @@ public class MultiChoice implements GenericTestType<MultiChoice>
 
         }
 
-
-
         /*** INNER INNER CLASS for testing REMOVE before deployement ***/
         // @todo Remove TestForRepeats inner class from MultiChoice Test.
 
@@ -646,9 +634,7 @@ public class MultiChoice implements GenericTestType<MultiChoice>
                 aObjects = new AnswerMM[4];
             }
 
-
-
-            /**
+            /*
              * Tests that the parameter does not have a duplicate within it's array
              * @param aObjs The array of AnswerObj's
              * @return True if a duplicate is found. False otherwise.

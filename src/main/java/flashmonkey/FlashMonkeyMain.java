@@ -24,7 +24,6 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.ButtoniKon;
 import uicontrols.FxNotify;
@@ -162,7 +161,6 @@ public class FlashMonkeyMain extends Application {
         //  flash = new Image(getClass().getResourceAsStream("/image/flash_astronaut_150.png"));
 	    
         flash = new Image(getClass().getResourceAsStream("/image/logo/BLUE_7_128.png"));
-        //bckgndImg = new Image(getClass().getResourceAsStream("/image/student_bkgnd.jpg"));
         Image icon = new Image(getClass().getResourceAsStream("/icon/flashMonkey_Icon.png"));
         window.getIcons().add(icon);
 
@@ -181,10 +179,10 @@ public class FlashMonkeyMain extends Application {
     } // ******** END START ******* //
     
     /**
-     *   The first scene is the sign-in page. Then either
+     *   The first scene is the sign-in or signUp page. Then either
      *   fileSelectPane pane (study deck) or create authcrypt.user.
      *   IF fileSelectPane, also provides the ability to create a new deck.
-     * @return Returns the first scene or landing scene999
+     * @return Returns the first scene or landing scene
      */
     public static Scene getFirstScene(GridPane focusPane) {
         //LOGGER.debug("*** getFirstScene called ***");
@@ -193,21 +191,11 @@ public class FlashMonkeyMain extends Application {
         firstPane = new BorderPane();
         VBox spacer = new VBox();
         spacer.setPrefHeight(32);
-    //    GridPane btnBox = new GridPane();
-        //exitButton = ButtoniKon.getExitButton();
 
         // For the lower panel on initial window
         ColumnConstraints col0 = new ColumnConstraints();
         col0.setPercentWidth(50);
-    //    btnBox.getColumnConstraints().add(col0);
-    //    btnBox.setId("buttonBox");
-        
-        // buttons for intial window
- //       exitButton.setOnAction(e -> {
-//            Report.getInstance().endSessionTime();
- //           System.exit(0);
-//        });
-    
+
         GridPane gridPane1 = new GridPane();
 
         // Calculate logo fit height
@@ -234,10 +222,6 @@ public class FlashMonkeyMain extends Application {
         gridPane1.addRow(1, imageBox); // column 0, row 1
         gridPane1.addRow(2, focusPane);
 
-        
-        // *************************************
-        // The users account set in top
-        //firstPane.setTop( getAccountBox() );
         firstPane.setCenter(gridPane1);
         // firstPane.setBottom(getExitBox());
         menuButton = ButtoniKon.getMenuButton();
@@ -280,10 +264,13 @@ public class FlashMonkeyMain extends Application {
     public static Scene getNavigationScene() {
         Scene mainScene;
         BorderPane mainPane = new BorderPane();
-        GridPane tempPane = new GridPane();
-        tempPane.setAlignment(Pos.CENTER);
+        GridPane gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER);
+        VBox buttonBox = new VBox(2);
         
         LOGGER.debug("\n *** getNavigationScene() ***");
+        Label label = new Label("Action Menu");
+        label.setId("label24White");
 
         // *** CENTER MENU BUTTONS ***
         // go back to file select pane
@@ -302,14 +289,15 @@ public class FlashMonkeyMain extends Application {
         });
         
         ReadFlash.getInstance().resetScoreNProg();
+        buttonBox.getChildren().addAll(label, deckSelectButton, studyButton, createButton);
+        gridPane.addRow(0, buttonBox);
 
-        tempPane.addRow(0, deckSelectButton);
-        tempPane.addRow(2, studyButton);
-        tempPane.addRow(3, createButton);
-        
+        buttonBox.setId("fileSelectPane");
+        buttonBox.setAlignment(Pos.TOP_CENTER);
+        gridPane.setId("rightPaneTransp");
         mainPane.setId("bckgnd_image"); // the background image
         mainPane.setTop(getAccountBox());
-        mainPane.setCenter(tempPane);
+        mainPane.setCenter(gridPane);
         mainPane.setBottom(getExitBox());        
         mainScene = new Scene(mainPane, SceneCntl.getWd(), SceneCntl.getHt());
         mainScene.getStylesheets().addAll("css/mainStyle.css", "css/buttons.css");
@@ -480,13 +468,13 @@ public class FlashMonkeyMain extends Application {
         scrollP.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollP.setPrefWidth(width);
         scrollP.setMaxHeight(446);
-        scrollP.setId("fileSelectOuter");
+        scrollP.setStyle("-fx-background-color:transparent");
         
         //label.setFont(Font.loadFont("File:font/Raleway-Medium.ttf", 25));
         Label selectLabel = new Label("Select a deck to study");
-        selectLabel.setPadding(new Insets(0,0,20,0));
-        selectLabel.setId("h2Label");
-
+    //    selectLabel.setPadding(new Insets(0,0,20,0));
+        selectLabel.setId("label24White");
+        gridPane1.setId("fileSelectPane");
         gridPane1.setAlignment(Pos.TOP_CENTER);
         //gridPane1.setVgap(20);
         gridPane1.setPrefHeight(width);
@@ -494,9 +482,10 @@ public class FlashMonkeyMain extends Application {
         // *** PLACE NODES IN PANE ***
         GridPane.setHalignment(selectLabel, HPos.CENTER);
         FlashCardOps.FileSelectPane fsp = getInstance().new FileSelectPane();
-        fsp.createPane();
-        fsp.paneForFiles.setId("fileSelectPane");
+        fsp.selectFilePane();
+
         fsp.paneForFiles.setPrefWidth(width);
+        fsp.paneForFiles.setId("fileSelectPane");
 
         // The search for resources button
         searchRscButton = ButtoniKon.getSearchRsc();
@@ -514,7 +503,6 @@ public class FlashMonkeyMain extends Application {
             //buttonBox.setPrefWidth(350);
             buttonBox.getChildren().addAll(newDeckButton, searchRscButton);
 
-            //@todo file select method. Look at this for efficiency if needed!
             // new file button action
             newDeckButton.setOnAction(e -> {
                 gridPane1.getChildren().clear();
@@ -543,7 +531,7 @@ public class FlashMonkeyMain extends Application {
         // scene is displayed.
         sceneOneButton = new Button("Back");
         //sceneOneButton.setFont(Font.loadFont("File:font/Raleway-Medium.ttf", 25));
-        /**
+        /*
          * Button action: Create a new file/deck
          * Shows the EncryptedUser.EncryptedUser the new file textArea where
          * the EncryptedUser.EncryptedUser may enter the FlashCard deck name
@@ -553,8 +541,7 @@ public class FlashMonkeyMain extends Application {
             gridPane1.getChildren().clear();
             window.setScene(getFirstScene(getFilePane()));
         });
-    
-        //firstPane.setTop( getAccountBox() );
+
         menuButton.setDisable(true);
         return gridPane1;
     }

@@ -215,7 +215,30 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 }
 
 .scroll-pane {
-    /*-fx-border-style: none; */
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-border-style: none;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 4,0,4,0;
+}
+
+.scroll-pane:focused {
+    -fx-background-insets: 0;
+}
+
+.scroll-pane .corner {
+    -fx-background-insets: 0;
+}
+
+.ScrollPane {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-border-style: none;
+    -fx-border-width: 0;
+    -fx-border-insets: 0px;
+    -fx-padding: 4,0,4,0;
 }
 
 .VBox {
@@ -283,19 +306,19 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
     /*-fx-text-fill: derive(-fx-base,86%);*/
 }
 
-#loginLabel {
+/* menu labels */
+#label24White {
     -fx-font-size: 24px;
     -fx-text-fill: FM_TEXT_LABEL;
+    -fx-padding: 0 0 32 0;
 }
 
 
-
-/* h2labels */
-#h2Label {
+#label16 {
     -fx-font-size: 16px;
-    -fx-base: BUTTON_PURPLE;
-    /*-fx-text-fill: FM_TEXT_LABEL; */
-    -fx-text-fill: derive(-fx-base,86%);
+    /*-fx-base: BUTTON_PURPLE;*/
+    -fx-text-fill: FM_TEXT_LABEL;
+    /*-fx-text-fill: derive(-fx-base,86%);*/
     /*-fx-text-fill: #F8B500;  // yellow */
     /*-fx-text-fill: #8146B6; */
 }
@@ -312,6 +335,10 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
     /*-fx-base: FLASH_PURPLE;*/
     /*-fx-text-fill: FM_TEXT_LABEL; */
     -fx-text-fill: "rgba(204, 255, 0, 0.9)";
+}
+
+#signUpLabel {
+    -fx-font-size: 16px;
 }
 
 
@@ -347,15 +374,11 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 }
 
-
-
-
-
 /* the CreateFlash label */
 #deckNameLabel {
-    -fx-font-size: 12px;
+    -fx-font-size: 16px;
     -fx-font-family: "Raleway-Medium.ttf";
-    -fx-text-fill: #ecf0f1;
+    -fx-text-fill: FM_TEXT_LABEL;
     -fx-padding: 5 2 5 2;
     /*-fx-fit-to-height: true;*/
 }
@@ -401,15 +424,32 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 /* File selection panel on  */
 #fileSelectPane {
-    -fx-base: ICON_BLUE;
-    /*-fx-border-color: #00ADB5;
-    -fx-background-color: #00ADB5;*/
     -fx-border-color: TRANSPARENT;
-    -fx-background-color: #0064e180;
+    -fx-background-color: #0064e195;
+    /*-fx-background-radius: 3;*/
+    -fx-margin-top: 20;
+    -fx-margin-bottom: 20;
+    -fx-padding: 10,10,10,10;
+}
+
+#readFlashPane {
+    -fx-border-color: TRANSPARENT;
+    -fx-background-color: EVE_BLUE;
+}
+
+#studyModePane {
+    -fx-background-color: #29abe2;
     -fx-background-radius: 3;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;
+}
+
+#studyBtnPane {
+    -fx-background-color: ICON_BLUE;
+    -fx-margin-top: 4;
+    -fx-margin-bottom: 4;
+    -fx-padding: 0, 10, 0, 10;
 }
 
 #resultPane {

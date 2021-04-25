@@ -22,10 +22,11 @@
     BUTTON_PURPLE_50: rgba(72, 32, 110, .5);
     FOCUS_BLUE: #0096C9;
 
+    EVE_BLUE: #0064e1;
     ICON_BLUE: #304F8C;
-    ICON_PURPLE: #A65698;
-    ICON_YELLOW: #F2E744;
-    ICON_GOLD: #F2C744;
+    ICON_PURPLE: #79489C;
+    ICON_YELLOW: #F2E529;
+    ICON_GOLD: #F2C230;
 
 }
 
@@ -163,16 +164,16 @@
 
 
 
-#purpleButtonSquare {
-    -fx-base: BUTTON_PURPLE;
+#blueButtonSquare {
+
     -fx-font-weight: 900;
-    -fx-background-radius: 0, 0, 0, 0;
-    -fx-background-color: derive(-fx-base,80%);
+    -fx-background-radius: 3;
+    -fx-background-color: ICON_BLUE;
     -fx-text-fill: FLASH_WHITE;
 }
-#purpleButtonSquare:hover {
-    -fx-base: BUTTON_PURPLE;
-    -fx-background-color: derive(-fx-base,40%);
+#blueButtonSquare:hover {
+    -fx-base: ICON_BLUE;
+    -fx-background-color: derive(-fx-base,20%);
 }
 
 

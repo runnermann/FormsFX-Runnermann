@@ -161,8 +161,9 @@ public class SignInPane extends Pane implements ViewMixin {
 		spacer.setPrefHeight(20);
 		
 		Label msgLabel = new Label("Log in");
-		msgLabel.setId("loginLabel");
+		msgLabel.setId("label24White");
 		Label signUpLabel = new Label("New to FlashMonkey?");
+		signUpLabel.setId("signUpLabel");
 		//signUpLabel.setStyle("-fx-font-size: 12");
 		
 		signInBtn.setMaxWidth(240);

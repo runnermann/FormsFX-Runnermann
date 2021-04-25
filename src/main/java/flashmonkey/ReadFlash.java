@@ -122,7 +122,7 @@ public final class ReadFlash {
     // protected static Button fileSelectButton = new Button(" < | Study deck selection");
 
     // *** LABELS ***
-    private static Label topLabel;// = new Label(FC_OBJ.FO.getFileName());
+    private static Label deckNameLabel;// = new Label(FC_OBJ.FO.getFileName());
     protected static Label message; // = new Label();
     private static Label scoreLabel; //?????
 
@@ -215,50 +215,26 @@ public final class ReadFlash {
         exitBox.addColumn(2, exitButton);
         exitBox.setId("buttonBox");
         
-        topLabel = new Label(getDeckName());
-        topLabel.setId("h2Label");
+        deckNameLabel = new Label(getDeckName());
+        deckNameLabel.setId("label16");
 
-        rpNorth.getChildren().add(topLabel);
+        rpNorth.getChildren().add(deckNameLabel);
         
 
         // The study menu pane
         LOGGER.debug("setting window to modePane");
         masterBPane.setCenter(modeSelectPane);
         masterBPane.setBottom(exitBox);
-        /*masterBPane.setId("bckgnd_image");*/
+        masterBPane.setId("readFlashPane");
 
         masterScene = new Scene(masterBPane, SceneCntl.getWd(), SceneCntl.getHt());
 
         LOGGER.debug("readflash masterBPane width: " + masterBPane.widthProperty());
         
         // *** BUTTON ACTIONS ***
-        menuButton.setOnAction(e -> {
-            //    leaveAction();
-                FlashMonkeyMain.setWindowToNav();
-        });
-        
-        
-        exitButton.setOnAction(e -> {
-            exitAction();
-        });
-        
-        /*
-         * QUESTION ANSWER BUTTON ACTION
-         * This button selects the Question and Answer mode as opposed to
-         * the test mode. Q&A mode is a typical flash card mode. The EncryptedUser.EncryptedUser
-         * presses the next question button to get the question and then 
-         * presses the answer button to review the answer.
-         */
+        menuButton.setOnAction(e -> FlashMonkeyMain.setWindowToNav());
+        exitButton.setOnAction(e -> exitAction() );
         qaButton.setOnAction((ActionEvent e) -> qaButtonAction());
-        
-        /*
-         * TEST MODE BUTTON ACTION
-         * Button used to select the test mode between Test or Question and Answer. This 
-         * button selects the Test mode. Test mode is where the EncryptedUser.EncryptedUser selects the next or
-         * previous question and a set of four answers are created from other questions 
-         * in the EncryptedUser.EncryptedUser data base. The EncryptedUser.EncryptedUser has the option to select one of the answers
-         * from the set of four A - D.
-         */
         testButton.setOnAction((ActionEvent e) -> testButtonAction());
         /*
         * Navigation buttons, handles actions for first, last, next, and previous
@@ -268,7 +244,6 @@ public final class ReadFlash {
         prevQButton.setOnAction((ActionEvent e) -> prevQButtonAction());
         endQButton.setOnAction(this::endQButtonAction);
         firstQButton.setOnAction(this::firstQButtonAction);
-
         /*
          * shortCut Key actions
          */
@@ -367,10 +342,6 @@ public final class ReadFlash {
         int flSize;
         flSize = FlashCardOps.getInstance().getFlashList().size();
 
-    //    qaButton = new Button("Q & A session");
-    //    qaButton.setMaxWidth(   Double.MAX_VALUE );
-    //    testButton.setMaxWidth( Double.MAX_VALUE );
-
         progGauge = new MGauges(100, 100);
         scoreGauge = new MGauges(100, 100);
         pGaugePane = progGauge.makeGauge("COMPLETED", 0, (flSize - 1), 0);
@@ -380,12 +351,17 @@ public final class ReadFlash {
         progGauge.moveNeedle(500, 0);
         scoreGauge.moveNeedle(500, 0);
 
+        Label label = new Label("Study Mode");
+        label.setId("label24White");
         GridPane gPane = new GridPane();
+        VBox buttonBox = new VBox(2);
+        buttonBox.setId("studyModePane");
+        buttonBox.setAlignment(Pos.TOP_CENTER);
+        buttonBox.getChildren().addAll(label, qaButton, testButton);
 
+        gPane.setId("rightPaneTransp");
         gPane.setAlignment(Pos.CENTER);
-        gPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        gPane.addRow(0, qaButton);
-        gPane.addRow(1, testButton);
+        gPane.addRow(0, buttonBox);
 
         return gPane;
     }
@@ -735,7 +711,7 @@ public final class ReadFlash {
 
         VBox topVBox = new VBox();
         Label deckNameLabel = new Label("Flash Deck:  " + deckName);
-        deckNameLabel.setId("h2Label");
+        deckNameLabel.setId("label16");
         topVBox.getChildren().add(deckNameLabel);
  //       topVBox.setStyle("-fx-background-color: " + UIColors.GRAPH_BGND);
         topVBox.setAlignment(Pos.CENTER);
@@ -976,8 +952,10 @@ public final class ReadFlash {
         buttonBox.setPadding(new Insets(0, 0, 10, 0));
         buttonBox.setSpacing(15);
 
-        FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+        FMTWalker.getCurrentNode().getData();
         BorderPane contrlsBPane = new BorderPane();
+        contrlsBPane.setStyle("-fx-background-color: #29abe2");
+
         //contrlsBPane.setMaxHeight(SceneCntl.getContrlPaneHt());
 
         switch(mode)
@@ -1019,6 +997,7 @@ public final class ReadFlash {
                 //contrlsBPane.setTop(buttonBox);
                 //contrlsBPane.setBottom(bottomBPane);
                 VBox vBox = new VBox();
+                vBox.setId("studyBtnPane");
                 vBox.getChildren().addAll(bottomBPane, exitBox);
                 return vBox;
             }
@@ -1057,7 +1036,9 @@ public final class ReadFlash {
                 bottomBPane.setRight(pGaugePane);
                 //bottomBPane.setBottom(exitBox);
                 VBox vBox = new VBox();
+                vBox.setId("studyBtnPane");
                 contrlsBPane.setBottom(bottomBPane);
+
                 // Returning the bottom section BorderPane
                 vBox.getChildren().addAll(bottomBPane, exitBox);
                 return vBox;
@@ -1089,8 +1070,7 @@ public final class ReadFlash {
             //test.getAnsButton().setText("");
         //    ButtoniKon.ANS_SELECT.getJustAns(test.getAnsButton(), "Select");
             
-            if(isRight != 0)
-            {
+            if(isRight != 0) {
                 test.getAnsButton().setDisable(true);
 
                 switch(isRight)
@@ -1122,17 +1102,13 @@ public final class ReadFlash {
                     }
                 }
             }
-            else
-            {
+            else {
                 test.getAnsButton().setDisable(false);
                 test.getAnsButton().setVisible(true);
                 test.getAnsButton().setStyle("-fx-color: #FFFFFF;");
-    //            test.getAnsButton().setText("");
-                //test.getAnsButton().setTooltip(new Tooltip("Select this answer"));
             }
         }
-        catch (NullPointerException f)
-        {
+        catch (NullPointerException f) {
             // print an error message
             LOGGER.debug("\n *** Null pointer in Test *** "
                     + "\n\tselectAnswerButton may not work as"
@@ -1152,9 +1128,7 @@ public final class ReadFlash {
      * NOTE: Expects lowest and highest children are current.
      * @param node Node that is refered to for buttons. 
      */
-    protected void buttonTreeDisplay(FMTWalker.Node node)
-    {
-
+    protected void buttonTreeDisplay(FMTWalker.Node node) {
         LOGGER.debug("\n ***** in buttonTreeDisplay() ****");
 
             Boolean low  = (FMTWalker.getLowestNode()  == node);
@@ -1193,15 +1167,10 @@ public final class ReadFlash {
      * reset().
      * void method
      */
-    protected void resetInd()
-    {
+    protected void resetInd() {
         LOGGER.debug("\n\n *** called resetInd *** ");
-
-//       visIndex = 1;
-//       qIndex = 0;
-//       totalScore = 0.0;
-       score = 0.0;
-       progress = 0;
+        score = 0.0;
+        progress = 0;
     }
 
     public void endGameStats() {
@@ -1261,45 +1230,14 @@ public final class ReadFlash {
              listCard.setRtDate(Threshold.getRightDate());
              listCard.setNumSeen(listCard.getNumSeen() + 1);
              currentCard.setNumSeen(currentCard.getNumSeen() + 1);
-             
-         // Not transitioning on correct answer for this release
-         //    FMTree.Node localNode;
-
-         //    FMTWalker.getInstance().getNext();
-         //    localNode = FMTWalker.getCurrentNode();
-
-          //   currentCard = (FlashCardMM)localNode.getData();
-
-         //    buttonTreeDisplay(localNode);
-
-          // set the card to the next current card
-          //   rpCenter.getChildren().clear();
-          //   GenericTestType test = selectTest( currentCard.getTestBSet() );
-          //   rpCenter.getChildren().add( test.getTReadPane(currentCard, GEN_CARD, rpCenter));
-
-             // change Answer button color to green
-             
-             
-             //genTest.getAnsButton().setStyle("-fx-color: #00FF48;");
-             
              ButtoniKon.getRightAns(genTest.getAnsButton(), "Sweet!");
              // good nod
              correctNodActions(genTest.getAnsButton());
-            
-             // Transition question and answer panes
-         //    FMTransition.getQRight().play();
-          //   if(FMTransition.getAWaitTop() != null) {
-          //       FMTransition.getAWaitTop().play();
-          //   }
-    
-             //ButtoniKon.ANS_SELECT.getJustAns(genTest.getAnsButton(), "Select");
-
              // Score related
              scoreTextF.setText(printScore());
              scoreGauge.moveNeedle(500, getScore());
 
              FlashMonkeyMain.AVLT_PANE.displayTree();
-
              masterBPane.setBottom(manageSouthPane(mode));
              masterBPane.requestFocus();
          }
@@ -1308,31 +1246,9 @@ public final class ReadFlash {
           * Helper action method for the answerButton
           * Nods the answerButton up and down and sets its color.
           */
-        private void correctNodActions(Button selectAnsBtn)
-        {
-            
+        private void correctNodActions(Button selectAnsBtn) {
             FMTransition.goodNod = FMTransition.nodUpDownFade(selectAnsBtn, 250);
             FMTransition.goodNod.play();
-
-            /*Task<Void> sleeper = new Task<Void>() {
-                @Override
-                protected Void call() {
-                    try {
-                        Thread.sleep(1000);
-                        // change color
-                        selectAnsBtn.setStyle("-fx-color: #FFFFFF;");
-                        FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsBtn, 1,250, false);
-                        FMTransition.nodeFadeIn.play();
-
-                    } catch (InterruptedException e) {   }
-                    return null;
-                }
-
-            };
-            new Thread(sleeper).start();
-            
-             */
-            //ButtoniKon.ANS_SELECT.getJustAns(selectAnsBtn, "Select");
         }
 
         /**

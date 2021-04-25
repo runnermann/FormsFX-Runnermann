@@ -1289,8 +1289,6 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
      * or if the EncryptedUser chooses, a new file can be created.
      */
     protected class FileSelectPane {
-        private boolean fileSelected = false;
-        protected ToggleGroup rdoGp = new ToggleGroup(); // radio button group for listOfFiles
         protected VBox paneForFiles = new VBox(4);
         private FileOperations fo = new FileOperations();
         
@@ -1307,8 +1305,13 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
         protected FileSelectPane() {
             agrList = new AgrFileList(DECK_FOLDER);
         }
-        
-        protected void createPane() {
+
+
+        /**
+         * Builds the file select pane and inserts the available
+         * decks based on the most recent deck.
+         */
+        protected void selectFilePane() {
             LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("FileSelectPane called");
             Label recLabel = new Label("Recent decks");
@@ -1319,8 +1322,8 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
             ArrayList<LinkObj> currentList = agrList.getRecentFiles();
             ArrayList<LinkObj> oldList = agrList.getOlderFiles();
     
-            LOGGER.info("CurrentFiles.size() {}, olderFiles.size() {}", currentList.size(), oldList.size());
-            LOGGER.info("AGRList.size(): {}", agrList.getSize());
+            //LOGGER.info("CurrentFiles.size() {}, olderFiles.size() {}", currentList.size(), oldList.size());
+            //LOGGER.info("AGRList.size(): {}", agrList.getSize());
     
             // Check if folder exists and has more than one file .
             // first file is default file.
@@ -1329,7 +1332,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                 // output list of files{
                 //If there is a folder that exists and the agregated list of files is greater
                 // than 0, filter out copies -"copy" 2) output the filenames, eliminate the
-                // ".dat" 3) add a radio button 4) add the rdo/actionListener
+                // ".dat". 3) add a radio button 4) add the rdo/actionListener
                 LOGGER.debug("currentList.size(): <{}>", currentList.size());
                 if(currentList.size() > 0) {
                     SelectableRdoField rdoField = new SelectableRdoField();
@@ -1403,8 +1406,6 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                     }).start();
                 }
 
-
-                fileSelected = true;
                 FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
                 // takes User back to main menu
                 FlashMonkeyMain.getWindow().setScene(FlashMonkeyMain.getNavigationScene());
@@ -1442,7 +1443,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                 labelNnf.setTextFill(Paint.valueOf(UIColors.FM_WHITE));
                 plainTxt = new Label("Name your first study deck.");
                 newNameField.setText("psst! clue.. \"History 105 Ch1\"");
-                labelNnf.setId("h2Label");
+                labelNnf.setId("label16");
                 box.getChildren().addAll(labelNnf, plainTxt, newNameField);
             }
             else {
@@ -1478,7 +1479,6 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
                     LinkObj lo = new LinkObj(newNameField.getText());
                     agrList.setLinkObj(lo);
 
-                    fileSelected = true;
                     CreateFlash createFlash = CreateFlash.getInstance();
                     FlashMonkeyMain.getWindow().setScene(createFlash.createFlashScene());
                 }

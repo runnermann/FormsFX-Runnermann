@@ -30,7 +30,7 @@ public enum ButtoniKon { //extends Button {
 	
 	// MENU buttons
 	TEST ("TEST", "Ready to learn", "icon/24/t_white.png", UIColors.FM_WHITE),
-	Q_AND_A (" Q AND A", "Question and Answer with search", "icon/24/qa_white.png", UIColors.FM_WHITE),
+	Q_AND_A ("FLASH CARD", "Question and Answer with search", "icon/24/qa_white.png", UIColors.FM_WHITE),
 	CREATE      ("Create or Edit", "Create or Edit cards", "icon/24/card_add_white.png", UIColors.FM_WHITE),
 	
 	// First scene unique buttons
@@ -155,7 +155,7 @@ public enum ButtoniKon { //extends Button {
 	
 	public static Button getNewDeck() {
 		Button button = NEW_DECK.get();
-		button.setId("purpleButtonSquare");
+		button.setId("blueButtonSquare");
 		button.setMaxWidth(186.5);
 		button.setMinWidth(186.5);
 		button.setMaxHeight(40);
@@ -209,7 +209,7 @@ public enum ButtoniKon { //extends Button {
 	
 	public static Button getSearchRsc() {
 		Button button = SEARCH_RSC.get();
-		button.setId("purpleButtonSquare");
+		button.setId("blueButtonSquare");
 		button.setMaxWidth(186.5);
 		button.setMinWidth(186.5);
 		button.setMaxHeight(40);
@@ -223,7 +223,7 @@ public enum ButtoniKon { //extends Button {
 	
 	public static Button getDeckSelectButton() {
 		Button button = DECK_SELECT.get();
-		button.setId("purpleButtonSquare");
+		button.setId("blueButtonSquare");
 		button.setMaxWidth(menuBtnWd);
 		button.setMinWidth(menuBtnWd);
 		button.setMaxHeight(btnHt);
@@ -232,7 +232,7 @@ public enum ButtoniKon { //extends Button {
 	
 	public static Button getCreateButton() {
 		Button button = CREATE.get();
-		button.setId("purpleButtonSquare");
+		button.setId("blueButtonSquare");
 		button.setMaxWidth(menuBtnWd);
 		button.setMinWidth(menuBtnWd);
 		button.setMaxHeight(btnHt);
@@ -241,7 +241,7 @@ public enum ButtoniKon { //extends Button {
 	
 	public static Button getStudyButton() {
 		Button button = STUDY_BUTTON.get();
-		button.setId("purpleButtonSquare");
+		button.setId("blueButtonSquare");
 		button.setMaxWidth(menuBtnWd);
 		button.setMinWidth(menuBtnWd);
 		button.setMaxHeight(btnHt);
@@ -272,7 +272,7 @@ public enum ButtoniKon { //extends Button {
 	
 	public static Button getTestButton() {
 		Button b = TEST.get();
-		b.setId("purpleButtonSquare");
+		b.setId("blueButtonSquare");
 		b.setMaxWidth(menuBtnWd);
 		b.setMinWidth(menuBtnWd);
  		b.setMaxHeight(btnHt);
@@ -282,7 +282,7 @@ public enum ButtoniKon { //extends Button {
 	
 	public static Button getQandAButton() {
 		Button b = Q_AND_A.get();
-		b.setId("purpleButtonSquare");
+		b.setId("blueButtonSquare");
 		b.setMaxWidth(menuBtnWd);
 		b.setMinWidth(menuBtnWd);
 		b.setMaxHeight(btnHt);
