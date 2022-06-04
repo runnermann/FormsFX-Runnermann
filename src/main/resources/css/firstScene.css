@@ -12,13 +12,14 @@
     FM_TEXT_LABEL: #FFFFFF; /* #F8B500 yellow */
     FM_GREY: #393E46;
 
-    FLASH_PURPLE: #9276AC;
-    BUTTON_PURPLE: #48206E; /* 48206E 3F0B70*/
-    BUTTON_COMPLIMENT: #8248B9;//
+    /*FLASH_PURPLE: #9276AC;*/
+    /*BUTTON_PURPLE: #48206E; !* 48206E 3F0B70*!*/
+    /*BUTTON_COMPLIMENT: #8248B9;//*/
+    /*BUTTON_PURPLE_50: rgba(72, 32, 110, .5);*/
     FLASH_RED: #FC3C3C;
     ROSE_RED: #E32E68;
     FLASH_WHITE: #FFF4E0;
-    BUTTON_PURPLE_50: rgba(72, 32, 110, .5);
+
 
 }
 
@@ -32,35 +33,14 @@
     font-family: 'Raleway';
     src: url("../font/Roboto-Regular.ttf");
 }
-
-
-
-
-
-
-
-
-
-
 .VBox {
     /*-fx-padding: 2, 2, 2, 2; */
 }
-
-
-
-
 
 #rpCenter {
 
     /*-fx-padding: 4,4,4,4; */
 }
-
-
-
-
-
-
-
 
 /* *** formsfx related *** */
 
@@ -79,7 +59,7 @@
 }
 
 
-#form-field:focused {
+#form-field:focus {
     /*   -fx-border-color: white;
        -fx-color: white;
        -fx-faint-focus-color: white;
@@ -89,7 +69,7 @@
 }
 
 
-#password:focused {
+#password:focus {
     /*-fx-border-color: #8248B9;
     -fx-color: #8248B9;
     -fx-faint-focus-color: #8248B9;*/

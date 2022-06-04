@@ -11,15 +11,16 @@ import javafx.scene.paint.Color;
  */
 public class UIColors
 {
+    public static final String BELIZE_BLUE_IF       = "rgba(48,128,185,0.6)";
     public static final String BELIZE_BLUE          = "rgba(48,128,185,0.4)";// "#2980b9"; 0096C9
     public static final String BELIZE_BLUE_QUARTER  = "rgba(48,128,185,0.2)";
     public static final String BELIZE_BLUE_OPAQUE   = "rgba(48,128,185,1)";// "#2980b9";
     public static final String FOCUS_BLUE_OPAQUE    = "rgba(0,150,201,1)";// 0096C9
-    public static final String ELECTRIC_BLUE        = "rgba(76,237,245,1.0)"; // #4CEDF5
+    //public static final String ELECTRIC_BLUE        = "rgba(76,237,245,1.0)"; // #4CEDF5
     public static final String CREATE_PANE_BLUE     = "rgba(41,128,185,1.0)";// #2980B9
     public static final String FILE_PANE_BLUE       = "rgba()"; //
     public static final String FM_RED_WRONG_OPAQUE  = "rgba(210,0,53,1)"; // D20035
-    public static final String HIGHLIGHT_ORANGE     = "rgba(255, 83, 13, 0.9)";
+    public static final String HIGHLIGHT_ORANGE     = "rgba(255, 83, 13, 0.9)"; // FF510C
     public static final String HIGHLIGHT_PINK       = "rgba(255, 13, 255, 1.0)";
     public static final String HIGHLIGHT_PINK_QUARTER = "rgba(255, 13, 255, 0.4)";
     public static final String HIGHLIGHT_YELLOW     = "rgba(204, 255, 0, 0.9)"; //CCFF00
@@ -37,11 +38,11 @@ public class UIColors
     public static final String ROSE_RED             = "rgba(227, 46, 104, 1)"; // #E32E68;
     public static final String FLASH_BLACK          = "rgba(0, 0, 0, 1.0)";
     public static final String MESSAGE_BGND         = "rgba(76, 56, 96, 1.0)";   // 9276AC Compliment to FM_Purple
-    public static final String BUTTON_PURPLE        = "rgba(72, 32, 110, 1.0)";  // #48206E;
-    public static final String BUTTON_PURPLE_50     = "rgba(72, 32, 110, .5)";
+    //public static final String BUTTON_PURPLE        = "rgba(72, 32, 110, 1.0)";  // #48206E;
+    //public static final String BUTTON_PURPLE_50     = "rgba(72, 32, 110, .5)";
     public static final String BACKGROUND_BLUE      = "rgba(127, 192, 236, 1)";  //7FC0EC;
     public static final String BACKGROUND_ORANGE    = "rgba(232, 150, 32, 1)";  //E89620
-    public static final String BUTTON_COMPLIMENT    = "rgba(130,72, 185, 1.0)"; //#8248B9;
+    //public static final String BUTTON_COMPLIMENT    = "rgba(130,72, 185, 1.0)"; //#8248B9;
     public static final String TRANSPARENT          = "rgba(0, 0, 0, 0.0)";
     public static final String WEBSITE_GREEN        = "rgb(190, 224, 22)";// #BEE016
     public static final String WEBSITE_BLUE         = "rgb(0, 100, 225)";// #0064E1
@@ -50,6 +51,7 @@ public class UIColors
     public static final String ICON_YELLOW          = "rgb(242, 231, 68)"; // #F2E744
     public static final String ICON_GOLD            = "rgb(242, 199, 68)"; // #F2C744
     public static final String ICON_ELEC_BLUE       = "rgb(30, 164, 217)"; // #1EA4D9
+    public static final String EVE_BLUE             = "rgb(0, 100, 225)"; //#0064e1
     
     
     /**
@@ -117,16 +119,13 @@ public class UIColors
             
             throw new IllegalArgumentException("Invalid color specification: Digits not 6 or 8 ");
         }
-        System.out.println("\n using Color.web(colorString");
         try
         {
             return Color.web(colorString);
             
         } catch (IllegalArgumentException e) {
             
-            System.out.println("ERROR: ColorString invalid, IllegalArgumentException at convertColor in GenericSHape. " +
-                    "\n colorString is: " + colorString);
-            System.out.println(e.getStackTrace());
+
         }
         // Default
         return Color.ALICEBLUE;

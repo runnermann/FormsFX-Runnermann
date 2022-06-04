@@ -2,7 +2,7 @@ package type.tools.calculator;
 
 /**
  * This class contains a sub expression that is related to a single binomial operator.
- * It provides an object that can be referenced for the interactive calculator.
+ * It provides an object that can be referenced by the interactive calculator.
  */
 public class ExpNode {
 

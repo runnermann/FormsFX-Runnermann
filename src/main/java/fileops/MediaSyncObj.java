@@ -39,7 +39,7 @@ public class MediaSyncObj<T extends MediaSyncObj> implements Comparable<T>{
 	@Override
 	public boolean equals(Object other) {
 		MediaSyncObj s = (T) other;
-		return this.fileName.equals(s);
+		return this.fileName.equals(s.fileName);
 	}
 	
 	@Override

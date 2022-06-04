@@ -5,6 +5,7 @@ import campaign.db.DBFetchToMapAry;
 import ch.qos.logback.classic.Level;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +13,8 @@ import java.util.HashMap;
 public class StudentDescriptor extends PersonDescriptor {
 	
 	// Logging reporting level is set in src/main/resources/logback.xml
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentDescriptor.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentDescriptor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(StudentDescriptor.class);
 	// String properties
 	private StringProperty educationLevel;
 	private StringProperty major;
@@ -31,7 +33,7 @@ public class StudentDescriptor extends PersonDescriptor {
 	public StudentDescriptor() {
 		super();
 		
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("called studentDescriptor constructor");
 		this.setProperitesDefault();
 		boolean hasData = this.setToRemoteData();

@@ -26,7 +26,7 @@ public class TurninAudio implements GenericTestType<TurninAudio>
     }
 
     @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
         // Instantiate vBox and "set spacing" !important!!!
         VBox vBox = new VBox(2);
@@ -37,8 +37,9 @@ public class TurninAudio implements GenericTestType<TurninAudio>
     }
 
     /**
-     * Sets bet 7 (= 128)from right, (Turn-in-Audio) to true
+     * Sets bit 7 (= 128)from right, (Turn-in-Audio) to true
      * All other bits set to 0
+     * Not compatible ith Multi-Choice
      * @return bitSet
      */
     @Override

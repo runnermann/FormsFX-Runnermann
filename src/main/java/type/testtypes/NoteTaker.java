@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.testtypes;
 
 import flashmonkey.FMTransition;
@@ -62,8 +81,8 @@ public class NoteTaker implements GenericTestType<NoteTaker> {
         upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 1, true, 0, cc.getQFiles());
         
         //set initial size
-       // textArea.setPrefSize(SceneCntl.getCenterWd(), SceneCntl.getCellHt());
-       // textCellVbox.setPrefSize(SceneCntl.getCenterWd(), SceneCntl.getCellHt());
+       // textArea.setPrefSize(SceneCntl.getCenterWd(), SceneCntl.calcCellHt());
+       // textCellVbox.setPrefSize(SceneCntl.getCenterWd(), SceneCntl.calcCellHt());
         //upperHBox.setPrefHeight(550);
 
         ReadFlash.getInstance().setShowAnsNavBtns(false);
@@ -80,7 +99,7 @@ public class NoteTaker implements GenericTestType<NoteTaker> {
     }
 
 
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
         // Instantiate vBox and "set spacing" !important!!!
         VBox vBox = new VBox();
@@ -100,9 +119,9 @@ public class NoteTaker implements GenericTestType<NoteTaker> {
     }
 
     /**
-     * The NoteTaker class 13th bit is set (= 8192), all others are zero. A note taker card is displayed during tests and qAndA.
+     * Sets 13th bit, or = 8192, all other bits are zero. A note taker card is displayed during tests and qAndA.
      * The NoteTaker is purely, for taking notes.
-     *
+     * Not compatible ith Multi-Choice.
      * @return bitSet
      */
     @Override

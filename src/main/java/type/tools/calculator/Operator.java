@@ -1,8 +1,17 @@
 package type.tools.calculator;
 
 import queue.ArrayQueue;
+
+import java.text.DecimalFormat;
 import java.util.Stack;
 
+/**
+ * The Operator class provides the actions for an operator based on Java's calculation
+ * capabilities. The class creates the "Operator Stack" in Dijkstra's method. The class
+ * holds the Answer components which are the Expression Nodes 'ExpNode' that is displayed
+ * in WrongAnswer. The 'AnsStack' is isolated but may be accessed through the queue methods
+ * contained in this class.
+ */
 public enum Operator implements OperatorInterface {
 
 
@@ -17,10 +26,8 @@ public enum Operator implements OperatorInterface {
     ADD ("+", 1) {
         @Override
         public double execute(ExpNode exp, double x, double y) {
-
-           //System.out.println("Executing \"+\"");
-            exp.setExpSolved("ADD: " + x + " " + this.getSymbol() + " " + y + " = " + (x + y));
-           //System.out.println(exp.getExpSolved());
+            String res = formatToString("ADD: ", this.getSymbol(), x, y, (x + y));
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return x + y;
         }
@@ -28,10 +35,8 @@ public enum Operator implements OperatorInterface {
     SUBTRACT ("-", 1) {
         @Override
         public double execute(ExpNode exp, double x, double y) {
-
-           //System.out.println("Executing \"-\"");
-            exp.setExpSolved("SUBTRACT: " + x + " " + this.getSymbol() + " " + y + " = " + (x - y));
-           //System.out.println(exp.getExpSolved());
+            String res = formatToString("SUBTRACT: ", this.getSymbol(), x, y, (x - y));
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return x - y;
         }
@@ -44,10 +49,8 @@ public enum Operator implements OperatorInterface {
     MULTIPLY ("*", 2) {
         @Override
         public double execute(ExpNode exp, double x, double y) {
-
-           //System.out.println("Executing \"*\"");
-            exp.setExpSolved("MULTIPLY: " + x + " " + this.getSymbol() + " " + y + " = " + (x * y));
-           //System.out.println(exp.getExpSolved());
+            String res = formatToString("MULTIPLY: ", this.getSymbol(), x, y, (x * y));
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return x * y;
         }
@@ -55,18 +58,18 @@ public enum Operator implements OperatorInterface {
     DIVIDE   ("/", 2) {
         @Override
         public double execute(ExpNode exp, double x, double y) {
-
-            //System.out.println("Executing \"/\"");
-
-            exp.setExpSolved("DIVIDE: " + x + " " + this.getSymbol() + " " + y + " = " + (x / y));
+            String res = formatToString("DIVIDE: ", this.getSymbol(), x, y, (x / y));
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
+
             return x / y;
         }
     },
     MODULUS  ("%", 2) {
         @Override
         public double execute(ExpNode exp, double x, double y) {
-            exp.setExpSolved("MODULUS: " + x + " " + this.getSymbol() + " " + y + " = " + (x % y));
+            String res = formatToString("DIVIDE: ", this.getSymbol(), x, y, (x / y));
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return x % y;
         }
@@ -75,12 +78,11 @@ public enum Operator implements OperatorInterface {
 
         @Override
         public double execute(ExpNode exp, double x, double notUsed) {
-
-           //System.out.println(" *** Called ABS.execute() ***");
             double result;
             result = StrictMath.abs(x);
-           //System.out.println("\t x is: " + x);
-            exp.setExpSolved("ABS: " + this.getSymbol() + " " + x + " = " + result);
+            //exp.setExpSolved("ABSOLUTE VALUE: " + this.getSymbol() + " " + x + " = " + result);
+            String res = setFormUnary("ABSOLUTE VALUE: ", this.getSymbol(), x, result);
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
 
             return result;
@@ -98,10 +100,8 @@ public enum Operator implements OperatorInterface {
         public double execute(ExpNode exp, double base, double exponent) {
 
             double result;
-           //System.out.println(" *** Called LOG.execute() ***");
             result = Math.log(exponent) / Math.log(base);
             exp.setExpSolved("LOG: " + this.getSymbol() + " base " + base + " log exp: " + exponent + " = " + result);
-           //System.out.println(exp.getExpSolved());
             ansComponents.offer(exp);
             return result;
         }
@@ -109,8 +109,8 @@ public enum Operator implements OperatorInterface {
     POWER ("^", 3) {
         @Override
         public double execute(ExpNode exp, double x, double exponent) {
-            exp.setExpSolved("EXPONENT: " + x + " " + this.getSymbol() + " " + exponent + " = " + Math.pow(x, exponent));
-            ansComponents.offer(exp);
+            String res = formatToString("EXPONENT: ", this.getSymbol(), x, exponent, Math.pow(x, exponent));
+            exp.setExpSolved(res);
             return Math.pow(x, exponent);
         }
     },
@@ -127,9 +127,6 @@ public enum Operator implements OperatorInterface {
 
             switch(intRoot) {
 
-                //case -1: {
-                //    return x * -1;
-                //}
                 case 0: {
                     return 0;
                 }
@@ -137,18 +134,14 @@ public enum Operator implements OperatorInterface {
                     return x;
                 }
                 case 2: { // square root
-
-                    exp.setExpSolved("SQRT: " + this.getSymbol() + " " + x + " = " + Math.sqrt(x));
+                    String res = setFormUnary("SQRT: ", this.getSymbol(), x, Math.sqrt(x));
+                    exp.setExpSolved(res);
                     ansComponents.offer(exp);
                     return StrictMath.sqrt(x);
                 }
                 default: {
 
-                    // @todo Need to do something with negitive roots < 2 in Operator root
-
-                   //System.out.println(" x: " + x + " and root: " + root);
-                   //System.out.println("Root: " +  (-1 / root));
-                   //System.out.println("Solution: " + Math.pow(x ,  (-1 / root)));
+                    // @todo Need to handle negative roots < 2 in Operator root
 
                     double ans = StrictMath.pow(x, (1 / root));
                     double ansCeil = Math.ceil(ans);
@@ -156,11 +149,16 @@ public enum Operator implements OperatorInterface {
                     //System.out.println("ansCiel: " + ansCeil + " - ciel: " + ans + " = " + (ansCeil - ans));
 
                     if ( (root > 2 && (ansCeil - ans < .00000001)) || (root < -1 && (ansCeil - ans > .09)) ){
-                        exp.setExpSolved("ROOT true: " + root + " " + this.getSymbol() + " " + x + " = " + ansCeil);
+                        //exp.setExpSolved("ROOT true: " + root + " " + this.getSymbol() + " " + x + " = " + ansCeil);
+                        String res = setFormUnary("ROOT true: " + root + " ", this.getSymbol(), x, ansCeil);
+                        exp.setExpSolved(res);
+
                         ansComponents.offer(exp);
                         return ansCeil;
                     } else {
-                        exp.setExpSolved("ROOT false: " + root + " " + this.getSymbol() + " " + x + " = " + ans);
+                        //exp.setExpSolved("ROOT false: " + root + " " + this.getSymbol() + " " + x + " = " + ans);
+                        String res = setFormUnary("ROOT false: " + root + " ", this.getSymbol(), x, ans);
+                        exp.setExpSolved(res);
                         ansComponents.offer(exp);
                         return ans;
                     }
@@ -178,7 +176,9 @@ public enum Operator implements OperatorInterface {
             }
 
             double solved = StrictMath.sqrt(x);
-            exp.setExpSolved("SQRT: " + this.getSymbol() + " " + x + " = " + solved);
+            //exp.setExpSolved("SQRT: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("SQRT: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
            //System.out.println("exp: " + exp);
             ansComponents.offer(exp);
             return solved;
@@ -200,7 +200,9 @@ public enum Operator implements OperatorInterface {
 
             double radians = Math.toRadians(x);
             double solved = StrictMath.cos(radians);
-            exp.setExpSolved("COS: " + this.getSymbol() + " " + x + " = " + solved);
+            //exp.setExpSolved("COS: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("COS: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
            //System.out.println("exp: " + exp);
             ansComponents.offer(exp);
             return solved;
@@ -215,7 +217,9 @@ public enum Operator implements OperatorInterface {
         public double execute(ExpNode exp, double x, double notUsed) {
 
             double solved = StrictMath.cosh(x);
-            exp.setExpSolved("COSH: " + this.getSymbol() + " " + x + " = " + solved);
+            //exp.setExpSolved("COSH: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("COSH: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
            //System.out.println("exp: " + exp);
             ansComponents.offer(exp);
             return solved;
@@ -231,7 +235,9 @@ public enum Operator implements OperatorInterface {
 
             //double radians = Math.toRadians(x);
             double solved = StrictMath.acos(x);
-            exp.setExpSolved("ACOS: " + this.getSymbol() + " " + x + " = " + solved);
+            //exp.setExpSolved("ACOS: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("ACOS: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
            //System.out.println("exp: " + exp);
             ansComponents.offer(exp);
             return solved;
@@ -247,8 +253,10 @@ public enum Operator implements OperatorInterface {
 
             double radians = Math.toRadians(x);
             double solved = StrictMath.sin(radians);
-            exp.setExpSolved("SIN: " + this.getSymbol() + " " + x + " = " + solved);
-           //System.out.println("exp: " + exp);
+
+            String res = setFormUnary("SIN: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
+
             ansComponents.offer(exp);
             return solved;
         }
@@ -263,8 +271,9 @@ public enum Operator implements OperatorInterface {
 
             //double radians = Math.toRadians(x);
             double solved = StrictMath.sinh(x);
-            exp.setExpSolved("SINH: " + this.getSymbol() + " " + x + " = " + solved);
-           //System.out.println("exp: " + exp);
+            //exp.setExpSolved("SINH: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("SINH: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return solved;
         }
@@ -279,8 +288,10 @@ public enum Operator implements OperatorInterface {
 
             //double radians = Math.toRadians(x);
             double solved = StrictMath.asin(x);
-            exp.setExpSolved("ASIN: " + this.getSymbol() + " " + x + " = " + solved);
-           //System.out.println("exp: " + exp);
+            //exp.setExpSolved("ASIN: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("ASIN: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
+
             ansComponents.offer(exp);
             return solved;
         }
@@ -295,8 +306,9 @@ public enum Operator implements OperatorInterface {
 
             double radians = Math.toRadians(x);
             double solved = StrictMath.tan(radians);
-            exp.setExpSolved("TAN: " + this.getSymbol() + " " + x + " = " + solved);
-           //System.out.println("exp: " + exp);
+            //exp.setExpSolved("TAN: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("TAN: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return solved;
         }
@@ -311,8 +323,9 @@ public enum Operator implements OperatorInterface {
 
             //double radians = Math.toRadians(x);
             double solved = StrictMath.tanh(x);
-            exp.setExpSolved("TANH: " + this.getSymbol() + " " + x + " = " + solved);
-           //System.out.println("exp: " + exp);
+            //exp.setExpSolved("TANH: " + this.getSymbol() + " " + x + " = " + solved)
+            String res = setFormUnary("TANH: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return solved;
         }
@@ -327,8 +340,9 @@ public enum Operator implements OperatorInterface {
 
             //double radians = Math.toRadians(x);
             double solved = StrictMath.atan(x);
-            exp.setExpSolved("ATAN: " + this.getSymbol() + " " + x + " = " + solved);
-           //System.out.println("exp: " + exp);
+            //exp.setExpSolved("ATAN: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("ATAN: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return solved;
         }
@@ -343,8 +357,9 @@ public enum Operator implements OperatorInterface {
 
             //double radians = Math.toRadians(x);
             double solved = StrictMath.atan2(x, y);
-            exp.setExpSolved("ATAN2: " + this.getSymbol() + " " + x + " = " + solved);
-           //System.out.println("exp: " + exp);
+            //exp.setExpSolved("ATAN2: " + this.getSymbol() + " " + x + " = " + solved);
+            String res = setFormUnary("ATAN2: ", this.getSymbol(), x, solved);
+            exp.setExpSolved(res);
             ansComponents.offer(exp);
             return solved;
         }
@@ -363,13 +378,16 @@ public enum Operator implements OperatorInterface {
         }
     };
 
-    // --------------------------------- --------------------------------- //
-    // Common fields
-    // --------------------------------- --------------------------------- //
+// --------------------------------- --------------------------------- //
+// END OF CONSTANTS
+// Common fields and methods
+// --------------------------------- --------------------------------- //
 
     private String symbol;
     private int priority;
-    private static ArrayQueue<ExpNode> ansComponents = new ArrayQueue<>(10);
+    // Ensure this is independent of any using class. Watch that
+    // any getters do not have this reference.
+    private static final ArrayQueue<ExpNode> ansComponents = new ArrayQueue<>(4);
 
     Operator(String sym, int p) {
         symbol = sym;
@@ -396,22 +414,52 @@ public enum Operator implements OperatorInterface {
      * and push it onto the outQueue until this operator can be
      * pushed onto the opStack. (this operator is higher than the
      * operator on the opStack)
-     * @param outQueue
-     * @param opStack
+     * @param outQueue ..
+     * @param opStack ..
      */
     public void stackAction(Object previous, ExpNode op, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
-
         // index not used.
-
         while( ! opStack.isEmpty() && opStack.peek().getOp().getPriority() >= this.priority ) {
            outQueue.offer( opStack.pop()); // pushing the enum onto the numStack
         }
         opStack.push(op);
     }
 
-    public static ArrayQueue<ExpNode> getAnsComponents() {
-        return ansComponents;
+    public String formatToString(String startStr, String symbol, double x, double y, double result) {
+        DecimalFormat f = new DecimalFormat("#.####");
+        return String.format("%-11s", startStr) + f.format(x) + " " + symbol + " " + f.format(y) + " = " + f.format(result);
     }
+
+    /**
+     * Sets the form of the expression string for unary operators
+     * @param startStr
+     * @param symbol
+     * @param x
+     * @param result
+     * @return
+     */
+    public String setFormUnary(String startStr, String symbol, double x , double result) {
+        DecimalFormat f = new DecimalFormat("#.####");
+        return String.format("%-11s", startStr) + f.format(x) + " " + symbol + " = " + f.format(result);
+        //return String.format(startStr + FORMAT_N + symbol + FORMAT_N + FORMAT_RESULT, x, result);
+    }
+
+    public static void clearAnsComponents() {
+        ansComponents.clear();
+    }
+
+    public static boolean hasOperators() {
+        return ansComponents == null || ansComponents.isEmpty();
+    }
+
+    public static ExpNode getLast() {
+        return ansComponents.getLast();
+    }
+
+    public static ExpNode poll() {
+        return ansComponents.poll();
+    }
+
 
     @Override
     public boolean isUnaryOp() {

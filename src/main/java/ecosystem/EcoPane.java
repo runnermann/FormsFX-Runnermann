@@ -2,19 +2,21 @@ package ecosystem;
 
 import authcrypt.UserData;
 import authcrypt.user.EncryptedAcct;
-import authcrypt.user.EncryptedPerson;
+import ch.qos.logback.classic.Level;
+import fileops.FileNaming;
+import fileops.VertxLink;
+import forms.utility.Alphabet;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
 
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.*;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -32,7 +34,6 @@ public class EcoPane extends BorderPane {
     public void setDeckIds(String[] idAry) {
         this.deckIds = idAry;
     }
-
     public void setCartList(ArrayList<HashMap<String, String>> cartList) {
         this.cartList = cartList;
     }
@@ -44,22 +45,29 @@ public class EcoPane extends BorderPane {
      * @return Returns a BorderPane containing a JavaFX Browser
      */
     protected BorderPane getPurchasePane() {
-        System.out.println("EcoPane.getEcoPane called line 24");
-        // @TODO remove All Trusting Manager!!!
-        setTrustManager();
+
+        LOGGER.setLevel(Level.DEBUG);
 
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
         engine = webView.getEngine();
         //@todo Create the method to purchase multiple decks at a time.
         if(deckIds != null) {
-            engine.setUserAgent(getJson(cartList));
+            engine.setUserAgent(getPurchJson(cartList));
+//
+//            // Load web page from remote
+//            engine.load(VertxLink.REQ_PURCHASE.getLink());
+//
+//            engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+//                if (newValue == Worker.State.SUCCEEDED) {
+//                    System.out.println("getReqSubscriptPane worker.state succeeded!");
+//                    engine.executeScript("callBuy(\"" + getPurchJson(cartList) + "\")");
+//                }
+//            });
         } else {
             // throw error
             LOGGER.warn("No deckIds were given in if statement to send to WebEngine.UserAgent");
         }
-
-        System.out.println(" EcoPane.getPurchasePane line 56");
 
         // Load from local file.
         // Works to load first page, but following pages
@@ -68,14 +76,9 @@ public class EcoPane extends BorderPane {
         //	engine.load(f.toURI().toString());
         // Load web page from remote
         engine.load(VertxLink.REQ_PURCHASE.getLink());
-
-        System.out.println("EcoPane.getPurchasePane line 62");
-
         engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("EcoPane.getPurchasePane getting page called line 65. newValue: " + newValue);
 
             if(Worker.State.SUCCEEDED.equals(newValue)) {
-                System.out.println("getPurchasePane worker.state succeeded!");
                 // verify address is the correct address and there has not been
                 // a redirect.
                 // if(notRedirect) {
@@ -84,49 +87,28 @@ public class EcoPane extends BorderPane {
                 // reportASAP
                 // }
 
-                System.out.println("location after load: " + engine.getLocation());
                 //@todo finish prevent redirects from potential malicious actors
 
-                // before load address check
 
-                /*
-				if (!engine.locationProperty().equals(("http://jackRabbits.com"))) {
+                System.out.println("domain: " + engine.getLocation());
+                String domain = engine.locationProperty().getValue();
+                if(!domain.startsWith("https://")) {
+                    LOGGER.warn("WARNING: CRITICAL!!! Ecosystem purchase attempting a non secure connection at: {}", engine.getLocation());
+                    System.exit(0);
+                }
+				if (!engine.getLocation().equals("https://www.flashmonkey.xyz/P01/F7G4l5")) {
+                    LOGGER.warn("WARNING: CRITICAL!!! Ecosystem purchase attempting domain: {}", engine.getLocation());
 					System.out.println("Not a jackrabbit");
+                    //System.exit(1);
 				}
-				if (!engine.getLocation().equals("http://wrongLocation.com")) {
-					System.out.println("Wrong location");
-					System.exit(0);
-				}
-
-                 */
             }
             else {
-                System.out.println("failed");
-                System.out.println("location after load: " + engine.getLocation());
-                System.out.println("EcoPane. line 108 failed to contact server.");
+                LOGGER.warn("failed, location after load: {}, EcoPane. line 108 failed to contact server.", engine.getLocation());
             }
         });
 
         VBox rBox = new VBox(webView);
         BorderPane bPane = new BorderPane();
-
-        /*
-       String onboardScript = "fetch(\"/101/-603024299\", {\n" +
-                "                method: \"POST\",\n" +
-                "                headers: {\n" +
-                "                    \"Content-Type\": \"application/json\"\n" +
-                "                }\n" +
-                "            })\n" +
-                "                .then(response => response.json())\n" +
-                "                .then(data => {\n" +
-                "                    if (data.url) {\n" +
-                "                        window.location = data.url;\n" +
-                "                    } else {\n" +
-                "                        console.log(\"data\", data);\n" +
-                "                    }\n" +
-                "                });";
-    */
-
 
         VBox lBox = new VBox();
         lBox.setMinSize(100, 600);
@@ -143,40 +125,68 @@ public class EcoPane extends BorderPane {
         return bPane;
     }
 
+    /**
+     * General Purpose Webview pane.
+     * @param page Use a defined enum getLink from VertxLink
+     *             for the page. If the page hasn't been defined
+     *             then create it.
+     * @param wd min width
+     * @param ht min height
+     * @return The pane containing the webview of the page provided
+     * in the param.
+     */
+    public Pane getWebViewPane(String page, int wd, int ht) {
+        WebView webView = new WebView();
+        webView.setMinSize(wd, ht);
+        engine = webView.getEngine();
+        engine.load(page);
+
+        Pane pane = new Pane();
+        pane.getChildren().add(webView);
+
+
+        return pane;
+    }
+
 
     /**
      * <p>Returns a BorderPane containing a JavaFX Browser.</p>
      * <p>Makes a get request for a Membership Request. If the broswer
      * successfully connects, the user may enter their details
      * to create a membership subscription.</p>
+     * <p>Note that Java 17 and JavaFX 17 have broken WebEngine's UserAgent.
+     * For Java17 and JavaFX 17,  seeking an alternative. </p>
      * @return Returns a BorderPane containing a JavaFX Browser.
      */
-    protected BorderPane getReqMembershipPane() {
-        System.out.println("EcoPane getOnboardPane called");
-        // @TODO remove All Trusting Manager!!!
-        setTrustManager();
+    public BorderPane getReqSubscribePane() {
+        // we use the encrypted users name. This is as good as it needs to be.
+        String json = "{\"x1\":\"" + Alphabet.encrypt(UserData.getUserName()) + "\"}";
+
+        //System.out.println("json UserAgent string: " + json);
+
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
-
         engine = webView.getEngine();
+        engine.userAgentProperty().setValue(json);
         engine.load(VertxLink.REQ_MEMBER.getLink());
+        engine.setJavaScriptEnabled(true);
+
+        engine.setOnAlert(webEvent -> {
+            System.out.println("WebKit Alert: " + webEvent.getData());
+        });
 
         engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-
-            System.out.println("getOnboardPane() getting engine.LoadWorker called line 149");
-
-            if(Worker.State.SUCCEEDED.equals(newValue)) {
-                System.out.println("getOnboardPane worker.state succeeded!");
-
-                System.out.println("location after load: " + engine.getLocation());
-
-                //@todo finish, prevent redirects from potential malicious actors
-            }
-            else {
-                System.out.println("EcoPane.getOnboardPane line 159 failed to contact server.");
-                System.out.println("EcoPane.getOnboardPane line 160 newValue: <" + newValue + "> & SUCCEEDED was: <" + Worker.State.SUCCEEDED + ">");
-            }
-        });
+                    // if user has previously subscribed (they are a "preem_distro"), the server returns
+                    // the onBoarding page, else (they are "free") it returns the subscription
+                    // page.
+                        String domain = engine.locationProperty().getValue();
+                        if (domain.endsWith("HF25XZ")) {
+                            if (newValue == Worker.State.SUCCEEDED) {
+                                System.out.println("getReqSubscriptPane worker.state succeeded!");
+                                engine.executeScript("callMe(\"" + Alphabet.encrypt(UserData.getUserName()) + "\")");
+                            }
+                        }
+            });
 
         VBox rBox = new VBox(webView);
         BorderPane bPane = new BorderPane();
@@ -200,32 +210,14 @@ public class EcoPane extends BorderPane {
      * @return
      */
     protected BorderPane getPayAccount() {
-        System.out.println("EcoPane getPayAccount called");
         // @TODO remove All Trusting Manager!!!
-        setTrustManager();
+    //    setTrustManager();
 
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
 
         engine = webView.getEngine();
         engine.load(VertxLink.REQ_ACCT.getLink());
-
-        engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-
-            System.out.println("getPayAccount() getting engine.LoadWorker called line 149");
-
-            if(Worker.State.SUCCEEDED.equals(newValue)) {
-                System.out.println("getPayAccount worker.state succeeded!");
-
-                System.out.println("location after load: " + engine.getLocation());
-
-                //@todo finish, prevent redirects from potential malicious actors
-            }
-            else {
-                System.out.println("EcoPane.getPayAccount line 217 failed to contact server.");
-                System.out.println("EcoPane.getPayAccount line 218 newValue: <" + newValue + "> & SUCCEEDED was: <" + Worker.State.SUCCEEDED + ">");
-            }
-        });
 
         VBox rBox = new VBox(webView);
         BorderPane bPane = new BorderPane();
@@ -243,46 +235,6 @@ public class EcoPane extends BorderPane {
 
     // ***** OTHER ***** //
 
-    private void setTrustManager() {
-        // @TODO remove self signed certificate
-        // @TODO remove self signed certificate
-        // @TODO remove self signed certificate
-        // @TODO remove self signed certificate
-        // @TODO remove self signed certificate
-        // ---------- for self signed cert... do  not use in deployed system ------------
-        // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[] {
-                new X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
-                }
-        };
-        // Install the all-trusting trust manager
-        // @TODO REMOVE SECURITY HOLE BEFORE DEPLOYMENT
-        try {
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-        } catch (GeneralSecurityException e) {
-            e.printStackTrace();
-        }
-        // create all trusting host name verifier
-        HostnameVerifier allHostsValid = new HostnameVerifier() {
-            @Override
-            public boolean verify(String s, SSLSession sslSession) {
-                return true;
-            }
-        };
-        // Install the all-trusting host verifier
-        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-        System.out.println("EcoPane set trustEverything Succeeded");
-
-
-        // ----------------- end self signed cert --------------------- //
-    }
 
     /**
      * Prepares JSON data to send to Vertx
@@ -290,31 +242,34 @@ public class EcoPane extends BorderPane {
      * @param cartList
      * @return
      */
-
-    private String getJson( @NotNull ArrayList<HashMap<String, String>> cartList) {
-        //@TODO set getJson to real data
-        //@TODO set getJson for an array of items
-        // @TODO in getJson get deck price from Vertx
+    private String getPurchJson(@NotNull ArrayList<HashMap<String, String>> cartList) {
+        //@TODO set getPurchJson for an array of items
+        //@TODO in getPurchJson get deck price from Vertx
         HashMap<String, String> map = cartList.get(0);
-        EncryptedAcct acct = DeckMarketPane.getInstance().getAcct();
-        String purchaser   = "Jenny Rosen"; // let the user input this information in stripe.
-        String userName     = UserData.getUserName();   // orig_email the deck is sent to
+        EncryptedAcct acct  = DeckMarketPane.getInstance().getAcct();
+        String buyer    = UserData.getFirstName();  // let the user input this information in stripe.
+        String userName     = Alphabet.encrypt(UserData.getUserName());   // orig_email of the buyer
+        String buyerHash    = FileNaming.hashToHex(UserData.getUserName()); // The s3 subdirectory the deck is sent to.
         String deckId       = map.get("deck_id");       // id of deck to purchase
         String price        = map.get("price");         // Does not go forward
         String deckName     = map.get("deck_name");     // Name to be displayed
-        //String deck_id  = "2";
+        String fullDeckName = map.get("full_name");     // Deck full name that is used in S3
+        String fee          = map.get("fee");           // non-preem fee
         String currency = acct.getCurrency();
 
         String json = "{" +
-                "\"real_name\":\"" + purchaser + "\"" +
-                ",\"user_name\":\"" + userName + "\"" +
+                "\"real_name\":\"" + buyer + "\"" +
+                ",\"byr_email\":\"" + userName + "\"" +
                 ",\"deck_id\":\"" + deckId + "\"" +
                 ",\"deck_price\":\"" + price + "\"" +
                 ",\"deck_name\":\"" + deckName + "\"" +
+                ",\"full_name\":\"" + fullDeckName + "\"" +
                 ",\"currency\":\"" + currency + "\"" +
+                ",\"fee\":\"" + fee + "\"" +
+                ",\"total\":\"" + (fee + price) + "\"" +
+                ",\"hash\":\"" + buyerHash + "\"" +
                 "}";
 
-        System.out.println("Json looks like: " + json);
         return json;
     }
 }

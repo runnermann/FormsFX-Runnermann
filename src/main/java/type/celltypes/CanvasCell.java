@@ -1,9 +1,32 @@
+/*
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.celltypes;
 
-import draw.shapes.FMRectangle;
-import draw.shapes.GenericShape;
+import ch.qos.logback.classic.Level;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.VBox;
+import type.draw.shapes.FMRectangle;
+import type.draw.shapes.GenericShape;
 import fileops.FileOpsShapes;
-import fileops.MediaSync;
 import flashmonkey.FlashMonkeyMain;
 import flashmonkey.ReadFlash;
 import fmannotations.FMAnnotations;
@@ -14,6 +37,7 @@ import javafx.scene.shape.Shape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.tools.imagery.Fit;
+import uicontrols.SceneCntl;
 
 import java.io.File;
 import java.io.Serializable;
@@ -25,13 +49,14 @@ import java.util.ArrayList;
  *
  * @author Lowell Stadelman
  */
-public class CanvasCell<T extends GenericShape> extends GenericCell implements Serializable {
+public class CanvasCell extends GenericCell implements Serializable {
     private static final long serialVersionUID = FlashMonkeyMain.VERSION;
-
     // THE LOGGER
     // Logging reporting level is set in src/main/resources/logback.xml
     private static final Logger LOGGER = LoggerFactory.getLogger(CanvasCell.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CanvasCell.class);
 
+    String shapesPath = "";
     /**
      * Builds the canvas cell.
      * Note: If there is an image, the size of the pop-up comes from the
@@ -41,129 +66,95 @@ public class CanvasCell<T extends GenericShape> extends GenericCell implements S
      * files. The first element is a rectangle that is the size of
      * the original pane.
      */
-    String shapesPath = "";
-
-    public Pane buildCell(Pane canvasPane, double imgWd, double imgHt, boolean rescalable, String... canvasPaths) {
-
-
+    public Pane buildCell(Pane canvasPane, double imgWd, double imgHt, String... canvasPaths) {
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.info("called, img and canvasPath: {}", canvasPaths);
         canvasPane.setId("rightPaneWhite");
-
         // clear the fields
         canvasPane.getChildren().clear();
         String imagePath = canvasPaths[0];
-        ImageView scaledView;
-
+        final ImageView[] scaledView = new ImageView[1];
         // Process shapes if present.
         // Get the shapes file from the second element
         // in canvasPaths.
-        if (canvasPaths.length > 1) {
+        if (canvasPaths.length > 0) {
             shapesPath = canvasPaths[1];
 
             if (imagePath.endsWith("null")) {
-
-               //System.out.println("imageBool is false, processing shape with -NO- image");
+                LOGGER.debug("imageBool is false, processing shape with -NO- image");
 
                 canvasPane = InnerShapesClass.getShapesPane(shapesPath, true, true);
                 canvasPane.setOnMouseClicked(e -> {
                     LOGGER.info("mouse clicked on Media popup with image. shapesPath: " + shapesPath);
-                     MediaPopUp.getInstance().popUpScene(InnerShapesClass.getShapesPane(shapesPath, false, false));
+                    MediaPopUp.getInstance().popUpScene(InnerShapesClass.getShapesPane(shapesPath, false, false));
                 });
 
             } else {
+                Image image = new Image("File:" + imagePath, true);
+                ProgressIndicator prog = new ProgressIndicator();
+                prog.progressProperty().bind(image.progressProperty());
+                Pane finalCanvasPane = canvasPane;
+                finalCanvasPane.getChildren().addAll(prog);
 
-                scaledView = processImage(imagePath, imgWd, imgHt, rescalable);
-                canvasPane.getChildren().add(scaledView);
-                canvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false));
-                canvasPane.setOnMouseClicked(e -> {
-                    LOGGER.info("mouse clicked on Media popup with image. imageFilePath: " + imagePath + ", shapesPath: " + shapesPath);
-                    MediaPopUp.getInstance().popUpScene( imagePath,
-                            InnerShapesClass.getShapesPane(shapesPath, false, false));
+                image.progressProperty().addListener((observable, oldValue, progress) -> {
+                    if ((Double) progress == 1.0 && !image.isError()) {
+                        scaledView[0] = processImage(image, imgWd, imgHt);
+                        finalCanvasPane.getChildren().clear();
+                        finalCanvasPane.getChildren().addAll(scaledView[0]);
+                        finalCanvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false));
+                        finalCanvasPane.setOnMouseClicked(e -> {
+                            LOGGER.info("mouse clicked on Media popup with image. imageFilePath: " + imagePath + ", shapesPath: " + shapesPath);
+                            MediaPopUp.getInstance().popUpScene(imagePath,
+                                    InnerShapesClass.getShapesPane(shapesPath, false, false));
+                        });
+                    } else {
+
+                    }
                 });
+
             }
-
-        } else {
-            // process image only
-
-            scaledView = processImage(imagePath, imgWd, imgHt, rescalable);
-            canvasPane.getChildren().add(scaledView);
-
-            canvasPane.setOnMouseClicked(e -> {
-                LOGGER.info("mouse clicked on Media popup with image");
-                MediaPopUp.getInstance().popUpScene(imagePath);
-
-            });
         }
-
-        //** SHAPES  and DrawPad**
-        //   - 1st shape is an FMRectangle and
-        // its ht and wd sets the drawpad size.
-        // If no shapes are present do not show the pad.
-        if (shapesPath.equals("")) { // && shapesPaths.length() < 1) {
-
-
-        } //else {
-           //System.out.println("shapesPath.equals(\"\")");
-        //}
-
         return canvasPane;
     } // --- end buildCell ---
 
 
 
-    private static ImageView iView;
-
     /**
      *  Helper method to buildCell(). Processes and scales an image to the
      *  size of it's container. Checks if media files are synchronized.
      *
-     * @param imgPath The path to the image
+     * @param image The path to the image
      * @param imgWd
      * @param imgHt
-     * @param rescaleable If this ImageView should resize/scale if the
-     *                 container it is in grows or shrinks.
      * @return Returns an ImageView containing a scaled
      * image that was provided in the parameter. Resizes if scalable is true
      * else it  does not rescale if it's container is resized after its initial
      * size.
      */
-        public static ImageView processImage(final String imgPath, double imgWd, double imgHt, boolean rescaleable) {
+    private static ImageView processImage(Image image, double imgWd, double imgHt) {
+        ImageView iView;
+//        Image image;
 
-            //ImageView iView;
-            Image image;
+//        File check = new File(imgPath);
+//        if (check.exists()) {
+//            LOGGER.info("\t imagePath: " + imgPath);
 
-            File check = new File(imgPath);
-            if (check.exists()) {
-               //System.out.println("\t Buggs was right");
-                LOGGER.info("\t imagePath: " + imgPath);
+ //           image = new Image("File:" + imgPath);
+ //       } else {
+ //           image = new Image("emojis/concentrating-poop-emoji.png");
+           //System.out.println("\t Martians don't exist");
+ //           LOGGER.warn("\t imagePath: {}", imgPath);
+            // If the image is missing,
+            // check if files are synchronized,
+            // and attempt to download missing files.
+//        }
 
-                image = new Image("File:" + imgPath);
-            } else {
-                image = new Image("emojis/concentrating-poop-emoji.png");
-               //System.out.println("\t Martians don't exist");
-                LOGGER.warn("\t imagePath: {}", imgPath);
-                // If the image is missing,
-                // check if files are synchronized,
-                // and attempt to download missing files.
-               // LOGGER.warn("Calling syncMedia from CanvasCell.processImage. Image is missing");
-               // MediaSync.syncMedia();
-            }
+        iView = Fit.viewResize(image, imgWd, imgHt);
+        iView.setPreserveRatio(true);
+        iView.setSmooth(true);
 
-            //if (scaled) {
-               //System.out.println("creating iView using scaled");
-                iView = Fit.viewResize(image, imgWd, imgHt);
-
-            iView.setPreserveRatio(true);
-            iView.setSmooth(true);
-
-
-            if(rescaleable) {
-                ReadFlash.getInstance().getMasterBPane().widthProperty().addListener((obs, oldval, newVal) -> iView.setFitWidth(newVal.doubleValue() - 8));
-                ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newVal) -> iView.setFitHeight((newVal.doubleValue() - 214) / 2));
-            }
-
-            return iView;
-        }
+        return iView;
+    }
 
 
 
@@ -208,6 +199,7 @@ public class CanvasCell<T extends GenericShape> extends GenericCell implements S
          */
         public static Pane getShapesPane(String drawingPath, boolean scaled, boolean drawingOnly) {
 
+            LOGGER.debug("getShapesPane called");
             Pane shapesPane = new Pane();
             fmShapesAry = new ArrayList<>();
             if(drawingOnly) {
@@ -216,43 +208,30 @@ public class CanvasCell<T extends GenericShape> extends GenericCell implements S
                 shapesPane.setId("rightPaneTransp");
             }
 
+            // If a shapeFile is not uploaded, do not crash the system with null.
             // If the shapesPath is not null
-            File check = new File(drawingPath);
-
+            File check = drawingPath != null ? new File(drawingPath) : new File("pathDoesNotExist");
             LOGGER.info("file check = " + check.exists() + " drawingPath: " + drawingPath);
 
             if (check.exists()) {
-
-               //System.out.println("\t There are drawings on mars too!!!");
                 FileOpsShapes fo = new FileOpsShapes();
-                fmShapesAry = fo.getListFromFile(drawingPath);
+                fmShapesAry = fo.getListFromPath(drawingPath);
                 LOGGER.info("getShapesPane() getListFromFile request using drawingPath: {}", drawingPath);
-                //System.out.println("\n\tfmShapesAry size: " + fmShapesAry.size());
 
                 if (fmShapesAry == null || fmShapesAry.size() == 0) {
                     LOGGER.warn("shapes array is null or empty");
                 } else {
-
-                   //System.out.println("\n\tfmShapesAry size: " + fmShapesAry.size());
-
                     // The first shape, or shapesPaths[0], is the FMRectangle containing the
                     // resizable drawpad/pane size. Use FMRectagnel's getWd and getHt from
                     // the first shape.
                     double origWd = ((FMRectangle) fmShapesAry.get(0)).getWd();
                     double origHt = ((FMRectangle) fmShapesAry.get(0)).getHt();
-
-                   //System.out.println("origWd: " + origWd);
-                   //System.out.println("origHt: " + origHt);
-
-
                     if (scaled) {
                         double scale;
                         scale = Fit.calcScale(origWd, origHt, 100, 100);
-
                         for (int i = 1; i < fmShapesAry.size(); i++) {
                             shapesPane.getChildren().add(fmShapesAry.get(i).getScaledShape(scale));
                         }
-
                     } else {
                         for (int i = 1; i < fmShapesAry.size(); i++) {
                             shapesPane.getChildren().add(fmShapesAry.get(i).getShape());

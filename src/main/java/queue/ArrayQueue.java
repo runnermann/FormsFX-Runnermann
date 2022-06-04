@@ -1,6 +1,6 @@
 package queue;
 
-//import draw.shapes.GenericShape;
+//import GenericShape;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;

@@ -1,7 +1,6 @@
 package flashmonkey;
 
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 //import org.junit.Test;
@@ -21,14 +20,17 @@ public class AvlTreePaneTester {
 
         // click on study button
         //ReadFlash rf = new ReadFlash();
-        ReadFlash.getInstance().setDeckName("ten.dat");
+        FlashCardOps.getInstance().setDeckFileName("ten.dec");
 
-        assertTrue( ReadFlash.getInstance().getDeckName().equals("ten.dat"), "Deck name not ten.dat");
+        assertTrue( FlashCardOps.getInstance().getDeckFileName().equals("ten.dec"), "Deck name not ten.dec");
+
+        FlashCardOps.getInstance().setDeckFileName("ten");
+        assertTrue(FlashCardOps.getInstance().getDeckFileName().equals("ten.dec"), "Deck name not ten.dec when set to \"ten\"");
     }
     /*
     public static void main(String[] args) {
 
-        ReadFlash.setDeckName("ten.dat");
+        ReadFlash.setDeckName("ten.dec");
 
         if(getFlashList() == null || getFlashList().isEmpty()) {
             FLASH_CARD_OPS.refreshFlashList();

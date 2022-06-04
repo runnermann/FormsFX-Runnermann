@@ -22,7 +22,7 @@ public class PriorityHashTable<K extends String, V extends LinkObj> extends Hash
 	}
 	
 	/**
-	 * <p> Uses @code(<String, LinkObj>) for @code(<K,V>) pair</p>
+	 * <p> Uses {@code(<String, LinkObj<K,V>} for pair</p>
 	 * <p>Sets the K,V pair into the map. If there is a collision at
 	 * K then compares the dateInMilli's between LinkObj's and keeps
 	 * the most recent. </p>

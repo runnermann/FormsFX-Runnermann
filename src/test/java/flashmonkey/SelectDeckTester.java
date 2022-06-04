@@ -1,14 +1,12 @@
 package flashmonkey;
 
 import core.RobotUtility;
-import fileops.DirectoryMgr;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -59,10 +57,10 @@ public class SelectDeckTester extends ApplicationTest {
 		bobTheBot.getBob().clickOn(xy);
 		sleep(4000);
 		
-		System.out.println("deckName: " + ReadFlash.getInstance().getDeckName());
+		System.out.println("deckName: " + FlashCardOps.getInstance().getDeckFileName());
 		
-		String deckName = ReadFlash.getInstance().getDeckName();
-		assertTrue(deckName.equals("a new deck onS3.dat"), "Not showing correct deck.");
+		String deckName = FlashCardOps.getInstance().getDeckFileName();
+		assertTrue(deckName.equals("a new deck onS3.dec"), "Not showing correct deck.");
 		
 	}
 	

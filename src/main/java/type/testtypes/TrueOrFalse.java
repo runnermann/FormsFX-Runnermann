@@ -1,6 +1,7 @@
 package type.testtypes;
 
 import flashmonkey.*;
+import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 import fmtree.FMTWalker;
 import javafx.scene.control.Button;
@@ -24,11 +25,9 @@ import java.util.ArrayList;
  * is needed per JVM.
  * @author Lowell Stadelman
  */
-public class TrueOrFalse implements GenericTestType<TrueOrFalse>
-{
+public class TrueOrFalse implements GenericTestType<TrueOrFalse> {
     // The class instance for a singleton class
     private static TrueOrFalse CLASS_INSTANCE;
-
     private GenericSection genSection;
     private Button selectAnsButton;
     private RadioButton trueRdoBtn;
@@ -59,12 +58,12 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
      * @return HBox
      */
     @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
         // Instantiate HBox and "set spacing" !important!!!
         VBox vBox = new VBox(2);
         vBox.getChildren().addAll(q.sectionHBox, trueOrFalsePane(a));
-        if(a.getText() != null && a.getText().equals("T")) {
+        if(a.getPlainText() != null && a.getPlainText().equals("T")) {
             this.trueRdoBtn.setSelected(true);
         } else {
             this.falseRdoBtn.setSelected(true);
@@ -74,11 +73,8 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
     }
 
     @Override
-    public GridPane getTReadPane(FlashCardMM currentCard, GenericCard genCard, Pane parentPane)
-    {
-        System.out.println("\n\n*** GET-T-READ-PANE in TorF test card ***");
-
-        // Each section is it'l own object. Not using GenericCard
+    public GridPane getTReadPane(FlashCardMM currentCard, GenericCard genCard, Pane parentPane) {
+        // Each section is its' own object. Not using GenericCard
         genSection = GenericSection.getInstance();
         GridPane gPane = new GridPane();
         gPane.setVgap(2);
@@ -91,24 +87,22 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
         SingleCellSection l = new SingleCellSection();
         lowerHBox = l.sectionView(trueOrFalsePane(lowerHBoxHt));
         // set the upper section
-
         upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(), 1, false, lowerHBoxHt, currentCard.getQFiles());
 
-    //    lowerHBox.setMaxHeight(150);
         StackPane stackP = new StackPane();
-    //    stackP.setMaxHeight(150);
         ReadFlash.getInstance().setShowAnsNavBtns(false);
 
         // T or F buttons do not have any visible actions. Select ansBtn
         // will provide feed back and save the answer, like MultiChoice actions.
-        selectAnsButton = new Button("Select");
+        if(selectAnsButton == null) {
+            selectAnsButton = ButtoniKon.getAnsSelect();
+        } else {
+            selectAnsButton = ButtoniKon.getJustAns(selectAnsButton, "SELECT");
+        }
         selectAnsButton.setOnAction(e -> ansButtonAction());
 
-
-        System.out.println("line 129");
-
         // add the question to vBox
-       // upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(), 1, currentCard.getQFiles());
+        // upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(), 1, currentCard.getQFiles());
 
         stackP.getChildren().add(lowerHBox);
         stackP.getChildren().add(selectAnsButton);
@@ -116,13 +110,12 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
         gPane.addRow(2, stackP);
         gPane.addRow(1, upperHBox);
 
-
         // Transition for Question, Right & end button click
         FMTransition.setQRight(FMTransition.transitionFmRight(upperHBox));
         // Transition for Question, left & start button click
         FMTransition.setQLeft(FMTransition.transitionFmLeft(upperHBox));
         // Transition for Answer for all navigation
-        FMTransition.setAWaitTop(FMTransition.waitTransFmTop(stackP, 0, 300, 350));
+        FMTransition.setAWaitTop(FMTransition.waitTransFmTop(lowerHBox, 0, 300, 350));
 
         return gPane;
     }
@@ -130,6 +123,7 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
     /**
      * Sets BitSet 4 (= 16) (TrueOrFalse) to true
      * All other bits set to 0
+     * Not compatible with Multi-Choice
      * @return bitSet
      */
     @Override
@@ -145,14 +139,9 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
      * @return Returns the char 'd'
      */
     @Override
-    public char getCardLayout()
-    {
-        System.out.println("\n *** getCardLayout() called in TrueOrFalse class ***");
-
+    public char getCardLayout() {
         return 'D'; // double vertically stacked
     }
-
-
 
     @Override
     public GenericTestType getTest() {
@@ -163,7 +152,6 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
     @Override
     public Button[] getAnsButtons()
     {
-        //return new Button[] { this.selectAnsButton };
         return null;
     }
 
@@ -180,19 +168,14 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
 
     @Override
     public void ansButtonAction() {
-
         FlashCardOps fcOps = FlashCardOps.getInstance();
         ReadFlash rf = ReadFlash.getInstance();
         FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
         FlashCardMM listCard = fcOps.getFlashList().get(currentCard.getANumber());
-    
         rf.getProgGauge().moveNeedle(500, rf.incProg());
-        
         double progress = rf.getProgress();
-
         if ((trueRdoBtn.isSelected() && currentCard.getAText().equals("T"))
                 || (falseRdoBtn.isSelected() && currentCard.getAText().equals("F"))) {
-
             rf.new RightAns(currentCard, listCard, this);
         } else {
             rf.new WrongAns(currentCard, listCard, this);
@@ -200,7 +183,6 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
         }
 
         if(progress >= FMTWalker.getCount()) {
-            System.out.println();
             ReadFlash.getInstance().endGame();
         }
     }
@@ -269,13 +251,13 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
         tfBox.setMaxWidth(Double.MAX_VALUE);
 
         // Set the default value.
-        editor.tCell.getTextArea().setText("F");
+//        editor.tCell.getTextArea().setText("F");
         trueRdoBtn.setOnAction(e -> {
-            editor.tCell.getTextArea().setText("T");
+//            editor.tCell.getTextArea().setText("T");
         });
 
         falseRdoBtn.setOnAction(e -> {
-            editor.tCell.getTextArea().setText("F");
+ //           editor.tCell.getTextArea().setText("F");
         });
 
         // Set the style of the pane to appear the same as a TextArea
@@ -284,9 +266,6 @@ public class TrueOrFalse implements GenericTestType<TrueOrFalse>
         tfBox.setId("tfBox");
         return tfBox;
     }
-
-
-
 
     public void onClose()
     {

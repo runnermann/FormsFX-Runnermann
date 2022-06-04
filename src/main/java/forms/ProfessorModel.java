@@ -4,6 +4,7 @@ package forms;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.util.ResourceBundleService;
 import forms.utility.ProfessorDescriptor;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
@@ -27,7 +28,8 @@ import java.util.ResourceBundle;
  */
 public class ProfessorModel implements FormModel {
 	
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ProfessorModel.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ProfessorModel.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProfessorModel.class);
 	
 	private ProfessorDescriptor descriptor = new ProfessorDescriptor();
 	
@@ -68,6 +70,11 @@ public class ProfessorModel implements FormModel {
 	@Override
 	public void formAction(FormData data) {
 	
+	}
+
+	@Override
+	public void formAction() {
+
 	}
 	
 	/**

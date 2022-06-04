@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Comparator;
 
 import ch.qos.logback.classic.Level;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
@@ -19,7 +20,8 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
 {
     //private static final long serialVersionUID = FlashMonkeyMain.VERSION;
     //ObjectListing objectListing = s3client.listObjects(bucketName);
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(LinkObj.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(LinkObj.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LinkObj.class);
     
     
     private CloudLink cloudLink;// = new FTPFile();
@@ -34,8 +36,7 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
     public LinkObj()
     {
         LOGGER.info("default constructor called");
-        LOGGER.setLevel(Level.DEBUG);
-    
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("Called LinkObj");
         
         cloudLink = null;
@@ -50,7 +51,7 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
     public LinkObj(String descr, CloudLink cl, long bSize)
     {
         //LOGGER.setLevel(Level.DEBUG);
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("constructor using Cloudlink called & descrpt: {}", descr );
         //cloudLink = new FTPFile();
         descrpt = descr;
@@ -66,7 +67,7 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
      */
     public LinkObj(String descr, File f, long bSize) {
         //LOGGER.setLevel(Level.DEBUG);
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("constructor for file called");
         descrpt = descr;
         file = f;
@@ -80,7 +81,7 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
      * @param original 
      */
     public LinkObj(LinkObj original) {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("Copy constructor called");
 
         if(original != null) {
@@ -101,15 +102,14 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
     
     /**
      * Constructor. Builds a LinkObj using the description only,
-     * @param descr The description of the class. May be provided by the EncryptedUser.EncryptedUser
+     * @param descr The description or LabelName of the deck. May be provided by the EncryptedUser
      * // @param f The File where the flashCard deck is stored
      */
     public LinkObj(String descr)
     {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         //LOGGER.setLevel(Level.DEBUG);
         LOGGER.info("String only constructor called");
-        System.out.println("Called LinkObj");
         
         file = new File(descr);
         descrpt = descr;
@@ -149,7 +149,6 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
     @Override
     public int compareTo(LinkObj other)
     {
-        System.out.println("compareTo called for sorting" + this.getDescrpt() + " " + other.getDescrpt());
         
         if(other != null)
         {
@@ -161,10 +160,6 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
     
     @Override
     public boolean equals(Object other) {
-    
-        
-        System.out.println("equals called for: " + this.getDescrpt() + " " + ((LinkObj) other).descrpt);
-        
         if(other == null) {
             return false;
         } else {
@@ -172,9 +167,12 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
             return this.descrpt.equals(((LinkObj) other).descrpt);
         }
     }
-    
+
     /**
-     * Compares two LinkObjs by their dateInMilli's, & if length is > 6 bytes
+     * Compares two LinkObjs by their dateInMilli's, {@code &} if length is {@code >} 6 bytes
+     * @param linkObj1 ..
+     * @param linkObj2 ..
+     * @return -1 if byteSize {@code < } 1 if {@code >} 6, 0 otherwise
      */
     @Override
     public int compare(LinkObj linkObj1 , LinkObj linkObj2) {
@@ -189,9 +187,6 @@ public final class LinkObj implements Comparable<LinkObj>, Comparator<LinkObj> /
             LOGGER.debug("link obj2 is cloudlink: {}, byteSize is < 6, returning 1", linkObj2.getClass().getName().contains("cloudLink"));
             return  1;
         }
-        System.out.println("returning: {}" +  linkObj1.timeInMillis.compareTo(linkObj2.timeInMillis));
-        
-       
         return linkObj1.timeInMillis.compareTo(linkObj2.timeInMillis);
     }
 }

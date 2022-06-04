@@ -3,13 +3,12 @@ package authcrypt.user;
 import authcrypt.UserData;
 import flashmonkey.FlashCardOps;
 import forms.FormData;
-import forms.utility.Alphabet;
-
-import java.io.Serializable;
 import java.util.HashMap;
 
-
-public class EncryptedStud extends EncryptedPerson implements Serializable, FormData {
+/**
+ * Note that Security sensitive classes should not be serializable
+ */
+public class EncryptedStud extends EncryptedPerson implements FormData {
 	
 	private String educationLevel;
 	private String major;
@@ -60,8 +59,8 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 	// ****** GETTERS AND SETTERS ***** //
 
 	public static EncryptedStud getStudentFmFile() {
-		String personFileName = authcrypt.UserData.getUserName().hashCode()+ "s" + ".met"; // meta
-		EncryptedStud s = new EncryptedStud((EncryptedStud) FlashCardOps.getInstance().getFO().getObjectFmFile(personFileName));
+		String personFileName = authcrypt.UserData.getUserName().hashCode() + "s.met"; // meta
+		EncryptedStud s = new EncryptedStud((EncryptedStud) FlashCardOps.getInstance().getObjectFmFile(personFileName));
 		return s;
 	}
 
@@ -103,7 +102,7 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 	// **** DATA ARRAY RELATED *** //
 
 	/**
-	 * Sets this object form the dataAry from this object;
+	 * Sets this object from the dataAry from this object;
 	 * @return If the dataAry is missing the Description or
 	 * the lastDate is 0 returns false signifying a failure.
 	 */
@@ -120,7 +119,6 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 	 */
 	@Override
 	public void set(HashMap<String, String> map) {
-		System.out.println("firstName1" + map.get("first_name"));
 		setMiddleName(map.get("middle_name"));
 		setPhone(map.get("phone"));
 		setAge(map.get("age"));
@@ -142,9 +140,10 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 	 * @param dataAry
 	 */
 	@Override
-	public void setDataMap(HashMap<String, String> dataAry) {
+	public boolean setDataMap(HashMap<String, String> dataAry) {
 		//@TODO finish stub
 		/* STUB */
+		return false;
 	}
 
 	/**
@@ -168,18 +167,5 @@ public class EncryptedStud extends EncryptedPerson implements Serializable, Form
 		return new HashMap<>();
 	}
 
-/*
-	@Override
-	public String[] getData(String filePathName) throws FileNotFoundException {
-		//@TODO finish stub
-		return new String[0];
-	}
-
-	@Override
-	public boolean setDataAryFmFile() {
-		//@TODO finish stub
-		return false;
-	}
- */
 	
 }

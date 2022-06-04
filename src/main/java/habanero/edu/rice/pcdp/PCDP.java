@@ -74,24 +74,23 @@ public final class PCDP {
      * finish on the iterations of a forasync.
      * <p>
      * The semantics of
-     * <pre><code>
-     *   forasync(startInc, endInc, (k) -> S2(k))
-     * </code></pre>
+     * {@code forasync(startInc, endInc, (k) -> S2(k)) }
+     *
      * are as follows:
-     * <pre><code>
+     * {@code
      *   for (int k = startInc; k <= endInc; k++) {
      *     final int kk = k;
      *     async(() -> {
      *       S2(kk);
      *     });
      *   }
-     * </code></pre>
+     * }
      *
      * @param startInc The start of the loop range this parallel loop executes
      *        over (inclusive).
      * @param endInc   The end of the loop range this parllel loop executes over
      *        (exclusive).
-     * @param body     a {@link ProcedureInt1D} object defining the body of the
+     * @param body     a {@code ProcedureInt1D} object defining the body of the
      *        parallel loop.
      */
     public static void forasync(
@@ -353,14 +352,14 @@ public final class PCDP {
     }
 
     /**
-     * Spawn an asynchronous task that returns a value of type <R>. Return a
+     * Spawn an asynchronous task that returns a value of type {@code <R>}. Return a
      * future object that can be used to wait on the completion of the spawned
      * task, and fetch its resulting value.
      *
-     * @param body user-defined body of the task.
-     * @param <R> Return type of the launched future task.
+     * @param body {@code <R>}user-defined body of the task.
      * @return A future that can be used to wait on the completion of the
      *         created task and fetch its return value.
+     *         Return type of the launched future task.
      */
     public static <R> Future<R> future(final Callable<R> body) {
         final FutureTask<R> newTask = createFutureTask(body, false);

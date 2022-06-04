@@ -2,12 +2,14 @@ package authcrypt.user;
 
 import campaign.db.DBFetchToMapAry;
 import campaign.db.DBFetchUnique;
+import fileops.CloudOps;
 import fmannotations.FMAnnotations;
 import forms.utility.Alphabet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.sectiontype.DoubleCellSection;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -18,6 +20,9 @@ import java.util.HashMap;
  */
 public class EncryptedAcct {
 
+	// THE LOGGER
+	private static final Logger LOGGER = LoggerFactory.getLogger(EncryptedAcct.class);
+
 	// 0 = account_id
 	// 1 = orig_email
 	// 2 = account_status
@@ -27,10 +32,9 @@ public class EncryptedAcct {
 	// 8 = period // year or month
 	// 9 = due_date
 	// 10 = fee
-
+	// 11 = subid subscription id
 	private HashMap<String, String> map = null;
-	// THE LOGGER
-	private static final Logger LOGGER = LoggerFactory.getLogger(EncryptedAcct.class);
+
 	
 	public EncryptedAcct() { /* NO ARGS */ }
 
@@ -42,49 +46,53 @@ public class EncryptedAcct {
 		if(map == null) {
 			// check if user account exists
 			getAccountData();
-		} else {
-			if(map.get("empty").equals("true")) {
-				return false;
-			} else {
-				return true;
-			}
 		}
-		return false;
+
+		if(map.get("empty").equals("true")) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 	
 	public boolean isCurrent() {
 		// @TODO isCurrent
-		if(map == null) {
+		if(map == null || map.isEmpty()) {
 			// check if user account exists
 			getAccountData();
-		} else {
-			if(map.get("account_status") == null || map.get("account_status").equals("disabled")) {
-				LOGGER.warn("ACCOUNT_DISABLED_WARNING: user <{}> attempted to access a disabled account", Alphabet.encrypt(authcrypt.UserData.getUserName()));
-				map.put("isCurrent", "false");
-				return false;
-			}
-			// catagory == freemium
-			if (map.get("catagory").equals("free")) {
-				// user is a freemium user,
-				// has ability to buy with fee. Cannot sell.
-				map.put("isCurrent", "false");
-				return false;
-			}
-			// catagroy == premium
-			if(map.get("catagory").contains("preem")) {
-				if(verify(map.get("paid_date"), map.get("period"), map.get("account_status"))) {
-					map.put("isCurrent", "true");
-					return true;
-				}
-				map.put("isCurrent", "false");
-				return false;
-			}
 		}
+//		else {
+			if(map.get("account_status") == null || map.get("account_status").equals("disabled")) {
+				LOGGER.warn("ACCOUNT_DISABLED_WARNING: user <{}> , account_status: <{}>", Alphabet.encrypt(authcrypt.UserData.getUserName()), map.get("account_status"));
+				map.put("isCurrent", "false");
+				return false;
+			}
+			else {
+				// catagory == freemium
+				if (map.get("catagory").equals("free")) {
+					// user is a freemium user,
+					// has ability to buy with fee. Cannot sell.
+					map.put("isCurrent", "false");
+					return false;
+				}
+				// catagroy == premium
+				if (map.get("catagory").contains("preem")) {
+					if (verify(map.get("paid_date"), map.get("account_status"))) {
+						map.put("isCurrent", "true");
+						return true;
+					}
+					map.put("isCurrent", "false");
+					return false;
+				}
+//			}
+		}
+		// should not get here
+		LOGGER.warn("Something went wrong: ");
 		map.put("isCurrent", "false");
 		return false;
 	}
 
-	public double getFee() {
+	public long getFee() {
 		if(map == null) {
 			getAccountData();
 		} else if(map.get("isCurrent") == null) {
@@ -93,7 +101,7 @@ public class EncryptedAcct {
 		if(! map.get("isCurrent").equals("true")) {
 			return 0;
 		} else {
-			return Double.parseDouble( map.get("fee"));
+			return Long.parseLong( map.get("fee"));
 		}
 	}
 
@@ -103,7 +111,7 @@ public class EncryptedAcct {
 		}
 		return map.get("currency");
 	}
-	
+
 	public boolean join() {
 		// @TODO join
 		// UserForm
@@ -113,7 +121,7 @@ public class EncryptedAcct {
 
 		return false;
 	}
-	
+
 	public boolean remove() {
 		// @TODO remove
 		return false;
@@ -135,38 +143,43 @@ public class EncryptedAcct {
 	 * Verify if user/member is current. Determines fees. Should not be used
 	 * outside of class.
 	 * @param paidDate
-	 * @param period
-	 * @param status
+	 * @param acctStatus
 	 * @return true if user is current
 	 */
-	private boolean verify(String paidDate, String period, String status) {
-
-		System.out.println("EncryptedAcct.verify: String period: " + period);
+	protected boolean verify(String paidDate, String acctStatus) {
+		String[] date = paidDate.split("-");
+		int y = Integer.parseInt(date[0]);
+		int m = Integer.parseInt(date[1]);
+		int d = Integer.parseInt(date[2]);
+		LocalDate payDate = LocalDate.of(y, m, d);
+		LocalDate today = LocalDate.now();
+		//LocalDate today = LocalDate.now();
 		if(map == null) {
-			System.out.println("EncryptedAcct.verify: map is null, exiting...");
-			System.exit(1);
+			//System.out.println("EncryptedAcct.verify: map is null, returning false...");
+			return false;
+		} else {
+            switch (acctStatus) {
+                case "ext_30": {
+                    return today.isBefore(payDate.plusMonths(2));
+                }
+                case "ext_60": {
+                    return today.isBefore(payDate.plusMonths(3));
+                }
+                case "special": {
+                    return true;
+                }
+                case"ok\n": // correcting parser error
+                case "ok": {
+                    return today.isBefore(payDate.plusMonths(1));
+                }
+                default:
+                case "suspend":
+                case "cancelled": {
+                    //LOGGER.debug("DEFAULT called at switch: acctStatus: {},  user's account is either freemium, cancelled, or suspended", acctStatus);
+                    return false;
+                }
+            }
 		}
-
-		long days = period.equals("year") ? 365l : 31l;
-		long num = 0;
-		if(status.equals("ext_30")) {
-			//System.out.println("status contains ext_30" );
-			num = 32;
-			//return (Long.parseLong(paidDate.strip()) - (num + days * 24 * 60 * 60 * 1000) > 0);
-		} else if (status.equals("ext_60")){
-			num = 62;
-		} else if (status.equals("ext_90")) {
-			num = 93;
-		}
-		long now = System.currentTimeMillis();
-		//long addTime = (num + days) * 86400000l;
-		//System.out.println("result in days: " + addTime / 86400000l);
-		//System.out.println("paidDate: " + Long.parseLong(paidDate.strip()) + ", plus additional time: " + addTime + " = " + (Long.parseLong(paidDate.strip()) + ((num + days) * 24 * 60 * 60 * 1000)));
-		//System.out.println(" now: " + now);
-		//System.out.println("days: " + days);
-		//System.out.println("num: " + num);
-		//System.out.println("num + days: " + (num + days));
-		return ((Long.parseLong(paidDate.strip()) + ((num + days) * 24 * 60 * 60 * 1000)) > now);
 	}
 
 	private String getStatus() {
@@ -189,6 +202,18 @@ public class EncryptedAcct {
 		return false;
 	}
 
+	public boolean cancel() {
+		if(exists()) {
+
+
+
+			return true;
+		}
+		// Make call to CloudOps and send to Vertx CancelRequest
+
+		return false;
+	}
+
 /*	public static void main(String[] args) {
 		System.out.println("Testing verify()");
 		EncryptedAcct acct = new EncryptedAcct();
@@ -202,6 +227,4 @@ public class EncryptedAcct {
 	}
 
  */
-
-	
 }

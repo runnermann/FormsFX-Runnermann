@@ -1,6 +1,8 @@
 package type.celleditors;
 
-import draw.DrawObj;
+import fileops.DirectoryMgr;
+import fileops.FileOpsUtil;
+import type.draw.DrawObj;
 import flashmonkey.CreateFlash;
 import uicontrols.SceneCntl;
 import uicontrols.UIColors;
@@ -48,7 +50,6 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
 {
     // Only one instance of this class may exist within a JVM.
     private static SnapShot CLASS_INSTANCE;
-    
     private static final Logger LOGGER = LoggerFactory.getLogger(SnapShot.class);
 
     // The transparent stage used to capture an image from the screen.
@@ -123,7 +124,6 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
      * stage start
      * @param stage
      */
-    //@Override
     public void start(Stage stage) {
 
        //System.out.println("StartSnapShot Called.");
@@ -131,6 +131,7 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
         //stage.setFullScreen(true);
         stage.setHeight(screenHt);
         stage.setWidth(screenWt);
+
 
         canvas = new Canvas();
         canvas.setHeight(screenHt);
@@ -152,7 +153,7 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
         
         // Set the scene size to the screen size
         // Work around for windows 10
-        snapScene = new Scene(stackPane, screenWt, screenHt, new Color(0, 0, 0, 1d / 255d));
+        snapScene = new Scene(stackPane, screenWt - 8, screenHt - 8, new Color(0, 0, 0, 1d / 255d));
         // and cursor
         snapScene.setCursor(Cursor.CROSSHAIR);
         // instantiate GraphicContext & set, mouse actions handle
@@ -251,7 +252,8 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
     public void mouseReleased(MouseEvent e) {
         
         // Save the image
-        pullnSaveImage();
+        captureImage();
+        //this.saveImage();
         
         if(System.getProperty("os.name").toLowerCase().contains("mac")) {
             // Mac
@@ -274,10 +276,11 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
      * Gets the image created in the rectangle, holds it in a buffer until it
      * is saved to a file.
      */
-    private void pullnSaveImage() {
+    private void captureImage() {
         Rectangle rect = new Rectangle(20, 20, 200, 200);
         if ((Math.abs(deltaX) - 6) > 0 && (Math.abs(deltaY) - 6) > 0) {
             rect = new Rectangle(this.minX + 3, this.screenY + 3, Math.abs(deltaX) - 6, Math.abs(deltaY) - 6);
+    //        drawObj.setDems(this.minX + 3, this.screenY + 3, Math.abs(deltaX) - 6, Math.abs(deltaY) - 6);
         }
         try
         {
@@ -288,42 +291,34 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
         {
             System.err.println("ERRROR: AWTException in SnapShot while saving image to file" +
                     "\n line 254ish");
+            ex.printStackTrace();
         }
         catch (IllegalArgumentException ex)
         {
             System.err.println("ERROR: IllegalArgumentException in SnapShot while saving image to file.");
+            ex.printStackTrace();
         }
-        
-        this.saveImage();
-
-        // Set the image in the right stackPane of the editor.
-        // parentEditor.setImage(getBuffer());
     }
 
 
     /**
      * Creates the mediaName, and saves the file to the hard drive. Sets
      * the mediaName in SectionEditor to the current fileName for this image.
-     //* @param deckName
-     //* @param qOrA
-     //* @param mediaType The media type, 'M'edia(Audio Video) 'C'anvas for images and shapes
+     * @param fileName ImageName
      */
-    private void saveImage() {
-    
-        imgName = drawObj.getImageName();
-        
-        try
-        {
-            ImageIO.write(imageBuffer, "png", new File(drawObj.getFullPathName() ));
-            // set the filename in SectionEditor !!!
-            // parentEditor.setMediaFileName(imgName);
+    /*protected void saveImage(String fileName) {
+        try {
+            String path = DirectoryMgr.getMediaPath('c');
+            FileOpsUtil.folderExists(new File(path + fileName));
+            ImageIO.write(imageBuffer, "png", new File(path + fileName));
         }
-        catch (IOException ef) // for ImageIO.write errors
+        catch (IOException e) // for ImageIO.write errors
         {
-           //System.out.println("ERROR: IO Exception in snapShot while saving image to file" +
-           //         "\n line 253");
+           System.out.println("ERROR: IO Exception in snapShot while saving image to file" +
+                    "\n line 253");
+           e.printStackTrace();
         }
-    }
+    }*/
     
     // ********** GETTERS ******** //
     
@@ -331,17 +326,8 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
      * Returns the ImageBuffer.
      * @return Returns the ImageBuffer.
      */
-    public BufferedImage getImgBuffer()
-    {
+    public BufferedImage getImgBuffer() {
         return this.imageBuffer;
-    }
-    
-    /**
-     * Returns the image name created for the snapshot image.
-     * @return
-     */
-    public String getImgName() {
-        return imgName;
     }
     
 

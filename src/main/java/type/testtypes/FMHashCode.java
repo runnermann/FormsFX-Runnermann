@@ -14,11 +14,7 @@ import org.slf4j.LoggerFactory;
 public final class FMHashCode {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(FMHashCode.class);
-
-    public FMHashCode() {
-
-    }
-
+    public FMHashCode() { /* do nothing */ }
 
     /**
      * Returns a hash code for this string. The hash code for a
@@ -34,7 +30,7 @@ public final class FMHashCode {
      * (The hash value of the empty string is zero.)
      *
      * @param obj Object that gets a new hashCode
-     * @param zeroThruFour is a number from zero thru four
+     * @param zeroThruFour is a number from zero through four inclusive.
      * @return  returns a hash code value for this object.
      */
     public static int getHashCode(Object obj, int zeroThruFour) {
@@ -42,13 +38,9 @@ public final class FMHashCode {
         int[] primeAry = {9,3,7,5,0};
         int hashCode;
         int key = obj.hashCode();   // hashed memory address
-
-
         //hashCode = key ^ (key >> primeAry[zeroThruFour]);
         hashCode = key >> primeAry[zeroThruFour];
-
-        LOGGER.debug(" primeAry[zeroThruFour] " + primeAry[zeroThruFour]);
-
+        //LOGGER.debug(" primeAry[zeroThruFour] " + primeAry[zeroThruFour]);
         return hashCode;
     }
 }

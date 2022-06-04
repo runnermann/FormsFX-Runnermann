@@ -38,12 +38,9 @@ public class ImageUtility {
             for(int x = 0; x < image1.getWidth(); x++) {
                 for (int y = 0; y < image1.getHeight(); y++) {
                     //System.out.println("x: " + x + ", y: " + y);
-
                     if (image1.getPixelReader().getArgb(x, y) < thresh) {
-
                         scoreImg1++;
                     }
-
                     if ((image2.getPixelReader().getArgb(x, y)) < thresh) {
                         scoreImg2++;
                     }

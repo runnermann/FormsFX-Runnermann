@@ -6,25 +6,23 @@
  /**
  * FMTWalker adds a variable linking to the parent node and navigation methods.
  *  
- * FMTWalker uses a balanced binary tree to contain the structure. This allows
- for O(log(n)) adds when a flashcard needs to be added to the structure or
- deleted. The getMethods in this class allow for the button operations making
- the overall UI convenient to users. 
- The balanced binary search tree is based on the Adelson-Velskii and Landis 
- AVLtree.
+ * FMTWalker uses a balanced binary tree to contain the structure. This stucture is used
+  * for the convienience of adding and deleting cards from the center of the data-
+  * structure. This structure allows for O(log(n)) adds when a flashcard needs to be
+  * added to the structure or deleted. The getMethods in this class allow for the
+  * button operations making the overall UI convenient to users.
+  * The balanced binary search tree is based on the Adelson-Velskii and Landis AVLtree.
+  *
  * @author Lowell Stadelman. Class modified from Koffman and Wolfgang AVLTree
  */
 public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWithRotate<T> {
 
      private static FMTWalker CLASS_INSTANCE;
 
-
-    //private Node tempParent = null;
     // The current node being used.
     private static Node currentNode;
-
-    // the root of the tree, not the branch
-    //private static Node treeRoot;
+    // The extreme right and left nodes.
+    // In the current configuration left is lowest.
     private static Node lowestNode;
     private static Node highestNode;
     private boolean heightChanged;
@@ -33,10 +31,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
     /**
      * no arg constructor
      */
-    private FMTWalker()
-    {
-        // do nothing
-    }
+    private FMTWalker() { /* do nothing */ }
 
      /**
       * Returns thread safe Singleton instance of FMTWalker
@@ -45,7 +40,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
       */
     public synchronized static FMTWalker getInstance() {
         if(CLASS_INSTANCE == null) {
-            //System.out.println("in FMTWalker creating NEW instance");
             CLASS_INSTANCE = new FMTWalker();
         }
         return CLASS_INSTANCE;
@@ -55,8 +49,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
      * The current node to be used outside of the class
      * @return 
      */
-    public static Node getCurrentNode()
-    {
+    public static Node getCurrentNode() {
         return currentNode;
     }
 
@@ -153,7 +146,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             heightChanged = true;
             nodeCount++;
 
-
             try {
                 return new Node(fc, parent);
             } 
@@ -223,7 +215,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
                 leftRightChild.balance = 0;
                 localRoot.balance = 0;  
             } else {
-                
 
                 leftChild.balance = 0;
                 localRoot.balance = 0;
@@ -261,7 +252,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             // Adjust the balances to be their new values after
             // the rotations are performed. 
             if(rightLeftChild.balance > 0) {
-
                 rightChild.balance = 0; 
                 rightLeftChild.balance = 0;  
                 localRoot.balance = -1;     
@@ -269,8 +259,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             } else if (rightLeftChild.balance < 0) {
                 rightChild.balance = 1; // changed from RIGHT_HEAVY 
                 rightLeftChild.balance = 0;
-                localRoot.balance = 0;    
-                
+                localRoot.balance = 0;
             } else {
                 rightChild.balance = 0;               
                 localRoot.balance = 0;         
@@ -322,7 +311,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
         // Increment the balance
         node.balance++;
         if(node.balance == 0) {
-            // if now balanced, overall heigght has not increased.
+            // if now balanced, overall height has not increased.
             heightChanged = false;
         }
     }
@@ -393,14 +382,10 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             CompareFCard compare = new CompareFCard();
             Node local = currentNode;
             
-            try 
-            {
-
+            try {
                 if(local.right == null) {
-
                     //subtract the parents QNumber from this cards QNumber
                     if( compare.compare(local, local.parent) < 0) {
-
                         //return (Node) getNext(n.parent);
                         local = local.parent;
                     }
@@ -408,29 +393,19 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
                     // Changed 10 Nov 2017
                     // else if(n.left == null && n.right == null) {
                     else if( local.right == null ) {
-
                         local = getLgParent(local, (T)local.data );
                     }
                 }
-
-
                 else { // there is a right node
-
                     // is there a right child?
-                    
                     if(local.right != null && local.right.left == null) {
-
                         local = local.right;
                     }       
                     else if(local.right.left != null) {
-
                         local = getLowestChild(local.right.left);
-
                     }
                     // Is this ever used? Yes
-                    else
-                    {
-
+                    else {
                         local = getLgParent(local, (T)local.data );
                     }
                 }
@@ -438,10 +413,8 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             catch (NullPointerException e) {
 
             }
-            finally
-            {
+            finally {
                 currentNode = local;
-                //return local;
             }
         }
 
@@ -458,29 +431,21 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             try 
             {
                 if(currentNode.left == null) {
-
                     //subtract the parents QNumber from this cards QNumber
                     if( compare.compare(currentNode, currentNode.parent) > 0) {
-
                         //return (Node) getNext(n.parent);
                         local = currentNode.parent;
                     }
-            // Changed 10 nov        
+                    // Changed 10 nov 2017
                     //else if(n.right == null && n.left == null) {
-                    else if(currentNode.left == null) {    
-
+                    else if(currentNode.left == null) {
                         local = getSmParent(currentNode, (T)currentNode.data );
-                        
                     }
                 }
-
                 // there is no left node
                 else {
-
                     // is there a right child?
-                    
                     if(currentNode.left != null && currentNode.left.right == null) {
-
                         local = currentNode.left;
                     }       
                     else if(currentNode.left.right != null) {
@@ -493,12 +458,10 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
                 }
             } 
             catch (NullPointerException e) {
-
                 //return getLowestChild(n.right);
             }
             finally
             {
-
                 currentNode = local;
                 //return local;
             }     
@@ -542,7 +505,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
         * parent node in the parameter. 
         */
         private Node getLowestChild(Node node) {
-
             try 
             {    
                 if(node.left == null) {
@@ -564,7 +526,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
          * parent node in the parameter.
          */
         private Node getHighestChild(Node node) {
-
             try 
             {
                 if(node.right == null) {
@@ -587,7 +548,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
          * @return the next larger parent node
          */
         private Node getLgParent(Node<T> node, T value) {
-
             if( value.compareTo(node.data) < 0 ) {
                 return node;
             }
@@ -602,5 +562,4 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             }
             return getSmParent(node.parent, value);
         }
-
 }

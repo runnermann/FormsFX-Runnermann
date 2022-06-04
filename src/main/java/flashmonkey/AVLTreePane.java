@@ -25,6 +25,7 @@ import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.testtypes.GenericTestType;
+import type.testtypes.QandA;
 import type.testtypes.TestList;
 import uicontrols.UIColors;
 
@@ -49,8 +50,8 @@ import static flashmonkey.ReadFlash.GEN_CARD;
  */
 public class AVLTreePane<E extends Comparable<E>> extends Pane {
     
-    //private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
     
     
     private static final double UNSELECTED = 20; // size of circle
@@ -346,16 +347,18 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             if(cfp.isntStarted() || !ret)
             {
                 ReadFlash rf = ReadFlash.getInstance();
+                FlashCardMM oldCC = (FlashCardMM) FMTWalker.getInstance().getData();
+                int oldNum = oldCC.getCNumber();
                 FMTWalker.setCurrentNode(node);
     
                 // Display the tree
                 displayTree();
                 FlashCardMM currentCard = (FlashCardMM) node.getData();
+                int newNum = currentCard.getCNumber();
 
                 GenericTestType test = TestList.selectTest(currentCard.getTestType());
                 // If UI is in editor mode sets the card clicked on in the editor
                 if (FlashMonkeyMain.isInEditorMode()) {
-                    
                     CreateFlash.getInstance().getEditorL().resetSection();
                     CreateFlash.getInstance().getEditorU().resetSection();
                     CreateFlash.getInstance().setListIdx(currentCard.getANumber());
@@ -366,7 +369,24 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                     rf.ansQButtonSet(currentCard.getIsRight(), test);
                     rf.buttonTreeDisplay(FMTWalker.getCurrentNode());
                     ReadFlash.rpCenter.getChildren().clear();
-                    ReadFlash.rpCenter.getChildren().add( test.getTReadPane(currentCard, GEN_CARD, CreateFlash.getInstance().getMasterPane()));
+                    if(rf.getMode() == 't') {
+                        ReadFlash.rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
+                    } else {
+                        ReadFlash.rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
+                    }
+                    /// create transitions based on greater or less than
+                    /// previous card.
+                    if(oldNum < currentCard.getCNumber()) {
+                        FMTransition.getQRight().play();
+                        if(FMTransition.getAWaitTop() != null) {
+                            FMTransition.getAWaitTop().play();
+                        }
+                    } else {
+                        FMTransition.getQLeft().play();
+                        if(FMTransition.getAWaitTop() != null) {
+                            FMTransition.getAWaitTop().play();
+                        }
+                    }
                 }
             }
             // else

@@ -30,7 +30,7 @@ public interface FormData {
 	 * Sets this objects metaDataAry to the array in the param.
 	 * @param dataMap
 	 */
-	public void setDataMap(HashMap<String, String> dataMap);
+	public boolean setDataMap(HashMap<String, String> dataMap);
 	
 	
 	/**

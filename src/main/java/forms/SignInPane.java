@@ -4,6 +4,9 @@ import com.dlsc.formsfx.view.renderer.FormRenderer;
 import com.dlsc.formsfx.view.util.ViewMixin;
 
 import flashmonkey.FlashMonkeyMain;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.DoublePropertyBase;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -14,18 +17,20 @@ import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * css uses buttons.css and
+ */
 public class SignInPane extends Pane implements ViewMixin {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SignInPane.class);
 	
-	private GridPane signInPane;
+	private GridPane mainGridPane;
 	private Pane spacer;
 	private HBox newActHBox;
 	private HBox forgotHBox;
 	private HBox signInHBox;
 	private static VBox msgVBox;
-	private Button signInBtn;
+	private Button actionButton;
 	private Hyperlink signUpLink;
 	private Hyperlink forgotLink;
 	
@@ -54,16 +59,15 @@ public class SignInPane extends Pane implements ViewMixin {
 	public void initializeParts() {
 		
 		LOGGER.info("initializeParts called");
-		
-		signInPane = new GridPane();
+		mainGridPane = new GridPane();
 		spacer = new Pane();
 		newActHBox = new HBox();
 		forgotHBox = new HBox();
 		msgVBox = new VBox();
 		signInHBox = new HBox();
-		signInBtn = new Button("Sign in");
+		actionButton = new Button("SIGN IN");
 		signUpLink = new Hyperlink("Join now");;
-		forgotLink = new Hyperlink("Forgot password?");
+		forgotLink = new Hyperlink("Reset password?");
 		
 		displayForm = new FormRenderer(model.getFormInstance());
 	}
@@ -77,9 +81,9 @@ public class SignInPane extends Pane implements ViewMixin {
 		
 		LOGGER.info("setupBindings() called");
 		
-		signInBtn.disableProperty().bind(model.getFormInstance().persistableProperty().not());
+		actionButton.disableProperty().bind(model.getFormInstance().persistableProperty().not());
 		//reset.disableProperty().bind(model.getFormInstance().changedProperty().not());
-		displayForm.prefWidthProperty().bind(signInPane.prefWidthProperty());
+		displayForm.prefWidthProperty().bind(mainGridPane.prefWidthProperty());
 	}
 	
 	/**
@@ -90,14 +94,7 @@ public class SignInPane extends Pane implements ViewMixin {
 	public void setupValueChangedListeners() {
 		
 		LOGGER.info("setupValueChangedListeners called");
-		
-		//model.getFormInstance().changedProperty().addListener((observable, oldValue, newValue) -> changedLabel.setText("The form has " + (newValue ? "" : "not ") + "changed."));
-		//model.getFormInstance().validProperty().addListener((observable, oldValue, newValue) -> validLabel.setText("The form is " + (newValue ? "" : "not ") + "valid."));
-		//model.getFormInstance().persistableProperty().addListener((observable, oldValue, newValue) -> persistableLabel.setText("The form is " + (newValue ? "" : "not ") + "persistable."));
-		
-		//model.getCountry().nameProperty().addListener((observable, oldValue, newValue) -> countryLabel.setText("Country: " + newValue));
-		//model.getCountry().currencyShortProperty().addListener((observable, oldValue, newValue) -> currencyLabel.setText("Currency: " + newValue));
-		//model.getCountry().populationProperty().addListener((observable, oldValue, newValue) -> populationLabel.setText("Population: " + newValue));
+
 	}
 	
 	/**
@@ -106,53 +103,34 @@ public class SignInPane extends Pane implements ViewMixin {
 	@Override
 	public void setupEventHandlers() {
 		
-		signInBtn.setOnAction(e -> {
+		actionButton.setOnAction(e -> {
 			model.formAction();
 		});
 		
 		forgotLink.setOnAction(e -> {
-			
+			FlashMonkeyMain.showResetOnePane();
 			// TODO forgotLink Action
 		});
 		
 		signUpLink.setOnAction(e -> {
-			LOGGER.info("signUpLink clicked.");
-			FlashMonkeyMain.getSignUpPane();
+			//LOGGER.info("signUpLink clicked.");
+			FlashMonkeyMain.showSignUpPane();
 		});
-		
-	/*	languageDE.setOnAction(event -> {
-			model.translate("DE");
-			languageDE.setDisable(true);
-			languageEN.setDisable(false);
-		});
-		
-		languageEN.setOnAction(event -> {
-			model.translate("EN");
-			languageEN.setDisable(true);
-			languageDE.setDisable(false);
-		});
-		
-	 */
 		
 	}
-	
-	
+
 	/**
 	 * This method is used to layout the nodes and regions properly.
 	 */
 	@Override
 	public void layoutParts() {
-		
-		LOGGER.info("*** layoutParts called ***");
-		
-		displayForm.setMaxWidth(260);
-		
-		signInPane.setAlignment(Pos.CENTER);
-		signInPane.setHgap(10);
-		signInPane.setVgap(12);
-		signInPane.setId("fileSelectPane");
-		signInPane.setPrefSize(325, 400);
-		signInPane.setOnKeyPressed(f -> {
+
+		mainGridPane.setAlignment(Pos.CENTER);
+		mainGridPane.setHgap(10);
+		mainGridPane.setVgap(12);
+		mainGridPane.setId("fileSelectPane");
+		mainGridPane.setPrefSize(340, 400);
+		mainGridPane.setOnKeyPressed(f -> {
 			if(f.getCode() == KeyCode.ENTER) {
 				model.formAction();
 			}
@@ -160,15 +138,15 @@ public class SignInPane extends Pane implements ViewMixin {
 		
 		spacer.setPrefHeight(20);
 		
-		Label msgLabel = new Label("Log in");
-		msgLabel.setId("label24White");
+		Label formTitle = new Label("SIGN IN");
+		formTitle.setId("label24WhiteSP");
 		Label signUpLabel = new Label("New to FlashMonkey?");
 		signUpLabel.setId("signUpLabel");
 		//signUpLabel.setStyle("-fx-font-size: 12");
 		
-		signInBtn.setMaxWidth(240);
-		signInBtn.setMinWidth(240);
-		signInBtn.setId("signInButton");
+		actionButton.setMaxWidth(240);
+		actionButton.setMinWidth(240);
+		actionButton.setId("signInButton");
 		
 		signUpLink.setId("signInHyp");
 		forgotLink.setId("signInHyp");
@@ -177,24 +155,24 @@ public class SignInPane extends Pane implements ViewMixin {
 		forgotHBox.setAlignment(Pos.CENTER);
 		forgotHBox.getChildren().add(forgotLink);
 		
-		msgVBox.getChildren().add(msgLabel);
+		msgVBox.getChildren().add(formTitle);
 		newActHBox.getChildren().addAll(signUpLabel, signUpLink);
 		newActHBox.setAlignment(Pos.CENTER);
 		
 		signInHBox.setAlignment(Pos.CENTER);
-		signInHBox.getChildren().add(signInBtn);
+		signInHBox.getChildren().add(actionButton);
 		
-		signInPane.addRow(0, msgVBox);
-		signInPane.addRow(1, spacer);
-		signInPane.addRow(2, displayForm);
-		signInPane.addRow(3, signInHBox);
-		signInPane.addRow(4, forgotHBox);
-		signInPane.addRow(5, newActHBox);
+		mainGridPane.addRow(0, msgVBox);
+		mainGridPane.addRow(1, spacer);
+		mainGridPane.addRow(2, displayForm);
+		mainGridPane.addRow(3, signInHBox);
+		mainGridPane.addRow(4, forgotHBox);
+		mainGridPane.addRow(5, newActHBox);
 	}
 	
 	
-	public GridPane getSignInPane() {
-		return this.signInPane;
+	public GridPane getMainGridPane() {
+		return this.mainGridPane;
 	}
 	
 	/**

@@ -1,28 +1,39 @@
 package forms;
 
 
+import authcrypt.UserData;
 import authcrypt.user.EncryptedPerson;
 import authcrypt.user.EncryptedStud;
 import campaign.db.DBDelete;
 import campaign.db.DBFetchUnique;
 import campaign.db.DBInsert;
 import ch.qos.logback.classic.Level;
+import fileops.S3ListObjs;
+import flashmonkey.FlashMonkeyMain;
 import forms.utility.StudentDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testfx.framework.junit5.ApplicationTest;
 
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.util.Date;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Tag("editedShapes")
+@Tag("studentFormTest")
 public class StudentFormTest extends ApplicationTest {
     // private static final Logger LOGGER = LoggerFactory.getLogger(StudentFormTest.class);
     // LOGGING
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentFormTest.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentFormTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudentFormTest.class);
 
     // Insert data into the DB for the purpose of the tests.
         String description = "The description is here.";
@@ -31,24 +42,57 @@ public class StudentFormTest extends ApplicationTest {
         String middle   = "M";
         String age      = "19";
         String phone    = "000.000.0000";
-        String currentMail = "nameNotSet@flashmonkey.xyz";
-        String origMail = "nameNotSet@flashmonkey.xyz";
+        String currentMail = "studentFormTestCurrent@flashmonkey.xyz";
+        String origMail = "studentFormTestOrigt@flashmonkey.xyz";
         String photoLink = "photoLink/me.jpg";
 
 
-        String institute= "Institute";
-        String edLevel  = "EdLevel";
-        String major    = "Major";
-        String minor    = "Minor";
-        String cVLink   = "CVLink";
+        String institute= "TestInstitute";
+        String edLevel  = "TestEdLevel";
+        String major    = "TestMajor";
+        String minor    = "TestMinor";
+        String cVLink   = "TestCVLink";
 
     EncryptedPerson ePerson;
     EncryptedStud encryptedStud;
     StudentDescriptor studDescript;
 
 
+    //String fileName = "version.env";
+
+    //File target = new File(this.getClass().getResource("/").toExternalForm());
+    //Path rsc = Paths.get(source.toAbsolutePath() + "/newFolder/");
+
+
+    public void writeToDotEnv() {
+
+
+        String dir = System.getProperty("user.dir");
+        //System.out.println("user.dir: " + resources);
+        Date currentDate = new Date();
+        File file = new File( dir + "/src/main/resources/version.env");
+
+        System.out.println(file);
+
+
+        String ver = "VERSION=" + FlashMonkeyMain.getVersionStr();
+        String build = "BUILD_DATE=" + currentDate;
+
+        if(file.exists()) {
+            file.delete();
+        }
+        try(PrintWriter outWriter = new PrintWriter(new FileOutputStream(file))) {
+            outWriter.println(ver);
+            outWriter.println(build);
+        } catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public void setUpStudent() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        writeToDotEnv();
         ePerson = new EncryptedPerson();
 
         ePerson.setAll(-1, phone, firstName, lastName, middle, currentMail, origMail, age, description, institute, photoLink);
@@ -83,7 +127,7 @@ public class StudentFormTest extends ApplicationTest {
     @Order(1)
     public void testStudentInsertDataBase() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
 
         setUpStudent();
         // student should remain setup from previous test.
@@ -92,12 +136,20 @@ public class StudentFormTest extends ApplicationTest {
         String[] result = DBFetchUnique.PERSON_ID.query(args);
         delete(result);
 
+        // Set the UserData.userName
+        UserData.setUserName(origMail);
+
         // Insert data to the DB
         boolean bool = DBInsert.STUDENT_ENCRYPTED_DATA.doInsert(encryptedStud);
+
+        System.out.println(encryptedStud.toString());
+
         Assert.assertTrue(bool == true);
 
         // clear encrypted student
         encryptedStud = new EncryptedStud();
+          // ensure it is cleared.
+        Assert.assertTrue("encryptedStud failed to clear data", encryptedStud.getDescript().isEmpty());
         // extract data from DB and test for correct answer
         studDescript = new StudentDescriptor();
 
@@ -108,6 +160,7 @@ public class StudentFormTest extends ApplicationTest {
 
         System.out.println(studDescript.getCurrentEmail() + " vs " + currentMail);
 
+        // Ensure the data is as expected
         Assert.assertTrue(studDescript.getPersonDescript().equals(description));
         Assert.assertTrue(studDescript.getAge().equals(age));
         Assert.assertTrue(studDescript.getCVLink().equals(cVLink));
@@ -126,7 +179,7 @@ public class StudentFormTest extends ApplicationTest {
         Assert.assertTrue(studDescript.getPhotoLink().equals(photoLink) );
     }
 
-    // Ensure the data is as expected
+
 
     // DELETE Data from the DB that is not neccessary for the next tests
 
@@ -145,6 +198,23 @@ public class StudentFormTest extends ApplicationTest {
             return DBDelete.PERSON_BY_ID.query(result[0]);
         }
         return false;
+    }
+
+    void createVersionFile(String version, String date) {
+        //Thread.dumpStack();
+
+        //for(int i = 0; i < m.keyFiles.length; i++) {
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("src/main/resources/version.env"))) {
+            //m.keyFiles[i].createNewFile();
+            out.write(version);
+            out.newLine();
+            out.write(date);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //}
     }
 
 

@@ -4,6 +4,7 @@ import fmtree.FMTWalker;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -58,6 +59,7 @@ public final class SearchPane {
         resultPane.setMinWidth(width);
         clearButton = new Button("X");
         searchField = new TextField();
+        searchField.setPrefColumnCount(120);
         finalPane = new VBox();
         finalPane.setPadding(new Insets(2,2,2,2));
         finalPane.setStyle("-fx-background-color: TRANSPARENT");
@@ -96,6 +98,7 @@ public final class SearchPane {
     public HBox getSearchBox(FMTWalker treeWalker, ArrayList<FlashCardMM> flashList)
     {
         HBox searchBox = new HBox();
+        //searchBox.setAlignment(Pos.CENTER);
         //searchField = new TextField();
         clearButton.setMaxSize(20, Double.MAX_VALUE);
         clearButton.setId("clearButton");

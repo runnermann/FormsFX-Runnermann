@@ -19,9 +19,10 @@
     GREY_BUTTON: #B3B3B3; /* 48206E 3F0B70*/
     FLASH_RED: #FC3C3C;
     ROSE_RED: #E32E68;
+    FM_ORANGE: #F2522E;
     FLASH_WHITE: #FFF4E0;
     BUTTON_GREY: #D9D9D9;
-    BUTTON_PURPLE: #48206E; /* 48206E 3F0B70*/
+    /*BUTTON_PURPLE: #48206E; !* 48206E 3F0B70*!*/
     BUTTON_COMPLIMENT: #D9D9D9;
     /*BUTTON_COMPLIMENT: #8248B9;//*/
     FOCUS_BLUE: #0096C9;
@@ -61,18 +62,18 @@
 #signInHyp {
     -fx-font-size: 16px;
     -fx-font-weight: 900;
-    -fx-text-fill: BUTTON_PURPLE;
+    -fx-text-fill: FLASH_WHITE;
     -fx-cursor: hand;
 }
 #signInHyp:hover {
-    -fx-base: BUTTON_PURPLE;
-    -fx-text-fill: #3A0070;
-}
-#signInHyp:pressed {
-    -fx-base: BUTTON_PURPLE;
+    -fx-base: FLASH_WHITE;
     -fx-text-fill: derive(-fx-base,40%);
-    -fx-border-color: transparent;
 }
+/*#signInHyp:pressed {*/
+/*    -fx-base: FLASH_WHITE;*/
+/*    -fx-text-fill: derive(-fx-base,40%);*/
+/*    -fx-border-color: transparent;*/
+/*}*/
 
 
 
@@ -187,6 +188,16 @@
     -fx-font-weight: 900;
     -fx-background-color: derive(-fx-base,40%);
 }
+#orangeButtonSquare  {
+    -fx-background-radius: 0, 0, 0, 0;
+    -fx-background-color: FM_ORANGE;
+    -fx-text-fill: FLASH_WHITE;
+}
+#orangeButtonSquare:hover {
+    -fx-base: FM_ORANGE;
+    -fx-font-weight: 900;
+    -fx-background-color: derive(-fx-base,40%);
+}
 
 #sellButton {
     -fx-border-radius: 3 3 3 3;
@@ -256,16 +267,3 @@
 
 
 
-
-
-
-
-
-
-/*  NO css without "hover"
-#readFlashButton:hover {
-    -fx-base: BUTTON_COMPLIMENT;
-    -fx-font-weight: 900;
-    -fx-background-color: derive(-fx-base,40%);
-}
- */

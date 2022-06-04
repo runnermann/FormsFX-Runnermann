@@ -2,13 +2,16 @@ package authcrypt.user;
 
 import authcrypt.UserData;
 import forms.FormData;
-import java.io.Serializable;
 import java.util.HashMap;
+
+//import static fileops.FileNaming.hashToHex;
 
 /**
  * This data object is encrypted where it needs to be.
+ * Note that Security sensitive classes should not be
+ * serializable. Removed 08-10-2021
  */
-public class EncryptedPerson implements Serializable, FormData {
+public class EncryptedPerson implements FormData {
     
     // The returned ID from a query
     // store for next query
@@ -166,7 +169,6 @@ public class EncryptedPerson implements Serializable, FormData {
         this.photoLink = photoLink;
     }
     
-    
     @Override
     public long getLastDate() {
         return lastDate;
@@ -203,9 +205,10 @@ public class EncryptedPerson implements Serializable, FormData {
      * @param dataAry
      */
     @Override
-    public void setDataMap(HashMap<String, String> dataAry) {
+    public boolean setDataMap(HashMap<String, String> dataAry) {
         //@TODO finish stub
         /* STUB */
+        return false;
     }
 
     /**

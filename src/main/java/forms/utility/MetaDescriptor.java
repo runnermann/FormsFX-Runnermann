@@ -2,15 +2,16 @@ package forms.utility;
 
 import authcrypt.UserData;
 import campaign.db.DBFetchToMapAry;
-import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
-import flashmonkey.ReadFlash;
+import fileops.utility.Utility;
+import flashmonkey.FlashCardOps;
 import forms.Descriptor;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import forms.searchables.CSVUtil;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import metadata.DeckMetaData;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -24,9 +25,11 @@ import java.util.HashMap;
  */
 public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MetaDescriptor.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MetaDescriptor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MetaDescriptor.class);
 	
 	// The deck description
+	private StringProperty price;
 	private StringProperty deckDescript;
 	private StringProperty deckSchool;
 	private StringProperty deckBook;
@@ -38,6 +41,16 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	private StringProperty courseCode;
 	private StringProperty deckPhotURL;
 	private IntegerProperty numCards;
+	// slider switches in deckMetaPane
+	private BooleanProperty shareDeck;
+	private BooleanProperty sellDeck;
+
+	// Institutions - Professors - Course Codes
+	private ObjectProperty<CSVUtil.SchoolObj> selectedTut;
+	private ListProperty<CSVUtil.SchoolObj> allTuts;
+
+
+
 	
 	// Prevent multiple upload and downlaods
 	// iF meta has been set, set to true.
@@ -53,7 +66,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	//
 	// Check if metadata exists in the DB
 	// Check if metaData exists in a local file
-	//  - 1. If not present anywhere
+	//  - 1. If not exists anywhere
 	//      create it from new with blank data
 	//  - 2. If if exists in both locations compare
 	//      each set and use the most recent version.
@@ -65,27 +78,27 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	public MetaDescriptor() {
 		super();
 		LOGGER.debug("Calling MetaDescriptor Constructor");
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 
 /*		TroubleShooting MetaDataForm. It should have data in it. It is either in the form,
 				or it is in the DB. Currently there is no data in the form, but it is in
-				the DB. WEve checked setMostRecent. It is working correctly. That is where we
+				the DB. We've checked setMostRecent. It is working correctly. That is where we
 				have left off. We made a change and commented out an updateData somewhere.
 
-		May be a problem with the sequence of updating and deck invventory method. IE deck invenventory essetially
+		May be a problem with the sequence of updating and deck inventory method. IE deck inventory
 				sets the metadata from the file, updates metadata with the current media and deck inventory, and
 				saves the current to file. This may be the root of the problem. Deleting data after it is uploaded
 				from the DB. and thus clearing the metadata with empty data from the file. ?????
 */
-
-
-
 		this.setMostRecent();
 	}
 
 
 	
 	/* MetaData from Form Entries */
+	// Note price is a string because of issues with
+	// form.
+	public String getPrice() {return price.get(); }
 	public String getDeckDescript() { return deckDescript.get(); }
 	public String getDeckSchool() { return deckSchool.get(); }
 	public String getDeckBook() { return deckBook.get();}
@@ -97,13 +110,33 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	public String getCourseCode() {return courseCode.get();}
 	public String getPhotoURL() {return deckPhotURL.get();}
 	public Integer getNumCards() {return numCards.get();}
+	// slider switches
+	public Boolean getShareDeck() { return shareDeck.get(); }
+	public Boolean getSellDeck()  { return sellDeck.get(); }
+
+	// institute university / college
+	public ListProperty<CSVUtil.SchoolObj> tutsProperty() { return allTuts; }
+	public ObjectProperty<CSVUtil.SchoolObj> selectedTutProperty() { return selectedTut; }
+
+
+	public CSVUtil.SchoolObj getSelectedTut() {
+		return selectedTut.get();
+	}
+	public void setSelectedTut(String school) {
+		this.selectedTut.set(new CSVUtil.SchoolObj(school, "", ""));
+	}
+	public ObservableList<CSVUtil.SchoolObj> getAllTuts() {
+		return allTuts.get();
+	}
+	public void setAllTuts(ObservableList<CSVUtil.SchoolObj> allTuts) {
+		this.allTuts.set(allTuts);
+	}
+
+
 	/* metadata properties */
-	public StringProperty deckDescriptProperty() {
-		return deckDescript;
-	}
-	public StringProperty deckSchoolProperty() {
-		return deckSchool;
-	}
+	public StringProperty priceProperty() { return price; }
+	public StringProperty deckDescriptProperty() { return deckDescript; }
+	public StringProperty deckSchoolProperty() { return new SimpleStringProperty(selectedTut.getValue().getName()); }
 	public StringProperty deckBookProperty() {
 		return deckBook;
 	}
@@ -124,13 +157,18 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	}
 	public StringProperty courseCodeProperty() {return courseCode; }
 	public StringProperty deckPhotoURLProperty() { return deckPhotURL;}
-	
-	
+
+	public BooleanProperty shareDeckProperty() { return shareDeck; }
+	public BooleanProperty sellDeckProperty() { return sellDeck; }
+
+
+
 	
 	@Override
 	public void setProperitesDefault() {
 		
 		LOGGER.debug("setPropertiesDefault()");
+		price = new SimpleStringProperty("0");
 		deckDescript = new SimpleStringProperty("");
 		deckSchool = new SimpleStringProperty("");
 		deckBook = new SimpleStringProperty("");
@@ -142,6 +180,12 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 		courseCode = new SimpleStringProperty("");
 		deckPhotURL = new SimpleStringProperty("");
 		numCards = new SimpleIntegerProperty(0);
+		shareDeck = new SimpleBooleanProperty(false);
+		sellDeck = new SimpleBooleanProperty(false);
+		// Institution selector
+		allTuts = new SimpleListProperty<>(FXCollections.observableArrayList());
+		allTuts.setAll(FlashCardOps.getInstance().getSchoolObjs());
+		selectedTut = new SimpleObjectProperty<>();
 	}
 	
 	/**
@@ -151,7 +195,6 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	 */
 	@Override
 	public void setProperties(final DeckMetaData m) {
-		
 		LOGGER.debug("Called setProperties() \n Printing meta: " + m.toString());
 		
 		deckDescript = new SimpleStringProperty(m.getDescript());
@@ -165,6 +208,13 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 		courseCode = new SimpleStringProperty(m.getCourseCode());
 		deckPhotURL = new SimpleStringProperty(m.getDeckPhotoURL());
 		numCards = new SimpleIntegerProperty(Integer.parseInt(m.getNumCard()));
+		price = new SimpleStringProperty(m.getPrice());
+		shareDeck = new SimpleBooleanProperty(m.isShareDistro());
+		sellDeck = new SimpleBooleanProperty(m.isSellDeck());
+		allTuts = new SimpleListProperty<>(FXCollections.observableArrayList());
+		allTuts.setAll(FlashCardOps.getInstance().getSchoolObjs());
+		selectedTut = new SimpleObjectProperty<>();
+		// selectedTut.setValue(new CSVUtil.SchoolObj(m.getDeckSchool(), "", ""));
 	}
 	
 	
@@ -174,38 +224,31 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	 */
 	@Override
 	public void setMostRecent() {
-		System.out.println("MetaDescriptor.setMostRecent() called");
 		//LOGGER.debug("called setMostRecent()");
 		DeckMetaData meta = DeckMetaData.getInstance();
 		long localDate = getLocalDataDate();
-		
 		// Sets the meta object to the DB if
 		// it exists && the user is connected.
-		if(fileops.Utility.isConnected()) {
+		if(Utility.isConnected()) {
 			setToRemoteData(); // returns a boolean if needed.
 		}
-		
 		long remoteDate = meta.getLastDate() * -1;
 		long num = remoteDate + localDate;
 
-		System.out.println("\tremoteDate: " + remoteDate + " localDate " + localDate);
+		LOGGER.debug("\tremoteDate: " + remoteDate + " localDate " + localDate);
 		// If this files metadata does not exist yet
 		// chose to set from default.
 		if(num + localDate == 0) {
-			System.out.println("\tChose default");
 			setProperitesDefault();
 		}
 		// If the num value is greater, then chose local
 		else if(num > 0 ) {
 			setToLocalData();
-			System.out.println("\tChose local ");
 			setProperties(meta);
-			
 		}
 		// Else the db has the most recent version.
 		else  { // (num < 0)
 			// meta is already set to the DB
-			System.out.println("\tChose remote ");
 			setProperties(meta);
 		}
 		
@@ -221,7 +264,8 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	@Override
 	public long getLocalDataDate() {
 		String folder = DirectoryMgr.getMediaPath('t');
-		String metaFileName = ReadFlash.getInstance().getDeckName() + ".met";
+		String deckStr = FlashCardOps.getInstance().getDeckLabelName();
+		String metaFileName = deckStr + ".met";
 		File check = new File(folder + "/" + metaFileName);
 		
 		if(check.exists()) {
@@ -240,7 +284,8 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	@Override
 	public void setToLocalData() {
 		String folder = DirectoryMgr.getMediaPath('t');
-		String metaFileName = ReadFlash.getInstance().getDeckName() + ".met";
+		String deckStr = FlashCardOps.getInstance().getDeckLabelName();
+		String metaFileName = deckStr + ".met";
 		File check = new File(folder + "/" + metaFileName);
 		// if the file exists and has not been
 		// retrieved from file previously for this object.
@@ -263,27 +308,28 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	 */
 	@Override
 	public boolean setToRemoteData() {
-		UserData user = new UserData();
+	//	UserData user = new UserData();
 		// get meta from DB
 		ArrayList<HashMap<String, String>> response;// = new String[1];
-		String args = "WHERE user_email = '" + Alphabet.encrypt(user.getUserName()) +
-						"' AND deck_name = '" + ReadFlash.getInstance().getDeckName() + "'";
-		//response = Report.getInstance().queryGetDeckMetaData(user.getUserName(), ReadFlash.getInstance().getDeckName());
+		String args = "WHERE user_email = '" + Alphabet.encrypt(UserData.getUserName()) +
+						"' AND deck_name = '" + FlashCardOps.getInstance().getDeckLabelName() + "'";
+
 		response = DBFetchToMapAry.DECK_METADATA_SINGLE.query(args);
 
 		LOGGER.debug("response, num Array Elements: {}", response.size());
 
-		if(response.get(0).size() > 0) {
-			LOGGER.debug("response from DB length is GREATER than 10... processing response.");
+		if(response == null || response.get(0).get("empty").equals("true")) {
+			LOGGER.debug("response from DB is empty... NOT processing response.");
+			return false;
+		} else {
+			LOGGER.debug("response from DB length is not empty... processing response.");
 			// Parse the response, set metaAry,
 			// & set the DeckMetaData object.
 			DeckMetaData meta = DeckMetaData.getInstance();
 			meta.setDataMap(response.get(0));
+
 			meta.set(response.get(0));
 			return true;
-		} else {
-			LOGGER.debug("response from DB length is null... NOT processing response.");
-			return false;
 		}
 	}
 	
@@ -304,6 +350,9 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 		subjSubCat.setValue("");
 		courseCode.setValue("");
 		deckPhotURL.setValue("");
+		price.setValue("0");
+		sellDeck.setValue(false);
+		shareDeck.setValue(false);
 	}
 	
 	
@@ -312,16 +361,9 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 	 * Ensure that the query contains an existing id!
 	 * @param args
 	 */
-	public static void main(String[] args) {
-		//Report rep = Report.getInstance();
-		//String  response = rep.queryGetDeckMetaData("idk@idk.com", "History 2054");
-		
-		//System.out.println(response);
-		
+	/*public static void main(String[] args) {
 		DeckMetaData meta = DeckMetaData.getInstance();
-		
 		DeckMetaData otherMeta = DeckMetaData.getInstance();
-		
 		System.out.println("meta == otherMeta " + (meta == otherMeta));
-	}
+	}*/
 }

@@ -2,18 +2,28 @@ package forms;
 
 
 import com.dlsc.formsfx.view.renderer.FormRenderer;
-import javafx.scene.control.Label;
+import javafx.geometry.Insets;
+import javafx.scene.control.Button;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import metadata.DeckSearchData;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uicontrols.ButtoniKon;
 
 
 public class DeckSearchPane extends FormParentPane {
 	
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckSearchPane.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckSearchPane.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchPane.class);
 	
 	private DeckSearchModel model;
 	private DeckSearchData searchData;
+
+	// Button box contained in southpane
+	GridPane exitBox;
+	private static Button exitButton;
+	protected static Button menuButton;// = MENU.get();
 	
 	public DeckSearchPane() {
 		super(); // FormParent
@@ -29,53 +39,21 @@ public class DeckSearchPane extends FormParentPane {
 	 */
 	@Override
 	public void initializeSelf() {
-		// getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-		// LOGGER.warn("called");
 		model = new DeckSearchModel();
 		searchData = new DeckSearchData();
 		this.initialize(model, searchData);
-		//model.getFormInstance().persistableProperty().getValue();
 	}
 	
 	@Override
 	public void initializeParts() {
-		// LOGGER.warn("called");
 		super.formRenderer = new FormRenderer(model.getFormInstance());
+		super.setSubmitButtonTitle("find");
+		super.setFormPainHeight(674);
+		super.addExitBox(getExitBox());
 	}
 	
 	@Override
 	public void setupValueChangedListeners() {
-		
-		model.getFormInstance().changedProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("The form has " + (newValue ? "" : "not ") + "changed.");
-		/*	String methodname = Thread.currentThread().getStackTrace()[2].getMethodName();
-			String classname = Thread.currentThread().getStackTrace()[2].getClassName();
-			int line = Thread.currentThread().getStackTrace()[2].getLineNumber();
-			System.out.println("Caller is " + classname + "." + methodname + "(...)." +  " at line: " + line);
-			Thread.dumpStack();
-		 */
-			System.out.println(); // clear buffer
-		});
-		model.getFormInstance().validProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("The form is " + (newValue ? "" : "not ") + "valid.");
-		/*	String methodname = Thread.currentThread().getStackTrace()[2].getMethodName();
-			String classname = Thread.currentThread().getStackTrace()[2].getClassName();
-			int line = Thread.currentThread().getStackTrace()[2].getLineNumber();
-			System.out.println("Caller is " + classname + "." + methodname + "(...)." +  " at line: " + line);
-			Thread.dumpStack();
-		*/
-			System.out.println(); // clear buffer
-		});
-		model.getFormInstance().persistableProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("The form is " + (newValue ? "" : "not ") + "persistable.");
-		/*	String methodname = Thread.currentThread().getStackTrace()[2].getMethodName();
-			String classname = Thread.currentThread().getStackTrace()[2].getClassName();
-			int line = Thread.currentThread().getStackTrace()[2].getLineNumber();
-			System.out.println("Caller is " + classname + "." + methodname + "(...)." +  " at line: " + line);
-			Thread.dumpStack();
-		*/
-			System.out.println(); // clear buffer
-		});
 		
 	}
 	
@@ -88,19 +66,35 @@ public class DeckSearchPane extends FormParentPane {
 		String imgPath = "/emojis/blue_tulip.png";
 		super.layoutParts();
 		super.setInfoPane(lbl, msg, imgPath);
-		// LOGGER.warn("called");
-		// LOGGER.info("*** create SearchData form called ***");
-		//displayForm.setPrefSize(800, 600);
 	}
 	
 	
 	@Override
-	public GridPane getFormPane() {
-		// LOGGER.warn("called");
-		this.formPane.setMaxHeight(600);
-		this.formPane.setMaxWidth(400);
-		this.formPane.setStyle("-fx-background-radius: 15 15 15 15; -fx-border-radius: 15 15 15 15; ");
-		return this.formPane;
+	public GridPane getMainGridPain() {
+		this.mainGridPain.setMaxHeight(600);
+		this.mainGridPain.setMaxWidth(400);
+		this.mainGridPain.setStyle("-fx-background-radius: 15 15 15 15; -fx-border-radius: 15 15 15 15; ");
+		return this.mainGridPain;
 	}
+
+	private GridPane getExitBox() {
+		exitButton = ButtoniKon.getExitButton();
+		menuButton = ButtoniKon.getMenuButton();
+		exitBox = new GridPane(); // HBox with spacing provided
+		exitBox.setHgap(2);
+		/* For the lower panel on modeSelectPane window */
+		ColumnConstraints col0 = new ColumnConstraints();
+		col0.setPercentWidth(50);
+		exitBox.getColumnConstraints().add(col0);
+		exitBox.setVgap(2);
+		exitBox.setPadding(new Insets(15, 15, 15, 15));
+		exitBox.addColumn(1, menuButton);
+		exitBox.addColumn(2, exitButton);
+		//exitBox.setId("buttonBox");
+		return exitBox;
+	}
+
+	@Override
+	public void paneAction() { /* do nothing */}
 
 }

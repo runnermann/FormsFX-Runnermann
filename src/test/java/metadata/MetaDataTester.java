@@ -10,9 +10,14 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.jupiter.api.*;
+import org.slf4j.LoggerFactory;
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationTest;
+
+
 import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
@@ -26,22 +31,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Tag("metaDataTester")
 public class MetaDataTester extends ApplicationTest {
 	
 	/* ROBOT RELATED */
 	RobotUtility bobTheBot = new RobotUtility();
 	
 	DeckMetaData metaInstance;// = DeckMetaData.getInstance();
-	private String deckName = "testDeckMetaData";
+	//private String deckNameOnly = "testDeckMetaData";
 	private HashMap<String, String> metaMapOne;
 	private HashMap<String, String> metaMapTwo;
 	
 
-	
 	private long lastDate = System.currentTimeMillis();
 	private String createDate = "10101";
 	private String origAuthor = "The original author";
-	private String deckFileName = "testDeckMetaData";
+	//private String deckFileName = "testDeckMetaData";
 	// This decks metaData
 	//private String[] deckMetaDataAry;
 	private String descript = "This description wrote by robot";
@@ -59,8 +64,13 @@ public class MetaDataTester extends ApplicationTest {
 	private String lang = "A friendly language";
 	private String courseCode = "UTHist12345";
 	private String photoUrl = "url=AmHist2054";
+	private int price = 16;
+	private boolean isShareDistro = true;
+	private boolean isSellDeck = true;
 
-	private String[] keyAry = {"deck_id",
+
+	private String[] keyAry = {
+			"deck_id",
 			"deck_photo",
 			"deck_descript",
 			"creator_email",
@@ -80,7 +90,9 @@ public class MetaDataTester extends ApplicationTest {
 			"deck_numstars",
 			"num_users",
 			"price",
-			"course_id"
+			"course_id",
+			"share_distro",
+			"sell_deck"
 	};
 
 	
@@ -187,7 +199,7 @@ public class MetaDataTester extends ApplicationTest {
 		String path = folder + fileName;
 		
 		metaInstance.updateDataMap();
-		FlashCardOps.getInstance().getFO().setMetaInFile(metaInstance, "testDeckMetaData");
+		FlashCardOps.getInstance().setMetaInFile(metaInstance, path);
 		
 		boolean failed = false;
 		this.metaMapOne = metaInstance.getDataMap();
@@ -234,12 +246,12 @@ public class MetaDataTester extends ApplicationTest {
 	//	this.metaAryOne = meta.getDeckMetaDataAry();
 		
 	//	meta.saveDeckMetaData("testDeckMetaData");
-		FlashCardOps.getInstance().getFO().setMetaInFile(meta, "testDeckMetaData");
+		FlashCardOps.getInstance().setMetaInFile(meta, path);
 		
 		
 		boolean succeded = false;
 	//	DeckMetaData.MetaObj metaObj = meta.getMetaObj();
-		FlashCardOps.getInstance().getFO().setMetaObjFromFile(path);
+		FlashCardOps.getInstance().setMetaObjFromFile(path);
 		
 	//	this.metaAryTwo =
 		
@@ -268,8 +280,9 @@ public class MetaDataTester extends ApplicationTest {
 		
 		String folder = DirectoryMgr.getMediaPath('t');
 		String deckName = "testDeckMetaData";
+
+		FlashCardOps.getInstance().setDeckFileName(deckName);
 		String path = folder + deckName + ".met";
-		ReadFlash.getInstance().setDeckName(deckName);
 		
 		DeckMetaModel model = new DeckMetaModel();
 	//	setTestMetaData(meta);
@@ -328,8 +341,8 @@ public class MetaDataTester extends ApplicationTest {
 		// erase the files data
 		// 4) Save metaData to file
 		String folder = DirectoryMgr.getMediaPath('t');
-		String fileName = ReadFlash.getInstance().getDeckName() + ".met";
-		String path = folder + fileName;
+		String metaFileName = FlashCardOps.getInstance().getMetaFileName();
+		String path = folder + metaFileName;
 		
 		System.out.println("path and deckFileName: " + path);
 		
@@ -422,7 +435,7 @@ public class MetaDataTester extends ApplicationTest {
 		bobTheBot.getBob().clickOn(xy);
 		sleep(4000);
 		
-		System.out.println("deckName: " + ReadFlash.getInstance().getDeckName());
+		System.out.println("deckMetaFileName: " + FlashCardOps.getInstance().getMetaFileName());
 		
 		// click on sell/metaData button
 		xy = CreateFlash.getInstance().getSellButtonXY();
@@ -466,7 +479,7 @@ public class MetaDataTester extends ApplicationTest {
 		meta.updateDataMap();
 		// save metadata to file
 		//meta.saveDeckMetaData(ReadFlash.getInstance().getDeckName());
-		FlashCardOps.getInstance().getFO().setMetaInFile(meta, "testDeckMetaData");
+		FlashCardOps.getInstance().setMetaInFile(meta, "testDeckMetaData");
 		//LOGGER.debug("After meta.saveDeckMetaData() meta array is: {}", meta.toString());
 	}
 	
@@ -475,7 +488,7 @@ public class MetaDataTester extends ApplicationTest {
 		meta1.setLastDate(lastDate);
 		meta1.setCreateDate(createDate);
 		meta1.setCreatorEmail(origAuthor);
-		meta1.setDeckFileName(deckFileName);
+		meta1.setDeckFileName("testDeckMetaData");
 		meta1.setDescript(descript);
 		meta1.setNumImg(numImg);
 		meta1.setNumVideo(numVideo);
@@ -489,23 +502,30 @@ public class MetaDataTester extends ApplicationTest {
 		meta1.setLang(lang);
 		meta1.setCourseCode(courseCode);
 		meta1.setDeckPhotoURL(photoUrl);
+		meta1.setPrice(price);
 	}
 	
-	/**
-	 * <p>Outputs an array of Strings to file</p>
-	 * @param deckMetaData The String[] containing a single deck's
-	 *                metaData. The file stored is named
-	 *                from the DeckName and ends with .met
-	 */
+
 	private ObjectInputStream input;
 	private ObjectOutputStream output;
-	public void setMetaInFile(HashMap<String, String> deckMetaMap, String deckName) {
+	/**
+	 * <p>Outputs an array of Strings to file</p>
+	 * @param deckMetaMap The String[] containing a single deck's
+	 *                metaData. The file stored is named
+	 *                from the DeckName and ends with .met
+	 * @param deckNameOnly ..
+	 */
+	public void setMetaInFile(HashMap<String, String> deckMetaMap, String deckNameOnly) {
 		//LOGGER.debug("setMetaInFile called");
 		File folder = new File(DirectoryMgr.getMediaPath('t'));
-		String metaFileName = deckName + ".met";
+		String metaFileName = deckNameOnly + ".met";
 		//LOGGER.debug("filePath: <{}>", folder + "/" + metaFileName);
 		
 		try {
+
+			System.out.println("MetaDataTester called with ObjectOutputStream()");
+			Thread.dumpStack();
+
 			output = new ObjectOutputStream(new BufferedOutputStream
 					(new FileOutputStream(folder + "/" + metaFileName), 512));
 			
@@ -540,7 +560,7 @@ public class MetaDataTester extends ApplicationTest {
 	public ArrayList<FlashCardMM> getListFromFile()
 	{
 		File folder = new File(DirectoryMgr.getMediaPath('t'));
-		String filePath = folder + "/" + "History 2024.dat";
+		String filePath = folder + "/" + "History 2024.dec";
 		File filePathName = new File(filePath);
 		//LOGGER.info("calling getListFromFile, filePath: " + check.getPath() );
 		//if( agrList.getLinkObj() != null)
@@ -567,7 +587,7 @@ public class MetaDataTester extends ApplicationTest {
 		try {
 			//new Thread(
 			File folder = new File(DirectoryMgr.getMediaPath('t'));
-			String filePath = folder + "/" + "History 2024.dat";
+			String filePath = folder + "/" + "History 2024.dec";
 			FileInputStream fileIn = new FileInputStream(filePath);
 			
 			input = new ObjectInputStream(new BufferedInputStream(fileIn));
@@ -652,15 +672,13 @@ public class MetaDataTester extends ApplicationTest {
 		return null;
 	}
 	
-	//DESCRIPTION: THis method is used to close the output stream. It's
-	// overkill for this program, but makes good use of OOP
+	//DESCRIPTION: THis method is used to close the output stream.
 	private void closeOutStream(ObjectOutputStream closeMe, String message)
 	{
 		try
 		{
 			//System.out.println("closeOutStream() method in FlashCard ");
-			closeMe.close();  // To prevent the compiler from
-			// complaining and runtime errors
+			closeMe.close();
 		}
 		catch(NullPointerException e)
 		{

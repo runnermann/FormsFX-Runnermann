@@ -38,20 +38,18 @@ public class Validator {
 	}
 	
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		// Regex tested to recognize aribic and chineese letters
 		// and to not match
 		String regex = "[0-9!#$%&?@\\p{L}]*";
 		Pattern pattern;
 		String aribic = "كلالكلابتذهبإلىالجن"; // passes
-		//String chineese = "这是一个字吗!123"; // passes
-		//String chineese = "这是一个字吗!123="; // fails
 		
 		pattern = Pattern.compile(regex);
 		boolean result = pattern.matcher(aribic).matches();
 		
 		//System.out.println("Result of String: " + aribic + " with regex: " + regex + " isMatch(): " + result);
-	}
+	}*/
 	
 	private class Word {
 		

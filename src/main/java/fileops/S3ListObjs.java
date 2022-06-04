@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.Alphabet;
 import javafx.geometry.Pos;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
 
@@ -16,6 +17,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +30,7 @@ import java.util.Map;
  * app user based on the userName/originalEmail.</p>
  * <p>    a) Constructs the linkObjs used for selecting a deck
  * in the fileSelectPane.</p>
- * <p> 2) As this is expected to be the first call
+ * <p> 2) This is expected to be the first call
  * to the Vertx Server. It also requests a validation
  * token or AuthN. The AuthN token is used on following
  * calls from the App such as getDeck, and get resources
@@ -39,8 +41,8 @@ import java.util.Map;
  */
 public class S3ListObjs {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(S3ListObjs.class);
-    //private static final Logger LOGGER = LoggerFactory.getLogger(S3ListObjs.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(S3ListObjs.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3ListObjs.class);
     private String token;
     private static volatile ArrayList<CloudLink> cloudLinks;
 
@@ -56,13 +58,14 @@ public class S3ListObjs {
      */
     public int listDecks(String name, String pw) {
 
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("S3Creds constructor called.");
 
         String json = new String("{" +
                 "\"username\":\"" + name + "\"" +
-                ",\"password\":\"" + pw + "\"}");
-        String destination = "/deck-s3-333"; // list
+                ",\"password\":\"" + pw + "\"" +
+                ",\"s3hash\":\"" +  FileNaming.hashToHex(name) + "\"}");
+        String destination = "/deck-s3-333"; // list decks
         return listObjsHelper(json, destination);
     }
 
@@ -73,7 +76,7 @@ public class S3ListObjs {
      * @return
      */
     public int listDecks(String token) {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("S3Creds constructor called for token.");
         String json = new String("{\"token\":\"" + token + "\"}");
         String destination = "/decks-s3-747"; // token
@@ -81,11 +84,11 @@ public class S3ListObjs {
     }
 
 
-    public ArrayList<CloudLink> listMedia(String token, String deckName) {
+    public ArrayList<CloudLink> listMedia(String token, String deckFileName) {
         LOGGER.debug("listMedia called");
         String json = new String("{" +
                 "\"token\":\"" + token + "\"" +
-                ",\"deckname\":\"" + deckName + "\"}");
+                ",\"deckname\":\"" + deckFileName + "\"}");
         String destination = "/media-s3-list";
         listObjsHelper(json, destination);
 
@@ -105,21 +108,23 @@ public class S3ListObjs {
         LOGGER.debug("destination; {}", destination);
         LOGGER.debug("link plus destination: {}", Connect.LINK.getLink() + destination);
 
-        final HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
 
-        // vertx expects router.post("/resource-s3-list")
-        // we post when using passwords:
-        final HttpRequest req = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create(Connect.LINK.getLink() + destination))
-                //@TODO set S3Creds to HTTPS
-                //.uri(URI.create("https://localhost:8080/resource-s3-list"))
-                .header("Content-Type", "application/json")
-                .build();
+
         try {
+            final HttpClient client = HttpClient.newBuilder()
+                    .version(HttpClient.Version.HTTP_2)
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+            // vertx expects router.post("/resource-s3-list")
+            // we post when using passwords:
+            final HttpRequest req = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .uri(URI.create(Connect.LINK.getLink() + destination))
+                    .timeout(Duration.ofSeconds(4))
+                    //@TODO set S3Creds to HTTPS
+                    .header("Content-Type", "application/json")
+                    .build();
+
             final HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
             LOGGER.debug("response code {}", response.statusCode());
 
@@ -127,10 +132,10 @@ public class S3ListObjs {
                 ArrayList<String> elements = parseResponse(response);
                 // sets the token and removes it
                 // from the array.
-                if(! isFailed(elements)) {
-                    elements = setToken(elements);
-                    setCloudLinks(elements);
-                    return 1;
+                if(! isFailed(elements)) {   // Succeeding to here, all is returned
+                    ArrayList<String> str = setToken(elements);
+                    setCloudLinks(str);
+                    return 1; // CLoudlink are set
                 }
                 // there was either a log in error == 0
                 // or user did not exist == 0
@@ -140,7 +145,6 @@ public class S3ListObjs {
         } catch (ConnectException e) {
             // failed, send user a notification
             LOGGER.warn("ConnectException: <{}> is unable to connect: Server not found", Alphabet.encrypt(UserData.getUserName()));
-            return -1;
         } catch (JsonProcessingException e) {
             LOGGER.warn("ERROR: while parsing JSON to java message: {}", e.getMessage());
             e.printStackTrace();
@@ -151,7 +155,7 @@ public class S3ListObjs {
             LOGGER.debug(e.getMessage());
             e.printStackTrace();
         }
-        return 0;
+        return -1;
     }
 
     private boolean isFailed(ArrayList<String> elements) {
@@ -166,7 +170,7 @@ public class S3ListObjs {
         // remove start and end "[" "]"
         String res = response.body().substring(2, size - 2);
         String[] parts = res.split("},\\{");
-        ArrayList<String> elements = new ArrayList<>(parts.length);
+        final ArrayList<String> elements = new ArrayList<>(parts.length);
 
         LOGGER.debug("from split num parts: {}", parts.length);
         for(String s : parts) {
@@ -178,37 +182,40 @@ public class S3ListObjs {
 
     private ArrayList<String> setToken(ArrayList<String> elements) throws JsonProcessingException {
         // Get the token and remove it from the array.
-        Map<String, Object> n = new ObjectMapper().readValue(elements.remove(elements.size() - 1), Map.class);
-        LOGGER.debug("returned token:: {}",  n.get("token"));
-        this.token = ((String) n.get("token"));
+        //if(elements.size() > 1) {\
+        Map<String, Object> n = new ObjectMapper().readValue(elements.get(elements.size() - 1), Map.class);
+        if(((String) n.get("token")) != null) {
+            LOGGER.debug("returned token: {}", n.get("token"));
+            this.token = ((String) n.get("token"));
+            elements.remove(elements.size() - 1);
+        }
         return elements;
     }
 
     // Used to parse decks
-    //Traced problem to here. How many elements are processed here???
-    private void setCloudLinks(ArrayList<String> elements) throws JsonProcessingException {
+    private void setCloudLinks(final ArrayList<String> elements) throws JsonProcessingException {
         cloudLinks = new ArrayList<>();
         // DO NOT DELETE!!!!!!
-        Map<String, Object> m = new HashMap<>();
+        Map<String, Object> m;// = new HashMap<>();
         // Build the cloudlinks from the remaining JsonArray.
         for (String s : elements) {
             m = new ObjectMapper().readValue(s, Map.class);
-            // prevent a delay to the cloud from setting it as a
-            // younger element.
+            // When objects are sent to the cloud, the date/time it is given
+            // will make it younger than local files. Prevent a communications d
+            // elay to the cloud from setting it as a younger element.
             long date = (Long) m.get("date") - 10000;
             cloudLinks.add(new CloudLink((String) m.get("name"), date, (Integer) m.get("size")));
             //LOGGER.debug("part from Vertx: {}", s);
         }
 
-        System.out.println("adding elements to cloudlinks num = " + cloudLinks.size());
+        LOGGER.debug("adding elements to cloudlinks num = " + cloudLinks.size());
     }
 
     protected String getToken() {
         return this.token;
     }
 
-    protected ArrayList<CloudLink> getCloudLinks() {
+    protected ArrayList<CloudLink> getCloudLinksObj() {
         return cloudLinks;
     }
-
 }

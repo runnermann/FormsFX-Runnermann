@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -51,7 +50,7 @@ public class CreateCards extends ApplicationTest {
     SleepRobotImpl sleep = new SleepRobotImpl();
     DirectoryMgr directory = new DirectoryMgr();
 
-    String strPath = "../flashMonkeyFile/TestingDeck.dat";
+    String strPath = "../flashMonkeyFile/TestingDeck.dec";
     Path filePath = Paths.get(strPath);
     // for the background stage
     private Toolkit tk = Toolkit.getDefaultToolkit();
@@ -182,20 +181,21 @@ public class CreateCards extends ApplicationTest {
     }
 
 
-    /**
-     * Creates the number of cards specified in the parameter/argument. Takes seperate snapshots
-     * of Text Area and Image area, and stores them to the array.
-     * Order is 0-qText, 1-qImage, 2-aText, 3-aImg
-     * @param numCards The number of cards, recommend keeping it small but must be at least 4
-     * @param shapesDblAry
-     * @return Returns the array containing the snapshots of text and images.
-     */
+
     int i = 0;
     Point2D xy;
     String qFileStr;
     String ansFileStr;
     File qFile;
     File aFile;
+    /**
+     * Creates the number of cards specified in the parameter/argument. Takes seperate snapshots
+     * of Text Area and Image area, and stores them to the array.
+     * Order is 0-qText, 1-qImage, 2-aText, 3-aImg
+     * @param numCards The number of cards, recommend keeping it small but must be at least 4
+     * @param shapesDblAry ..
+     * @return Returns the array containing the snapshots of text and images.
+     */
     Image[][] createNewCardsAndShapesHelper(int numCards, Shape[][] shapesDblAry, Shape[][] revShapesDblAry) {
 
         //int x = delta_X + 45;
@@ -251,8 +251,8 @@ public class CreateCards extends ApplicationTest {
 
             // take a node snapshot of the questionTextArea
             Platform.runLater(() -> {
-
-                    images[i][0] = CreateFlash.getInstance().getEditorU().tCell.getTextArea().snapshot(snapParams, null);
+                // @TODO EditTextIsSavedTest textImages line 254
+//                    images[i][0] = CreateFlash.getInstance().getEditorU().textEditor.getTextArea().snapshot(snapParams, null);
                     try {
                         System.out.println("\n\n\n ********* saved the " + qFile.getName() + " image for " + i + " ********** \n\n\n");
                         ImageIO.write(SwingFXUtils.fromFXImage(images[i][0], null), "png", qFile);
@@ -283,7 +283,8 @@ public class CreateCards extends ApplicationTest {
             Platform.runLater(() -> {
                     // take a snapshot of the questionTextArea
                     //CreateFlashPane.getInstance().getEditorL().tCell.getTextArea().setCursor(Cursor.NONE);
-                    images[i][2] = CreateFlash.getInstance().getEditorL().tCell.getTextArea().snapshot(snapParams, null);
+                // @TODO EditTextIsSavedTest textImages line 286
+//                    images[i][2] = CreateFlash.getInstance().getEditorL().textEditor.getTextArea().snapshot(snapParams, null);
 
                     try {
                         ImageIO.write(SwingFXUtils.fromFXImage(images[i][2], null), "png", aFile);

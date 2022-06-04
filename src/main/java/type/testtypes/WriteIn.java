@@ -26,7 +26,7 @@ public class WriteIn implements GenericTestType<WriteIn>
 
 
     @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
         // Instantiate vBox and "set spacing" !important!!!
         VBox vBox = new VBox(2);
@@ -38,6 +38,7 @@ public class WriteIn implements GenericTestType<WriteIn>
     /**
      * Sets BitSet 8 (= 256) (Write in) to true
      * All other bits set to 0
+     * Not compatible ith Multi-Choice
      * @return bitSet
      */
     @Override

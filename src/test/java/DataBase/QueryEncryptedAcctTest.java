@@ -58,7 +58,7 @@ public class QueryEncryptedAcctTest extends ApplicationTest {
 		//System.out.println(bool + " = acct.verify(paydate, period, status = " + paydate + " " + period + " " + status);
 		//assertTrue(bool == false, "verify did not fail when more than 31 days past paydate");
 
-		// *** NOTE THAT WE INCLUDE THE OBJECT OF THE TESTED CLASS THAT THE METHOD BELONGS TO. *** //
+		// *** NOTE THAT the first object is THE OBJECT OF THE TESTED CLASS THAT THE METHOD BELONGS TO. *** //
 		bool = (boolean) method.invoke(acct, paydate, period, status);
 		//bool = e.verify(paydate, period, status);
 		assertTrue(bool, "verify did not pass when less than 31 days from paydate");
@@ -70,7 +70,7 @@ public class QueryEncryptedAcctTest extends ApplicationTest {
 
 
 	/**
-	 * To completely test validate, the verify method now date must be changed from time.now
+	 * To completely test validatorActionSwitch, the verify method now date must be changed from time.now
 	 * to a date in the future. Not all features can be tested with accurcay due to the date.
 	 * For further testing, also check main method in EncryptedAcct.
 	 * @return

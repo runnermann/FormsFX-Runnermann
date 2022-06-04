@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.sectiontype;
 
 /**
@@ -36,7 +55,6 @@ public class GenericSection
      * Creates a section, either single or double, with cells
      * populated with data. If rtType == 'N' then it is a single
      * cell section.
-
      * @param txt      The text in a textArea
      * @param cType    The type of cell. if mmType == 't' then the single section is text only,
      *                  any other type that is in a single section is represented by the lower case
@@ -45,7 +63,6 @@ public class GenericSection
      *
      * @return  Returns E as a VBox.
      */
-
     public HBox sectionFactory(String txt, char cType, int numHSections, boolean isEqual, double otherHt, String ... path)
     {
         switch(cType)

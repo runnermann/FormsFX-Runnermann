@@ -2,6 +2,7 @@ package metadata;
 
 import flashmonkey.FlashMonkeyMain;
 import forms.FormData;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
@@ -9,7 +10,8 @@ import java.util.HashMap;
 
 public class DeckSearchData implements Serializable, FormData {
 	
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckSearchData.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckSearchData.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchData.class);
 	/* VERSION */
 	public static final long VERSION = FlashMonkeyMain.VERSION;
 	
@@ -34,8 +36,8 @@ public class DeckSearchData implements Serializable, FormData {
 	}
 	
 	@Override
-	public void setDataMap(HashMap<String, String> dataAry) {
-	
+	public boolean setDataMap(HashMap<String, String> dataAry) {
+		return false;
 	}
 	
 	@Override

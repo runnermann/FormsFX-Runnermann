@@ -21,9 +21,7 @@ public class DoubleVertCard extends GenericCard
     //@Override
     public HBox retrieveCard(String qTxt, char upperType, String aTxt, char lowerType, String[] qFiles, String[] aFiles)
     {
-        //System.out.println(" ~+~+~ in DoubleVertCard, retrieveCard()~+~+~");
         GenericSection gs = GenericSection.getInstance();
-
 
         qBox = gs.sectionFactory(qTxt, upperType, 1, true, 0, qFiles);
         ansBox = gs.sectionFactory(aTxt, lowerType, 1, true, 0, aFiles);

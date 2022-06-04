@@ -60,9 +60,9 @@ import java.util.Stack;
  *              •	Pop last token, set it to left integer
  *              •	Get next token, (maybe place it on the stack), remove it from the original string/structure
  *              •	Evaluate and place on the stack
- *          	Rigth brackets, paran, brace: “ ) “ or “ ] “ or “ } “
+ *          	Rigth brackets, paran, brace: " ) " or " ] " or " } "
  *              •	Create new thread, hold any processing if this ref is needed
- *              •	Execute operators from the top of the stack until the next left bracket, paran, brace “ ( “ or “ [ “ or “ { “
+ *              •	Execute operators from the top of the stack until the next left bracket, paran, brace " ( " or " [ " or " { "
  *          	Pipe “ | “ Absolute Value
  *              •	If parser encounters a pipe for Absolute Value it checks the absValueBool.
  *                  o	If it is true it evaluates the operators and values until it reaches the first AbsValue pipe.
@@ -74,13 +74,13 @@ import java.util.Stack;
  *          o	Low = 1
  *              	Add and subtract + -
  *          o	Wild Stop
- *              	Left paran, bracket, brace “ ( “ or “ [ “ or “ { “
+ *              	Left paran, bracket, brace " ( " or " [ " or " { "
  *                  •	As stated above, Acts as a stop for previous right brackets
  *                  •	When evaluated
  *                      o	If preceeded by an integer, it is multiplied
  *                      o	If preceeded by an operator, it defaults to the operator
- *                      o	If preceeded by a “-“ it is multiplied by negative 1
- *              	1st Pipe / Absolute value left “ | ”
+ *                      o	If preceeded by a "-" it is multiplied by negative 1
+ *              	1st Pipe / Absolute value left \" | \"
  *                  *   As stated above, acts as a stop for previous right pipe
  *
  **********************************************************************************************************************/
@@ -124,16 +124,30 @@ public class DijkstraParser implements OperatorInterface{
 
     /** GETTERS **/
 
+    /**
+     * @return The queue
+     */
     public static ArrayQueue getOutQueue() {
         return outQueue;
     }
 
+    /**
+     * @return The stack
+     */
     public static Stack<ExpNode> getOpStack() {
         return opStack;
     }
 
+    /**
+     *
+     * @return returns the result
+     */
     public double getResult() { return this.result; }
 
+    /**
+     *
+     * @return returns the list
+     */
     public static ArrayList getWriterList() {
         return subExpList;
     }
@@ -171,7 +185,7 @@ public class DijkstraParser implements OperatorInterface{
 
     /**
      * Executes an endfix expression given in a queue
-     * @param outQ
+     * @param outQ ..
      * @return returns the solution
      */
     public double execute(ArrayQueue outQ) {
@@ -232,8 +246,8 @@ public class DijkstraParser implements OperatorInterface{
 
         } else {
 
-            System.err.println("\nERROR: DijkstraParser resultStack has more than one" +
-                    "\n answer left in the stack \n");
+            //System.err.println("\nERROR: DijkstraParser resultStack has more than one" +
+            //        "\n answer left in the stack \n");
             return 99999999;
         }
     }
@@ -243,7 +257,7 @@ public class DijkstraParser implements OperatorInterface{
      * of String elements containing each element of the
      * expression.
      * @param expression The string expresion
-     * @return
+     * @return true if succeeded
      * @throws Exception if operator input is invalid.
      */
     public boolean parseStrExpression(String expression) throws Exception {
@@ -280,7 +294,7 @@ public class DijkstraParser implements OperatorInterface{
 
             } else { // it's an operator
 
-                /**
+                /*
                  * Add the binomial operator and its values (in an unexecuted state)
                  * as strings into the ExpNode expOrigin
                  */
@@ -290,12 +304,12 @@ public class DijkstraParser implements OperatorInterface{
 
                 if(operator.getPriority() == 8) { // DEFAULT OPERATOR
 
-                    System.err.println("parseStrExp is return false !!!");
+                   // System.err.println("parseStrExp is return false !!!");
                     return false;
                 }
                 if(i < 0 ) {
-                    System.err.println("ERROR: There are not enough numbers for the " + operator.getSymbol() +
-                            " operation. \nCheck the format of the expression.");
+                    //System.err.println("ERROR: There are not enough numbers for the " + operator.getSymbol() +
+                    //        " operation. \nCheck the format of the expression.");
                     if (operator.getPriority() != 0) {
                         throw new EmptyStackException();
                     }
@@ -333,7 +347,8 @@ public class DijkstraParser implements OperatorInterface{
 
     /**
      * Parses an arrayList of numbers and operators into RPN order.
-     * @param subExpressList
+     * @param subExpressList ...
+     * @throws Exception ..
      */
     public void parseIntoRPN(ArrayList subExpressList) throws Exception {
 
@@ -343,7 +358,7 @@ public class DijkstraParser implements OperatorInterface{
         outQueue.clear();
         opStack.clear();
 
-        /**
+        /*
          * Set prevObject to + to prevent MULTIPLY from being added to the opStack
          * at the start
          **/
@@ -382,7 +397,7 @@ public class DijkstraParser implements OperatorInterface{
         //outQueue.print();
     }
 
-    /**
+    /*
      * Flag is set when a pipe (absolute value symbol) is opened and indicates
      * that the next pipe is the closing pipe.
      * Explanation. Open and closing pipes are identical. A true flag indicates
@@ -394,8 +409,9 @@ public class DijkstraParser implements OperatorInterface{
     /**
      * Returns the Operator object based on the string provided in
      * the parameter.
-     * @param stOperator
-     * @return
+     * @param stOperator ..
+     * @return ..
+     * @throws Exception ..
      */
     public static OperatorInterface getOperator(String stOperator) throws Exception {
 
@@ -403,6 +419,7 @@ public class DijkstraParser implements OperatorInterface{
         invalidInput = false;
 
         switch (stOperator) {
+            case "–": // cut and paste from ms word.
             case "-":    {
                 return Operator.SUBTRACT; // priority 1
             }
@@ -460,6 +477,9 @@ public class DijkstraParser implements OperatorInterface{
             case "log":  {
                 return Operator.LOG; // priority 3???
             }
+            case "abs": {
+                return Operator.ABS;
+            }
 
             /** --------------- Open enclosures --------------- **/
 
@@ -482,11 +502,14 @@ public class DijkstraParser implements OperatorInterface{
                 return Open_Enclosure.OPEN_PARAN_NEG; // priority 0
             }
             case "-|": {
-                // Need to set pipeOpen for the closing pipe.
+                // -1 * abs value
+                // Set pipeOpen for the closing pipe.
                 // "-|" is always an "open_pipe_negitive"
                 pipeOpen = true;
                 return Open_Enclosure.OPEN_PIPE_NEG; // priority 0
             }
+            // NOTE that '|' for an open pipe is handled in close enclosures.
+
 
             /** --------------- close enclosures --------------- **/
 
@@ -512,21 +535,20 @@ public class DijkstraParser implements OperatorInterface{
             }
             default: {
                 // Default is filtered out in DijkstraParser parseStrExpression()
-                System.err.println("\n *~*~* in DijkstraParser.getOperator default. Setting invalidInput to true\n\n");
-                // @todo problem with string entries being recieved in parse instead of doubles... needs to be handled
+                //System.err.println("\n *~*~* in DijkstraParser.getOperator default. Setting invalidInput to true\n\n");
+                // @todo problem with string entries being received in parse instead of doubles... needs to be handled
 
                 invalidInput = true;
                 message = "ERROR: Input not recognized. "
                 + "\nPlease replace \"" + stOperator + "\" with valid input.";
                 throw new Exception("ERROR: Operator Not recognized " + stOperator);
-                //return Operator.DEFAULT;
             }
         }
     }
 
     /**
      * Returns an invalid input message set by getOperator()
-     * @return
+     * @return error message
      */
     public String getErrorMessage() {
         return message;
@@ -534,7 +556,7 @@ public class DijkstraParser implements OperatorInterface{
 
     /**
      * Returns the invalidInput flag
-     * @return
+     * @return if invalid, true
      */
     public static boolean isInvalidInput() {
         return invalidInput;
@@ -566,34 +588,57 @@ public class DijkstraParser implements OperatorInterface{
     /**                                                 not used                                                     **/
     /** ************************************************************************************************************ **/
 
+    /**
+     * For OperatorInterface... Method not used
+     * @return string
+     */
     @Override
     // For OperatorInterface... Method not used
     public String getSymbol() {
-        System.err.println("ERROR: Dijkstra Parser wrong getSymbol()");
+        //System.err.println("ERROR: Dijkstra Parser wrong getSymbol()");
         return "not the getSymbol you wanted";
     }
+    /**
+     * For OperatorInterface... Method not used
+     * @return int
+     */
     @Override
     // For OperatorInterface... Method not used
     public int getPriority()  {
-        System.err.println("ERROR: Dijkstra Parser, wrong getPriority()");
+        //System.err.println("ERROR: Dijkstra Parser, wrong getPriority()");
         return 999;
     }
+    /**
+     * For OperatorInterface... Method not used
+     * @return double
+     */
     @Override
     // For OperatorInterface... Method not used
     public double execute(ExpNode exp, double x, double value){
         // do nothing
         return .77;
     }
+    /**
+     * For OperatorInterface... Method not used
+     */
     @Override
     // For OperatorInterface... Method not used
     public void stackAction(Object previous, ExpNode op, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
         // do nothing
     }
+    /**
+     * For OperatorInterface... Method not used
+     * @return string
+     */
     @Override
     public String getStrExpr(String x, String y, OperatorInterface op) {
         return x + " " + op.getSymbol() + " " + y;
     }
 
+    /**
+     * For OperatorInterface... Method not used
+     * @return boolean
+     */
     @Override
     public boolean isUnaryOp() {
         return false;

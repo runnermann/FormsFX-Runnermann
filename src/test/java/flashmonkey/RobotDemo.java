@@ -68,7 +68,7 @@ public class RobotDemo extends ApplicationTest {
     FxRobot robot = new FxRobot();
     SleepRobotImpl sleep = new SleepRobotImpl();
     DirectoryMgr directory = new DirectoryMgr();
-    String strPath = "../flashMonkeyFile/TestingDeck.dat";
+    String strPath = "../flashMonkeyFile/TestingDeck.dec";
     // image paths
     String imgPath = "src/resources/testing/TestImage.png";
     String otherPath = "src/resources/testing/beniofWifeAndFriend.png";
@@ -265,7 +265,7 @@ public class RobotDemo extends ApplicationTest {
     //@BeforeAll
     public void setup() throws Exception {
 
-        String strPath = "../flashMonkeyFile/TestingDeck.dat";
+        String strPath = "../flashMonkeyFile/TestingDeck.dec";
         //File file = new File(strPath);
         Path filePath = Paths.get(strPath);
 

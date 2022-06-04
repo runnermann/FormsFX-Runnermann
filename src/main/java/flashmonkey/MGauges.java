@@ -22,6 +22,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import uicontrols.UIColors;
 //import javafx.scene.shape.Rectangle;
 //import javafx.stage.Stage;
 
@@ -68,17 +69,16 @@ public class MGauges
     public GridPane makeGauge(String name, double initialV, double high, double low) 
     {  
         
-        pane.setPadding(new Insets(5));  
-        //pane.setHgap(10);  
-        //pane.setVgap(15);     
+        pane.setPadding(new Insets(5));
         pane.setBackground(new Background(new BackgroundFill(Color.rgb(255,255,255),
                 CornerRadii.EMPTY, Insets.EMPTY)));          
         pane.setPrefSize(width, height);
+        pane.setAlignment(Pos.CENTER);
         gauge.setValue(initialV);
         gauge.setMaxValue(high);
         gauge.setMinValue(low);
-        gauge.setAnimated(true);
-        progrIndBox = getTopicBox(name, Color.rgb(186,104,200), gauge);
+        //gauge.setAnimated(true);
+        progrIndBox = getTopicBox(name, Color.web(UIColors.ICON_ELEC_BLUE), gauge);
         pane.add(progrIndBox, 1, 4);
         return pane;
     }
@@ -116,15 +116,15 @@ public class MGauges
      */
     private VBox getTopicBox(final String TEXT, final Color COLOR, final Gauge GAUGE) {  
 
-        GAUGE.setBarColor(COLOR);  
-        GAUGE.setBarBackgroundColor(Color.rgb(39,44,50));  
+        GAUGE.setBarColor(COLOR);
         GAUGE.setAnimated(true); 
         GAUGE.setMajorTickMarksVisible(false);
         GAUGE.setPrefSize(width, height);
         GAUGE.setTitle(TEXT);
         GAUGE.setUnit("");
         VBox vBox = new VBox(GAUGE);
-        vBox.setSpacing(3);  
+        vBox.setMinSize(width, height);
+        vBox.setStyle("-fx-background-color: white");
         vBox.setAlignment(Pos.CENTER);  
         return vBox;  
      }       

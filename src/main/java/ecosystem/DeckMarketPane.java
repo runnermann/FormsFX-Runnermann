@@ -2,7 +2,6 @@ package ecosystem;
 
 import authcrypt.UserData;
 import authcrypt.user.EncryptedAcct;
-import ch.qos.logback.classic.Level;
 
 import fileops.CloudOps;
 import flashmonkey.FlashMonkeyMain;
@@ -17,6 +16,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
@@ -26,15 +26,15 @@ import java.util.HashMap;
 
 public class DeckMarketPane {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckMarketPane.class);
-    //private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchModel.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckMarketPane.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeckMarketPane.class);
 
     /* VERSION */
     public static final long VERSION = FlashMonkeyMain.VERSION;
     /* SINGLETON */
     private static DeckMarketPane CLASS_INSTANCE = null;
 
-    private GridPane gp;
+    private GridPane mainGP;
     // arraylist of DeckMetaData from query
     private static ArrayList<HashMap<String, String>> mapArray;
     // private String[] acctStatus; / in EncrypytedAcct
@@ -46,7 +46,7 @@ public class DeckMarketPane {
     private CenterPane centerPane;
     private GridPane topBar;
     private VBox lowerBar;
-    private CloudOps clops = new CloudOps();
+    //private CloudOps clops = new CloudOps();
     private static ArrayList<Image> imageAry;
 
     // cartItems decks
@@ -55,7 +55,7 @@ public class DeckMarketPane {
     private static VBox cartPane;
     // buttons
     private Button purchaseButton;
-    private static double total;
+    private static long total;
 
     public void onClose() {
         LOGGER.debug("DeckMarketPane called onClose");
@@ -73,11 +73,11 @@ public class DeckMarketPane {
     // that only one singleton will exist. Always check.
     public static synchronized DeckMarketPane getInstance() {
         if(CLASS_INSTANCE == null) {
-            System.out.println("DeckMarketPane CLASS_INSTANCE is null");
             synchronized (DeckMarketPane.class) {
                 if (CLASS_INSTANCE == null) {
                     CLASS_INSTANCE = new DeckMarketPane();
                 }
+                //this.reset();
             }
         }
         return CLASS_INSTANCE;
@@ -87,15 +87,15 @@ public class DeckMarketPane {
     // ******* Singleton private constructor ********* //
 
     private DeckMarketPane() {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("DeckMarketPane constructor called");
         //System.out.println("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
 
-        gp = new GridPane();
+        mainGP = new GridPane();
         cartPane = new VBox();
         cartPane.setId("cartPane");
         // gp.setStyle("-fx-background-color: #32CD32");
-    //    gp.setGridLinesVisible(true);
+        // gp.setGridLinesVisible(true);
 
         // Data is set by formAction in DeckSearchModel
         mapArray = new ArrayList<>();
@@ -104,10 +104,6 @@ public class DeckMarketPane {
         cartList = new ArrayList<>();
         // the users account information
         acct = new EncryptedAcct();
-        //cartText = new Text("Cart: " + cartList.size() + " decks $" + total);
-
-        //teaserScroll.setStyle("-fx-background-color: #FF5400");
-        //topBar = new GridPane();
         lowerBar = new VBox();
 
         purchaseButton = ButtoniKon.getPurchasButton();
@@ -116,6 +112,11 @@ public class DeckMarketPane {
         });
         setLowerBar();
         //lowerBar.getChildren().add(purchaseButton);
+    }
+
+
+    private void reset() {
+
     }
 
 
@@ -141,17 +142,17 @@ public class DeckMarketPane {
         // @TODO get and put thumbs in public s3
     //    imageAry = clops.getMediaFmS3(strAry);
         imageAry = new ArrayList<>(1);
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 12; i++) {
             imageAry.add(new Image(getClass().getResourceAsStream("/image/professorLg.png")));
         }
         setTeaserPanes();
         int width = SceneCntl.getFileSelectPaneWd();
+        teaserScroll.setId("teaser");
+
+        teaserScroll.setStyle("-fx-background-color: TRANSPARENT");
         teaserScroll.setContent(teaserVBox);
         teaserScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-//        teaserScroll.setPrefWidth(width);
-//        teaserScroll.setMaxHeight(446);
-//        teaserScroll.setId("fileSelectOuter");
         // sets data in Encrypted account and
         // verifies that the user exists.
         //userExists = acct.exists();
@@ -160,8 +161,8 @@ public class DeckMarketPane {
             // @TODO redirect user to create account on login page ?? or setup account in DB at create new user ???
         }
         centerPane = new CenterPane(0, this);
-        gp = setColumns(gp);
-        gp = setRowLayout(gp);
+        mainGP = setColumns(mainGP);
+        mainGP = setRowLayout(mainGP);
         layoutParts();
     }
 
@@ -170,7 +171,8 @@ public class DeckMarketPane {
         LOGGER.debug("setTeaserPanes() called");
 
         teaserVBox = new VBox(4);
-        teaserVBox.setPadding(new Insets(10, 0, 10, 4));
+        teaserVBox.setStyle("-fx-background-color: TRANSPARENT");
+        teaserVBox.setPadding(new Insets(10, 4, 10, 4));
         HashMap<String, String> map;// : mapArray
         TeaserPane tPane = new TeaserPane();
 
@@ -181,13 +183,11 @@ public class DeckMarketPane {
 
             HBox h = tPane.build(map, i);
 
-            System.out.println("setTeaserPanes idx: " + idx);
             h.setOnMouseClicked(e -> {
-                System.out.println("teaserPane clicked. idx: " + idx);
                 centerPane.getPane().getChildren().clear();
                 centerPane = new CenterPane(idx, this);
-                gp.getChildren().remove(gp.getChildren().size() - 1);
-                gp.add(centerPane.getPane(), 1, 1, 1, 1); // blue
+                mainGP.getChildren().remove(mainGP.getChildren().size() - 1);
+                mainGP.add(centerPane.getPane(), 1, 1, 1, 1); // blue
             });
 
             teaserPaneList.add(h);
@@ -203,7 +203,7 @@ public class DeckMarketPane {
         return imgNames;
     }
 
-    void setTopBar(String institute, String prof, String course, int cartsize, double total) {
+    void setTopBar(String institute, String prof, String course, int cartsize, long total) {
         if(topBar == null) {
             topBar = new GridPane();
             topBar.setId("topBar");
@@ -216,16 +216,14 @@ public class DeckMarketPane {
 
         Label university = new Label(institute);
         university.setId("white14");
+        university.setStyle("-fx-text-fill: white");
         Label courseLabel = new Label("Professor: " + prof + ",  Course: " + course);
+        courseLabel.setStyle("-fx-text-fill: white");
         courseLabel.setId("white14");
-        VBox profBox = new VBox(2);
-        //profBox.getChildren().clear();
+        VBox profBox = new VBox();
         profBox.getChildren().addAll(university, courseLabel);
         profBox.setAlignment(Pos.CENTER_LEFT);
-        // clear any previous nodes
-        //topBar.getChildren().clear();
         topBar.add(profBox, 1,0);
-        //cartText = new Text("Cart: " + cartList.size() + " decks $" + total);
         Label cartLbl = new Label("Cart: " + cartsize + " decks $" + total);
 
         VBox cartBox = new VBox();
@@ -235,7 +233,6 @@ public class DeckMarketPane {
         cartBox.setAlignment(Pos.CENTER_RIGHT);
 
         topBar.add(cartBox, 2, 0);
-
     }
 
     private GridPane setTopColumns(GridPane gp) {
@@ -303,15 +300,15 @@ public class DeckMarketPane {
 
         LOGGER.debug("layoutParts() called");
         // column, row, col-span, row-span
-        gp.add(topBar, 0,0,3,1); // light purple
-        gp.add(teaserScroll, 2, 1, 1, 1); // orange
-        gp.add(lowerBar, 0, 2, 3, 1); // btn purple
-        gp.add(centerPane.getPane(), 1, 1, 1, 1); // blue
+        mainGP.add(teaserScroll, 2, 1, 1, 1); // orange
+        mainGP.add(topBar, 0,0,3,1); // transparent
+        mainGP.add(lowerBar, 0, 2, 3, 1); // btn purple
+        mainGP.add(centerPane.getPane(), 1, 1, 1, 1); // blue
 
-        gp.setMinHeight(SceneCntl.getConsumerPaneHt());
-        gp.setMinWidth(SceneCntl.getConsumerPaneWd());
-        gp.minHeightProperty().bind(ConsumerPane.getInstance().heightProperty());
-        gp.minWidthProperty().bind(ConsumerPane.getInstance().widthProperty());
+        mainGP.setMinHeight(SceneCntl.getConsumerPaneHt());
+        mainGP.setMinWidth(SceneCntl.getConsumerPaneWd());
+        mainGP.minHeightProperty().bind(ConsumerPane.getInstance().heightProperty());
+        mainGP.minWidthProperty().bind(ConsumerPane.getInstance().widthProperty());
     }
 
 
@@ -328,18 +325,18 @@ public class DeckMarketPane {
 
 
     protected GridPane getMarketPane() {
-        return gp;
+        return mainGP;
     }
 
     public double getHeight() {
-        return this.gp.getBoundsInLocal().getHeight();
+        return this.mainGP.getBoundsInLocal().getHeight();
     }
 
     public double getX() {
-        return this.gp.getLayoutX();
+        return this.mainGP.getLayoutX();
     }
     public double getY() {
-        return this.gp.getLayoutY();
+        return this.mainGP.getLayoutY();
     }
 
     public void setMapArray(ArrayList<HashMap<String, String>> mapAry) {
@@ -361,7 +358,7 @@ public class DeckMarketPane {
         return this.cartList.size();
     }
 
-    protected double getTotal() {
+    protected long getTotal() {
         return this.total;
     }
 
@@ -380,14 +377,13 @@ public class DeckMarketPane {
     public void calcTotal() {
         total = 0;
         for(HashMap<String, String> m : cartList) {
-            total += Double.parseDouble(m.get("price"));
+            total += Long.parseLong(m.get("price"));
             total += getAcct().getFee();
         }
-        System.out.println("total: " + total);
     }
 
     public void setAcctData() {
-        // @TODO validate this public method
+        // @TODO validatorActionSwitch this public method
         EncryptedAcct acct = new EncryptedAcct();
  //       acct.
 

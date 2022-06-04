@@ -1,7 +1,9 @@
 package forms;
 
+import authcrypt.Auth;
 import authcrypt.UserData;
-import authcrypt.Verify;
+import authcrypt.user.EncryptedStud;
+import campaign.db.DBInsert;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -10,9 +12,9 @@ import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.RegexValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
-import fileops.Utility;
-import flashmonkey.FlashCardOps;
+import fileops.utility.Utility;
 import flashmonkey.FlashMonkeyMain;
+import flashmonkey.Timer;
 import forms.utility.FirstDescriptor;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -34,6 +36,8 @@ import java.util.ResourceBundle;
 public class SignUpModel {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SignUpModel.class);
+
+	private Form formInstance;
 	private StringProperty field1 = new SimpleStringProperty("");
 	private StringProperty field2 = new SimpleStringProperty("");
 	private FirstDescriptor descriptor = new FirstDescriptor();
@@ -50,7 +54,7 @@ public class SignUpModel {
 	 */
 	private ResourceBundleService rbs = new ResourceBundleService(rbEN);
 	
-	private Form formInstance;
+
 	
 	/**
 	 * Creates or returns a form singleton instance.
@@ -99,17 +103,17 @@ public class SignUpModel {
 							.id("form-field")
 							.required("required_error_message")
 							.placeholder("age_placeholder")
-							.validate( StringNumRangeValidator.between(1, 120, "omg_age_error")),
+							.validate( StringNumRangeValidator.between(13, 130, "omg_age_error")),
 					Field.ofPasswordType(field1)
 							.placeholder("password_first")
 							.required("required_error_message")
 							.validate(
 									StringLengthValidator.between(8, 40, "pw_length_error_msg"),
-									RegexValidator.forPattern("[0-9A-Za-z!#$%&?@]*", "illegal_char_error_msg"),
+									RegexValidator.forPattern("[0-9A-Za-z!#$%&?@ ().~_\\[\\]\\{\\}`':;^+=].*", "illegal_char_error_msg"),
 									RegexValidator.forPattern(".*[A-Z].*", "no_uppercase_error_msg"),
 									RegexValidator.forPattern(".*[a-z].*", "no_lowercase_error_msg"),
 									RegexValidator.forPattern(".*[0-9].*", "no_numeric_error_msg"),
-									RegexValidator.forPattern(".*[!#$%&?@].*", "no_specchars_error_msg"),
+									RegexValidator.forPattern(".*[!#$%&?@ ().~_\\[\\]\\{\\}`':;^+=].*", "no_specchars_error_msg"),
 									RegexValidator.forNotPattern(".*([0-9A-Za-z])\\1{2,}.*", "repeat_char_error_msg"),
 									// only way to get the value from the field for confirmation with second pw field
 									CustomValidator.forPredicate(e -> {
@@ -120,6 +124,11 @@ public class SignUpModel {
 					Field.ofPasswordType(field2)
 							.placeholder("password_second")
 							.required("required_error_message")
+							.validate(
+									CustomValidator.forPredicate(e -> {
+										if (pwCheck[0] == null) { return false; }
+										return true;
+									}, "pw_empty_error_msg"))
 							.validate(
 									CustomValidator.forPredicate(e -> {
 										//LOGGER.info(" pw1: {} matches pw2: {} is: {}", pwCheck[0], e, pwCheck[0].equals(e));
@@ -135,33 +144,35 @@ public class SignUpModel {
 	 * after success sends the user to fileSelectPane, otherwise fail.
 	 */
 	protected void formAction() {
-		getFormInstance().persist();
 		// set user information for file system access
 		LOGGER.info("formAction() values data.getName(): {} data.getEmail: {}",
-				descriptor.getSiFirstName(), descriptor.getSiOrigEmail());
+			descriptor.getSiFirstName(), descriptor.getSiOrigEmail().toLowerCase());
 
-		UserData.setFirstName(descriptor.getSiFirstName());
-		UserData.setUserName(descriptor.getSiOrigEmail().toLowerCase());
-
-		//S3Creds creds = new S3Creds(descriptor.getSiOrigEmail(), field2.getValue());
-		//S3Create createS3 = new S3Create(descriptor.getSiOrigEmail(), field2.getValue());
 
 		//LOGGER.debug("createS3 returns: {}", createS3.toString() );
 		// attempt to create users authInfo
-		if(saveAction())  {
-			// set session data
-			LOGGER.info("formAction() User created, sending user to fileSelectPane");
-			// send user to fileSelectPane
-			FlashMonkeyMain.getFileSelectPane();
-			FlashMonkeyMain.setTopPane();
-		} else {
-			
-			LOGGER.info("formAction() User creation failed ???");
-			
-			getFormInstance().reset();
-			descriptor.siOrigEmailProperty().setValue("");
-			field1.setValue("");
-			field2.setValue("");
+		if(formInstance.isPersistable()) {
+			getFormInstance().persist();
+			if (saveAction()) {
+				// set session data
+				LOGGER.info("formAction() User created, sending user to fileSelectPane");
+				// send user to fileSelectPane
+				FlashMonkeyMain.getFileSelectPane();
+				FlashMonkeyMain.setTopPane();
+			} else {
+				LOGGER.info("formAction() User creation failed ???");
+				getFormInstance().reset();
+				descriptor.siOrigEmailProperty().setValue("");
+				field1.setValue("");
+				field2.setValue("");
+			}
+		}
+
+		if(Utility.isConnected()) {
+			// used for the first time.
+			Timer.getClassInstance().setNote("p4, user clicked submit btn on SignUpPane, Attempted to create their profile.");
+			// EncryptedStudent is not used.
+			DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
 		}
 	}
 
@@ -170,23 +181,20 @@ public class SignUpModel {
 	 * Prints a message if successful or not.
 	 */
 	protected boolean saveAction() {
-		//LOGGER.info("In save action and pw is: " + field1.get() + " getUserName is: " + data.getEmail());
+		String email = descriptor.getSiOrigEmail().toLowerCase();
+		String firstName = forms.utility.Utility.firstCapitol(descriptor.getSiFirstName());
+		UserData.setFirstName(firstName);
+		UserData.setUserName(email);
 
-		Verify v = new Verify();
+		Auth a = new Auth(field1.get(), email);
 		// Create userFile data
-		String msg = v.newUser(field1.get(), descriptor.getSiOrigEmail());
-		LOGGER.info("saveAction() create newUser : {}",msg);
-		if(msg.startsWith("Success")) {
-			UserData.setUserName(descriptor.getSiOrigEmail());
-			LOGGER.info("success: " + msg);
-			return true;
-		} else {
-			// Prevent bug issue #0001
-			UserData.clear();
-			FxNotify.notificationPurple("", " Ooops! " + msg, Pos.CENTER, 30,
-					"image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
-			return false;
-		}
+		return a.validatorActionSwitch(field1.get(), email, "signup");
+	}
+
+	public void onCLose() {
+		field1 = null;
+		field2 = null;
+		descriptor = null;
 	}
 	
 	/**

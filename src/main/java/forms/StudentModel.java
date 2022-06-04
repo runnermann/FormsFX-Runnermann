@@ -17,6 +17,7 @@ import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.Alphabet;
 import forms.utility.StudentDescriptor;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -39,9 +40,9 @@ public class StudentModel extends ModelParent {
 	// Logging reporting level is set in src/main/resources/logback.xml
 	// Use for detailed logging and use setLevel(Level.debug)
 	// Slows app performance significantly!!!
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentModel.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentModel.class);
 	// Other wise use for normal logging
-	//private static final Logger LOGGER = LoggerFactory.getLogger(StudentModel.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(StudentModel.class);
 	
 	private StudentDescriptor descriptor;// = new StudentDescriptor();
 	private String allCountryRegex = "^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$";
@@ -53,7 +54,7 @@ public class StudentModel extends ModelParent {
 		descriptor = new StudentDescriptor();
 		//descriptor.setToRemoteData();
 
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		
 		// @TODO ensure that data is not displayed if the user has not passed login.
 		
@@ -90,7 +91,7 @@ public class StudentModel extends ModelParent {
 						/*Field.ofStringType(descriptor.currentEmailProperty())
 							.label("label_current_email")
 							.placeholder("current_email_placeholder")
-							.validate(RegexValidator.forEmail("email_error_message")),
+							.validatorActionSwitch(RegexValidator.forEmail("email_error_message")),
 						 */
 						// phone
 						Field.ofStringType(descriptor.phoneProperty())
@@ -158,15 +159,15 @@ public class StudentModel extends ModelParent {
 		student.setMajor(descriptor.getMajor());
 		student.setMinor(descriptor.getMinor());
 		student.setCvLink(descriptor.getCVLink());
-		student.setOrigUserEmail(descriptor.getOrigEmail());
-		student.setCurrentUserEmail(descriptor.getCurrentEmail());
+		student.setOrigUserEmail(descriptor.getOrigEmail().toLowerCase());
+		student.setCurrentUserEmail(descriptor.getCurrentEmail().toLowerCase());
 		
 		// We are not storing personal information to the users system
 		// It is sent to the cloud.
 		if(doAction(student)) {
 			FlashMonkeyMain.closeActionWindow();
 		} else {
-			LOGGER.warn("Student data creation Form failed to be sent to the database for userName: {}", UserData.getUserName());
+			LOGGER.warn("Student data creation Form failed to be sent to the database for userName: {}", descriptor.getOrigEmail());
 		}
 	}
 	
@@ -203,6 +204,11 @@ public class StudentModel extends ModelParent {
 	@Override
 	public StudentDescriptor getDescriptor() {
 		return descriptor;
+	}
+
+	@Override
+	public void formAction() {
+		/* stub */
 	}
 
 	// REMOVE THIS.... It is not used.

@@ -4,10 +4,15 @@
 .root {
     -fx-base: ececec;
     -fx-control-inner-background: derive(-fx-base,80%);
-    ICON_BLUE: #304F8C;
-    ICON_PURPLE: #A65698;
+    ICON_ELEC_BLUE: #05C7F2; /* #304F8C; */
+    ICON_BLUE: #117DBF;
+    FOCUS_BLUE: #0096C9;
+    HOVER: #BAEEFF;
+    /*ICON_PURPLE: #A65698;*/
     ICON_YELLOW: #F2E744;
     ICON_GOLD: #F2C744;
+    INSPIRE_ORANGE: #F2522E;
+    BACKGROUND_DK_BLUE: #155A9F;
 
     FX_BACKGROUND: ICON_BLUE;
 }
@@ -127,31 +132,74 @@
 }
 
 #formPane {
-    -fx-border-color: #8248B9;
+    -fx-border-color: ICON_BLUE;
     -fx-border-width: 2 0 2 0;
-    -fx-background-color: ICON_BLUE;
+    -fx-background-color: ICON_ELEC_BLUE;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,0,10,0;
 }
 
 #infoPane {
-    -fx-border-color: #9276AC;
-    -fx-background-color: ICON_BLUE;
+    -fx-background-color: BACKGROUND_DK_BLUE;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;
 }
 
 #topBar {
-    -fx-background-color: #9276AC;
+    -fx-background-color: FOCUS_BLUE;
     -fx-pref-height: 40;
 }
 
 #lowerBar {
-    -fx-background-color: #48206E;
+    -fx-background-color: FOCUS_BLUE;
     -fx-pref-height: 40;
 }
+
+#label-bold-white-emph {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14;
+}
+
+#switch-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12;
+}
+
+#signUpLabel {
+    -fx-text-fill: HOVER;
+    -fx-font-size: 12;
+}
+
+#deckSubmitButton {
+    -fx-background-color: INSPIRE_ORANGE;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+}
+
+.sellSwitch {
+    base-color: INSPIRE_ORANGE;
+    -fx-inner-border: base-color;
+    -fx-body-color: base-color;
+    -fx-inner-body-color: base-color;
+    -fx-mark-highlight-color: base-color;
+    -fx-text-fill: #ffffff;
+}
+
+.sellSwitch .text {
+    -fx-fill: WHITE;
+}
+
+.sellSwitch:selected .thumb-area {
+    -fx-background-color: WHITE;
+}
+
+#drop-down .text {
+    -fx-text-fill: #ffffff;
+}
+
+
 
 
 

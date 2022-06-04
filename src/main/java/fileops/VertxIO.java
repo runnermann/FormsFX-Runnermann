@@ -1,62 +1,90 @@
 package fileops;
 
-import ch.qos.logback.classic.Level;
+
+import authcrypt.FMToken;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysql.cj.xdevapi.JsonArray;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class VertxIO {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(VertxIO.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(VertxIO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VertxIO.class);
+
+    public VertxIO() { /* no args constructor */ }
 
     /**
-     * Renew Token aka ou8123
+     * User create process.
+     * Provides the necessary information to be sent to Vertx to create a user
+     * based on Vertx bona-fides challenge q.
+     *  <p>x1: email, x2: code, x3: bona-fides, x4: password, x5: userName, x6: token</p>
+     * @param code Code entered by user
+     * @param email Users orig_email
+     * @param firstName ..
+     * @param password entered pw
+     * @return Returns the json object String to be sent to Vertx.
+     */
+    protected String ou812confirm(String code, String email, String firstName, String password) {
+        String token = FMToken.createUserToken(email, 4);
+        String bonaFides = genCode(token);
+        return "{\"x2\":\"" + code + "\",\"x1\":\"" + email + "\",\"x4\":\"" + password + "\",\"x5\":\"" + firstName + "\",\"x6\":\"" + token + "\",\"x3\":\"" + bonaFides + "\"}";
+    }
+
+
+    /**
+     * For Vertx Bona-Fides response to
+     * change the users pw. We create the response
+     * to upload it to Vertx.
+     * If the response is 200 returns true. Else
+     * returns false.
+     *  <p>x1: email, x2: code, x3: bona-fides, x4: password, x5: userName, x6: token</p>
+     * @param email, the users encypted original email.
+     * @param password The new password. Encrypted
+     * @param code The code provided by the user from form entry
+     * @return Returns the json object String to be sent to Vertx.
+     */
+    protected String ou812reset(String email, String password, String code) {
+        String token = FMToken.createUserToken(email, 4);
+        String bonaFides = genCode(token);
+
+        return "{\"x2\":\"" + code + "\",\"x1\":\"" + email + "\",\"x4\":\"" + password + "\",\"x6\":\"" + token + "\",\"x3\":\"" + bonaFides + "\"}";
+    }
+
+    protected String ou812cancel(String email, String password, String token) {
+        String bonaFides = genCode(token);
+        return "{\"x1\":\"" + email + "\",\"x4\":\"" + password + "\",\"x6\":\"" + token + "\",\"x3\":\"" + bonaFides + "\"}";
+    }
+
+
+    /**
+     * For Vertx Bona-Fides response aka ou8123. A token
+     * is used for a bona-fides question.
+     * We create the response and return.
      * @param token
-     * @return
+     * @return response
      */
     protected String ou8123(String token) {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("S3Creds constructor called.");
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        String json = "fail";
+        String code = genCode(token);
+        // create a JsonArray with token and keys
+        String json = "[{\"token\":\"" + token + "\"},{\"code\":\"" + code + "\"}]";
 
-        //try {
-            String code = genCode(token);
-            //String integers = mapper.writeValueAsString(code);
-            // create a JsonArray with token and keys
-            json = "[{\"token\":\"" + token + "\"},{\"code\":\"" + code + "\"}]";
+        //LOGGER.debug(json.toString());
 
-            LOGGER.debug(json.toString());
-
-
-        //} catch (JsonProcessingException e) {
-        //    LOGGER.warn("ERROR: {}", e.getMessage() );
-        //    e.printStackTrace();
-        //}
         String destination = "/FFFFFF"; // list
         return ou8123Helper(json, destination);
     }
@@ -68,15 +96,15 @@ public class VertxIO {
      * @return returns the String token
      */
     private String ou8123Helper(String json, String destination) {
+        // @TODO remove ou8123Helper and use cloud ops
         LOGGER.debug("json: {}", json );
         LOGGER.debug("destination; {}", destination);
 
         final HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(7))
                 .build();
 
-        // @todo change localhost:8080 to vertx call
         // vertx expects router.post("/resource-s3-list")
         // we post when using tokens:
         final HttpRequest req = HttpRequest.newBuilder()
@@ -91,9 +119,8 @@ public class VertxIO {
 
             if (response.statusCode() == 200) {
                 String res = response.body();
-                if( res.contains("token")) {
+                if( res.contains("token") || res.equals("succeeded")) {
                     res = parse(response);
-
                     return res;
                 }
             }
@@ -129,43 +156,31 @@ public class VertxIO {
     final byte[] ou812 = ou812M();
     final int[] primes = genPrimes();
 
-    // Uses Image to create in app.
+    // Uses Image to create response code.
     private String genCode(String token) {
         long start = System.nanoTime();
         int num = token.lastIndexOf(".");
         String subToken = token.substring( num );
         char[] chars = subToken.toCharArray();
-
-        //List<Integer> code = new ArrayList<>(32);
         StringBuilder sb = new StringBuilder();
 
-        //System.out.println("ou812 length " + ou812.length);
         for(int i = 0 ; i < 32; i++) {
             int key = chars[i] * primes[i];
-            //code.add(ou812[key] | 0);
             sb.append((ou812[key] | 0) + ",");
-
-            //System.out.println("key: " + key + ", code[" + i + "]: " + code[i]);
         }
         long time = System.nanoTime() - start;
-
-        System.out.println("Time in nanos: " + time);
-        System.out.println("code: " + sb.toString());
-
-        return sb.toString();
+        String s = sb.toString();
+        s.substring(0, s.length() -1);
+        return s;
     }
 
     /**
      * Image used for encrypt/decrypt token reissue key
-     * @return
-     * @throws IOException
+     * @return see method
      */
     private byte[] ou812M() {
         byte[] imgAry = new byte[1];
         try {
-            //Image image = new Image(getClass().getResourceAsStream("/image/eve_ai_e.jpg"));
-            //BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
-            // new File("C:\\Users\\Me\\IdeaProjects\\flashmonkey-betaB\\src\\main\\resources\\image\\eve_ai_e.jpg")
             BufferedImage bImage = ImageIO.read(getClass().getResourceAsStream("/image/eve_ai_e.jpg"));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(bImage, "jpg", bos);
@@ -174,7 +189,6 @@ public class VertxIO {
         } catch (IOException e) {
             LOGGER.debug("IOException: Could not find 82");
         }
-        System.out.println("ou812M imgAry length: " + imgAry.length);
         return imgAry;
     }
 

@@ -1,5 +1,6 @@
 package uicontrols;
 
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 import uicontrols.api.FMNotifications;
@@ -8,7 +9,16 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.stage.Stage;
 
-
+/**
+ * Popup message.
+ * <pre>
+ *     Usage:
+ *     String msg = "That didn't work.... Try resetting your password.";
+ *                     FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 8,
+ *                             "image/Flash_hmm_75.png", FlashMonkeyMain.getWindow());
+ *                     FlashMonkeyMain.showResetOnePane();
+ * </pre>
+ */
 public class FxNotify {
 	
 	public FxNotify() {
@@ -25,10 +35,6 @@ public class FxNotify {
 				.graphic(graphic)
 				.hideAfter(Duration.seconds(duration))
 				.position(pos);
-			
-				//.onAction(e -> System.out.println("Notification clicked on!"))
-				//.threshold((int) thresholdSlider.getValue(),
-				//		Notifications.create().title("Threshold Notification"));
 		
 			notificationBuilder.owner(owner);
 			notificationBuilder.purpleStyle();
@@ -36,8 +42,8 @@ public class FxNotify {
 	}
 
 	public static synchronized void notificationBlue(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
-
-		Node graphic = new ImageView(iconPath);
+		Image img = new Image(iconPath);
+		Node graphic = new ImageView(img);
 		FMNotifications notificationBuilder = FMNotifications.create()
 				.title(title)
 				.text(msg)
@@ -50,14 +56,14 @@ public class FxNotify {
 		notificationBuilder.show();
 	}
 
-	public static synchronized void notificationDark(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
+	public static synchronized void notificationDark(String title, String msg, Pos pos, int durationSeconds, String iconPath, Stage owner) {
 
 		Node graphic = new ImageView(iconPath);
 		FMNotifications notificationBuilder = FMNotifications.create()
 				.title(title)
 				.text(msg)
 				.graphic(graphic)
-				.hideAfter(Duration.seconds(duration))
+				.hideAfter(Duration.seconds(durationSeconds))
 				.position(pos);
 
 		notificationBuilder.owner(owner);

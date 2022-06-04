@@ -19,6 +19,7 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import type.sectiontype.GenericSection;
 import uicontrols.ButtoniKon;
+import uicontrols.FxNotify;
 
 import java.util.*;
 
@@ -31,8 +32,7 @@ import java.util.*;
  *
  *  @author Lowell Stadelman
  */
-public class MultiChoice implements GenericTestType<MultiChoice>
-{
+public class MultiChoice implements GenericTestType<MultiChoice> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiChoice.class);
     // The singleton instance of this class
     private static MultiChoice CLASS_INSTANCE;
@@ -52,8 +52,6 @@ public class MultiChoice implements GenericTestType<MultiChoice>
 
     // testAnswer index, The array of 4 answers for this question.
     protected int taIndex = 0;
-
-
 
     /**
      * Default No-Args Constructor
@@ -90,7 +88,7 @@ public class MultiChoice implements GenericTestType<MultiChoice>
      * @return Returns a VBox containing the upper and lower editor panes
      */
     @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
         LOGGER.debug("\ncalled getTEditorPane in MultipleChoice :) ");
 
@@ -111,8 +109,7 @@ public class MultiChoice implements GenericTestType<MultiChoice>
      * subtracts depending on if it is right or wrong.
      */
     @Override
-    public GridPane getTReadPane(FlashCardMM currentCard, GenericCard genCard, Pane parentPane)
-    {
+    public GridPane getTReadPane(FlashCardMM currentCard, GenericCard genCard, Pane parentPane) {
         LOGGER.debug("\n\n*** GET-T-READ-PANE in multi-choice testcard ****");
 
         // Each section is it's own object. Not using GenericCard
@@ -145,7 +142,7 @@ public class MultiChoice implements GenericTestType<MultiChoice>
         if(selectAnsButton == null) {
             selectAnsButton = ButtoniKon.getAnsSelect();
         } else {
-            selectAnsButton = ButtoniKon.getJustAns(selectAnsButton, "Select");
+            selectAnsButton = ButtoniKon.getJustAns(selectAnsButton, "SELECT");
         }
         selectAnsButton.setOnAction(e -> ansButtonAction());
 
@@ -195,6 +192,7 @@ public class MultiChoice implements GenericTestType<MultiChoice>
     /**
      * Sets bit 1 for Multi-Choice to true
      * All other bits set to 0
+     * Compatible ith Multi-Choice
      * @return bitSet
      */
     @Override
@@ -234,8 +232,7 @@ public class MultiChoice implements GenericTestType<MultiChoice>
     }
 
     @Override
-    public void ansButtonAction()
-    {
+    public void ansButtonAction() {
         LOGGER.debug("\n~*~*~ Answer ButtAction called ~*~*~");
 
         final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
@@ -256,7 +253,7 @@ public class MultiChoice implements GenericTestType<MultiChoice>
 
         LOGGER.debug("in ansButtonAction and progress: " + progress + " | and treeWalkerCount: " + FMTWalker.getCount());
 
-        /** if the referance to the currentCard.answer == the users choice, question was answered correctly */
+        /** if the reference to the currentCard.answer == the users choice, question was answered correctly */
         if (test.getTheseAns()[taIndex] == currentCard.getAnswerMM()) {
             rf.new RightAns(currentCard, listCard, this);
         } else {
@@ -275,41 +272,32 @@ public class MultiChoice implements GenericTestType<MultiChoice>
      * mode.
      */
     @Override
-    public void nextAnsButtAction()
-    {
+    public void nextAnsButtAction() {
         LOGGER.debug("\n~*~*~ nextAnsButtAction called in MultiChoice ~*~*~");
-
         taIndex++;
         LOGGER.debug("taIndex: " + taIndex);
-
-        if(taIndex > 2)
-        {
+        if(taIndex > 2) {
             nextAnsButton.setDisable(true);
             // keep index at 3 dispite repetitive
             // nextButton clicks
             taIndex = 3;
-        }
-        else
-        {
+        } else {
             if(prevAnsButton.isDisabled())
             {
                 prevAnsButton.setDisable(false);
             }
         }
-
         LOGGER.debug("\ttaIndex = " + taIndex);
-
         // Get the next answer, taIndex is already incremented
         String aTxt = test.ansAry[taIndex].getAText();
         char cellType = test.ansAry[taIndex].getAType();// getMediaType();
         String[] files = test.ansAry[taIndex].getAFiles();
-
         // Set the next answer in the lowerHBox
         lowerHBox.getChildren().clear();
         HBox answerHBox = genSection.sectionFactory(aTxt, cellType, 2, true, 0, files);
         answerHBox.setPadding(new Insets(0));
         lowerHBox.getChildren().add( answerHBox);
-
+        // Transitions
         TranslateTransition aRight = FMTransition.transitionFmRight(lowerHBox);
         aRight.play();
 
@@ -324,11 +312,8 @@ public class MultiChoice implements GenericTestType<MultiChoice>
      * Previous Answer button action
      */
     @Override
-    public void prevAnsButtAction()
-    {
-
+    public void prevAnsButtAction() {
         LOGGER.debug("\n~*~*~ prevAnsButtAction called ~*~*~");
-
         //selectAnsButton.setVisible(true);
         taIndex--;
         if(taIndex < 1)
@@ -343,21 +328,16 @@ public class MultiChoice implements GenericTestType<MultiChoice>
                 nextAnsButton.setDisable(false);
             }
         }
-
         String aTxt = test.ansAry[taIndex].getAText();
         char cellType = test.ansAry[taIndex].getAType();// getMediaType();
         String[] files = test.ansAry[taIndex].getAFiles();
-
         lowerHBox.getChildren().clear();
         HBox answerHBox = genSection.sectionFactory(aTxt, cellType, 2, true, 0, files);
         answerHBox.setPadding(new Insets(0));
         lowerHBox.getChildren().add( answerHBox);
-
         // Transitions
         TranslateTransition aLeft = FMTransition.transitionFmLeft(lowerHBox);
         aLeft.play();
-
-
         if( ! selectAnsButton.isDisabled())
         {
             FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsButton, 1,750, false);
@@ -537,23 +517,13 @@ public class MultiChoice implements GenericTestType<MultiChoice>
                     if(ansHashSet.size() < 4) {
                         // display a popup
                         Platform.runLater(() -> {
-                            String message = "  Oweeee!!!  I didn't expect that." +
-                                    "\n  There are not enough Multi-Choice questions for me to work.  " +
+                            String msg = "  I didn't expect that." +
+                                    "\n  There are not enough Multi-Choice compatible questions for me to work.  " +
                                     "\n  Please create more Multi-Choice questions.";
-                            String emojiPath = "emojis/flashFaces_sunglasses_60.png";
-                            int w = (int) FlashMonkeyMain.getWindow().getWidth();
-                            int h = (int) FlashMonkeyMain.getWindow().getHeight();
-                            double x = FlashMonkeyMain.getWindow().getX() + (w / 8);
-                            double y = FlashMonkeyMain.getWindow().getY() + (h / 2);
-                            FMPopUpMessage.setPopup(
-                                    x,
-                                    y,
-                                    w,
-                                    message,
-                                    emojiPath,
-                                    FlashMonkeyMain.getWindow(),
-                                    3000
-                            );
+
+                            FxNotify.notificationDark("", " ouch! " + msg, Pos.CENTER, 8,
+                                    "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+
                             // disable the answer buttons
                             nextAnsButton.setDisable(true);
                             prevAnsButton.setDisable(true);
@@ -591,8 +561,10 @@ public class MultiChoice implements GenericTestType<MultiChoice>
             }
             TestForRepeats repeatTester = new TestForRepeats();
             if( repeatTester.testAnsForRepeats(resultList) ) {
-                System.err.println(" REPEATED TEXT FOUND ");
- //@TODO remove system.exit if repeats occur in multichoice test.
+                System.err.println(" REPEATED TEXT FOUND IN MULTI_CHOICE");
+                System.err.println(" REPEATED TEXT FOUND IN MULTI_CHOICE");
+                System.err.println(" REPEATED TEXT FOUND IN MULTI_CHOICE");
+                //@TODO remove system.exit if repeats occur in multichoice test.
                 //System.exit(0);
             }
             return resultList;

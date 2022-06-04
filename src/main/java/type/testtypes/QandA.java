@@ -6,6 +6,7 @@ import flashmonkey.FlashCardMM;
 import flashmonkey.ReadFlash;
 
 import fmannotations.FMAnnotations;
+import fmtree.FMTWalker;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -20,9 +21,6 @@ import type.sectiontype.GenericSection;
 import uicontrols.ButtoniKon;
 
 import java.util.ArrayList;
-import java.util.BitSet;
-
-//import static flashmonkey.FlashCardOps.TREE_WALKER;
 
 
 /**
@@ -34,8 +32,7 @@ import java.util.BitSet;
  *
  * @author Lowell Stadelman
  */
-public abstract class QandA implements GenericTestType<QandA>
-{
+public abstract class QandA implements GenericTestType<QandA> {
 
     // The lower HBox used in TReadPane lambda
     private HBox lowerHBox;
@@ -62,7 +59,7 @@ public abstract class QandA implements GenericTestType<QandA>
      * @return Returns the testPane
      */
     @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a) {
+    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane) {
         // Instantiate vBox and "set spacing" !important!!!
         VBox vBox = new VBox(2);
         vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
@@ -70,9 +67,7 @@ public abstract class QandA implements GenericTestType<QandA>
     }
 
     @Override
-    public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane)
-    {
-       //System.out.println("\n*** in getTReadPane for QandA ***");
+    public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
         
         ReadFlash rf = ReadFlash.getInstance();
 
@@ -81,7 +76,7 @@ public abstract class QandA implements GenericTestType<QandA>
         GridPane gPane = new GridPane();
         gPane.setVgap(2);
 
-        //AnchorPane anchorP = new AnchorPane();
+
         StackPane stackP = new StackPane();
         if(answerButton == null) {
             answerButton = ButtoniKon.getAnsSelect();
@@ -98,26 +93,27 @@ public abstract class QandA implements GenericTestType<QandA>
         rf.setShowAnsNavBtns(false);
         // The answer btn action
         // Keeping action local. Makes using lamda easier.
-        answerButton.setOnAction((ActionEvent e) ->
-        {
-            lowerHBox.getChildren().clear();
-            FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, false);
-
-            lowerHBox.getChildren().add(genSection.sectionFactory(cc.getAText(), cc.getAType(), 2, true, 0, cc.getAFiles()));
-            if (cc.getIsRight() == 0) {
-                rf.getProgGauge().moveNeedle(500, rf.incProg());
-            }
-    //        answerButton.setVisible(false);
-            cc.setIsRight(1);
-            FMTransition.nodeFadeIn.play();
-        });
+        answerButton.setOnAction(e -> ansButtonAction());
+//        answerButton.setOnAction((ActionEvent e) ->
+//        {
+//            nextAnsButtAction();
+//            lowerHBox.getChildren().clear();
+//            FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, false);
+//
+//            lowerHBox.getChildren().add(genSection.sectionFactory(cc.getAText(), cc.getAType(), 2, true, 0, cc.getAFiles()));
+//            if (cc.getIsRight() == 0) {
+//                rf.getProgGauge().moveNeedle(500, rf.incProg());
+//            }
+//            //  answerButton.setVisible(false);
+//            cc.setIsRight(1);
+//            FMTransition.nodeFadeIn.play();
+//        });
 
         VBox btnVBox = new VBox();
         btnVBox.setPadding(new Insets(10));
         btnVBox.getChildren().add(answerButton);
         btnVBox.setAlignment(Pos.BOTTOM_CENTER);
-        //anchorP.getChildren().add(lowerHBox);
-        //AnchorPane.setBottomAnchor(btnVBox, 2.0);
+
         stackP.setAlignment(Pos.BOTTOM_CENTER);
 
         stackP.getChildren().add(lowerHBox);
@@ -138,15 +134,15 @@ public abstract class QandA implements GenericTestType<QandA>
 
     /**
      * Sets 4th (= 8) bit, all others set to 0
-     *
+     * Compatible with Multi-Choice
      * @return bitSet
      */
     @Override
     public int getTestType() {
         // lowest bit = 8, actual = 32776
-        // high bit confirms this card
+        // high bit indicates this card
         // works with multi-choice / AI
-        return 0b1000000000001000;
+        return 0b1000000000000100;
     }
 
     /**
@@ -164,14 +160,35 @@ public abstract class QandA implements GenericTestType<QandA>
         return null;
     }
 
+    /**
+     * The ReadFlash class expects this method to return the implementation
+     * from the TestType for its answerButton. An answerButton should provide
+     * the testTypes expected behavior, format changes, when the EncryptedUser
+     * clicks on the AnswerButton. Include correct and incorrect behavior as
+     * a minimum.
+     *
+     * @return returns the tests answerButton as opposed to the array of AnswerButtons.
+     */
     @Override
     public Button getAnsButton() {
-        return null;
+        return answerButton;
     }
 
     @Override
     public void ansButtonAction() {
-        // stub
+        lowerHBox.getChildren().clear();
+        GenericSection genSection = GenericSection.getInstance();
+        final FlashCardMM cc = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+        final ReadFlash rf = ReadFlash.getInstance();
+        FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, false);
+
+        lowerHBox.getChildren().add(genSection.sectionFactory(cc.getAText(), cc.getAType(), 2, true, 0, cc.getAFiles()));
+        if (cc.getIsRight() == 0) {
+            rf.getProgGauge().moveNeedle(500, rf.incProg());
+        }
+        //  answerButton.setVisible(false);
+        cc.setIsRight(1);
+        FMTransition.nodeFadeIn.play();
     }
 
     @Override
@@ -204,7 +221,6 @@ public abstract class QandA implements GenericTestType<QandA>
      */
     public static class QandATest extends QandA {
 
-
             private static QandATest CLASS_INSTANCE;
 
             private QandATest() {
@@ -215,7 +231,6 @@ public abstract class QandA implements GenericTestType<QandA>
 
 
             public static synchronized QandATest getInstance() {
-
                 if (CLASS_INSTANCE == null) {
                     CLASS_INSTANCE = new QandATest();
                 }
@@ -223,8 +238,7 @@ public abstract class QandA implements GenericTestType<QandA>
             }
 
             @Override
-            public GenericTestType getTest() {
-
+            public GenericTestType<QandA> getTest() {
                 return QandATest.getInstance();
             }
     }
@@ -235,7 +249,6 @@ public abstract class QandA implements GenericTestType<QandA>
      */
     public static class QandASession extends QandA
     {
-
             /**
              * The class instance for the singleton class
              */
@@ -264,7 +277,7 @@ public abstract class QandA implements GenericTestType<QandA>
             /** ------ GETTERS ----- **/
 
             @Override
-            public GenericTestType getTest() {
+            public GenericTestType<QandA> getTest() {
                 return new QandASession();
             }
 

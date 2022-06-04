@@ -87,7 +87,6 @@ public class FMToolTip {
 
 
     public FMToolTip(Pane parentPane) {
-
         this(5, 3, parentPane);
     }
 
@@ -136,10 +135,6 @@ public class FMToolTip {
         this.ht = height;
     }
 
-    /*public void setTextArea(String str) {
-        this.textArea.setText(str);
-    }*/
-
     public void setText(String str) {
         this.text.setText(str);
     }
@@ -171,10 +166,6 @@ public class FMToolTip {
 
     public int getWd() { return this.wd; }
 
-   /* public String getText() {
-        return this.textArea.getText();
-    }*/
-
     public int getDelayShow() {
         return this.delayHide;
     }
@@ -189,7 +180,7 @@ public class FMToolTip {
 
 
     private boolean showing = false;
-    public Pane getFMTooltip(MouseEvent mouse, String str) {
+    public Pane getFMTooltip(MouseEvent mouse, String str, Color color) {
 
         //popUpPane.setBackground(Background.EMPTY);
         double x = mouse.getSceneX() + xOffSet;
@@ -197,7 +188,7 @@ public class FMToolTip {
         //int wd = text.length() * 10; // 10 pixels per letter
 
         this.text.setText(str);
-        this.text.setFill(Color.WHITE);
+        this.text.setFill(color);
         this.text.setTextAlignment(TextAlignment.CENTER);
         //this.text.setStyle("-fx-text-fill: rgba(0,0,0,0.0)");
         //this.text.set
@@ -258,16 +249,13 @@ public class FMToolTip {
     // been removed if it is no longer
     // on the object of interest
     public void update(MouseEvent mouse, Node n) {
-
         // if the mouse is no longer on the object of interest
         // - && this ToolTip still exists.
         // - Then delete it and reset isVisible to false
         double mouseY = mouse.getSceneY();
         double mouseX = mouse.getSceneY();
-
         if (size != -1) {
             if (!n.contains(mouseX, mouseY) && System.currentTimeMillis() > wait + 3000) {
-
                 this.parentPane.getChildren().remove(size);
                 isVisible = false;
                 size = -1;
@@ -276,14 +264,12 @@ public class FMToolTip {
     }
 
     /**
-     * If there is a Tooltip visible, removes the tool tip immidiatly.
+     * If there is a Tooltip visible, removes the tool tip immediately.
      */
     public void remove() {
 
         if(isVisible && System.currentTimeMillis() > (wait - 5)) {
-
             this.parentPane.getChildren().remove(size);
-           //System.out.println("removing");
             // update isVisible to false
             isVisible = false;
             size = -1;

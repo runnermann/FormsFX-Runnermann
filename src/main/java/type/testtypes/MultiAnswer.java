@@ -20,13 +20,10 @@ import java.util.ArrayList;
  */
 public class MultiAnswer implements GenericTestType<MultiAnswer>
 {
+    private GenericCard gCard;
+    private HBox lowerHBox;
 
-    //@todo finish MultiAnswer
-    //SectionEditor editorU, editorL;
-    GenericCard gCard;
-    HBox lowerHBox;
-
-    Button selectAnsButton, nextAnsButton, prevAnsButton;
+    private Button selectAnsButton, nextAnsButton, prevAnsButton;
 
     public MultiAnswer()
     {
@@ -40,7 +37,7 @@ public class MultiAnswer implements GenericTestType<MultiAnswer>
     }
 
     @Override
-    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
 
         //@todo finish getTEditorPane in MultiAnswer
@@ -90,8 +87,9 @@ public class MultiAnswer implements GenericTestType<MultiAnswer>
     }
 
     /**
-     * Sets bit 3 (= 4) (Turn-in-Video) to true
+     * Sets bit 2 (= 4) (Turn-in-Video) to true
      * All other bits set to 0
+     * Not compatible ith Multi-Choice
      * @return bitSet
      */
     @Override

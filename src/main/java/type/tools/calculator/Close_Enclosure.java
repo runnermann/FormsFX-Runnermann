@@ -45,8 +45,8 @@ public enum Close_Enclosure implements OperatorInterface {
 
         /**
          * Constructor
-         * @param sym
-         * @param p
+         * @param sym ..
+         * @param p ..
          */
         Close_Enclosure(String sym, int p) {
             symbol = sym;
@@ -67,17 +67,14 @@ public enum Close_Enclosure implements OperatorInterface {
      * Reshuffles the operators from the opStack and offers them to the outQueue
      * until the opening enclosure is reached. Closing Operator is not pushed
      * onto the stack.
-     * @param previous
-     * @param notUsed
-     * @param outQueue
-     * @param opStack
+     * @param previous ..
+     * @param notUsed ..
+     * @param outQueue ..
+     * @param opStack ..
      */
         @Override
         public void stackAction(Object previous, ExpNode notUsed, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
-
             //int index not used
-            //System.out.println(" in Close_Enclosure stackAction()");
-
             ExpNode expReshuffle;
             while( ! opStack.isEmpty()) {
                 expReshuffle = opStack.pop();

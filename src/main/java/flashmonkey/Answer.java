@@ -14,14 +14,28 @@ package flashmonkey;
  * is provided for comparison.
  * Sets added. 1/14/2016
  *
+ * Version Stylable Text 2022-05-12
+ * Adding the ability to style the text and paragraphs using RichText. Specifically
+ * the miscFX.RichTextFX API downloaded and dynamically appended as an API library
+ * from the Maven Repo.
+ *
  * IMPLEMENTS Serializable, comparable
  *
  * @author Lowell Stadelman
  *
  ******************************************************************************/
 
+import richtextfm.model.*;
+import org.reactfx.util.Either;
+
+import type.richtext.Hyperlink;
+import type.richtext.HyperlinkOps;
+import type.richtext.ParStyle;
+import type.richtext.TextStyle;
+
 import java.io.*;
 import java.util.ArrayList;
+
 
 @SuppressWarnings("unchecked")
 public abstract class Answer implements Serializable, Comparable
@@ -30,9 +44,13 @@ public abstract class Answer implements Serializable, Comparable
 
     /*** CONSTANTS ***/
     public static final ArrayList<Integer> DEF_LIST = new ArrayList<>(1);
+    private final static TextOps<String, TextStyle> styledTextOps = SegmentOps.styledTextOps();
+    private final static HyperlinkOps<TextStyle> hyperlinkOps = new HyperlinkOps<>();
     
     /*** VARIABLES ***/
     private String aText;
+
+    StyledDocument<ParStyle, Either<String, Hyperlink>, TextStyle> doc;
     // ANumber is the index number in flashList. It is used
     // as the anchor for a flashCard in flashList during a session.
     // It is set to it's index number during build tree.
@@ -44,8 +62,12 @@ public abstract class Answer implements Serializable, Comparable
     /**
      * Default constructor
      */
-    public Answer()
-    {
+    public Answer() {
+        //GenericStyledArea line 687
+
+   //     this.doc = new GenericEditableStyledDocument<ParStyle, TextStyle, SegmentOps>(ParStyle.EMPTY, TextStyle.EMPTY, SegmentOps.styledTextOps());
+        // this.doc = new GenericEditableStyledDocument<>(initialParagraphStyle, initialTextStyle, segmentOps), segmentOps, preserveStyle, nodeFactory)
+        //this.doc = styledTxtArea.getDocument();
         this.aText = "";
         this.aNumber = 0;
     }
@@ -59,10 +81,8 @@ public abstract class Answer implements Serializable, Comparable
      */
     public Answer(String txt, int aNum, ArrayList<Integer> ansSet)
     {
-        //System.out.println("\nAnswer constructor (String, int, ArrayList) called. aText :" + txt);
         this.aText = txt;
         this.aNumber = aNum;
-        // this.qID = id;       qID is the original card number when the card was initially created.
         this.answerSet = ansSet;
     }
 

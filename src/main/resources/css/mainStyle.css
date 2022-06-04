@@ -1,11 +1,14 @@
-/*
++/*
     Created on : Dec 26, 2016, 12:16:57 PM
     Author     : humanfriendlyfolder
 
 Notes: To make a node or fx element modifiable by this css sheet. The node
 must have an ID set. Use the '#' here in css. To call the id name from java
 simply use the name without the #.
-Otherwise to modify a Type, use the '.' and identify the Type to be modified.  
+Otherwise to modify a Type, use the '.' and identify the Type to be modified.
+
+ See javaFX css:
+https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/modules/javafx.controls/src/main/resources/com/sun/javafx/scene/control/skin/modena/modena.css#L824
 */
 /* For creating the button border like javafx modena.css */
 .root {
@@ -46,28 +49,34 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
     FM_RED_FAINT: #D2003522;
     FM_GREEN_RIGHT: #32CD32;
     FM_GREEN_FAINT: #32CD3222;
-
     FM_SETTINGS_COLOR: #256C9B;
     FM_SETTINGS_FAINT: #256C9B22;
     FM_SETTINGS_BCKGND: #37A1E8;
     IKON_BLUE: #0099CC;
+    FOCUS_BLUE: #0096C9;
+    BTN_BOX_BLUE: rgba(51,130,163,1.0);
+    EVE_BLUE: #0064e1;
+    ICON_BLUE: #304F8C;
+    HOVER: #BAEEFF;
     /* The text label color */
-    FM_TEXT_LABEL: white; /* #F8B500 yellow */
+    FM_TEXT_LABEL: #FFFFFF; /* #F8B500 yellow */
+    GRID_GREY: #B2B2B2;
+    AXIS_GREY: #727272;
     FM_GREY: #393E46;
-
-    BACKGROUND_PURPLE: #D2ABF7; /* lighter purple */
-    FLASH_PURPLE: #9276AC;
-    BUTTON_PURPLE: #48206E; /* 48206E 3F0B70*/
-    BUTTON_COMPLIMENT: #8248B9;//
+    GRAPH_BGND: #170117;
+    -light-black: #4A4B4E; /*rgb(74, 75, 78);*/
+    -dark-highlight: #57595c; /*rgb(87, 89, 92);*/
+    -dark-black: #272828; /*rgb(39, 40, 40);*/
+    -darkest-black: #050505;/*rgb(5, 5, 5);*/
     FLASH_RED: #FC3C3C;
     FLASH_WHITE: #FFF4E0; // FM_WHITE
     BUTTON_WHITE: #FFFFFF;
-
-    EVE_BLUE: #0064e1;
-    ICON_BLUE: #304F8C;
-    ICON_PURPLE: #A65698;
     ICON_YELLOW: #F2E744;
     ICON_GOLD: #F2C744;
+
+
+    -mid-gray: #d8dee3; /*rgb(216, 222, 227);*/
+    -fx-background-color: -mid-gray;
 
     /*linear-gradient( [ [from <point> to <point>] | [ to <side-or-corner>], ]? [ [ repeat | reflect ], ]? <color-stop>[, <color-stop>]+) */
     /*-fx-inner-border-horizontal:  linear-gradient(to top, derive(#ececec,55%) 0%, derive(#ececec,-5%) 50%);
@@ -112,6 +121,7 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 }
 
 #right_border {
+    -fx-border-width: 4;
     -fx-border-radius: 3 3 3 3;
     -fx-background-radius: 3 3 3 3;
     -fx-color: FM_GREEN_RIGHT;
@@ -289,6 +299,18 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
     -fx-font-family: "Raleway-Medium.ttf";
 }
 
+.progress-bar .bar {
+    -fx-indeterminate-bar-length: 64;
+    -fx-indeterminate-bar-animation-time: 100;
+    -fx-indeterminate-bar-escape: false;
+    -fx-indeterminate-bar-flip: false;
+    -fx-background-color: FM_GREEN_RIGHT;
+}
+
+/*.progress-bar .track {*/
+/*    -fx-background-color: FM_GREEN_RIGHT;*/
+/*}*/
+
 
 #deckNameLabel {
     -fx-font-size: 16px;
@@ -300,31 +322,67 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 /* h1 the FlashMonkey Label */
 #fmLabel {
     -fx-font-size: 32px;
-    -fx-font-style: bold;
-    /*-fx-base: FLASH_PURPLE;*/
+    -fx-font-weight: bold;
     -fx-text-fill: ICON_GOLD;
     /*-fx-text-fill: derive(-fx-base,86%);*/
 }
 
 /* menu labels */
-#label24White {
+#label24White,
+#label24WhiteSP {
     -fx-font-size: 24px;
     -fx-text-fill: FM_TEXT_LABEL;
-    -fx-padding: 0 0 32 0;
+}
+
+#label24WhiteSP {
+    /* top, right, bottom, left */
+    -fx-padding: 50 0 0 0;
+}
+
+#label16White {
+    -fx-font-size: 16px;
+    -fx-text-fill: FM_TEXT_LABEL;
+    -fx-padding: 10 0 24 0;
+}
+
+#label16white {
+    -fx-font-size: 16px;
+    -fx-text-fill: FM_TEXT_LABEL;
+    -fx-padding: 6 0 6 0;
+}
+
+#label14white {
+    -fx-font-size: 14px;
+    -fx-text-fill: FM_TEXT_LABEL;
+}
+
+#signUpLabel {
+    -fx-font-size: 14px;
+    -fx-text-fill: FLASH_WHITE;
 }
 
 
 #label16 {
     -fx-font-size: 16px;
-    /*-fx-base: BUTTON_PURPLE;*/
     -fx-text-fill: FM_TEXT_LABEL;
-    /*-fx-text-fill: derive(-fx-base,86%);*/
-    /*-fx-text-fill: #F8B500;  // yellow */
-    /*-fx-text-fill: #8146B6; */
+}
+
+#label16Blue {
+    -fx-font-size: 16px;
+    -fx-wrap-text: true;
+    -fx-text-fill: ICON_BLUE;
+    -fx-padding: 32 16 16 0;
+    -fx-text-alignment: CENTER;
+}
+
+hyperlink14white {
+    -fx-font-size: 14px;
+    -fx-text-fill: WHITE;
+    -fx-padding: 16 16 16 0;
 }
 
 #infoPane {
-    -fx-base: BUTTON_PURPLE;
+    -fx-base: FOCUS_BLUE;
     -fx-font-size: 12px;
     -fx-text-fill: derive(-fx-base, 86%);
 }
@@ -332,13 +390,7 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 #errorLabel {
     -fx-font-size: 16px;
-    /*-fx-base: FLASH_PURPLE;*/
-    /*-fx-text-fill: FM_TEXT_LABEL; */
     -fx-text-fill: "rgba(204, 255, 0, 0.9)";
-}
-
-#signUpLabel {
-    -fx-font-size: 16px;
 }
 
 
@@ -368,8 +420,6 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 /* h1 the FlashMonkey Label */
 #fmLabel {
     -fx-font-size: 40px;
-    /*-fx-base: FLASH_PURPLE;
-    -fx-text-fill: derive(-fx-base,86%); */
     -fx-text-fill: FM_TEXT_LABEL;
 
 }
@@ -385,7 +435,6 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 
 /* The createFlash MasterPane */
 #cfMasterPane {
-    /*-fx-background-color: #FFF4E0; */
     -fx-background-color: #2980b9;
     -fx-padding: 2 2 3 2;
 }
@@ -400,12 +449,6 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 }
 
 #mainGridPane {
-    /*fx-background-color: #393E46;*/
-    /*-fx-background-color: #ffffff; */
-    /*-fx-background-image: url("/image/fm_bckgrnd.png");
-    -fx-background-repeat: stretch;
-    -fx-background-size: 330 500;
-    -fx-background-position: center center;*/
     -fx-vgap: 20;
 }
 
@@ -426,19 +469,30 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 #fileSelectPane {
     -fx-border-color: TRANSPARENT;
     -fx-background-color: #0064e195;
-    /*-fx-background-radius: 3;*/
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;
 }
 
-#readFlashPane {
+#introInstruct {
     -fx-border-color: TRANSPARENT;
-    -fx-background-color: EVE_BLUE;
+    -fx-background-color: #00439495;
+    -fx-margin-top: 20;
+    -fx-margin-bottom: 20;
+    -fx-padding: 20,10,20,10;
+    -fx-border-radius: 4 4 4 4;
+    -fx-background-radius: 4 4 4 4;
 }
 
+#readFlashPane {
+    -fx-border-color: TRANSPARENT;
+    -fx-background-color: FM_GREY;
+}
+
+/* The study mode selection pane */
 #studyModePane {
-    -fx-background-color: #29abe2;
+    /*-fx-background-color: #29abe2;*/
+    -fx-background-color: #0064e195;
     -fx-background-radius: 3;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
@@ -446,7 +500,7 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 }
 
 #studyBtnPane {
-    -fx-background-color: ICON_BLUE;
+    -fx-background-color: #0064e195;
     -fx-margin-top: 4;
     -fx-margin-bottom: 4;
     -fx-padding: 0, 10, 0, 10;
@@ -471,23 +525,26 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
     -fx-padding: 4,4,4,4;
 }
 
+
+
+#searchText{
+    -fx-border-radius: 3 0 0 3;
+    -fx-background-radius: 3 0 0 3;
+}
+
 #tfBox {
     -fx-background-color: white;
     -fx-padding: 4,4,4,4;
 }
 
-#searchText{
-    /*-fx-control-inner-background: #0E89EC; */
-    -fx-border-radius: 3 0 0 3;
-    -fx-background-radius: 3 0 0 3;
-    /*-fx-border-color: #0C73C5;*/
+#vidPlayerVBox {
+    -fx-background-color: FM_GREY;
 }
 
 /* prompt field text color bright blue*/
 #promptFAlert {
     -fx-prompt-text-fill: #0209F7;
-    -fx-background-color: #9276AC; /* fmPurple */
-    /*-fx-display-caret: none; */
+    -fx-background-color: FOCUS_BLUE; /* fmPurple */
 }
 
 /* prompt field text color */
@@ -497,12 +554,11 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 }
 
 #playerPopup {
-    -fx-background-color: FLASH_PURPLE;
+    -fx-background-color: FOCUS_BLUE;
     -fx-padding: 5, 5, 5, 5;
 }
 
 #toolTip {
-    /*-fx-background-color: rgba(5,216,53,0.8);*/
     -fx-text-fill: white;
     -fx-background-color: rgba(5,216,53,0.8);
     -fx-background-radius: 3px;
@@ -583,7 +639,7 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 #bckgnd_image {
     -fx-background-image: url("/image/blue_collage1.jpg");
     -fx-background-repeat: stretch;
-    -fx-background-size: 500 810;
+    /*-fx-background-size: 500 810;*/
     -fx-background-position: center center;
     /*-fx-effect: dropshadow(gaussian, black, 10, 1.0, 100, 100);*/
 }
@@ -591,9 +647,71 @@ Otherwise to modify a Type, use the '.' and identify the Type to be modified.
 #bckgnd_image_study {
     -fx-background-image: url("/image/Ingenuity-helicoptor-jpl.jpg");
     -fx-background-repeat: stretch;
-    -fx-background-size: 500 810;
+    /*-fx-background-size: 500 810;*/
     -fx-background-position: center center;
 }
+
+
+
+
+
+
+/*.tool-bar {
+    -fx-base: -dark-black;
+    -fx-font-size: 12pt;
+    -fx-background-color: #00000000;!*ladder(
+            -dark-black,
+            rgba(39, 40, 40, 0.07) 0%,
+            rgba(39, 40, 40, 0.07) 20%,
+            rgba(39, 40, 40, 0.07) 70%,
+            rgba(39, 40, 40, 0.7) 90%,
+            rgba(39, 40, 40, 0.075) 100%);*!
+
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: .9em 0.416667em .9em 0.416667em;
+    -fx-effect: dropshadow(two-pass-box,black,5,.2,0,0);
+}
+
+.segmented-button-bar .button {
+    -fx-background-color: #00000000;
+
+        !*ladder(
+            -darkest-black,
+            rgba(39, 40, 40, 0.07) 0%,
+            rgba(39, 40, 40, 0.07) 20%,
+            rgba(39, 40, 40, 0.07) 70%,
+            rgba(39, 40, 40, 0.7) 90%,
+            rgba(39, 40, 40, 0.075) 100%);*!
+
+    -fx-background-insets: 0, 1 1 1 0, 2 1 1 1;
+    -fx-background-radius: 0;
+    -fx-padding: 0.4em 1.833333em 0.4em 1.833333em;
+}
+
+.segmented-button-bar .button.first {
+    -fx-background-insets: 0, 1, 2 1 1 1;
+    -fx-background-radius: 3 0 0 3, 2 0 0 2, 2 0 0 2;
+}
+
+.segmented-button-bar .button.last {
+    -fx-background-insets: 0, 1 1 1 0, 2 1 1 1;
+    -fx-background-radius: 0 3 3 0, 0 2 2 0, 0 2 2 0;
+}
+
+.segmented-button-bar .button:pressed {
+    -fx-background-color: #00000000; !*ladder(
+            -darkest-black,
+            rgba(39, 40, 40, 0.07) 0%,
+            rgba(39, 40, 40, 0.07) 20%,
+            rgba(39, 40, 40, 0.07) 70%,
+            rgba(39, 40, 40, 0.7) 90%,
+            rgba(39, 40, 40, 0.075) 100%);*!
+}
+
+.tool-bar .spacer {
+    -fx-padding: 0 5.417em 0 0;
+}*/
+
 /*
 .text-area:focused .content {
     -fx-background-color: transparent, white, transparent, white;

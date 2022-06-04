@@ -1,5 +1,7 @@
 package campaign;
 
+import authcrypt.Auth;
+import authcrypt.UserData;
 import authcrypt.Verify;
 
 import campaign.db.DBConnect;
@@ -10,6 +12,7 @@ import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
 
 import flashmonkey.FlashMonkeyMain;
+import forms.utility.Alphabet;
 
 
 import java.io.IOException;
@@ -57,7 +60,7 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 	@Override
 	public void append(ILoggingEvent event) {
 		/* Send event to database error log */
-		init();
+		/*init();
 		
 		if (counter >= limit) {
 			return;
@@ -75,8 +78,7 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 			//System.out.println("Table = {}" + table.toString());
 			
 			DBConnect db = DBConnect.getInstance();
-			
-			Verify v = new Verify();
+
 			StackTraceElement callerData = event.getCallerData()[0];
 			
 			try {
@@ -91,7 +93,7 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 								//"caller_class, " +
 								"caller_method, " +
 								"caller_line ) VALUES ('"
-								+ v.getUserHash() + "', '"
+								+ Alphabet.encrypt(UserData.getUserName()) + "', '"
 								+ System.currentTimeMillis() + "', '"
 								+ event.getFormattedMessage() + "', '"
 								+ event.getLoggerName() + "', '"
@@ -109,7 +111,7 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 				e.printStackTrace();
 			} finally {
 				//connect.disconnect();
-			}
+			}*/
 		
 		//System.out.println("callerData.getMethodName() " + callerData.getMethodName());
 		//System.out.println("callerData.getLineNumber() " + callerData.getLineNumber());
@@ -124,7 +126,7 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 		} else {
 			connectedAlready = false;
 			try {
-				String url = "https://www.google.com";
+				String url = "https://www.flashmonkey.xyz";
 				HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 				connection.setRequestMethod("HEAD");
 				int responseCode = connection.getResponseCode();

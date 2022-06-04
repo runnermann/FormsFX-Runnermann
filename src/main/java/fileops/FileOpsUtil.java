@@ -22,23 +22,15 @@ public class FileOpsUtil {
 
     public static boolean folderExists(File path) {
         boolean bool = false;
-
-        //File fullPathFileName = new File( path + "/" + mediaName);
-
         try {
             if (!path.isDirectory()) {
                 path.mkdirs();
-                //fullPathFileName.createNewFile();
                 bool = true;
             } else {
-                //fullPathFileName.createNewFile();
                 bool = true;
             }
         } catch (NullPointerException e) {
-
             LOGGER.warn("NullPointerError in folderExists");
-            //System.out.println(e.getMessage());
-            //e.printStackTrace();
             System.exit(0);
         }
 

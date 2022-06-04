@@ -1,7 +1,6 @@
 package flashmonkey.utility;
 
 
-import fileops.MediaSync;
 import flashmonkey.FlashCardOps;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
@@ -11,13 +10,14 @@ import javafx.scene.Scene;
 import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.TimeUnit;
 
 public class Sleep {
 
-    private static final ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Sleep.class);
+    //private static final ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Sleep.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Sleep.class);
     // Delay in minutes
     private static final int delay = 10;
 

@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.junit.Test;
 import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testfx.api.FxRobot;
 import org.testfx.api.FxToolkit;
@@ -56,22 +57,20 @@ import static org.junit.Assert.assertTrue;
  *      4) After a user has finished a study session, the deck is sent to the cloud.
  *
  *      Prior to running the test.
- *          1) Ensure that TestDeck.dat exists locally. Robot will/should sync the deck
+ *          1) Ensure that TestDeck.dec exists locally. Robot will/should sync the deck
  *      between local and remote.
  *          2) Ensure that TestDeck media exists locally. Media will/should be syncronized
  *          between local and remote.
  * </pre>
- *
- * @throws Exception
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SyncTester extends ApplicationTest {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SyncTester.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SyncTester.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SyncTester.class);
 
     private static final String TEST_DECK = "History 2054";
-    CloudOps clops = new CloudOps();
     // The image from the snapshot in original form.
     BufferedImage buIm;
     Point2D paneXY;
@@ -94,7 +93,7 @@ public class SyncTester extends ApplicationTest {
     @Override
     public void start(Stage stage) throws Exception {
 
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         // At the beggining of the test session, remove the file
         // if it exists
 
@@ -116,9 +115,6 @@ public class SyncTester extends ApplicationTest {
 
         // logs the test in
         bobTheBot.robotSetup();
-
-
-        //System.out.println("\n TestingDeck.dat removed from file was: " + bool);
     }
 
 
@@ -129,11 +125,11 @@ public class SyncTester extends ApplicationTest {
         bobTheBot.robotSetup();
 
         String folder = DirectoryMgr.getMediaPath('t');
-        String fileName = "abcdTestDeck.dat";
+        String fileName = "abcdTestDeck.dec";
         String strPath = folder + fileName;
 
 
-        //String strPath = "../flashMonkeyFile/TestingDeck.dat";
+        //String strPath = "../flashMonkeyFile/TestingDeck.dec";
         File file = new File(strPath);
         //Path filePath = Paths.get(strPath);
         assertTrue("Deck located at: " + strPath + " Does not exist. ", file.exists());
@@ -177,8 +173,8 @@ public class SyncTester extends ApplicationTest {
         // set idk@idk.com S3 to contain some media but not all
         // a. get remote list of files
         System.out.println("SyncTest Test0: mediaSyncUploads+");
-
-        ArrayList<CloudLink> cloudLinks = FlashCardOps.getInstance().CO.getS3MediaList(TEST_DECK);
+        // @TODO note the TEST_DECK needs to change to deckFileName
+        ArrayList<CloudLink> cloudLinks = CloudOps.getS3MediaList(TEST_DECK);
         //List<String> removedList = Collections.synchronizedList(new ArrayList<>());
 
         System.out.println("cloudLinks size: <{}>" + cloudLinks.size());
@@ -321,7 +317,6 @@ public class SyncTester extends ApplicationTest {
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .uri(URI.create(Connect.LINK.getLink() + destination))
                 //@TODO set S3Creds to HTTPS
-                //.uri(URI.create("https://localhost:8080/resource-s3-list"))
                 .header("Content-Type", "application/json")
                 .build();
         try {

@@ -1,9 +1,10 @@
 package flashmonkey;
 
+import authcrypt.UserData;
 import core.ImageUtility;
 import core.ShapeUtility;
-import draw.shapes.FMRectangle;
-import draw.shapes.GenericShape;
+import type.draw.shapes.FMRectangle;
+import type.draw.shapes.GenericShape;
 import fileops.DirectoryMgr;
 import fileops.FileNaming;
 import fileops.FileOpsUtil;
@@ -109,7 +110,7 @@ public class CreateMediaTester extends ApplicationTest {
     FxRobot robot;// = new FxRobot();
     SleepRobotImpl sleep = new SleepRobotImpl();
 
-    String strPath = "../flashMonkeyFile/TestingDeck.dat";
+    String strPath = "../flashMonkeyFile/TestingDeck.dec";
     // image paths
     String imgPath = "src/resources/testing/TestImage.png";
     Path filePath = Paths.get(strPath);
@@ -544,7 +545,7 @@ public class CreateMediaTester extends ApplicationTest {
         int num = 0;
         for(GenericShape gs : shapeAry) {
 
-            if(num > 0 && gs.getClass().getName() == "draw.shapes.FMRectangle") {
+            if(num > 0 && gs.getClass().getName() == "FMRectangle") {
                 fmRect = (FMRectangle) gs;
                 System.out.println("found it" + fmRect.toString());
                 break;
@@ -702,7 +703,14 @@ public class CreateMediaTester extends ApplicationTest {
     }  // END TEST 1
 
 
+
+    Image qTxtImg;
+    Image aTxtImg;
+    Image[][] images = new Image[4][4];
+
+    int i = 0;
     /**
+     * <pre>
      * Builds the 4 card test that test 4, 5 and 6 use.
      * Check text, shapes, images, modifications, deletions, and additions are persistant in editor
      * and in read pane.
@@ -714,15 +722,10 @@ public class CreateMediaTester extends ApplicationTest {
      *      in readFlash session.
      *      a) rightPane
      *      b) in popUp.
+     * </pre>
      * @throws Exception
      */
-    Image qTxtImg;
-    Image aTxtImg;
-    Image[][] images = new Image[4][4];
-
-    int i = 0;
     @Test
-    
     void checkTextImagesAndShapesMultipleCards() throws Exception {
         setup();
         sleep(1000);
@@ -1005,18 +1008,19 @@ public class CreateMediaTester extends ApplicationTest {
     // Exit to read and verify changes.
 
      */
+
+    Image upperTxtImg;
+    Image lowerTxtImg;
+    ImageView rPaneiView;
     /**
      * Checks that correct text, shapes, and images appear
      * in the editor from a saved file.
      * @throws Exception
      */
-    Image upperTxtImg;
-    Image lowerTxtImg;
-    ImageView rPaneiView;
     @Ignore
     @Order(4)
     void check_Text_Images_n_shapes_In_Editor() throws Exception {
-
+/*
         //robot = new FxRobot();
         setUpFileExists();
         sleep(500);
@@ -1049,8 +1053,9 @@ public class CreateMediaTester extends ApplicationTest {
     
             
             // Name for qImg to retrieve from file
-            FileNaming qName = new FileNaming(ReadFlash.getInstance().getDeckName(), fileNaming.getCardHash(ReadFlash.getInstance().getDeckName(), "SHA"), 'U', ".png");
-            String qImgStr = mediaPath + qName.getFileName();
+            // Need to update this test so that it is naming the file based on how it looks.
+            FileNaming qName = new FileNaming(UserData.getUserName(), fileNaming.getCardHash(ReadFlash.getInstance().getDeckName(), "SHA"), 'i', ".png");
+            String qImgStr = mediaPath + qName.getImgFileName();
 
             // get the question image from the file
             Image qImage = new Image("File:" + qImgStr);
@@ -1075,8 +1080,9 @@ public class CreateMediaTester extends ApplicationTest {
 
 
             // *** Answer Image *** //
-            FileNaming ansName = new FileNaming(ReadFlash.getInstance().getDeckName(), fileNaming.getCardHash(ReadFlash.getInstance().getDeckName(), "SHA"), 'L', ".png");
-            String ansImgStr = mediaPath + ansName.getFileName();
+            // Need to update this test so that it is naming the file based on how it looks.
+            FileNaming ansName = new FileNaming(UserData.getUserName(), fileNaming.getCardHash(ReadFlash.getInstance().getDeckName(), "SHA"), 'i', ".png");
+            String ansImgStr = mediaPath + ansName.getImgFileName();
             Image ansImage = new Image("File:" + ansImgStr);
 
             // get answer Image from rPane
@@ -1143,10 +1149,12 @@ public class CreateMediaTester extends ApplicationTest {
             assertTrue("\nShapes do not match in lower editor", bool);
 
             sleep(100);
-        }
+
+ */
     }
-
-
-
-
 }
+
+
+
+
+

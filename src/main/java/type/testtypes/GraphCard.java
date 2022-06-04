@@ -1,41 +1,33 @@
 package type.testtypes;
 
 import flashmonkey.*;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import type.tools.calculator.DijkstraParser;
 import type.tools.calculator.ExpNode;
 import type.tools.calculator.Graph;
 import type.tools.calculator.OperatorInterface;
+import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
 import uicontrols.UIColors;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.EmptyStackException;
 
-//import javafx.scene.shape.Line;
-//import javafx.scene.text.Text;
-//import javafx.scene.control.Tooltip;
-//import javax.swing.ToolTipManager;
-//import java.lang.reflect.Field;
-//import java.rmi.server.ExportException;
 
 // scilab jlatex math
 //import org.scilab.forge.jlatexmath.TeXConstants;
@@ -69,20 +61,25 @@ import java.util.EmptyStackException;
  *
  * @author Lowell Stadelman
  */
-public class GraphCard extends MathCard {
+public class GraphCard implements GenericTestType<GraphCard> //extends GraphCard {
+{
+    private static GraphCard CLASS_INSTANCE;
 
-    // Contains the graph
-    private Pane graphPane;
-    private int graphXLow;
-    private int graphXHigh;
-    private int graphYLow;
-    private int graphYHigh;
-    //private int countX;
-    //private int countY;
-    private Graph cardGraph;
-    private DijkstraParser parser;
-    private SectionEditor upperEditor;
-    private static FMToolTip fmQTip;
+    private static int graphXLow;
+    private static int graphXHigh;
+    private static int graphYLow;
+    private static int graphYHigh;
+    private static Graph graphPane;
+    protected String expression;
+    private static DijkstraParser parser;
+    private static SectionEditor upperEditor;
+    private Button calcButton = new Button("Calc");
+
+    private final Color[] colors = {Color.BLUEVIOLET, Color.FUCHSIA, Color.GREENYELLOW, Color.DEEPSKYBLUE, Color.MEDIUMPURPLE,
+            Color.ORANGERED, Color.CRIMSON, Color.ALICEBLUE, Color.CYAN, Color.DEEPPINK};
+
+    //private static final double START_HT = 300;
+    //private static final double START_WD = 400;
 
     //private final String FTCLatex = "\\int_{a}^{b} f'(x)dx = f(b) - f(a)";
     //private final String fafbLatexBase = "f(b) - f(a) = ";
@@ -92,53 +89,176 @@ public class GraphCard extends MathCard {
     //private static DecimalFormat coordinateFormat = new DecimalFormat("0.####");
 
 
+    /*-------------------------------------------------------------**
+     *                        CONSTRUCTORS                          *
+     **------------------------------------------------------------**/
 
-    public GraphCard()
-    {
-        super();
+
+    private GraphCard() {/* no args contructor */}
+
+    public static synchronized GraphCard getInstance() {
+        if(CLASS_INSTANCE == null) {
+            CLASS_INSTANCE = new GraphCard();
+        }
+        return CLASS_INSTANCE;
     }
+
+    private void init() {
+        int centerX = 150;
+        int centerY = 100;
+        parser = new DijkstraParser();
+        graphPane = new Graph(0.0, 0.0);
+        upperEditor = new SectionEditor();
+    }
+
+
+    /*-------------------------------------------------------------**
+     *                          PANES
+     **------------------------------------------------------------**/
+
+
+    /**
+     * Builds the Test Editor View for this card. Contains the panes that are in
+     * this view.
+     * @param flashList
+     * @param p The formula for the math/Algebra/Trig/Calc problem
+     * @param r The response when the EncryptedUser.EncryptedUser gets the answer wrong or correct.
+     * @return Returns the Vbox with problem card and response card.
+     */
+ //   @Override
+    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor p, SectionEditor r, Pane parentPane)
+    {
+        // the vBox that contains the editor sections
+        VBox viewBox = new VBox(2);
+        viewBox.setSpacing(2);
+        StackPane gridStack = new StackPane();
+        init();
+        //upperEditor = p;
+        double ht = SceneCntl.getCreateFlashHt() / 3;
+        p.sectionHBox.setPrefHeight(ht);
+        r.sectionHBox.setPrefHeight(ht);
+
+        p.setPrompt("Function of the line ex:\n\t y = x ^ 2  \n\t y = 1 + x ^ 3 \n up to 10 functions will be displayed");
+        r.setPrompt("This area is displayed in the answer during Question and Answer \"FlashCard\" sessions");
+
+        viewBox.getChildren().clear();
+
+        DoubleProperty gPaneWdProperty = new SimpleDoubleProperty(parentPane.getBoundsInLocal().getWidth());
+        DoubleProperty gPaneHtProperty = new SimpleDoubleProperty(parentPane.getBoundsInLocal().getHeight());
+
+        // Set the graph lines and numbers to the stack
+        // sets the ht & wd of graph
+        VBox localVBox = new VBox();
+
+        // bind with ? to a size the graphPane
+        Pane graphP = Graph.createGraphPane(p.sectionHBox, gPaneWdProperty, gPaneHtProperty);
+        gridStack.getChildren().add(graphP);
+
+
+        viewBox.setSpacing(4);
+        viewBox.setAlignment(Pos.CENTER);
+        viewBox.getChildren().add(gridStack);
+        viewBox.getChildren().add(userSettingsBox());
+        viewBox.getChildren().addAll(p.sectionHBox, r.sectionHBox, calcButton);
+
+        graphP.setOnMouseClicked((e) -> graphClickAction());
+        // ------------old below------------ //
+
+
+        calcButton.setOnAction(e -> {
+            System.out.println("Calc button pressed in GraphCard");
+            expression = p.getPlainText();
+            // creates grid, & line, and makes responsive,
+            // parentPane used for resizing
+            gridStack.getChildren().add(calcButtonAction(expression, parentPane, gPaneWdProperty, gPaneHtProperty, Graph.getOriginXY(), colors));
+        });
+
+        // LatexPane
+        // parentVBox.getChildren().add(getLaTexPane());
+        // parentVBox.getChildren().clear();
+
+
+        return viewBox;
+    }
+
+
+    /**
+     * The main card pane during testing
+     * @param cc
+     * @param genCard
+     * @return
+     */
+ //   @Override
+    public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
+        GridPane parentGrid = new GridPane();
+        StackPane stack = new StackPane();
+        GridPane localGPane = new GridPane();
+
+        init();
+
+        DoubleProperty wdProperty = new SimpleDoubleProperty(parentPane.getBoundsInLocal().getWidth());
+        DoubleProperty htProperty = new SimpleDoubleProperty(parentPane.getBoundsInLocal().getHeight());
+
+        // Set the graph lines and numbers to the stack
+        // sets the ht & wd of graph
+        stack.getChildren().add( Graph.createGraphPane(localGPane, wdProperty, htProperty));
+        stack.setOnMouseClicked((e) -> graphClickAction());
+        // Get the reference to the originXY
+
+        localGPane.setVgap(4);
+        localGPane.setAlignment(Pos.CENTER);
+        Point2D originXY = Graph.getOriginXY();
+        // The graph's boundaries
+        graphXHigh = (int) Graph.getXHighLow().getX();
+        graphXLow = (int) Graph.getYHighLow().getY();
+        graphYHigh = (int) Graph.getYHighLow().getX();
+        // the top of the graph
+        graphYLow = (int) Graph.getYHighLow().getY();
+
+        // display expressions on the graph
+        expression = cc.getQText();
+        String[] exps = splitExps(expression);
+        for(int i = 0; i < exps.length; i++) {
+            stack.getChildren().add(createLinePane(localGPane, exps[i],
+                    wdProperty, htProperty, originXY, colors[i]));
+        }
+
+        localGPane.addRow(0, stack);
+        localGPane.addRow(1, userSettingsBox());
+        parentGrid.getChildren().add(0, localGPane);
+
+        return parentGrid;
+    }
+
     
     @Override
     public boolean isDisabled() {
         return false;
     }
 
-    private void init() {
-        //djParser = new DijkstraParser();
-        graphPane = new Pane();
-        graphPane.setMaxHeight(200);
-        graphPane.setMaxWidth(300);
-        graphPane.setId("graphPane");
 
-        graphXHigh = 6;
-        graphXLow = -8;
-        graphYHigh = 300;
-        graphYLow = -20;
 
-        int centerX = 150;
-        int centerY = 100;
-
-        parser = new DijkstraParser();
-        cardGraph = new Graph(centerX, centerY);
-        upperEditor = new SectionEditor();
-    }
-
-    /***  SETTERS ***/
+    /*------------------------------------------------------------**
+     *                          SETTERS
+     **------------------------------------------------------------**/
 
     public void setGraphXHigh(int high) {
-        this.graphXHigh = high;
+        graphXHigh = high;
     }
 
     public void setGraphXLow(int low) {
-        this.graphXLow = low;
+        graphXLow = low;
     }
 
-    /*** GETTERS ***/
+    /*------------------------------------------------------------**
+     *                          GETTERS
+     **------------------------------------------------------------**/
 
     /**
      * Sets 12th bit, or equal to  all other bits are 0
      * @return bitSet. Used when parsing
      * cards from flashList
+     * Not compatible ith Multi-Choice
      */
     @Override
     public int getTestType()
@@ -148,15 +268,73 @@ public class GraphCard extends MathCard {
     }
 
     @Override
-    public GenericTestType getTest() {
-
-        return new GraphCard();
-    }
-
-    @Override
     public String getName() {
         return "Graph Card";
     }
+
+
+
+    /**
+     * Provides the card layout in a char.
+     * layout: 'S' = single card layout,
+     * 'D' = double horizontal card, and
+     * 'd' = double vertical card
+     *
+     * @return
+     */
+    @Override
+    public char getCardLayout() {
+        return 'D';
+    }
+
+
+    @Override
+    public GenericTestType getTest() {
+        return new GraphCard();
+    }
+
+    /**
+     * Returns the array of ansButtons, An array
+     * should include the prevAnsButton and nextAnsButton (if they are needed)
+     * and always should include the answerButton. Used
+     * in placement in the south/bottom pane
+     *
+     * @return
+     */
+    @Override
+    public Button[] getAnsButtons() {
+        return new Button[0];
+    }
+
+    /**
+     * The ReadFlash class expects this method to return the implementation
+     * from the TestType for its answerButton. An answerButton should provide
+     * the testTypes expected behavior, format changes, when the EncryptedUser
+     * clicks on the AnswerButton. Include correct and incorrect behavior as
+     * a minimum.
+     */
+    @Override
+    public Button getAnsButton() {
+        return null;
+    }
+
+
+
+    @Override
+    public void ansButtonAction() {
+
+    }
+
+    @Override
+    public void prevAnsButtAction() {
+
+    }
+
+    @Override
+    public void nextAnsButtAction() {
+
+    }
+
 
     /**
      * Returns the Graph X High
@@ -179,100 +357,32 @@ public class GraphCard extends MathCard {
 
     @Override
     public void reset() {
-
-        graphPane.getChildren().clear();
-        graphPane.getChildren().add(cardGraph.createXYAxis(Color.BLACK, SceneCntl.getCenterWd(), 200));
-        graphPane.getChildren().add(cardGraph.createGrid(Color.web(UIColors.GRAPH_BGND), SceneCntl.getCenterWd(), 200 ));
-        cardGraph.axisNums(graphPane, SceneCntl.getCenterWd(), 200);
+        //graphPane = buildGraph(200, 200, graphPane);
     }
 
 
-    @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor p, SectionEditor r)
-    {
-        VBox vBox = super.getTEditorPane(flashList, p, r);
-        vBox.setSpacing(2);
 
-        init();
 
-        upperEditor = p;
-        p.setPrompt("Enter Math Formula, quiz entries go into textFields, Graph will be displayed " +
-                "in testing. ");
-        FlowPane flow = new FlowPane();
-        //graphPane.setMaxHeight(200);
-        graphPane.getChildren().add(cardGraph.createXYAxis(Color.BLACK, SceneCntl.getCenterWd(), 200));
-        graphPane.getChildren().add( cardGraph.createGrid(Color.web(UIColors.GRID_GREY), SceneCntl.getCenterWd(), 200));
-        cardGraph.axisNums(graphPane, SceneCntl.getCenterWd(), 200);
 
-        //centerX = SceneCntl.getWd() / 2;
-        //centerY = 100;
 
-        // Clickable graphPane for large graph pane
-        graphPane.setOnMouseClicked((e) -> graphClickAction());
 
-        flow.getChildren().addAll(graphPane, userSettingsBox());
 
-        flow.setMaxHeight(226);
-        flow.setVgap(4);
-        flow.setAlignment(Pos.CENTER);
+    /*******************************************************************************************************************
+     *                                                                                                                 *
+     *                                            Graph Card Specific                                                  *
+     *                                                                                                                 *
+     ******************************************************************************************************************/
 
-        vBox.getChildren().add(0, flow);
-        Pane pane = new Pane();
-        pane.setMinWidth(100);
-        pane.setMinHeight(100);
-        // LatexPane
-//        vBox.getChildren().add(getLaTexPane());
 
-        return vBox;
-    }
 
-    /**
-     * The main card pane during testing
-     * @param cc
-     * @param genCard
-     * @return
-     */
-    @Override
-    public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane)
-    {
 
-        GridPane gridPane = (GridPane) super.getTReadPane(cc, genCard, parentPane);
-        FlowPane flow = new FlowPane();
 
-        init();
 
-        //graphPane.setPrefHeight(200);
-        graphPane.getChildren().add(cardGraph.createXYAxis(Color.BLACK, SceneCntl.getCenterWd(), 200));
-        graphPane.getChildren().add( cardGraph.createGrid(Color.web(UIColors.GRID_GREY), SceneCntl.getCenterWd(), 200));
-        cardGraph.axisNums(graphPane, SceneCntl.getCenterWd(), 200);
 
-        super.expression = cc.getQText();
-
-        // reset the screen
-        reset();
-        // split multiple expressions
-        String[] exps = splitExps(expression);
-        // display expressions on the graph
-        for(String e : exps) {
-
-            graphPane = graphExpression( e, graphXLow, graphXHigh, graphYLow, graphYHigh, graphPane, 300, 200);
-        }
-
-        // Determine Y upperRange, and Y lowerRange
-        // Use defaults and provide EncryptedUser.EncryptedUser a way to change xlow
-        // and xHigh range
-        graphPane.setOnMouseClicked((e) -> graphClickAction());
-
-        flow.getChildren().addAll(graphPane, userSettingsBox());
-
-        flow.setMaxHeight(226);
-        flow.setVgap(4);
-        flow.setAlignment(Pos.CENTER);
-
-        gridPane.getChildren().add(0, flow);
-
-        return gridPane;
-    }
+    //@Override
+    //protected VBox getAnswerBox() {
+    //    return new VBox(2);
+    //}
 
     // Latex Math example -- REMOVE --
     private Pane getLaTexPane() {
@@ -361,7 +471,6 @@ public class GraphCard extends MathCard {
      * @return
      */
     private String[] splitExps(String exps) {
-
         //reset();
         return exps.split("\n");
     }
@@ -373,320 +482,298 @@ public class GraphCard extends MathCard {
      *                                                                                                                 *
      ******************************************************************************************************************/
 
-
-
     /**
      * Recieves the expression and inserts it as a line into an existing graphView.
-     * @param exp       The expression
-     * @param xLowLim   The low X limit
-     * @param xHighLim  The high X limit
-     * @param graphP    The pane the graph exists in
-     * @return
+     * @param parentPane The pane this line will be in
+     * @param exp The expression of the line ie y = x ^ 2
+     * @param wdProperty ...
+     * @param htProperty ...
+     * @param originXY The origin of the graph
+     * @param color The color for this line
+     * @return A pane containing the lines created by the function
      */
-    public Pane graphExpression(String exp, double xLowLim, double xHighLim, double yLowLim, double yHighLim,
-                                Pane graphP, int width, int height)
+    public static Pane createLinePane(Pane parentPane, String exp, DoubleProperty wdProperty, DoubleProperty htProperty, Point2D originXY, Color color) {
+
+        // @TODO finish making line responsive.
+
+        FunctionLine funcPane = new FunctionLine();
+        funcPane.functionPathActions(exp, originXY, color, wdProperty, htProperty);
+        parentPane.widthProperty().addListener((obs, oldval, newVal) -> {
+            funcPane.getChildren().clear();
+            wdProperty.setValue(newVal.doubleValue());
+            funcPane.functionPathActions(exp, originXY, color, wdProperty, htProperty);
+        });
+        parentPane.heightProperty().addListener((obs, oldval, newVal) -> {
+            funcPane.getChildren().clear();
+            htProperty.setValue(newVal.doubleValue());
+            funcPane.functionPathActions(exp, originXY, color, wdProperty, htProperty);
+        });
+
+
+        return funcPane;
+    }
+
+    private static class FunctionLine extends Pane
     {
 
-        SVGPath path = new SVGPath();
+            private void functionPathActions(String exp, Point2D originXY, Color color, DoubleProperty wdProperty, DoubleProperty htProperty) {
+                    SVGPath path = new SVGPath();
+                    // clip the graph edges to prevent any bleed over
+                    double ht = htProperty.getValue();
+                    double wd = wdProperty.getValue();
+                    Rectangle clip = new Rectangle(wd, ht);
 
-        Canvas graphCanvas = new Canvas();
-        graphCanvas.setHeight(height);
-        graphCanvas.setWidth(width);
-        // clip the graph edges to prevent any bleed over
-        Rectangle clip = new Rectangle(width, height);
-        clip.setLayoutX(graphCanvas.getLayoutX());
-        clip.setLayoutY(graphCanvas.getLayoutY());
+                    FMToolTip fmTip = new FMToolTip(this);
+                    path.setOnMouseEntered(e -> {
+                        fmTip.getFMTooltip(e, exp, color);
+                        fmTip.show();
+                    });
+                    path.setOnMouseExited(e -> {
+                        fmTip.remove();
+                    });
 
-        fmQTip = new FMToolTip(graphP);
+                    this.setOnMouseMoved(e -> {
+                        try {
+                            fmTip.update(e, path);
+                        } catch (IndexOutOfBoundsException f) {
+                            // do nothing
+                        }
+                    });
 
-        path.setOnMouseEntered(e -> {
-            fmQTip.getFMTooltip(e, exp);
-            fmQTip.show();
-        });
-
-        path.setOnMouseExited(e -> {
-            fmQTip.remove();
-        });
-
-        graphP.setOnMouseMoved(e -> {
-            System.out.println("mouse is moving");
-            fmQTip.update(e, path);
-        });
-
-        path.setFill(Color.TRANSPARENT);
-        path.setStroke(Color.BLUEVIOLET);
-        path.setContent(graphFunction(exp, (int) xLowLim, (int) xHighLim, (int) yLowLim, (int) yHighLim, width / 2, height / 2));
-
-        graphP.getChildren().add(path);
-
-        graphP.setClip(clip);
-        return graphP;
-    }
+                    path.setFill(Color.TRANSPARENT);
+                    // The individual color for the line
+                    path.setStroke(color);
+                    path.setContent(graphFunction(exp, (int) Graph.getFunctionXStartEnd().getX(), (int) Graph.getFunctionXStartEnd().getY(), graphYLow, graphYHigh, originXY));
+                    this.getChildren().add(path);
 
 
-
-    /**
-     * Creates an svgPath string from a "y =" function.
-     *  Expects that y = is not included in the expression.
-     *  Executes y = x as per expression. X begins at xStart and
-     *  ends at xEnd. Calculations beyond yLowLim or yHighLim are
-     *  excluded. YlowLim and yHighLim are the high and low bounderies.
-     *  Low being the top or 0  and high being the bottom or 300 by default.
-     *  Bounderies are the height and width in pixels divided by 10 or the height
-     *  in pixels between each tickmark on the x and y axis.
-     *
-     *  convert to a parallel method using memoization and Futures. See Parallel programming 2.1 and 2.2 in particular
-     *  Blase Pascal's traingle. Memoization is particularly used in Functional Programming where F(X) is a function. The
-     *  problem being that in a sequential program, sequential operation are not an issue, however in parallel programming,
-     *  where a mathmatical problem is broken into batches the problem is not so simple. Using FUTURES, the problem then
-     *  is stored, assuming there is a data structure available, in the data structure.
-     *  The problem is not executed until it is called on by FUTURES.GET. Then the tasks are executed recursively in parallel.
-     * @param expression
-     * @param xStart
-     * @param xEnd
-     * @param yLowLim upper pane boundry, 0 by default
-     * @param yHighLim Lower pane boundry, 300 by default
-     * @return
-     */
-    private String graphFunction(String expression, int xStart, int xEnd, int yLowLim, int yHighLim, int centerX, int centerY) {
-
-        System.out.println(" *!*!* IN graphFunction() !*!*!");
-
-        int length = xEnd - xStart;
-        length *= 5;
-        System.out.println( " length: " + length);
-
-        double y;
-        double x = xStart;
-
-        // the converted coordinates
-        double xCoord;
-        double yCoord;
-
-        // Builds the string used to build the SVG.
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("M");
-
-        for(int i = xStart; i < length; i++) {
-
-            int index = 0;
-            x += .2;
-            // Evaluate the expression and multiply
-            // the result by -1. (display is opposite)
-            y = evaluate(expression, x) * -1;
-
-            yCoord = (y * 20) + centerY;
-            xCoord = (x * 20) + centerX;
-
-            // If the line goes out of bounds. Stop graphing it
-            // and start over with a new line when it re-enters
-            if (yCoord < yHighLim && yCoord > yLowLim) {
-
-                sb.append( xCoord + " " + yCoord);
-
-                if (i < length - 1) {
-                    sb.append(", L");
-                }
-            } else if(sb.toString().charAt(sb.length() - 1) == 'L') {
-                index = sb.lastIndexOf("L");
-
-                sb.replace(index , index + 1,"M");
-            }
-        }
-        // For the hanging 'M' added but without a point.
-        // Prevents errors
-        if(sb.toString().charAt(sb.length() - 1) == 'M') {
-            int index = sb.lastIndexOf("M");
-            sb.replace(index, index + 1, "");
-        }
-
-        //System.out.println("the svgString: " + sb);
-        return sb.toString();
-    }
-
-    /**
-     * Helper to graphFunction, evaluates an expression and replaces
-     * "x" in the expression with the parameter x
-     * for this iteration.
-     * @param expression
-     * @param x
-     * @return
-     */
-    private double evaluate(String expression, double x) {
-
-        //expression = expression.trim();
-        ArrayList subExpList;
-
-        try {
-            subExpList = parse(expression, x);
-            parser.parseIntoRPN(subExpList);
-        } catch (Exception e) {
-            // @ todo Handle operator bad input exception in GraphCard line 401
-        }
-
-        if(parser.isInvalidInput()) {
-
-            System.out.println("TestButton checking for inValidInput set to true: " + parser.isInvalidInput());
-            // Insert a temporary error message into the
-            // text area
-            StringBuilder sb = new StringBuilder();
-            sb.append(expression);
-            sb.append("\n\n " + parser.getErrorMessage());
-            upperEditor.setText(sb.toString());
-            upperEditor.setStyleError();
-            // After a delay, return the textArea back
-            // to the original expression.
-            EventHandler<ActionEvent> eventHandler = e -> {
-                upperEditor.setText(expression);
-                upperEditor.setStyleNormal();
-            };
-
-            Timeline animation = new Timeline(new KeyFrame(Duration.millis(5000), eventHandler));
-            animation.play();
-
-            return 0;
-
-        } else {
-
-            return parser.execute(DijkstraParser.getOutQueue());
-        }
-    }
-
-    /**
-     * A Graph Specific method. Replaces DijkstraParser.parseIntoRPN()
-     * This method parses the expression into sub-expressions and replaces the value for x
-     * with the value in arguement "x".
-     * @param express The string expression
-     * @param x the value for "x"
-     * @return returns an ArrayList of elements
-     */
-    private ArrayList parse(String express, double x) throws Exception {
-
-        // Remove "y =" from the expression
-        String expMinus = express.substring(3);
-        expMinus = expMinus.trim(); // clean whitespace from start
-        String element;
-        String[] elements = expMinus.split(" ");
-        ArrayList subExpList = new ArrayList(10);
-        String strX = "";
-        String strY = "";
-
-        // Evaluate each sub-element and determine if it's an "x", an
-        // operator, or a double.
-        for(int i = 0; i < elements.length; i++) {
-            element = elements[i];
-            // Expression length,
-            // used to determine if number or op
-            int length = element.length();
-            char c;
-
-            // classify the element as a number or operator
-            // and add it to the subExpList.
-
-            // Check 2nd char in case it's a negative number
-            if (length > 1) {
-                c = element.charAt(length - 1);
-            } else {
-                c = element.charAt(0);
+                    this.setClip(clip);
             }
 
-            // Classify, seperate, and add to subExpList
-            if (Character.isDigit(c)) {
-                double num = Double.parseDouble(element);
-                subExpList.add(num);
 
-            } else if (c == 'x') {
+            /**
+             * Creates an svgPath string from a "y =" function.
+             * Expects that y = is not included in the expression.
+             * Executes y = x as per expression. X begins at xStart and
+             * ends at xEnd. Calculations beyond yLowLim or yHighLim are
+             * excluded. YlowLim and yHighLim are the high and low boundaries.
+             * Low being the top or 0  and high being the bottom or 300 by default.
+             * Boundaries are the height and width in pixels divided by 10 or the height
+             * in pixels between each tickmark on the x and y axis.
+             * <p>
+             * convert to a parallel method using memoization and Futures. See Parallel programming 2.1 and 2.2 in particular
+             * Blase Pascal's triangle. Memoization is particularly used in Functional Programming where F(X) is a function. The
+             * problem being that in a sequential program, sequential operation are not an issue, however in parallel programming,
+             * where a mathematical problem is broken into batches the problem is not so simple. Using FUTURES, the problem then
+             * is stored, assuming there is a data structure available, in the data structure.
+             * The problem is not executed until it is called on by FUTURES.GET. Then the tasks are executed recursively in parallel.
+             *
+             * @param expression The expression of the line.
+             * @param xStart     The graph's start x numerical from left to right or negative to positive if applies.
+             * @param xEnd       The graph's end X
+             * @param yLowLim    upper pane boundary, 0 by default
+             * @param yHighLim   Lower pane boundary, 300 by default
+             * @return
+             */
+            private String graphFunction(String expression, int xStart, int xEnd, int yLowLim, int yHighLim, Point2D originXY) {
 
-                if (element.charAt(0) == '-') {
-                    subExpList.add(-x);
+                System.out.println(" *!*!* IN graphFunction() !*!*!");
+                // offsets to adjust line to graph
+                int xOffset = -4;
+                int yOffset = -14;
+                // clip the line offset
+                int upOffset = -100;
 
-                } else {
+                System.out.println("\n\nxStart " + xStart + ", xEnd " + xEnd + "\n\n");
+                System.out.println("\n\nyLowLim " + yLowLim + " yHighLim " + yHighLim + " \n\n");
 
-                    subExpList.add(x);
-                }
+                int length = xEnd - xStart;
+                length *= 5;
+                System.out.println(" length: " + length);
 
-            } else { // it's an operator
+                double y;
+                double x = xStart;
 
-                OperatorInterface operator = DijkstraParser.getOperator(element);
+                // the converted coordinates
+                double xCoord;
+                double yCoord;
 
-                if (i < 0) {
-                    System.err.println("ERROR: There are not enough numbers for the " + operator.getSymbol() +
-                            " operation. \nCheck the format of the expression.");
-                    if (operator.getPriority() != 0) {
-                        throw new EmptyStackException();
+                // Builds the string used to build the SVG.
+                StringBuilder sb = new StringBuilder();
+
+                sb.append("M");
+                double origX = originXY.getX();
+                double origY = originXY.getY() / 2;
+
+                for (int i = xStart; i < length; i++) {
+
+                    int index = 0;
+                    x += .2;
+                    // Evaluate the expression and multiply
+                    // the result by -1. (display is opposite)
+                    y = evaluate(expression, x) * -1;
+
+                    yCoord = (y * 20) + origY + yOffset;
+                    xCoord = (x * 20) + origX + xOffset;
+
+                    // If the line goes out of bounds. Stop graphing it
+                    // and start over with a new line when it re-enters
+                    if (yCoord < yHighLim && yCoord > yLowLim + upOffset) {
+                        //        if (yCoord < 10000 && yCoord > -10000) {
+                        sb.append(xCoord + " " + yCoord);
+
+                        if (i < length - 1) {
+                            sb.append(", L");
+                        }
+                    } else if (sb.toString().charAt(sb.length() - 1) == 'L') {
+                        index = sb.lastIndexOf("L");
+
+                        sb.replace(index, index + 1, "M");
+                    } else {
+                        System.out.println(" out of bounds Y " + y + ",  yCoord: " + yCoord);
                     }
                 }
-
-                if(operator.isUnaryOp()) { // sqrt, abs,
-
-                    // for printing values prior to execution
-                    strX = elements[i + 1];
+                // For the hanging 'M' added but without a point.
+                // Prevents errors
+                if (sb.toString().charAt(sb.length() - 1) == 'M') {
+                    int index = sb.lastIndexOf("M");
+                    sb.replace(index, index + 1, "");
                 }
-                else if(i > 1 && i < elements.length - 1) {
-                    // for printing values prior to execution
-                    strX = elements[i - 1];
-                    strY = elements[i + 1];
+
+                return sb.toString();
+            }
+
+            /**
+             * Helper to graphFunction, evaluates an expression and replaces
+             * "x" in the expression with the parameter x
+             * for this iteration.
+             *
+             * @param expression
+             * @param x
+             * @return
+             */
+            private static double evaluate(String expression, double x) {
+
+                ArrayList subExpList;
+
+                try {
+                    subExpList = parse(expression, x);
+                    parser.parseIntoRPN(subExpList);
+                } catch (Exception e) {
+                    // Handle operator bad input exception in GraphCard line 401
+                }
+
+                if (parser.isInvalidInput()) {
+
+                    System.out.println(" Invalid input: " + parser.isInvalidInput());
+                    // Insert a temporary error message into the
+                    // text area
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(expression);
+                    sb.append("\n\n " + parser.getErrorMessage());
+
+                    FxNotify.notificationDark("What !?!", sb.toString(), Pos.CENTER, 20,
+                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+
+                    return 0;
                 } else {
-                    if (operator.getPriority() != 0) {
-//                        throw new EmptyStackException();
+                    return parser.execute(DijkstraParser.getOutQueue());
+                }
+            }
+
+            /**
+             * A Graph Specific method. Replaces DijkstraParser.parseIntoRPN()
+             * This method parses the expression into sub-expressions and replaces the value for x
+             * with the value in arguement "x".
+             *
+             * @param express The string expression
+             * @param x       the value for "x"
+             * @return returns an ArrayList of elements
+             */
+            private static ArrayList parse(String express, double x) throws Exception {
+
+                // Remove "y =" from the expression
+                String expMinus = express.substring(3);
+                expMinus = expMinus.trim(); // clean whitespace from start
+                String element;
+                String[] elements = expMinus.split(" ");
+                ArrayList subExpList = new ArrayList(10);
+                String strX = "";
+                String strY = "";
+
+                // Evaluate each sub-element and determine if it's an "x", an
+                // operator, or a double.
+                for (int i = 0; i < elements.length; i++) {
+                    element = elements[i];
+                    // Expression length,
+                    // used to determine if number or op
+                    int length = element.length();
+                    char c;
+
+                    // classify the element as a number or operator
+                    // and add it to the subExpList.
+
+                    // Check 2nd char in case it's a negative number
+                    if (length > 1) {
+                        c = element.charAt(length - 1);
+                    } else {
+                        c = element.charAt(0);
+                    }
+
+                    // Classify, seperate, and add to subExpList
+                    if (Character.isDigit(c)) {
+                        double num = Double.parseDouble(element);
+                        subExpList.add(num);
+
+                    } else if (c == 'x') {
+
+                        if (element.charAt(0) == '-') {
+                            subExpList.add(-x);
+
+                        } else {
+
+                            subExpList.add(x);
+                        }
+
+                    } else { // it's an operator
+
+                        OperatorInterface operator = DijkstraParser.getOperator(element);
+
+                        if (i < 0) {
+                            System.err.println("ERROR: There are not enough numbers for the " + operator.getSymbol() +
+                                    " operation. \nCheck the format of the expression.");
+                            if (operator.getPriority() != 0) {
+                                throw new EmptyStackException();
+                            }
+                        }
+
+                        if (operator.isUnaryOp()) { // sqrt, abs,
+                            // for printing values prior to execution
+                            strX = elements[i + 1];
+                        } else if (i > 1 && i < elements.length - 1) {
+                            // for printing values prior to execution
+                            strX = elements[i - 1];
+                            strY = elements[i + 1];
+                        } else {
+                            if (operator.getPriority() != 0) {
+                                //                        throw new EmptyStackException();
+                            }
+                        }
+
+                        // for display when answered incorrectly
+                        String strOrigSubExp = parser.getStrExpr(strX, strY, operator);
+                        ExpNode exp = new ExpNode(operator, strOrigSubExp, i);
+
+                        // add the expression to the sub-expession list
+                        subExpList.add(exp);
                     }
                 }
-
-                // for display when answered incorrectly
-                String strOrigSubExp = parser.getStrExpr(strX, strY, operator);
-                ExpNode exp = new ExpNode(operator, strOrigSubExp, i);
-
-                // add the expression to the sub-expession list
-                subExpList.add(exp);
+                return subExpList;
             }
-        }
-        return subExpList;
     }
 
 
 
-    /*******************************************************************************************************************
-     *                                                                                                                 *
-     *                                                      TABLE                                                      *
-     *                                                                                                                 *
-     ******************************************************************************************************************/
-
-/*
-    private Stage tableWindow;
-    private Scene tableScene;
-    public void createTable() {
-
-        Stage tableWindow = new Stage();
-        Scene tableScene;// = new Scene();
-
-
-        int tableMinX = (int) FlashMonkeyMain.getWindow().getX();
-        int tableMinY = (int) FlashMonkeyMain.getWindow().getY();
-
-        // Create new window for table
-
-        // create lines for table with labels
-
-        // Calculate X values at division of ... 1 unit == 20? pixels
-
-        // Calculate y values at interval of ... 1 unit == 20? pixels
-
-
-        // show the window
-        tableScene = new Scene(SomePanes go here);
-        tableWindow.setScene(tableScene);
-        tableWindow.setX(tableMinX);
-        tableWindow.setY(tableMinY);
-        tableWindow.setTitle("Draw tools");
-        tableWindow.show();
-
-    }
-
-    public static void onClose() {
-
-    }
-*/
 
     /*******************************************************************************************************************
      *                                                                                                                 *
@@ -699,17 +786,19 @@ public class GraphCard extends MathCard {
      * Create the table of x and y =
      * @param expression
      */
-    @Override
-    public void calcButtonAction(String expression, SectionEditor p) {
-
+    //@Override
+    private Pane calcButtonAction(String expression, Pane parentPane, DoubleProperty wdProperty, DoubleProperty htProperty, Point2D originXY, Color[] colors) {
+        Pane pane = new Pane();
         reset();
         // split multiple expressions
         String[] exps = splitExps(expression);
         // display expressions on the graph
         for(int i = 0; i < exps.length; i++) {
-            graphPane = graphExpression( exps[i], graphXLow, graphXHigh, graphYLow, graphYHigh, graphPane, 300, 200);
+            //Pane parentPane, String exp, DoubleProperty wdProperty, DoubleProperty htProperty, Point2D originXY, Color color)
+            System.out.println("loop " + i + " adding to line to pane");
+            pane.getChildren().add(createLinePane(parentPane, exps[i], wdProperty, htProperty, originXY, colors[i]));
         }
-
+        return pane;
     }
 
     /**
@@ -722,10 +811,9 @@ public class GraphCard extends MathCard {
         // determin screen size and build graph to it's size minus the width of the main app.
         // make the pane panable and zoomable.
 
-        System.out.printf("*** graphClickAction called ***");
+        //System.out.printf("*** graphClickAction called ***");
 
         lgPane.start(graphStage);
-
     }
 
 
@@ -789,46 +877,28 @@ public class GraphCard extends MathCard {
         public void start(Stage graphStage) {
 
             Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
-            double height = screensize.getHeight();
-            height -= 40;
-            double ratio = height / 300;
-            int centerX = (int) height / 2;
-            int centerY = centerX;
-            Graph largeGraph = new Graph(centerX, centerY);
+            DoubleProperty htProperty = new SimpleDoubleProperty(screensize.getHeight() - 40);
+            double height = htProperty.getValue();
 
-            System.out.println("\n\n *** ratio: " + ratio + " ***" +
-                    "\n height " + height);
+            Graph largeGraph = new Graph( height, height);
 
-            // set deminsions of graphStage
+            // set dimensions of graphStage
             graphStage.setWidth(height);
             graphStage.setHeight(height);
 
             // set pane
             Pane pane = new Pane();
 
-            //pane = createXYAxis(Color.web(UIColors.FM_WHITE), height, height);
-            pane.getChildren().add( largeGraph.createXYAxis(Color.BLACK, height, height));
-            pane.getChildren().add( largeGraph.createGrid(Color.web(UIColors.GRID_GREY), height, height ));
-            //countX -= 1;
-            //countY -= 1;
-            largeGraph.axisNums( pane, height, height );
-
             // split multiple expressions
             String[] exps = splitExps(expression);
             // display expressions on the graph
-
-            for(String e : exps) {
-                pane = graphExpression(
-                        e,
-                        graphXLow * ratio,
-                        graphXHigh * ratio,
-                        graphYLow * ratio,
-                        graphYHigh* ratio,
-                        pane,
-                        (int) height,
-                        (int) height);
-            }
-
+//            for(String e : exps) {
+//                pane = createLinePane(
+//                        pane,
+//                        e,
+//                        htProperty,
+//                        htProperty);
+//            }
 
             Scene graphScene = new Scene(pane, height, height, Color.web(UIColors.FM_WHITE));
             graphScene.getStylesheets().add("css/mainStyle.css");
@@ -837,57 +907,5 @@ public class GraphCard extends MathCard {
         }
     }
 
-
-    /**------------------------------------------------------------**
-     *                        ToolTip HACK
-     **------------------------------------------------------------**/
-
-
-    /**
-     * Uses Reflection to set the startTiming in ToolTip
-     * @param tooltip
-     * @param millis
-     */
-    /*
-    public static void tooltipStartTiming(Tooltip tooltip, int millis) {
-        try {
-            Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
-            fieldBehavior.setAccessible(true);
-            Object objBehavior = fieldBehavior.get(tooltip);
-
-            Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
-            fieldTimer.setAccessible(true);
-            Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
-
-            objTimer.getKeyFrames().clear();
-            objTimer.getKeyFrames().add(new KeyFrame(new Duration(millis)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Uses Reflection to set the hidTiming in ToolTip
-     * @param tooltip
-     * @param millis
-     */
-    /*
-    public static void tooltipHideTiming(Tooltip tooltip, int millis) {
-        try {
-            Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
-            fieldBehavior.setAccessible(true);
-            Object objBehavior = fieldBehavior.get(tooltip);
-
-            Field fieldTimer = objBehavior.getClass().getDeclaredField("hideTimer");
-            fieldTimer.setAccessible(true);
-            Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
-
-            objTimer.getKeyFrames().clear();
-            objTimer.getKeyFrames().add(new KeyFrame(new Duration(millis)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    */
 
 }

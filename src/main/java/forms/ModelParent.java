@@ -29,7 +29,6 @@ public abstract class ModelParent implements FormModel {
 	@Override
 	public Form getFormInstance() {
 		if (formInstance == null) {
-			System.err.println("formInstance is null");
 			createForm();
 		}
 		return formInstance;

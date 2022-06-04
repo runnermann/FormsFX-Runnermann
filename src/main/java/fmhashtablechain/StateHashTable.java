@@ -16,7 +16,7 @@ public class StateHashTable<K extends String, V extends MediaSyncObj> extends Ha
 	}
 	
 	/**
-	 * <p> Uses @code(<String, Integer>) for key, map</p>
+	 * <p> Uses {@code <String, Integer>} for key, map</p>
 	 * <p>Sets the K,V pair into the map. If there is a collision at
 	 * K then ADDs the value to the existing value. </p>
 	 * <p>The resulting integer after three passes will determine

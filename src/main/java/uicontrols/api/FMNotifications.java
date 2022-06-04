@@ -76,19 +76,19 @@ import static impl.org.controlsfx.i18n.Localization.getString;
  * screen, unlike the ControlsFX NotificationPane which shows notification messages
  * within your application itself.
  *
- * <h3>Screenshot</h3>
+ * Screenshot
  * <p>
  * The following screenshot shows a sample notification rising from the
  * bottom-right corner of my screen:
- *
+ *</p>
  * <br>
  * <br>
  * <img src="notifications.png" alt="Screenshot of Notifications">
  *
- * <h3>Code Example:</h3>
+ * Code Example:
  * <p>
  * To create the notification shown in the screenshot, simply do the following:
- *
+ *</p>
  * <pre>
  * {@code
  * Notifications.create()
@@ -99,15 +99,13 @@ import static impl.org.controlsfx.i18n.Localization.getString;
  * </pre>
  *
  * <p>When there are too many notifications on the screen, one can opt to collapse
- * the notifications into a single notification using {@link Notifications#threshold(int, Notifications)}.</p>
+ * the notifications into a single notification using {@code Notifications#threshold(int, Notifications)}.</p>
  * <pre>
- * {@code
  * Notifications.create()
  *              .title("Title Text")
  *              .text("Hello World 0!")
  *              .threshold(3, Notifications.create().title("Collapsed Notification"))
  *              .showWarning();
- * }
  * </pre>
  *
  */
@@ -156,6 +154,7 @@ public class FMNotifications {
 	
 	/**
 	 * Call this to begin the process of building a notification to show.
+	 * @return returns an FMNotifications
 	 */
 	public static FMNotifications create() {
 		return new FMNotifications();
@@ -163,6 +162,8 @@ public class FMNotifications {
 	
 	/**
 	 * Specify the text to show in the notification.
+	 * @param text ..
+	 * @return returns an FMNotifications
 	 */
 	public FMNotifications text(String text) {
 		this.text = text;
@@ -171,6 +172,8 @@ public class FMNotifications {
 	
 	/**
 	 * Specify the title to show in the notification.
+	 * @param title ..
+	 * @return this FMNotification
 	 */
 	public FMNotifications title(String title) {
 		this.title = title;
@@ -179,6 +182,8 @@ public class FMNotifications {
 	
 	/**
 	 * Specify the graphic to show in the notification.
+	 * @param graphic The graphic for this notification
+	 * @return This
 	 */
 	public FMNotifications graphic(Node graphic) {
 		this.graphic = graphic;
@@ -188,6 +193,8 @@ public class FMNotifications {
 	/**
 	 * Specify the position of the notification on screen, by default it is
 	 * {@link Pos#BOTTOM_RIGHT bottom-right}.
+	 * @param position ..
+	 * @return this
 	 */
 	public FMNotifications position(Pos position) {
 		this.position = position;
@@ -199,6 +206,8 @@ public class FMNotifications {
 	 * or {@link Node}. If specified, the FMNotifcations will be inside
 	 * the owner, otherwise the FMNotifcations will be shown within the whole
 	 * primary (default) screen.
+	 * @param owner The owner object
+	 * @return this
 	 */
 	public FMNotifications owner(Object owner) {
 		if (owner instanceof Screen) {
@@ -212,6 +221,8 @@ public class FMNotifications {
 	/**
 	 * Specify the duration that the notification should show, after which it
 	 * will be hidden.
+	 * @param duration ..
+	 * @return this
 	 */
 	public FMNotifications hideAfter(Duration duration) {
 		this.hideAfterDuration = duration;
@@ -222,6 +233,8 @@ public class FMNotifications {
 	 * Specify what to do when the user clicks on the notification (in addition
 	 * to the notification hiding, which happens whenever the notification is
 	 * clicked on).
+	 * @param onAction EventHandler
+	 * @return this
 	 */
 	public FMNotifications onAction(EventHandler<ActionEvent> onAction) {
 		this.onAction = onAction;
@@ -232,6 +245,7 @@ public class FMNotifications {
 	 * Specify that the notification should use the built-in dark styling,
 	 * rather than the default 'modena' notification style (which is a
 	 * light-gray).
+	 * @return this
 	 */
 	public FMNotifications darkStyle() {
 		styleClass.add(STYLE_CLASS_DARK);
@@ -242,6 +256,7 @@ public class FMNotifications {
 	 * Specify that the notification should use the built-in purple styling,
 	 * rather than the default 'modena' notification style (which is a
 	 * light-gray).
+	 * @return this
 	 */
 	public FMNotifications purpleStyle() {
 		styleClass.add(STYLE_CLASS_PURPLE);
@@ -252,6 +267,7 @@ public class FMNotifications {
 	 * Specify that the notification should use the built-in blue styling,
 	 * rather than the default 'modena' notification style (which is a
 	 * light-gray).
+	 * @return this
 	 */
 	public FMNotifications blueStyle() {
 		styleClass.add(STYLE_CLASS_BLUE);
@@ -261,6 +277,7 @@ public class FMNotifications {
 	/**
 	 * Specify that the close button in the top-right corner of the notification
 	 * should not be shown.
+	 * @return this
 	 */
 	public FMNotifications hideCloseButton() {
 		this.hideCloseButton = true;
@@ -269,6 +286,8 @@ public class FMNotifications {
 	
 	/**
 	 * Specify the actions that should be shown in the notification as buttons.
+	 * @param actions an array or single action
+	 * @return this
 	 */
 	public FMNotifications action(Action... actions) {
 		this.actions = actions == null ? FXCollections.<Action> observableArrayList() : FXCollections
@@ -285,6 +304,7 @@ public class FMNotifications {
 	 *                 into a single notification.
 	 * @param thresholdNotification The {@link FMNotifications notification} to show when
 	 *                              threshold is reached.
+	 * @return this
 	 */
 	public FMNotifications threshold(int threshold, FMNotifications thresholdNotification) {
 		this.threshold = threshold;

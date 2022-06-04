@@ -6,6 +6,7 @@ import com.github.jasync.sql.db.general.ArrayRowData;
 import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.Pos;
 import org.apache.http.MethodNotSupportedException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
 
@@ -81,7 +82,8 @@ public enum DBFetchMulti  {
 	// --------------------------------- --------------------------------- //
 	
 	// LOGGING
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBFetchMulti.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DBFetchMulti.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBFetchMulti.class);
 	
 	DBFetchMulti() { /* NO ARGS CONSTRUCTOR */ }
 	
@@ -94,7 +96,7 @@ public enum DBFetchMulti  {
 	
 	private static ArrayList<String> fetchMultiResult(String strQuery) {
 		
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("strQuery: {}", strQuery );
 		ArrayList<String> returnAry = new ArrayList<>();
 		DBConnect db = DBConnect.getInstance();

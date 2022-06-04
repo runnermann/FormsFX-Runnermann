@@ -3,16 +3,12 @@ package video.camera;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ch.qos.logback.classic.Level;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
 
-import draw.DrawObj;
-import fileops.S3ListObjs;
 import flashmonkey.CreateFlash;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -38,11 +34,11 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
 import type.celleditors.SnapShot;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
@@ -53,15 +49,14 @@ import org.slf4j.LoggerFactory;
  * captured by thier local camera.
  *
  * as of 11-12-2019, Recording video is currently not implemented.
- * @TODO implement video record,
- * @TODO implment audio record
+ * //@TODO implement video record,
+ * //@TODO implment audio record
  */
 public class CameraCapture extends Application {
 
     private static CameraCapture CLASS_INSTANCE;
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CameraCapture.class);
-    //private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-    //private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CameraCapture.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
 
     private SectionEditor parentEditor;
     private static Stage cameraStage;
@@ -96,10 +91,12 @@ public class CameraCapture extends Application {
     /**
      * Creates the capture overlay stage. If there is no camera
      * detected returns true = failed;
-     * @param editor
+     * @param editor ..
+     * @return true if successful
+     * @throws Exception ..
      */
     public boolean cameraCaptureBuilder(SectionEditor editor) throws Exception {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.info("cameraCaptureBuilder called");
 
         //Webcam webcam = Webcam.getDefault(300, TimeUnit.MILLISECONDS);

@@ -10,9 +10,7 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import flashmonkey.FlashCardMM;
 import type.sectiontype.GenericSection;
-
 import java.util.ArrayList;
-import java.util.BitSet;
 
 
 /**
@@ -51,8 +49,6 @@ public class FillnTheBlank implements GenericTestType<FillnTheBlank>
      * @return
      */
     public static synchronized FillnTheBlank getInstance() {
-        System.out.println("\n\n **** FillInTheBlank getInstance() called ****\n\n");
-
         if(CLASS_INSTANCE == null) {
             CLASS_INSTANCE = new FillnTheBlank();
         }
@@ -67,7 +63,7 @@ public class FillnTheBlank implements GenericTestType<FillnTheBlank>
      * @return Returns a VBox containing the upper and lower editor panes
      */
     @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
         // Instantiate vBox and "set spacing" !important!!!
         VBox vBox = new VBox(2);
@@ -122,6 +118,7 @@ public class FillnTheBlank implements GenericTestType<FillnTheBlank>
     /**
      * Sets Bit 5 (=32) for (FITB) to true
      * All other bits set to 0
+     * Not compatible with Multi-Choice
      * @return bitSet
      */
     @Override

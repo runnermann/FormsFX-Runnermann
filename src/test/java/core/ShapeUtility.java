@@ -1,7 +1,7 @@
 package core;
 
-import draw.shapes.FMCircle;
-import draw.shapes.FMRectangle;
+import type.draw.shapes.FMCircle;
+import type.draw.shapes.FMRectangle;
 import flashmonkey.FlashCardMM;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -32,7 +32,7 @@ public class ShapeUtility {
      * card changes locations, it should retain it's original FileName
      * number.
      * @param creatorListFC The CreatorList of FlashCardMM
-     * @returns false if there is a match, true if all name are unique an in
+     * @return false if there is a match, true if all name are unique an in
      * the correct section.
      */
     private boolean checkFileNameStrings(final ArrayList<FlashCardMM> creatorListFC) {
@@ -284,7 +284,7 @@ public class ShapeUtility {
         /**
          * An ellipse1 is drawn from top edge to bottom edge
          * and left edge to right edge. Thus radius is 1/2
-         * the distance. and x & y are the original - radius.
+         * the distance. and x {@code &} y are the original - radius.
          *
          * @param ellipse1
          * @param ellipse2

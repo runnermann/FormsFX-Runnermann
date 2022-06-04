@@ -1,24 +1,18 @@
 package forms.utility;
 
 import campaign.db.DBFetchMulti;
-import campaign.db.DBFetchUnique;
-import ch.qos.logback.classic.Level;
-import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Section;
-import com.dlsc.formsfx.view.util.ColSpan;
 import flashmonkey.FlashCardOps;
 import forms.FormData;
 import forms.searchables.CSVUtil;
 import forms.Descriptor;
-import forms.searchables.SearchableData;
 import javafx.beans.property.*;
-import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -30,7 +24,8 @@ import java.util.HashMap;
  */
 public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemoteDescriptor> {
 	
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SearchRemoteDescriptor.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SearchRemoteDescriptor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SearchRemoteDescriptor.class);
 
 	// A person
 	private StringProperty  friend; // author
@@ -116,15 +111,13 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 	public void setSelectedTut(CSVUtil.SchoolObj defaultTut) {
 		this.selectedTut.set(defaultTut);
 	}
-	
 	public ObservableList<CSVUtil.SchoolObj> getAllTuts() {
 		return allTuts.get();
 	}
-	
 	public void setAllTuts(ObservableList<CSVUtil.SchoolObj> allTuts) {
 		this.allTuts.set(allTuts);
 	}
-	
+
 	public ObservableList<String> getProfessors() { return professors.get(); }
 	public ObservableList<String> getCourseCodes() { return courseCodes.get(); }
 	
@@ -132,8 +125,6 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 	
 	@Override
 	public void setProperitesDefault() {
-		System.out.println("Called setProperties()");
-		
 		/*
 		ArrayList<String> bill = new ArrayList<>(1);
 		bill.add("Dr.");
@@ -178,14 +169,13 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 	
 	public final <T extends Boolean> Section setProfBarProperties(ObservableValue<T> value, Section section) {
 		
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("Value: {}", value);
 		
 		if(value.getValue().equals(false)) {
 			LOGGER.debug("called");
-			
-			FlashCardOps flOps = FlashCardOps.getInstance();
-			allTuts.setAll(flOps.getFO().getSchoolObjs());
+			allTuts.setAll(FlashCardOps.getInstance().getSchoolObjs());
+
 			if (subjects.isEmpty()) {
 				subjects = new SimpleListProperty<>(FXCollections.observableArrayList(getSubjsList()));
 			}
@@ -217,9 +207,7 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 	
 	@Override
 	public void setToLocalData() {
-	
-		System.out.println("In SearchRemoteDescriptor.getLocalData() and printing selected/defaultTut result: < " +
-				selectedTut.toString() + ">");
+
 	}
 	
 	@Override
@@ -316,8 +304,8 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 	 * @param dataAry
 	 */
 	@Override
-	public void setDataMap(HashMap<String, String> dataAry) {
-	
+	public boolean setDataMap(HashMap<String, String> dataAry) {
+		return false;
 	}
 	
 	/**

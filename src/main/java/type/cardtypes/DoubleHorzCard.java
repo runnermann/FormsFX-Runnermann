@@ -28,8 +28,6 @@ public class DoubleHorzCard extends GenericCard
     //@Override
     public GridPane retrieveCard(String qTxt, char upperType, String aTxt, char lowerType, String[] qFiles, String[] aFiles)
     {
-        //System.out.println(" ~+~+~ in double horizontal, retrieveCard() ~+~+~");
-
         gPane = new GridPane();
         gPane.setVgap(2);
 

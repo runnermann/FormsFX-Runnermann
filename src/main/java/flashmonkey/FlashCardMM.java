@@ -11,9 +11,31 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 /**
- * @copyright Lowell Stadelman, all rights reserved, 2018/08/04
+ * <p>The FlashCardMM type is the top-level class for the FlashMonkey Test
+ * type. Each Test Type contains an answer object and a question object.
+ *  Additional fields are provided to track each card and tell FlashMonkey
+ *  the TestTypes layout, and behavior. </p>
+ *  <p>Class provides the layout, its number for this iteration, if
+ *  it was answered correctly in the last session, the number of seconds it
+ *  took to answer it and the number of times it has been answered correctly
+ *  vs. the number of times it has been seen. Finally it is also provided
+ *  a date for the last time it was answered correctly. </p>
+ *  <p>These fields are to provide a means to score each card both with time,
+ *  that it takes to answer a question, and the number of times it has been answered.
+ *  Thus we can score the remember field.</p>
+ *  <p>The remember field provides an ability to prioritize a card to shift left
+ *  in a session, shift right, or to be hidden. Hiding is provided by a threshold
+ *  field in ReadFlash?. </p>
+ *  <p>The testType const field assigns to ReadFlash and CreateFlash the TestType for
+ *  the card. TestTypes have a layout, behavior, a question, and an answer. Note that
+ *  Answer does not always have to be used, but is part of the object. The user may
+ *  select the TestType when the card is created or edited. ReadFlash uses TestType
+ *  for each card when it is displayed to the user. New TestTypes may be defined in the
+ *  SDK. </p>
+ *
+ * copyright FlashMonkey Inc., all rights reserved, 2018/08/04
  * Creation date: 2018/08/04
- * @author lowell Stadelman
+ * @author Lowell Stadelman
  */
 
 public class FlashCardMM<T extends Comparable<T>> implements Serializable, Comparable<T>, Cloneable
@@ -29,9 +51,9 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
     public static final int IS_RIGHT        = 0; // was it answered correctly this session
     public static final int REMEMBER        = 0; // The prioirty of this card is set based on this number.
     public static final int SECONDS         = 0; // seconds to answer this session.
-    public static final int NUM_RIGHT       = 0; // total number times right in it's existance
+    public static final int NUM_RIGHT       = 0; // total number times right in it's existence
     public static final ZonedDateTime RT_DATE = ZonedDateTime.parse("2017-09-25T10:00:00-07:00[America/Los_Angeles]");
-    public static final int NUM_SEEN        = 0; // total number of times it's been seen in it's exitstance
+    public static final int NUM_SEEN        = 0; // total number of times it's been seen in it's existence
     // Use a BitSet as a boolean array to indicate the tests
     // that are possible for this question.
     // Default is multiple choice, multiple answer
@@ -43,34 +65,30 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
     /**
      *  A cards original card ID number, does not change during the life of a card. Used in associating
      * fileNames with a card. Formerly the qID or questionID.
-     * !!! cID is set to the hash of the userName_deckName_&_time
+     * !!! cID is set to the hash of the {@code userName_deckName_&_time }
      */
     private String cID;
-    /** The cardNumber used as a priority as the flashcard is set in the tree, Formerly the qNum or question number */
+    /* The cardNumber used as a priority as the flashcard is set in the tree. Changes each iteration. */
     private int cNumber;
-    /** The card layout type **/
+    /* The card layout type **/
     private char cardLayout;
-    /** the question */
+    /* the question */
     private QuestionMM questionMM;  // contains its section layout type
-    /** the answer */
+    /* the answer */
     private AnswerMM answerMM; // contains its section layout type
-    /** did the EncryptedUser.EncryptedUser get the question correct on this iteration -1 if wrong, 0 if unanswered, 1 if correct*/
+    /* did the EncryptedUser.EncryptedUser get the question correct on this iteration -1 if wrong, 0 if unanswered, 1 if correct*/
     private int isRight;
-    /** Priority/remember, Used to set this card towards the front, back, or hide from the tree. */
+    /* Priority/remember, Used to set this card towards the front, back, or hide from the tree. */
     private int remember;
-    /** tracks how long it takes to answer this question */
+    /* tracks how long it takes to answer this question */
     private int seconds;
-    /** The number of times this question has been answered correctly */
+    /* The number of times this question has been answered correctly */
     private int numRight;
-    /** Date last answered correctly */
+    /* Date last answered correctly */
     private ZonedDateTime rtDate;
-    /** The total number of times a question has been seen. */
+    /* The total number of times a question has been seen. */
     private int numSeen;
-    /** The arrayOfFiles that contains multi-media and shapes for both question and answer */
-    //private String[][] aryOfFiles;
-    /** The history data structure that tracks EncryptedUser.EncryptedUser performance of this flashcard with different test types */
-    // private TBD
-    /** BitArray used for testTypes */
+    /* BitArray used for testTypes */
     private int testType;
 
     // *** CONSTRUCTORS *** /
@@ -84,10 +102,9 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
         this.answerMM = new AnswerMM();
         this.testType   = DEF_TEST_TYPE;  // Default Bit Array
         this.questionMM = new QuestionMM();
-        //aryOfFiles = new String[2][];
         this.cardLayout = CARD_LAYOUT;
-        // Card id. Never changes after it's been created
-        this.cID        = createCardHash(ReadFlash.getInstance().getDeckName() + authcrypt.UserData.getUserName()) + "_" +System.currentTimeMillis();
+        // Card ID. Never changes after it's been created
+        this.cID        = createCardHash(FlashCardOps.getInstance().getDeckFileName() + authcrypt.UserData.getUserName()) + "_" +System.currentTimeMillis();
         this.cNumber    = C_NUMBER;     // Card number former qNumber, it's priority in the tree
         this.remember   = REMEMBER;     // priority
         this.isRight    = IS_RIGHT;
@@ -103,7 +120,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
      * Create card constructor, creates a new FlashCardMM. Called only once in the life of a card.
      *   for a new card, only need to provide the qNum, aNum, questionTxt, questionType, mmQfileName,
      *   answerTxt, answerType, answerMMFileName, Array of like answers, and card layout. All
-     *   other varaibles are the defaults.
+     *   other variables are the defaults.
      * @param deckName Used to create a new cID/cHash. The current deck's name.
      * @param cNum  A changing number used to compare the card, sets its order in the tree
      * @param testType An int used as a boolean array indicating the tests for this session. Default is
@@ -124,8 +141,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
     {
         this.answerMM = new AnswerMM(aTxt, aNum, aType, ansSt, aFileNames); // AnswerMM
         this.questionMM = new QuestionMM(qTxt, qType, qFileNames);
-        //this.aryOfFiles = new String[2][];
-        //this.setAryOfFiles(qFileNames, aFileNames);
         this.testType   = testType;
         this.cardLayout = layout;
         this.cID        = createCardHash(deckName); // may be created previously in the default constructor
@@ -143,7 +158,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
 
     /**
      * Full constructor, Used when editing a flashCard.
-     * @param cID should not change from previous card. Used to associate files with this card. IE Images
+     * @param cID should not change from previous card. Used to associate files with this card.
      * @param cNum  A changing number used to compare the question, sets its order in the tree
      * @param testType  An int used as a boolean array indicating the tests for this session. Default is
      *        multiple choice, multiple answer, write it in, and true or false.
@@ -169,8 +184,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
     {
         this.answerMM = new AnswerMM(aTxt, aNum, aType, ansSt, aFileNames); // AnswerMM
         this.questionMM = new QuestionMM(qTxt, qType, qFileNames);
-        //this.aryOfFiles = new String[2][];
-        //this.setAryOfFiles(qFileNames, aFileNames);
         this.testType   = testType;
         this.cardLayout = layout;
         this.cID        = cID;
@@ -190,12 +203,8 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
     /**
      * FlashCard shallow copy constructor
      */
-    public FlashCardMM(FlashCardMM original)
-    {
-
-       // System.out.println("\n~~~ Called FlashCard copy constructor ~~~");
-
-        if(original == null) //can't copy "nothing"! avoids crashes
+    public FlashCardMM(FlashCardMM original) {
+        if(original == null) //can't copy "nothing".
         {
             System.err.println("ERROR: FlashCard Class Copy Constructor given NULL. "
                     + "Exiting.");
@@ -208,7 +217,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             this.answerMM   = original.answerMM; // may cause an error
             this.testType   = original.testType;
             this.questionMM = original.questionMM;
-            //this.aryOfFiles = original.aryOfFiles;
             this.cNumber    = original.cNumber;
             this.remember   = original.remember;
             this.numRight   = original.numRight;
@@ -257,7 +265,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
                     this.rtDate,
                     this.numSeen);
         }
-
     }
 
 
@@ -288,8 +295,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
         this.testType   = testType;
         this.cardLayout = layout;
         this.cNumber    = cNum;
-        
-       //System.out.println("\n\n in setAll and cHash: " + this.cID + "\n\n");
     }
 
 
@@ -336,7 +341,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
      * 0 = reserved for later but used by ai (may not be neccessary)
      * 1 = Multiple choice
      * 2 = Multiple answer
-     * 3 = q & a
+     * 3 = q {@code &} a
      * 4 = True or false
      * 5 = FITB fill in the blank
      * 6 = Turn in video
@@ -350,28 +355,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
      * ai = bits little endian 0,1,2,3,4
      */
     protected void setTestType(int testType) { this.testType = testType; }
-
-    /**
-     * Sets the 2d array of the file names for multi media in the question, and
-     * the answer. Order is:
-     *          Row 1) Question: Multi-media file name, fileOfShapes name
-     *          Row 2) Answer:   Multi-media file name, fileOfShapes name
-     * All rows are optional. Use null if not used. The first column must have
-     * an item. Cannot be blank. If using shapes only then fileOfShapes goes in place
-     * of the multi-media file name.
-     * @return Returns a 2d array of files for the question and answer
-     */
-    /*
-    public void setAryOfFiles(String[] qFiles, String[] aFiles)
-    {
-        aryOfFiles = new String[][]{
-                {qFiles[0], qFiles[1]}, // row 1
-                {aFiles[0], aFiles[1]}  // row 2
-        };
-    }
-    */
-
-
 
     /**
      * Sets the number of times this flashCard has been seen.
@@ -435,7 +418,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
      */
     public void setRemember(int rem)
     {
-        //System.out.println("setRemember called. Remember: " + rem);
         this.remember = rem;
     }
 
@@ -506,26 +488,6 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
         return this.testType;
     }
 
-    /**
-     * getAnswer()
-     * @return returns this Answer object
-     */
-    //public AnswerMM getAnswerMM() { return this.answerMM; }
-
-    /**
-     * Returns a 2d array of the file names for multi media in the question, and
-     * the answer. Order is Row 1) Question: Multi-media file name, fileOfShapes name
-     *                      row 2) Answer:   Multi-media file name, fileOfShapes name
-     * All rows are optional. Use null if not used. The first column must have
-     * an item. Cannot be blank. If using shapes only then fileOfShapes goes in place
-     * of the multi-media file name.
-     * @return Returns a 2d array of files for the question and answer
-     */
-    /*public String[][] getAryOfFiles()
-    {
-        return this.aryOfFiles;
-    }
-    */
 
     /**
      * getQuestion()
@@ -694,15 +656,9 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
         Integer otherValue = 0;
 
         if(other == null) {
-            //System.out.println("CompareTo is attempting to compare with a null item");
-            //System.out.println("this.cNumber = " + this.cNumber);
-            //System.out.println("Doing nothing about it");
-
-        //    System.out.println(" other.cNumber " + ((FlashCardMM) other).getCNumber());
+            LOGGER.warn("CompareTo is attempting to compare: this.getCNumber: ({}) with other.cNumber({}) and is a null item", this.getCNumber(), ((FlashCardMM) other).getCNumber());
         }
         try {
-            //Integer thisValue = this.remember + this.getCNumber();
-            //Integer otherValue = ((FlashCardMM)other).remember + ((FlashCardMM)other).getCNumber();
             thisValue = this.cNumber;
             otherValue = ((FlashCardMM) other).cNumber;
 
@@ -736,28 +692,8 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
     @Override
     public String toString()
     {
-        //System.out.println("\n *** FlashCard.toString() ***\n");
-        //return  "Question ID: " + this.getQID() + ") "+ this.question
-        //      + this.getAnswer(); // + " "
-        // + " Matching answers " + this.getAnswerSet();
         return "Q " + this.cNumber + ", "
-         //       + "\n\t A          = " + answerMM.getANumber()
-         //       + ",  remember " + this.getRemember()
-        //        + "\n\t getQText   = " + this.getQuestionMM().getQText()
-        //        + "\n\t getAText   = " + this.getAnswerMM().getAText()
                 + "\n\t getCID     = " + this.getCID()
                 + "\n\t upperMedia Name: " + this.getQFiles();
-         //       + "\n\t upperMedia Shapes: " + this.getQFiles()[1];
-         //       + "\n\t numRight   = " + this.numRight
-        //        + "\t numSeen    = " + this.numSeen
-        //        + "\n\t getRemember = " + this.remember
-        //        + "\t getSeconds = " + this.rtDate ;
-        //        + "\n\nMultiMedia";
-        // + "\n\t question Type = " + this.intType;
-
-        //    return this.getANumber() + "";
-        //    int qNum, int aNum, String qTxt, int intType, String qFileName, String aTxt, char charType,
-        //    String aFileName, ArrayList<Integer> ansSt,
-        //    int rem, int isRt, int numRt, int sec
     }
 }

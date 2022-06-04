@@ -20,8 +20,6 @@ import java.lang.*;
 public class Timer 
 {
     private static Timer CLASS_INSTANCE;
-    //@todo Create a setter for the time zone. Currently set to default of Los Angeles in method.
-    //private static final long serialVersionUID = FlashMonkeyMain.VERSION;
     private static long startTime;
     private long endTime = 0;
     // start times
@@ -33,6 +31,7 @@ public class Timer
     private long takeTestTime = 0;
     // cloud analysis time
     private long cloudAnTime = 0;
+    private String note;
 
     private Timer() {/* no args constructor */}
 
@@ -75,6 +74,14 @@ public class Timer
         return (this.endTime - this.beginTime);
     }
 
+    public String getNote() {
+        return this.note;
+    }
+
+    // ******* SETTER ********
+    public void setNote(String note) {
+        this.note = note;
+    }
 
 
     /**
@@ -83,7 +90,6 @@ public class Timer
      */
     public void startTime() {
         startTime = System.currentTimeMillis();
-       //System.out.println("start time: " + startTime);
     }
 
     /**
@@ -110,8 +116,6 @@ public class Timer
         if(startTime != 0) {
             takeTestTime += System.currentTimeMillis() - startTime;
         }
-       //System.out.println("in testTimeStop(), start: " + startTime + ", result testTime: " + takeTestTime);
-        //start = 0;
     }
 
     /**
@@ -121,7 +125,6 @@ public class Timer
         if(startTime != 0) {
             createNotesTime += System.currentTimeMillis() - startTime;
         }
-        //startTime = 0;
     }
 
     /**
@@ -131,7 +134,6 @@ public class Timer
         if(startTime != 0) {
             qnaTime += System.currentTimeMillis() - startTime;
         }
-        //startTime = 0;
     }
      
      public void end() {
@@ -146,10 +148,11 @@ public class Timer
      }
 
      public String getTotalTimeString() {
-         long millis = getTotalTime();
-         long second = (millis / 1000) % 60;
-         long minute = (millis / (1000 * 60)) % 60;
-         long hour = (millis / (1000 * 60 * 60)) % 60;
+         long now = getTotalTime();
+         long millis = now % 1000;
+         long second = (now / 1000) % 60;
+         long minute = (now / (1000 * 60)) % 60;
+         long hour = (now / (1000 * 60 * 60)) % 60;
 
          return String.format("%02d:%02d:%02d.%d", hour, minute, second, millis);
      }
@@ -180,7 +183,6 @@ public class Timer
      
      public void printTime() {
          double milliseconds = getTotalTime();
-        //System.out.printf("Execution time %,4f milliseconds", milliseconds);
      }
 
 
@@ -224,10 +226,8 @@ public class Timer
      }
 
     protected class LocalTimeStringConverter extends StringConverter<LocalTime> {
-
          private String pattern = "HH:mm";
          private DateTimeFormatter dtFormat;
-
          public LocalTimeStringConverter() {
              dtFormat = DateTimeFormatter.ofPattern(pattern);
          }

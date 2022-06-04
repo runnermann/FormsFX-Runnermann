@@ -144,20 +144,22 @@ public class EditTextIsSavedTest extends ApplicationTest {
         robot.release(MouseButton.SECONDARY);
     }
 
+
+
+    int i;
+    CreateMediaTester cmt = new CreateMediaTester();
     /**
      * Edits text in existing cards, saves the edits,
      * then checks that edits are kept in:
+     * {@code
      * <ul>
      *     <li>editedCard</li>
      *     <li>readPane</li>
      *     <li>are not shared with cards that should not be changed</li>
      * </ul>
+     * }
      * @throws Exception
      */
-
-    int i;
-    CreateMediaTester cmt = new CreateMediaTester();
-
     @Test
     void editedTextIsSaved() throws Exception {
 
@@ -191,7 +193,7 @@ public class EditTextIsSavedTest extends ApplicationTest {
             xy = cfp.getEditorU().getClearTextBtnXY();
             robot.clickOn(xy);
             // check text area is clear
-            assertTrue("Question area did not clear on textDel button click", cfp.getEditorU().getText().equals(""));
+            assertTrue("Question area did not clear on textDel button click", cfp.getEditorU().getPlainText().equals(""));
             // edit text in upper text area
             xy = cfp.getEditorU().getTextAreaXY();
             robot.clickOn(xy);
@@ -208,7 +210,8 @@ public class EditTextIsSavedTest extends ApplicationTest {
             File aFile = new File(ansFileStr);
 
             Platform.runLater(() -> {
-                textImages[i][0] = CreateFlash.getInstance().getEditorU().tCell.getTextArea().snapshot(snapParams, null);
+                // @TODO EditTextIsSavedTest textImages line 213
+//                textImages[i][0] = CreateFlash.getInstance().getEditorU().textEditor.getTextArea().snapshot(snapParams, null);
 
                 try {
 
@@ -225,7 +228,7 @@ public class EditTextIsSavedTest extends ApplicationTest {
             xy = cfp.getEditorL().getClearTextBtnXY();
             robot.clickOn(xy);
             // check text area is clear
-            assertTrue("Question area did not clear on textDel button click", cfp.getEditorL().getText().equals(""));
+            assertTrue("Question area did not clear on textDel button click", cfp.getEditorL().getPlainText().equals(""));
 
             // edit text in lower text area
             xy = cfp.getEditorL().getTextAreaXY();
@@ -233,7 +236,8 @@ public class EditTextIsSavedTest extends ApplicationTest {
             write(editedAnsMsg + i + ".........");
 
             Platform.runLater(() -> {
-                textImages[i][1] = CreateFlash.getInstance().getEditorL().tCell.getTextArea().snapshot(snapParams, null);
+                // @TODO EditTextIsSavedTest textImages line 213
+//                textImages[i][1] = CreateFlash.getInstance().getEditorL().textEditor.getTextArea().snapshot(snapParams, null);
                 try {
                     ImageIO.write(SwingFXUtils.fromFXImage(textImages[i][1], null), "png", aFile);
                 } catch (Exception e) {
@@ -250,9 +254,9 @@ public class EditTextIsSavedTest extends ApplicationTest {
         for(int idx = 0; idx < 4; idx++) {
 
             // check text in upper text area
-            assertEquals("\nText did not match in upper text area on card [" + idx + "]", cfp.getEditorU().getText(), editedQMsg + idx + ".........");
+            assertEquals("\nText did not match in upper text area on card [" + idx + "]", cfp.getEditorU().getPlainText(), editedQMsg + idx + ".........");
             // check text in lower text area
-            assertEquals("Text did not match in lower text area on card [" + idx + "]", cfp.getEditorL().getText(), editedAnsMsg + idx + ".........");
+            assertEquals("Text did not match in lower text area on card [" + idx + "]", cfp.getEditorL().getPlainText(), editedAnsMsg + idx + ".........");
             //set xy to next button
             if(idx < 3) {
                 robot.clickOn(xy);

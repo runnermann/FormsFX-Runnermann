@@ -4,64 +4,37 @@
 
 package flashmonkey;
 
-import ch.qos.logback.classic.Level;
 import fileops.*;
+import fileops.utility.Utility;
 import forms.searchables.CSVUtil;
-import flashmonkey.utility.SelectableRdoField;
-import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
-
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
-import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.*;
-
 import java.io.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
-//import java.util.logging.Logger;
 
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import metadata.DeckMetaData;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FMAlerts;
-import uicontrols.UIColors;
-
-import javax.imageio.ImageIO;
 
 
 /*******************************************************************************
- *
- * <p>Explanation: This class was formerly the original FlashCard
- * class that contained all varaibles and methods related
- * to FlashCards and FlashCard operations. To minimize the
- * number of variables that are instantiated and saved
- * FlashCardOps or FlashCard operations remained in this class. It was
- * renamed to FlashCardOps, and FlashCard specific varaibles
- * were moved to a new flashcard class.</p>
- *
- *
+ * <p>Singleton Class, The class is expected to be used by the main thread. Although this classes methods
+ * may be used in separate threads. Not thread safe.</p>
  * <p>Not compatible with Version 20170512 and earlier do
  * to flashCard class restructuring. </p>
  *
- * <p>CLASS DESCRIPTION: This is the FlashCard class and is a child to the AnswerMM
- * class. It contains variables and methods for the the FlashCard class.</p>
+ * <p>CLASS DESCRIPTION: FlashCardOps contains variables and methods for the operation of the FlashCard class.</p>
  * <ul>
- * <li> This class contains methods and variables specific to create a FlashCard. This
- * class may at a future date, be seperated into seperate elements to prevent
- * unneccessary variables from being saved to the flashList and simplify
- * modifications and management. </li>
+ * <li> This class contains methods and variables for input and output to file. For Output to cloud see CloudOps and
+ * S3 related operating classes. </li>
  *
- * <li>This class outputs flashcards to a binary file, it contains an array that
+ * <li>Outputs flashcards to a binary file, it contains an array that
  * is used to read the flashcards. This is done so that this class may
  * remain server side. The EncryptedUser.EncryptedUser will not have access to the correct answer
  * unless they are using it for study sessions. </li>
@@ -69,58 +42,43 @@ import javax.imageio.ImageIO;
  *
  * @version iOOily FlashMonkeyMM Date: 2018/08/04
  * @author Lowell Stadelman
- * @TODO deserialize files with restrictions. ValidatingObjectInputStream in = new ValidatingObjectInputStream(fileInput); in.accept(Foo.class);
+ * // @TODO deserialize files with restrictions. ValidatingObjectInputStream in = new ValidatingObjectInputStream(fileInput); in.accept(Foo.class);
  ******************************************************************************/
 
-public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> implements Comparable<T>
-{
-    /* SINGLETON */
-    //private volatile static FlashCardOps CLASS_INSTANCE;
-    private static FlashCardOps CLASS_INSTANCE;
-    
-    // Logging reporting level is set in src/main/resources/logback.xml
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(FlashCardOps.class);
+public class FlashCardOps extends FileOperations implements Serializable {//< T extends Comparable<T>> extends FlashCardMM<T> implements Comparable<T>
 
+    // Logging reporting level is set in src/main/resources/logback.xml
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FlashCardOps.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
 
     private static final long serialVersionUID = FlashMonkeyMain.VERSION;
-    // count, To keep track of when flashCards are added to an array.
-    // Prevents unneccessary communications with
-    // cloud servers.
-    private int count;
-    private static File DECK_FOLDER = new File(DirectoryMgr.getMediaPath('t'));
-    private static String fileName = "default";
     private static final FMTWalker TREE_WALKER = FMTWalker.getInstance();
-
-
-    //*** OBJECTS ***
-    protected final FileOperations FO = new FileOperations();
-    public final CloudOps CO = new CloudOps();
+    private static String deckTitle;
 
     //** The current threshold from the last time the tree was built.
     private static Threshold thresh;
-    // if null call resetAgrList
-    private static AgrFileList agrList;// = new AgrFileList(DECK_FOLDER);
 
     // --- FLAGS ---
-    // File synchronization flag. If media files have been synchronized, don't do it again unless
+    // File synchronization flag. If media files have been synchronized with the cloud, don't do it again unless
     // there are changes in CreateFlash.
     private static volatile boolean mediaIsSynced;
-
-            
 
     /**
      * Stores the flashcards that are created from the binary file,
      * that are added at the head of the list. And that are
      * stored back to the file.
      */
-    private static ArrayList<FlashCardMM> flashListMM = new ArrayList<>();
+    private static volatile ArrayList<FlashCardMM> flashListMM = new ArrayList<>();
+    // if null call resetAgrList
+    private static AgrFileList agrList;
 
 
+    /* SINGLETON */
+    private static FlashCardOps CLASS_INSTANCE;
     private FlashCardOps() {
-        //LOGGER.setLevel(Level.DEBUG);
+        super();
+        fileExists("default.dec", getUserFolder());
     }
-    
-    
     public static synchronized FlashCardOps getInstance() {
         if(CLASS_INSTANCE == null) {
             CLASS_INSTANCE = new FlashCardOps();
@@ -132,14 +90,27 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     // ************************************** ******* **************************************
     // ************************************** SETTERS **************************************
     // ************************************** ******* **************************************
-    
+
+    /**
+     * Use when a fileName is not trusted or is input from a user. However, if the
+     * file is already in existance, this method modifies the name if it is illegal.
+     * @param name
+     * @throws IllegalStateException
+     * @return Returns the legal fileName
+     */
+    public String setDeckFileName(@NotNull String name) throws IllegalStateException {
+        String n = parseFileName(name);
+        System.out.println("FlashCardOps line 102 name: " + n);
+        setFileName(n);
+        return n;
+    }
     
     /**
      * Sets the flashList to the parameter
      * @param flashList
      */
     public void setFlashList(ArrayList<FlashCardMM> flashList) {
-        this.flashListMM = flashList;
+        flashListMM = flashList;
     }
 
     /**
@@ -148,14 +119,28 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
      * initial signIn.
      * @param name
      * @param pw
-     * @return returns true if pw and name were successful, false otherwise.
+     * @return returns 1
      */
     public int setObjsFmS3(String name, String pw) {
-        return CO.setS3DeckList(name, pw);
+        return CloudOps.setS3DeckList(name, pw);
     }
 
     public void setMediaIsSynced(boolean bool) {
         mediaIsSynced = bool;
+    }
+
+    /**
+     * <P><b>USE</b> when an empty element exists at the end of the list. </P>
+     * <p>Outputs any arraylist including FlashList (given in the parameter) to a serialized
+     *             file from the arrayList in the parameter.</p>
+     * @param arrayList FlashList or other ArrayList
+     * @param minus The minus that defines the folder where this
+     *             file will be created. If char = '-' then
+     *             the last element is subtracted from the list. This should be used
+     *             when there is an empty element at the end of the list.
+     */
+    public void saveFlashListToFile(ArrayList arrayList, char minus) {
+        setListinFile(arrayList, minus);
     }
 
 
@@ -164,7 +149,30 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     // ************************************** GETTERS **************************************
     // ************************************** ******* **************************************
 
-    public static final boolean getMediaIsSynched() {
+    public void resetDeckLabelName() {
+        deckTitle = getDeckTitle();
+    }
+
+    /**
+     * The deckLabelName is the deckFileName without the
+     * mime ending.
+     * @throws IllegalStateException if the fileName is null
+     * @return
+     */
+    public final String getDeckLabelName() throws IllegalStateException {
+        if(deckTitle == null || deckTitle.contains("default")) {
+            deckTitle = getDeckTitle();
+        }
+        return deckTitle;
+    }
+
+    public final String getMetaFileName() throws IllegalStateException {
+        String name = getDeckFileName();
+        return name.substring(0, name.length() - 4) + ".met";
+    }
+
+
+    public final boolean getMediaIsSynched() {
         return mediaIsSynced;
     }
     
@@ -188,12 +196,15 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     }
 
     /**
+     * Returns a list of unique media contained in the current flashList. Each media file string
+     * will only exist once. IE if an image occurs more than once in a deck, it will only exist
+     * once in the returned ArrayList.
      * @param flashList
-     * @return Returns a list of the media contained in the current flashList;
+     * @return Returns a list of the unique mediaFileStrings contained in the current flashList;
      */
     private ArrayList<MediaSyncObj> getMediaHelper(ArrayList<FlashCardMM> flashList) {
         LOGGER.info("in getFlashMedia. flashListMM length: {}", flashList.size());
-        ArrayList<MediaSyncObj> mediaSyncObjs = new ArrayList<>(flashList.size());
+        Set<MediaSyncObj> mediaSyncObjs = new HashSet<>(flashList.size());
         String name;
         for(FlashCardMM fc : flashList) {
             // Question
@@ -216,14 +227,10 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
             }
         }
         
-        return mediaSyncObjs;
+        return new ArrayList<>(mediaSyncObjs);
     }
 
 
-    
-    public FileOperations getFO() {
-        return this.FO;
-    }
 
     /**
      * Returns the current threshold determined when the tree was last built.
@@ -232,26 +239,6 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     {
         return this.thresh;
     }
-    
-
-    /**
-     * Returns the size of the AgrList, for use in main
-     * @return 
-     */
-    public int getAgrListSize()
-    {
-        return agrList.getSize();
-    }
-    
-    public void resetAgrList() {
-        //if(cloudLinks == null || cloudLinks.isEmpty()) { LOGGER.warn("cloudLinks is empty or null "); }
-            agrList = new AgrFileList(DECK_FOLDER);
-    }
-    
-    public File getDeckFolder() {
-        return DECK_FOLDER;
-    }
-
     
     /**
      * getFlashList
@@ -290,9 +277,52 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     public FMTWalker getTreeWalker() {
         return TREE_WALKER;
     }
-    
-    
-    
+
+    public final AgrFileList getAgrList() {
+        if(agrList == null) {
+            resetAgrList();
+        }
+        return agrList;
+    }
+
+    int getAgrListSize() {
+        return agrList.getSize();
+    }
+
+    void resetAgrList() {
+        //if(cloudLinks == null || cloudLinks.isEmpty()) { LOGGER.warn("cloudLinks is empty or null "); }
+        agrList = new AgrFileList(getDeckFolder());
+    }
+
+    /**
+     * @return Returns the flashCard list from the currently selected file
+     */
+    @SuppressWarnings("unchecked")
+    protected ArrayList<FlashCardMM> getListFromFile() {
+        String fileName = getFileName();
+        final File check = new File(getDeckFolder() + "/" + fileName);
+        LOGGER.info("calling getListFromFile, filePath: " + check.getPath());
+        if (agrList.getLinkObj() != null) {
+            if (check.exists()) {
+                LOGGER.debug("fileName exists {}", fileName);
+                return super.getListFmFile(check.getPath());
+            } else {
+                LOGGER.debug("fileName does not exist, creating new arrayList");
+                return new ArrayList();
+            }
+        } else {
+            /** the file is remote and needs to be created
+             * @todo create folder and file on local system???
+             * according to name ...
+             */
+            LOGGER.warn("agrList is empty");
+            return null;
+        }
+    }
+
+    public final String getDeckFileName() {
+        return getFileName();
+    }
     
     // ************************************** ******* **************************************
     // ************************************** OTHERS  **************************************
@@ -318,44 +348,6 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
         return cloneList;
     }
     
-    
-    /**
-     * Checks if file exists. If not then create it.
-     * @param fileName
-     * @param folder
-     * @return
-     */
-    public boolean fileExists(String fileName, File folder ) {
-        boolean bool = false;
-        File fullPathFileName = new File(folder + "/" + fileName);
-        LOGGER.info("fileExists() fullPathFileName: {}", fullPathFileName.getPath());
-        try {
-            if(!folder.isDirectory()) {
-                folder.mkdirs();
-                fullPathFileName.createNewFile();
-                bool = true;
-            }
-            else if(fullPathFileName.exists()) {
-                bool = true;
-            }
-            else {
-                fullPathFileName.createNewFile();
-                bool = true;
-            }
-        }
-        catch(NullPointerException e) {
-            //System.out.println(e.getMessage());
-            LOGGER.warn("\tError no files in directory ");
-            System.exit(0);
-        }
-        catch(IOException e) {
-            //System.out.println("\tProblems creating " + fullPathFileName);
-            LOGGER.warn("ERROR {}\n{}",e.getMessage());
-            e.printStackTrace();
-        }
-        return bool;
-    }
-    
 
     /**
      * Resets the flashList to 0 elements then
@@ -366,9 +358,9 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
         LOGGER.info("\n\n\t---^^^--- REFRESHING FLASHLIST  ---^^^---\n" +
         " pulling it from saved file\n\n");
         //LOGGER.debug("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
-        LOGGER.debug("DeckName: {}", ReadFlash.getInstance().getDeckName());
+        LOGGER.debug("DeckName: {}", getFileName());
         clearFlashList();
-        flashListMM = FO.getListFromFile();
+        flashListMM = getListFromFile();
 
         // Testing flashList objects
         //RemoveThisTester.setFlashListObject(flashListMM);
@@ -412,7 +404,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
 
     /**
      * Saves the current flashList to file and the cloud(if connected),
-     * if the file is > 0 cards. Used by
+     * if the file is {@code >} 0 cards. Used by
      * ReadFlash.
      */
     public void saveFlashList() {
@@ -420,18 +412,12 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
 
         if(flashListMM.size() > 0) {
             // keep the last element
-            FO.setListinFile(flashListMM, '+');
+            setListinFile(flashListMM, '+');
             // @TODO change method name, saveFListToFile, to reflect saving to cloud as well
-            if (Utility.isConnected()) {
+            if (Utility.isConnected() ) {
                 // CloudOps co = new CloudOps();
-                CO.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
-                //CO.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName() + ".dat");
-            }
-            try {
-                RemoveThisTester.testFlashListObject(flashListMM);
-            } catch (Exception e) {
-                LOGGER.warn("ERROR: line 291: flashlists are not the same\n{}", (Object) e.getStackTrace());
-                System.exit(0);
+                CloudOps.putDeck(getFileName());
+                //CO.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName());
             }
         }
         LOGGER.debug("in saveFlashList and flashListMM is size 0");
@@ -502,7 +488,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
      * Used in CreateFlash.</p>
      * <p>Used by creator</p>
      * @param cardList
-     * @TODO check with older version, order is not correct!
+     * // @TODO check with older version, order is not correct!
      */
     protected void buildTree(ArrayList<FlashCardMM> cardList) {
 
@@ -586,7 +572,7 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
     }
 
     /**
-     * Resets the deck so that all performance variables are set to zero
+     * Resets the deck so that all user performance variables are set to zero
      */
     public void resetPerformance() {
 
@@ -617,887 +603,103 @@ public class FlashCardOps//< T extends Comparable<T>> extends FlashCardMM<T> imp
         return true;
     }
     
-    
-    
-    
-    
-    // ******************************* ************* ******************************* //
-    //                                  INNER CLASS
-    //                                FileOperations
-    // ******************************* ************* ******************************* //
-    
- 
-    /***************************************************************************
-    * *** INNER CLASS FileOperations ***
-    * DESCRIPTION: Contains the variables for fileName, and FOLDER; Contains
-    * ArrayList listOfFiles. Contians methods to Output to a serilized file
-    * from an ArrayList and input to an ArrayList from a serilized file.
-    **************************************************************************/
-    public class FileOperations {
-        private ObjectInputStream input;
-        private ObjectOutputStream output;
-        // *** GETTERS ***
 
-        /**
-         * @return the current FileName
-         */
-        public String getFileName()
-        {
-            return fileName;
+    /**
+     * Used for deckSearch and other areas to reduce errors created by user
+     * input for US Schools. Used to keep naming uniform. IE University of Texas
+     * at Austin. Assists with search. This method creates the school objects used
+     * in drop down boxes.
+     * @return
+     */
+    public ObservableList<CSVUtil.SchoolObj> getSchoolObjs() {
+        String res = "processedCampus.dat";
+        ArrayList<CSVUtil.SchoolObj> sclObjects;
+
+        try (ObjectInputStream inputs = new ObjectInputStream(new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(res)))) {
+            //xxxxx Problem here --> Usually caused by the need to recompile the Schools File created by forms.searchables.CSVUtil
+            sclObjects = (ArrayList<CSVUtil.SchoolObj>) inputs.readObject();
+            ObservableList<CSVUtil.SchoolObj> ol = new SimpleListProperty<>(FXCollections.observableArrayList(sclObjects));
+            return ol;
+        } catch (FileNotFoundException e) {
+            LOGGER.warn("WARNING could not find file: {}\n{}", e.getMessage(), e.getStackTrace());
+        } catch(IOException e) {
+            LOGGER.warn("\t****** IO Exception in FlashCard. getObjFmFile() *******");
+            e.printStackTrace();
+        } catch (Exception e) {
+            LOGGER.warn("WARNING Exception get schoolObj: {}\n {}", e.getMessage(), e.getStackTrace());
+            e.printStackTrace();
         }
-
-        /**
-         * @return Returns the flashCard list from the currently selected file
-         */
-        @SuppressWarnings("unchecked")
-        public ArrayList<FlashCardMM> getListFromFile() {
-            final File check = new File(DECK_FOLDER + "/" + fileName);
-            LOGGER.info("calling getListFromFile, filePath: " + check.getPath() );
-            if( agrList.getLinkObj() != null) {
-                if(check.exists()) {
-                    LOGGER.debug("fileName exists {}", fileName);
-                    return connectFileIn(fileName);
-                }     
-                else {
-                    LOGGER.debug("fileName does not exist, creating new arrayList");
-                    return new ArrayList();
-                }
-            }
-            else {
-                /** the file is remote and needs to be created
-                 * @todo create folder and file on remote system
-                 * according to name ... 
-                 */
-                LOGGER.warn("agrList is empty");
-                return null;
-            }
-        }
-
-        // *** SETTERS ***
-        
-        public void setFileName(String fName) {
-            LOGGER.debug("setFileName fileName: {}", fileName);
-            fileName = fName;
-        }
-
-        /**
-         * Creates a deep copy of the flashCard ArrayList from the previous version.
-         * It only copies the question, answer, and answer set.file The answer
-         * number and question number are set to the index of each flashCard.
-         * @param oFC The original flashCard list
-         * @return a copy of the arrayList from the previous version.
-         */
-        public ArrayList copyFmLastVersion(ArrayList<FlashCardMM> oFC) {
-            LOGGER.warn("*** copyFmLastVersion() called Deck may not "
-                    + "be compatible with this version ***");
-
-            ArrayList<FlashCardMM> copy = new ArrayList<>(oFC.size());
-            if(oFC.isEmpty()) {
-                LOGGER.warn("in FlashCard.copyFmLastVersion() list is empty ");
-            }
-            else {
-                int i = 0;
-                //for(int i = 0; i < oFC.size(); i++)
-                for(FlashCardMM o : oFC)
-                {
-                   //   copy.add(new FlashCardMM(i, o.getQuestionMM().getQText(), o.getAText(), o.getAnswerSet()));
-                    LOGGER.debug("copy no {}", i);
-                    i++;
-                }
-            }
-            return copy;
-        }
-        
-        public boolean buildFileName(String bName)
-        {
-            int num;
-
-            num = bName.lastIndexOf('.');
-            if(num > 0)
-            {
-                bName = bName.substring(0, num);
-            }
-                
-            bName = bName.replaceAll("[-/,.:;?!@$%#^&@+'{}()\"]", "");
-            
-            if(bName.length() > 2) {
-                ReadFlash.getInstance().setDeckName(bName);
-                fileName = bName + ".dat";
-                fileExists(fileName, DECK_FOLDER);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-        // OTHER METHODS
-    
-    
-        /**
-         * Inputs from a local binary/serialized file to an ArrayList.
-         * @param fileName
-         * @return
-         */
-        protected ArrayList<FlashCardMM> connectFileIn(String fileName) {
-            LOGGER.info("\n\n~~~~  In connectBinaryIn  ~~~~");
-            LOGGER.debug("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
-            try {
-                //new Thread(
-                LOGGER.info("trying filePath: {}/{}", DECK_FOLDER, fileName);
-                
-                FileInputStream fileIn = new FileInputStream(DECK_FOLDER + "/" + fileName);
-
-                input = new ObjectInputStream(new BufferedInputStream(fileIn));
-                flashListMM.clear();
-
-                while(flashListMM.add((FlashCardMM)input.readObject()));
-
-                LOGGER.info("flashlist size: {}", flashListMM.size());
-
-            } catch(ClassNotFoundException e) {
-                LOGGER.warn("\tClassNotFound Exception: connectBinaryIn() Line 1134 FlashCard");
-                
-            } catch(EOFException e) {
-                //LOGGER.warn("\tEnd of file Exception: connectBinaryIn() Line 1134 FlashCard");
-
-            } catch(FileNotFoundException e) {
-                LOGGER.warn("\tFile Not Found exception: connectBinaryIn() Line 1134 FlashCard");
-                // System.out.println(e.getMessage());
-                //e.printStackTrace();
-
-            } catch(IOException e) {
-                LOGGER.warn("\t****** IO Exception in FlashCard.connectBinaryIn() *******");
-                e.printStackTrace();
-
-                try {
-                    LOGGER.warn("\t *** Trying to copy fromFmLastVersion *** ");
-                    flashListMM = copyFmLastVersion((ArrayList<FlashCardMM>) input.readObject());
-
-                } catch(IOException f) {
-                    //System.err.println("\tFM IOException, copyFmLastVersion failed!");
-                    f.getStackTrace();
-                    f.getCause();
-
-                } catch(ClassNotFoundException f) {
-                    LOGGER.warn("\tClassNotFound Exception line 323 FlashCard");
-                    //System.out.println(f.getMessage());
-                    //System.out.println(Arrays.toString(f.getStackTrace()));
-                }
-            } catch(Exception e) {
-                // Set errorMsg in FlashMonkeyMain and let the ReadFlash class
-                // handle the error in createReadScene()
-        //        FlashMonkeyMain.setErrorMsg(" --   Oooph my bad!!!   --\n" +
-        //                "The flash card deck you chose \n\"" + ReadFlash.getDeckName()
-        //                + "\"\n will not work with this version of FlashMonkey" );
-                
-                LOGGER.warn("\tUnknown Exception in connectBinaryIn: ");
-                e.printStackTrace();
-            } finally {
-                closeInStream(input, null);
-            }
-            
-            return flashListMM;
-        }
-
-
-        /**
-         * <p>Outputs an array of Strings to file</p>
-         * @param m DeckMetaData containing a decks
-         *                metaData. THe file stored is named
-         *                from the DeckName and ends with .met
-         */
-        public void setMetaInFile(DeckMetaData m, String deckName) {
-         //   LOGGER.debug("setMetaInFile called");
-            File folder = new File(DirectoryMgr.getMediaPath('t'));
-            String metaFileName = deckName + ".met";
-
-            try (DataOutputStream dataOut =
-                         new DataOutputStream(new FileOutputStream(folder + "/" + metaFileName))){
-                
-                LOGGER.debug("set MetaDataObj in file");
-                LOGGER.debug("scoresToArray looks like: {}", scoresToArray(m.getScores()));
-                
-                dataOut.writeUTF(Long.toString(m.getLastDate()));
-                dataOut.writeUTF(m.getCreateDate());
-                dataOut.writeUTF(m.getCreatorEmail());
-                dataOut.writeUTF(m.getDeckFileName());
-                dataOut.writeUTF(m.getDescript());
-                dataOut.writeUTF(m.getNumImg());
-                dataOut.writeUTF(m.getNumVideo());
-                dataOut.writeUTF(m.getNumAudio());
-                dataOut.writeUTF(m.getNumCard());
-                dataOut.writeInt(m.getNumSessions());
-                dataOut.writeUTF(m.getDeckBook());
-                dataOut.writeUTF(m.getDeckClass());
-                dataOut.writeUTF(m.getDeckProf());
-                dataOut.writeUTF(m.getDeckSchool());
-                dataOut.writeUTF(m.getSubj());
-                dataOut.writeUTF(m.getCat());
-                dataOut.writeUTF(m.getLang());
-                dataOut.writeUTF(m.getLastScore() == null ? "0" : m.getLastScore());
-                dataOut.writeUTF(scoresToArray(m.getScores()) == null ? "0/" : scoresToArray(m.getScores()));
-            }
-            catch(EOFException e) {
-                //System.out.println(e.getMessage() + "\n" + e.getStackTrace());
-                //e.printStackTrace();
-            }
-            catch(FileNotFoundException e) {
-            //    LOGGER.warn(e.getMessage() + "\n" + e.getStackTrace());
-                e.printStackTrace();
-            }
-            catch(IOException e) {
-             //   LOGGER.warn(e.getMessage() + "\n" + e.getStackTrace());
-                e.printStackTrace();
-            }
-            catch(Exception e ) {
-            //    LOGGER.warn("Unknown Exception: " + "\n" + e.getStackTrace());
-                e.printStackTrace();
-            }
-            
-        }
-    
-        /**
-         * Helper method to setMetaInFile
-         * @param scores
-         * @return
-         */
-        private String scoresToArray(ArrayList<String> scores) {
-            StringBuilder scoreStr = new StringBuilder("0/0/0");
-            if(scores.size() > 0) {
-                
-                for (int i = 0; i < scores.size(); i++) {
-                    scoreStr.append(scores.get(i) + ",");
-                }
-            }
-            return scoreStr.toString();
-        }
-
-        /**
-         * Returns a DeckMetaData obj from the file in the Param
-         * @param filePath the full path name of the file to be
-         *                 retrieved.
-         * @return A DeckMetaData obj from the file in the Param.
-         */
-        public void setMetaObjFromFile(String filePath) {
-
-            LOGGER.debug("getMetaFromFile called");
-            try (DataInputStream dataIn = new DataInputStream(new FileInputStream(filePath))) {
-                DeckMetaData data = DeckMetaData.getInstance();
-    
-                System.out.println("Printout from file: \n" +
-                                "1. setLastDate: " + dataIn.readLong() + "\n" +
-                                "2. setCreateDate " + dataIn.readUTF() + "\n" +
-                                "3. setOrigAuthor " + dataIn.readUTF() + "\n" +
-                                "4. setDeckFileName " + dataIn.readUTF() + "\n" +
-                                "5. setDescript" + dataIn.readUTF() + "\n" +
-                                "6. setNumImg" + dataIn.readInt() + "\n" +
-                                "7. setNumVideo" + dataIn.readInt() + "\n" +
-                                "8. setNumAudio" + dataIn.readInt() + "\n" +
-                                "9. setNumCard" + dataIn.readInt() + "\n" +
-                                "10. setNumSessions" + dataIn.readInt() + "\n" +
-                                "11. setDeckBook" + dataIn.readUTF() + "\n" +
-                                "12. setDeckClass" + dataIn.readUTF() + "\n" +
-                                "13. setDeckProf" + dataIn.readUTF() + "\n" +
-                                "14. setDeckSchool" + dataIn.readUTF() + "\n" +
-                                "15. setSubj" + dataIn.readUTF() + "\n" +
-                                "16. setCat" + dataIn.readUTF() + "\n" +
-                                "17. setLang" + dataIn.readUTF() + "\n" +
-                                "18. setLastScore" + dataIn.readUTF() + "\n" +
-                                "19. setScores" +dataIn.readUTF()  + "\n");
-
-                
-                data.setLastDate(dataIn.readLong());
-                data.setCreateDate(dataIn.readUTF());
-                data.setCreatorEmail(dataIn.readUTF());
-                data.setDeckFileName(dataIn.readUTF());
-                data.setDescript(dataIn.readUTF());
-                data.setNumImg(dataIn.readInt());
-                data.setNumVideo(dataIn.readInt());
-                data.setNumAudio(dataIn.readInt());
-                data.setNumCard(dataIn.readInt());
-                data.setNumSessions(dataIn.readInt());
-                data.setDeckBook(dataIn.readUTF());
-                data.setDeckClass(dataIn.readUTF());
-                data.setDeckProf(dataIn.readUTF());
-                data.setDeckSchool(dataIn.readUTF());
-                data.setSubj(dataIn.readUTF());
-                data.setCat(dataIn.readUTF());
-                data.setLang(dataIn.readUTF());
-                data.setLastScore(dataIn.readUTF());
-                //obj.setTestTypes
-                data.setScores(scoresReadBack(dataIn.readUTF()));
-
-            } catch (EOFException e) {
-                // end of file exception. Do nothing. this is expected.
-            } catch(FileNotFoundException e) {
-                LOGGER.warn("\tFile Not Found exception:  getObjFmFile() Line 986 FlashCard");
-                LOGGER.warn(e.getMessage());
-                e.printStackTrace();
-            } catch(IOException e) {
-                LOGGER.warn("\t****** IO Exception in FlashCard. getObjFmFile() *******");
-                e.printStackTrace();
-            } catch(Exception e) {
-                LOGGER.warn("\tUnknown Exception in getMetaFromFile: ");
-                e.printStackTrace();
-            }
-
-        }
-    
-        /**
-         * Helper method to getMetaFromFile
-         * @param str
-         * @return an arraylist string containing scores
-         */
-        private ArrayList<String> scoresReadBack(String str) {
-            String[] parts = str.split(",");
-            ArrayList<String> scores = new ArrayList<>();
-            for(String s : parts) {
-                scores.add(s);
-            }
-            return scores;
-        }
-    
-    
-        /**
-         * <P><b>USE</b> when an empty element exists at the end of the list. </P>
-         * <p>Outputs any arraylist including FlashList (given in the parameter) to a serialized
-         *             file from the arrayList in the parameter.</p>
-         * @param arrayList FlashList or other ArrayList
-         * @param minus The minus that defines the folder where this
-         *             file will be created. If char = '-' then
-         *             the last element is subtracted from the list. This should be used
-         *             when there is an empty element at the end of the list.
-         *
-         */
-        public void setListinFile(ArrayList arrayList, char minus) {
-    
-            LOGGER.info("\nsetListInFile with TYPE\n");
-            
-            File folder = new File(DirectoryMgr.getMediaPath(minus));
-
-    //       UserData userData = new UserData();
-    //        CloudOps co = new CloudOps();
-            //fileName = ReadFlash.getInstance().getDeckName() + ".dat";
-            
-            LOGGER.info(" in setListInFile(ArrayList). path is: " + folder + "/" + fileName +
-                    "\n and numCards: " + arrayList.size());
-
-            LOGGER.info("setListInFile with minus: {}", minus);
-
-            // action
-            try
-            {
-                output = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(folder + "/" + fileName), 512));
-                if(minus == '-') {
-                    for (int i = 0; i < arrayList.size() - 1; i++) {
-                        output.writeObject(arrayList.get(i));
-                    }
-                } else {
-
-                    LOGGER.info("setListInFile(w/ minus: {}) building list to full size", minus);
-
-                    for (int i = 0; i < arrayList.size(); i++) {
-                        output.writeObject(arrayList.get(i));
-                    }
-                }
-                // Send the String file
-                //co.connectCloudOut('t', userData.getUserName(), fileName);
-            }
-            catch(EOFException e) {
-                //System.out.println(e.getMessage() + "\n" + e.getStackTrace());
-                //e.printStackTrace();
-            }
-            catch(FileNotFoundException e) {
-                LOGGER.warn(e.getMessage() + "\n" + e.getStackTrace());
-                e.printStackTrace();
-            }
-            catch(IOException e) {
-                LOGGER.warn(e.getMessage() + "\n" + e.getStackTrace());
-                e.printStackTrace();
-            }
-            catch(Exception e ) {
-                LOGGER.warn("Unknown Exception: " + "\n" + e.getStackTrace());
-                e.printStackTrace();
-            }
-            finally{
-                closeOutStream(output, null);
-            }
-        }
-
-        /**
-         * Outputs the verify object in the parameter to file
-         * @return returns the message if successful or not
-         */
-        public String setVerifyInFile(Object obj) {
-
-            if(obj.getClass().getName().contains("UserAuthInfo")) {
-                boolean bool = setObjInFile(obj, "verifyData.met");
-                if (bool) {
-                    return "Success: New user created";
-                }
-            }
-            return "Failed: User was not created.";
-        }
-
-        /**
-         * Outputs the object in the Param to a file in the filePathName
-         * @param obj
-         * @param fileName
-         * @return true if successful
-         */
-        public boolean setObjInFile(Object obj, String fileName) {
-
-            File folder = new File(DirectoryMgr.getMediaPath('z'));
-            if(folder.exists()) {
-                return false;
-            }
-            else {
-                folder.mkdirs();
-            }
-
-            LOGGER.info("n called setObjInFile(Obj)  and path is: " + folder + "/" + fileName);
-            boolean bool = false;
-            String fullPathName = folder + "/" + fileName;
-            try {
-                output = new ObjectOutputStream(new BufferedOutputStream
-                        (new FileOutputStream(fullPathName), 512));
-                output.writeObject(obj);
-                bool = true;
-            }
-            catch(EOFException e) {
-                LOGGER.warn(e.getMessage());
-            }
-            catch(FileNotFoundException e) {
-                LOGGER.warn(e.getMessage());
-            }
-            catch(IOException e) {
-                LOGGER.warn("IOException: in connectBinaryOut Saving to file\n{}", e.getMessage());
-                //e.printStackTrace();
-            }
-            catch(Exception e) {
-                LOGGER.warn("Unknown Exception: \nFileName: {} \nCause: {} \nStackTrace: {}", fileName, e.getCause().toString(), Arrays.toString(e.getStackTrace()));
-            }
-            finally {
-                closeOutStream(output, null);
-                return bool;
-            }
-        }
-
-
-        public Object getVerifyFmFile() {
-            return getObjectFmFile("verifyData.met");
-        }
-
-        /**
-         * @return If successful, returns an object from the file, else returns null.
-         */
-        public Object getObjectFmFile(String fileName) {
-            File folder = new File(DirectoryMgr.getMediaPath('z'));
-            String pathName = folder + "/" + fileName;
-            File metFile = new File(pathName);
-            
-            if(!metFile.exists() ) {
-                LOGGER.warn("folder {} or file {} does not exist", folder.getName(), fileName );
-                return null;
-            }
-
-            LOGGER.info("n called getObjFmFile() and path is: {}", pathName);
-
-            try {
-                //new Thread(
-                FileInputStream fileIn = new FileInputStream(pathName);
-
-                input = new ObjectInputStream(new BufferedInputStream(fileIn));
-                return input.readObject();
-
-            } catch(FileNotFoundException e) {
-                LOGGER.warn("\tFile Not Found exception");
-                LOGGER.warn(e.getMessage());
-                e.printStackTrace();
-
-            } catch(IOException e) {
-                LOGGER.warn("\t****** IO Exception in FlashCard. getObjFmFile() *******");
-                e.printStackTrace();
-
-            } catch(Exception e) {
-                // Set errorMsg in FlashMonkeyMain and let the ReadFlash class
-                // handle the error in createReadScene()
-                //        FlashMonkeyMain.setErrorMsg(" --   Oooph my bad!!!   --\n" +
-                //                "The flash card deck you chose \n\"" + ReadFlash.getDeckName()
-                //                + "\"\n will not work with this version of FlashMonkey" );
-
-                LOGGER.warn("\tUnknown Exception in connectBinaryIn: ");
-                e.printStackTrace();
-
-            } finally {
-                closeInStream(input, null);
-            //    return null;
-            }
-            return null;
-        }
-    
-        /**
-         * Saves an image to the desired directory
-         * @param imgFileName The fileName
-         * @param image the image to save
-         * @param type The type of media to save the image. Should be a 'c' 'C' for images in decks
-         *             or 't' for the usersImg.
-         * @return Returns the fileName
-         */
-        public String saveImage(String imgFileName, Image image, char type) {
-            LOGGER.info("saving media to file");
-
-            DirectoryMgr dirMgr = new DirectoryMgr();
-            String mediaPath = dirMgr.getMediaPath(type);
-            File imageFile = new File(mediaPath + imgFileName);
-            FileOpsUtil.folderExists(imageFile);
-            String mediaFileName = imgFileName;
-    
-            try {
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", imageFile);
-            } catch(IOException e) {
-                LOGGER.warn("ERROR: image was not saved. FileName: {}", mediaFileName);
-            }
-            
-            return mediaFileName;
-        }
-
-        /**
-         * Used for deckSearch and other areas to reduce errors created by user
-         * input for US Schools. Used to keep naming uniform. IE Univeristy of Texas
-         * at Austin. Assists with search. This method creates the school objects used
-         * in drop down boxes.
-         * @return
-         */
-        public ObservableList<CSVUtil.SchoolObj> getSchoolObjs() {
-            String res = "processedCampus.dat";
-            ArrayList<CSVUtil.SchoolObj> sclObjects;
-            ObjectInputStream inputs;
-            
-            try {
-                //inputs = new ObjectInputStream(new BufferedInputStream(new getResourceAsStream(res)));
-                inputs = new ObjectInputStream(new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(res)));
-                //xxxxx Problem here --> Usually caused by the need to recompile the Schools File created by forms.searchables.CSVUtil
-                sclObjects = (ArrayList<CSVUtil.SchoolObj>) inputs.readObject();
-                //ArrayList<String> instList = new ArrayList<>();
-                //for(CSVUtil.SchoolObj o : sclObjects) {
-                //    instList.add(o.getName());
-                //}
-                ObservableList<CSVUtil.SchoolObj> ol = new SimpleListProperty<>(FXCollections.observableArrayList(sclObjects));
-                return ol;
-                
-            } catch (FileNotFoundException e) {
-                LOGGER.warn("WARNING could not find file: {}\n{}", e.getMessage(), e.getStackTrace());
-            } catch(IOException e) {
-                LOGGER.warn("\t****** IO Exception in FlashCard. getObjFmFile() *******");
-                e.printStackTrace();
-            } catch (Exception e) {
-                LOGGER.warn("WARNING Exception get schoolObj: {}\n {}", e.getMessage(), e.getStackTrace());
-                e.printStackTrace();
-            }
-            return null;
-        }
-        
-        
-    
-        /**
-         * Primarily used for testing
-         * Prints the qNum and the aNum for the list of cards
-         * //@param fList Expects an ArrayList<FlashCardMM>
-         */
-        /*   public void printList(ArrayList<FlashCardMM> fList)
-        {
-            fList.forEach((fc) -> {
-               //System.out.println("\tqNum = "+ fc.getCNumber() + ", aNum: " + fc.getANumber() + " numSeen: " + fc.getNumSeen()
-                 + " remember: " + fc.getRemember());
-            });
-        }
-        */
-        
-        
+        return null;
     }
-    
-    // ****** END OF INNERCLASS FileOperations ************
-    
-    
+
     /**
-     * Closes the input stream
-     * @param closeMe
-     * @param message
+     * Primarily used for testing
+     * Prints the qNum and the aNum for the list of cards
+     * //@param fList Expects an ArrayList<FlashCardMM>
      */
-	private void closeInStream(ObjectInputStream closeMe, String message) {
-		try {
-			//System.out.println("closeInStream() method in FlashCard");
-			closeMe.close();  // To prevent the compiler from
-			// complaining and runtime errors
-		}
-		catch(NullPointerException e) {
-			if (message == null) {
-				// do nothing
-			}
-			else {
-				//System.out.println(message);
-			}
-		}
-		catch(EOFException e) {
-			LOGGER.warn("End Of File Exception while closing");
-			//System.out.println(e.getMessage());
-			//System.out.println("Exiting ...");
-			System.exit(0);
-		}
-		catch(IOException e) {
-			//System.out.println("IOFile Exception: while closing" + e.getMessage());
-			//System.out.println("Exiting ...");
-			System.exit(0);
-		}
-	}
-	
-	private void closeOutStream(ObjectOutputStream closeMe, String message) {
-		try {
-			closeMe.close();  // To prevent the compiler from
-			// complaining and runtime errors
-		}
-		catch(NullPointerException e) {
-			if (message == null) {
-				// do nothing
-			}
-			else {
-				//System.out.println(message);
-			}
-		}
-		catch(EOFException e) {
-			System.exit(0);
-		}
-		catch(IOException e) {
-			System.exit(0);
-		}
-	}
-	
-	
-	// ******************************* ************* ******************************* //
-    //                                  INNER CLASSES
-    // ******************************* ************* ******************************* //
-    
-    
-    /**
-     * DESCRIPTION: THis class creates the fileSelectPane that is output to the 
-     * users screen. The EncryptedUser may select the file they desire. That file will
-     * be used until the EncryptedUser selects another file, or exits. If no file exists
-     * or if the EncryptedUser chooses, a new file can be created.
-     */
-    protected class FileSelectPane {
-        protected VBox paneForFiles = new VBox(4);
-        private FileOperations fo = new FileOperations();
-        
-        // For the file does not exist window        
-        private TextField newNameField;   // new name field
-        private Label labelNnf;
-        private Label plainTxt;
-
-        //*** VIEW PANE CONSTRUCTOR ***
-
-        /**
-         * File select pane
-         */
-        protected FileSelectPane() {
-            agrList = new AgrFileList(DECK_FOLDER);
-        }
-
-
-        /**
-         * Builds the file select pane and inserts the available
-         * decks based on the most recent deck.
-         */
-        protected void selectFilePane() {
-            LOGGER.setLevel(Level.DEBUG);
-            LOGGER.info("FileSelectPane called");
-            Label recLabel = new Label("Recent decks");
-            recLabel.setTextFill(Color.WHITE);
-            recLabel.setId("deckNameLabel");
-            //Label oldLabel = new Label("Older than 3 months");
-    
-            ArrayList<LinkObj> currentList = agrList.getRecentFiles();
-            ArrayList<LinkObj> oldList = agrList.getOlderFiles();
-    
-            //LOGGER.info("CurrentFiles.size() {}, olderFiles.size() {}", currentList.size(), oldList.size());
-            //LOGGER.info("AGRList.size(): {}", agrList.getSize());
-    
-            // Check if folder exists and has more than one file .
-            // first file is default file.
-            if(agrList.getSize() > 0) {
-                FileOpsUtil.folderExists(DECK_FOLDER);
-                // output list of files{
-                //If there is a folder that exists and the agregated list of files is greater
-                // than 0, filter out copies -"copy" 2) output the filenames, eliminate the
-                // ".dat". 3) add a radio button 4) add the rdo/actionListener
-                LOGGER.debug("currentList.size(): <{}>", currentList.size());
-                if(currentList.size() > 0) {
-                    SelectableRdoField rdoField = new SelectableRdoField();
-                    paneForFiles.getChildren().add(recLabel);
-                    for (LinkObj lObject : currentList) {
-                        // The deck element
-                        HBox fieldBox = rdoField.buildField(lObject);
-                        // Deck element action
-                        fieldBox.setOnMouseClicked( e -> {
-                            if(e.isSecondaryButtonDown()) {
-                                fieldSecondaryAction();
-                            } else {
-                                String name = lObject.getDescrpt();
-                                name = name.substring(0, name.length() -4);
-                                fieldPrimaryAction(lObject, name);
-                            }
-                        });
-                        paneForFiles.getChildren().add(fieldBox);
-                    }
-                }
-            }
-            else { // create a new file since one does not exist
-                paneForFiles = newFile();
-            }
-        } // END PANE FOR FILES
-    
-        /**
-         * Helper method to FileSelectPane. Provides
-         * the primary key action for field mouse click.
-         * @param lObject
-         */
-        private void fieldPrimaryAction(LinkObj lObject, String deckName) {
-            LOGGER.debug("rdoButton clicked");
-
-            // ensure token is still valid
-            if(Utility.isConnected() && CO.isInValid()) {
-                LOGGER.warn("Token is expired, login again. ");
-                        FMAlerts alerts = new FMAlerts();
-                        alerts.sessionRestartPopup();
-                    }
-            else {
-                LOGGER.debug("token is good or renewed");
-                ReadFlash.getInstance().resetInd();
-                String lObjName = lObject.getDescrpt();
-                // filename without the .dat ending
-                // used by ReadFlash and other classes.
-                ReadFlash.getInstance().setDeckName(deckName);
-                agrList.setLinkObj(lObject);
-                // if the deck is from the cloud
-                if (lObject.getCloudLink() != null) {
-                    LOGGER.debug("CLOUD linkObject clicked, fileName: {}" + lObject.getDescrpt());
-
-                    fo.setFileName(lObjName);
-                    lObject.getCloudLink().retrieveDeckFmCloud();
-                    refreshFlashList();
-
-                } else {
-                    LOGGER.debug("LOCAL linkObject clicked, fileName: {}" + lObjName);
-
-                    fo.setFileName(lObjName);
-                    refreshFlashList();
-                }
-
-                // media sync
-                LOGGER.debug("has flashlist been downloaded yet? flashlist size: {}", flashListMM.size() );
-                if(flashListMM.size() > 0 && Utility.isConnected()) {
-                    // @TODO move thread to MediaSync for async download. Not here
-                    new Thread(() -> {
-                        LOGGER.info("Calling syncMedia from FlashCardOps primaryAction");
-                        MediaSync.syncMedia(flashListMM);
-                    }).start();
-                }
-
-                FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
-                // takes User back to main menu
-                FlashMonkeyMain.getWindow().setScene(FlashMonkeyMain.getNavigationScene());
-            }
-        }
-        
-        private void fieldSecondaryAction() {
-            // @todo fieldSecondaryAction in fileSelectPane, rightClick on deckLinks
-        }
-        
-
-        /**
-         * creates a new fileName in the
-         * directory. If the name is successfully created it sends the user
-         * to the CreateFlashPane.createFlashScene() so that the user may
-         * immediatly begin creating new flashCards.
-         * 
-         * @return Returns a VBox
-         */
-        protected VBox newFile() {
-            count = 0;
-            FlashMonkeyMain.setIsInEditMode(true);
-            // Text field for new file names
-            newNameField = new TextField();
-            newNameField.setStyle("-fx-text-fill: rgba(0,0,0,.6); ");
-            
-            Button nnfButton = new Button("Next");
-            VBox box = new VBox();
-
-            box.setSpacing(10);
-
-            // Label and prompt displayed if there are no files
-            if(agrList.getSize() == 0) {
-                labelNnf = new Label("Ok,  Let's get you an A\n\n");
-                labelNnf.setTextFill(Paint.valueOf(UIColors.FM_WHITE));
-                plainTxt = new Label("Name your first study deck.");
-                newNameField.setText("psst! clue.. \"History 105 Ch1\"");
-                labelNnf.setId("label16");
-                box.getChildren().addAll(labelNnf, plainTxt, newNameField);
-            }
-            else {
-                labelNnf = new Label("Ok... \n"
-                        + "Name your study deck. ");
-                newNameField.setText("clue.. \"CS 220 Ch6\"");
-                box.getChildren().addAll(labelNnf, newNameField);
-            }
-
-            newNameField.setOnKeyPressed(e -> {
-                if(count <= 0) {
-                    newNameField.setStyle("-fx-text-fill: rgba(0,0,0,1); ");
-                    this.newNameField.setText("");
-                    count++;
-                }
-                if(e.getCode() == KeyCode.ENTER) {
-                    nnfButtonAction();
-                }
-        	});
-
-            nnfButton.setOnAction( (ActionEvent e) -> nnfButtonAction() );
-
-            box.getChildren().add(nnfButton);
-            return box;
-        }  
-        
-        private void nnfButtonAction() {
-            if(count > 0)
-            {
-                if(fo.buildFileName(newNameField.getText()))// gets new file name fm field
-                {
-                    //flashList.clear();
-                    LinkObj lo = new LinkObj(newNameField.getText());
-                    agrList.setLinkObj(lo);
-
-                    CreateFlash createFlash = CreateFlash.getInstance();
-                    FlashMonkeyMain.getWindow().setScene(createFlash.createFlashScene());
-                }
-            }
-            else {
-                newNameField.setText("");
-                newNameField.setPromptText("Aww... enter what you're studying");
-                newNameField.setStyle("-fx-prompt-text-fill: #0093EF;");
-            }
-        }
-    } /*  *** *** *** END OF FileSelectPane PRIVATE CLASS *** *** ***/
+    /*   public void printList(ArrayList<FlashCardMM> fList)
+    {
+        fList.forEach((fc) -> {
+           //System.out.println("\tqNum = "+ fc.getCNumber() + ", aNum: " + fc.getANumber() + " numSeen: " + fc.getNumSeen()
+             + " remember: " + fc.getRemember());
+        });
+    }
+    */
 
 
     /****** TESTING METHODS *****/
 
-    @FMAnnotations.DoNotDeployMethod
+    /*@FMAnnotations.DoNotDeployMethod
     public Point2D getNewNameFieldXYforTest() {
         FileSelectPane fsp = new FileSelectPane();
     return new Point2D(fsp.newNameField.getBoundsInLocal().getMinX() + 10, fsp.newNameField.getBoundsInLocal().getMinY() + 10);
+    }*/
+
+    //* Helper method to FileSelectPane. Provides
+    //* the primary key action for field mouse click.
+    //* @param lObject
+    void fieldPrimaryAction(LinkObj lObject, String deckName) {
+        LOGGER.debug("rdoButton clicked");
+
+        // ensure token is still valid
+        if(Utility.isConnected() && CloudOps.isInValid()) {
+            LOGGER.warn("Token is expired, login again. ");
+            FMAlerts alerts = new FMAlerts();
+            alerts.sessionRestartPopup();
+        }
+        else {
+            LOGGER.debug("token is good or renewed");
+            ReadFlash.getInstance().resetInd();
+            String lObjName = lObject.getDescrpt();
+            agrList.setLinkObj(lObject);
+            // if the deck is from the cloud
+            if (lObject.getCloudLink() != null) {
+                LOGGER.debug("CLOUD linkObject clicked, fileName: {}" + lObject.getDescrpt());
+                //lObjName = parseFileName(lObjName);
+                setFileName(lObjName);
+                lObject.getCloudLink().retrieveDeckFmCloud();
+                refreshFlashList();
+            } else {
+                LOGGER.debug("LOCAL linkObject clicked, fileName: {}" + lObjName);
+                //lObjName = parseFileName(lObjName);
+                setFileName(lObjName);
+                refreshFlashList();
+            }
+
+            // media sync
+            LOGGER.debug("has flashlist been downloaded yet? flashlist size: {}", flashListMM.size() );
+            if(flashListMM.size() > 0 && Utility.isConnected()) {
+                // @TODO move thread to MediaSync for async download. Not here
+                new Thread(() -> {
+                    LOGGER.info("Calling syncMedia from FlashCardOps primaryAction");
+                    MediaSync.syncMedia(flashListMM);
+                }).start();
+            }
+
+            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
+            // takes User back to main menu
+            FlashMonkeyMain.getWindow().setScene(FlashMonkeyMain.getNavigationScene());
+        }
     }
 }
 

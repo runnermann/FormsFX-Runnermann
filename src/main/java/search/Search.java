@@ -192,11 +192,7 @@ public class Search //extends FlashCardOps
      * @return Returns a FlashCard Array from the Union of the terms provided
      * in the argument. 
      */
-    public Set<FlashCardMM> find(String strFind, ArrayList<FlashCardMM> flashList)
-    {
-        System.out.println("\n\n^*^*^ SEARCH FIND method called ^*^*^\n\n");
-
-        
+    public Set<FlashCardMM> find(String strFind, ArrayList<FlashCardMM> flashList) {
         Set unionSet = new HashSet();
         Set otherSet = new HashSet();
         
@@ -204,13 +200,9 @@ public class Search //extends FlashCardOps
         // Split String strFind into seperate words
         Object value;
         String[] w = strFind.trim().split("\\s");
-
-        System.out.println(); // clearing
         
         // Loop through the terms & get their indices from the hash table
-        for(int i = 0; i < w.length; i++) 
-        {
-            System.out.println("in loop");
+        for(int i = 0; i < w.length; i++) {
             // Get the first term and add its indices to the union set
             value = fmHashTableChain.get(clean(w[i].toLowerCase()));
             Term termi = (Term) value;
@@ -219,7 +211,6 @@ public class Search //extends FlashCardOps
             {
                 // set bool to false to indicate to the using method
                 // that this String is not a valid hyperLink.
-                System.out.println("value is null or less than 3");
                 bool = false;
             }
             else if(value != null)
@@ -229,11 +220,8 @@ public class Search //extends FlashCardOps
                 if(unionSet.isEmpty())
                 {
                     unionSet.addAll(termi.indices);
-                    System.out.println("UnionSet is empty \n"); // for " + termi.word + " : " + unionSet.toString());
                 }
-                else
-                {
-                    System.out.println("Unionset is not empty\n");
+                else {
                     otherSet.addAll(termi.indices);
                     unionSet.retainAll(otherSet);
                 }
@@ -250,10 +238,6 @@ public class Search //extends FlashCardOps
                 searchResultSet.add(flashList.get(setIterator.next()));
                 //searchResult.add(flashList.get(setIterator.next()));
             }
-            System.out.println("searchResult indicies: ");
-            for(FlashCardMM cardMM : searchResult) {
-                System.out.println(cardMM.getQText());
-            }
 
         unionSet.clear();
         otherSet.clear();
@@ -267,7 +251,7 @@ public class Search //extends FlashCardOps
      */
     protected void printNumWords()
     {
-        System.out.println("Number of words: " + this.numWords);
+        //System.out.println("Number of words: " + this.numWords);
     }
 
     /**
@@ -383,10 +367,7 @@ public class Search //extends FlashCardOps
          *          1 if this term is larger than other.
          */
         @Override
-        public int compareTo(Object otherTerm)
-        {
-                System.out.println(" compare = " + this.getWord().compareToIgnoreCase(((Term)otherTerm).getWord()));
-
+        public int compareTo(Object otherTerm) {
                 return this.getWord().compareToIgnoreCase(((Term)otherTerm).getWord());
         }
     }

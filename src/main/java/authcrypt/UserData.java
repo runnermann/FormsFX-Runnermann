@@ -7,21 +7,30 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
+import static fileops.FileNaming.hashToHex;
+
 /**
  * non encrypted User data. The authcrypt.user's data is encrypted until it is
  * used. It is used only when neccessary and it is decrypted at that time.
  * Then the clear-text-data is cleared from cache and the registers.
  */
-public class UserData extends Searchable {
+public abstract class UserData extends Searchable {
 	
 	// Username is the unique name for this authcrypt.user.
 	// Usually their email address that they
 	// set at on the first use of this application.
-	private static String userName = "nameNotSet@flashmonkey.xyz";
+	private static String userName = null;
 	// The users common name, usually the first name.
-	private static String name = "default Name";
-	
+	private static String name = "default_Name";
 	private static Image userImage;
+
+	public static String getUserMD5Hash() {
+		if(userName.contains("nameNotSet")) {
+			//("ERROR: UserData.getUserMD5Hash() failed");
+			System.exit(1);
+		}
+		return hashToHex(userName);
+	}
 
 	/**
 	 * @return Returns the name the user sets
@@ -44,9 +53,9 @@ public class UserData extends Searchable {
 	 * @return Returns the users unique name, Usually thier
 	 * email address.
 	 */
-	public static String getUserName() {
-		System.out.println("UserData.getUserName(): " + userName);
-		return userName;
+	public static @NotNull String getUserName() {
+		//System.out.println("UserData.getUserName(): " + userName);
+		return userName != "null" ? userName : null;
 	}
 	
 	/**
@@ -68,26 +77,24 @@ public class UserData extends Searchable {
 	/**
 	 * Saves the usersImage
 	 * to file.
-	 * @param image
+	 * @param image Saves user image to file
 	 */
 	public static void saveUserImage(Image image) {
 		//FileNaming fileNaming = new FileNaming("notUsed", cID, qOrA, ".png");
-		
 		FlashCardOps fco = FlashCardOps.getInstance();
 		// Save the user image to the userData directory
-		fco.getFO().saveImage("userImg.png", image, 'z');
+		fco.saveImage("userImg.png", image,".png", 'z');
 	}
 	
 	/**
 	 * if userImage is null,
 	 * sets userImage to the userImage file if it exists,
 	 * else it sets it to an emoji.
-	 * @return
 	 */
 	public void setUserImage() {
 		if(userImage == null) {
 			if (! setUserImgFmFileHelper()) {
-				userImage = new Image("image/flashFaces_sunglasses_60.png");
+				userImage = new Image("icon/myProfile.PNG");
 			}
 		}
 	}
@@ -104,7 +111,7 @@ public class UserData extends Searchable {
 	
 	/**
 	 * Sets the userImage to the param.
-	 * @param userImage
+	 * @param userImage The users image
 	 */
 	public void setUserImage(Image userImage) {
 		this.userImage = userImage;
@@ -113,9 +120,12 @@ public class UserData extends Searchable {
 	public static void clear() {
 		userImage = new Image("image/flashFaces_sunglasses_60.png");;
 		userName = "nameNotSet@flashmonkey.xyz";
-		name = "default Name";
+		//name = "default_Name";
 	}
-	
+
+	/**
+	 * @return Returns the text
+	 */
 	@Override
 	public String getText() {
 		return name;
@@ -166,34 +176,34 @@ public class UserData extends Searchable {
 	}
 	
 	/**
-	 * Compares its two arguments for order.  Returns a negative integer,
+	 * <p>Compares its two arguments for order.  Returns a negative integer,
 	 * zero, or a positive integer as the first argument is less than, equal
-	 * to, or greater than the second.<p>
+	 * to, or greater than the second.</p>
 	 * <p>
 	 * The implementor must ensure that {@code sgn(compare(x, y)) ==
 	 * -sgn(compare(y, x))} for all {@code x} and {@code y}.  (This
 	 * implies that {@code compare(x, y)} must throw an exception if and only
-	 * if {@code compare(y, x)} throws an exception.)<p>
+	 * if {@code compare(y, x)} throws an exception.)</p>
 	 * <p>
 	 * The implementor must also ensure that the relation is transitive:
 	 * {@code ((compare(x, y)>0) && (compare(y, z)>0))} implies
-	 * {@code compare(x, z)>0}.<p>
+	 * {@code compare(x, z)>0}.</p>
 	 * <p>
 	 * Finally, the implementor must ensure that {@code compare(x, y)==0}
 	 * implies that {@code sgn(compare(x, z))==sgn(compare(y, z))} for all
-	 * {@code z}.<p>
+	 * {@code z}.</p>
 	 * <p>
 	 * It is generally the case, but <i>not</i> strictly required that
 	 * {@code (compare(x, y)==0) == (x.equals(y))}.  Generally speaking,
 	 * any comparator that violates this condition should clearly indicate
 	 * this fact.  The recommended language is "Note: this comparator
-	 * imposes orderings that are inconsistent with equals."<p>
+	 * imposes orderings that are inconsistent with equals."</p>
 	 * <p>
 	 * In the foregoing description, the notation
 	 * {@code sgn(}<i>expression</i>{@code )} designates the mathematical
 	 * <i>signum</i> function, which is defined to return one of {@code -1},
 	 * {@code 0}, or {@code 1} according to whether the value of
-	 * <i>expression</i> is negative, zero, or positive, respectively.
+	 * <i>expression</i> is negative, zero, or positive, respectively.</p>
 	 *
 	 * @param o1 the first object to be compared.
 	 * @param o2 the second object to be compared.

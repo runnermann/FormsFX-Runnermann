@@ -1,16 +1,12 @@
 package forms.utility;
 
-import authcrypt.UserData;
-import authcrypt.user.EncryptedPerson;
 import authcrypt.user.EncryptedProf;
-import authcrypt.user.EncryptedStud;
-import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
-import flashmonkey.ReadFlash;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import fileops.utility.Utility;
+import flashmonkey.FlashCardOps;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -34,16 +30,17 @@ import java.io.File;
 public class ProfessorDescriptor extends PersonDescriptor {
 	
 	// Logging reporting level is set in src/main/resources/logback.xml
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ProfessorDescriptor.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ProfessorDescriptor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProfessorDescriptor.class);
 
 	// String properties
 	private StringProperty profEmail;
 	private StringProperty educationLevel;
 	private StringProperty position;
-	private IntegerProperty numStars;
+	private StringProperty numStars;
 	private StringProperty website;
 	private StringProperty cvLink;
-	private IntegerProperty pay;
+	private StringProperty pay;
 	private StringProperty recruiterInfo;
 	private EncryptedProf prof;
 
@@ -55,7 +52,7 @@ public class ProfessorDescriptor extends PersonDescriptor {
 	 */
 	public ProfessorDescriptor() {
 		super(); // not sure this is neccessary
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("called ProfessorDescriptor constructor");
 		this.setMostRecent();
 		hasData = false;
@@ -65,20 +62,20 @@ public class ProfessorDescriptor extends PersonDescriptor {
 	public String getProfEmail() { return profEmail.get(); }
 	public String getEducationLevel() { return educationLevel.get(); }
 	public String getPostion()  { return position.get(); }
-	public int    getNumStars() { return numStars.get(); }
+	public String getNumStars() { return numStars.get(); }
 	public String getWebSite()  { return website.get(); }
 	public String getCVLink()   { return cvLink.get(); }
-	public int    getPay()      { return pay.get(); }
+	public String getPay()      { return pay.get(); }
 	public String getRecruiterInfo() { return recruiterInfo.get(); }
 	
 	// Professor Properties
 	public StringProperty profEmailProperty()   { return this.profEmail; }
 	public StringProperty educationLevelProperty()  { return this.educationLevel; }
 	public StringProperty positionProperty()    { return this.position; }
-	public IntegerProperty numStarsProperty()   { return this.numStars; }
+	public StringProperty numStarsProperty()   { return this.numStars; }
 	public StringProperty websiteProperty()     { return this.website; }
 	public StringProperty cvLinkProperty()      { return this.cvLink; }
-	public IntegerProperty payProperty()        { return this.pay; }
+	public StringProperty payProperty()        { return this.pay; }
 	public StringProperty recreiterInfoProperty() { return this.recruiterInfo; }
 	
 	@Override
@@ -90,8 +87,8 @@ public class ProfessorDescriptor extends PersonDescriptor {
 		recruiterInfo = new SimpleStringProperty("");
 		website =   new SimpleStringProperty("");
 		cvLink =    new SimpleStringProperty("");
-		pay =       new SimpleIntegerProperty(0);
-		numStars =  new SimpleIntegerProperty(0);
+		pay =       new SimpleStringProperty("0");
+		numStars =  new SimpleStringProperty("0");
 	}
 	
 	//@Override
@@ -103,8 +100,8 @@ public class ProfessorDescriptor extends PersonDescriptor {
 		recruiterInfo = new SimpleStringProperty(p.getRecruiterInfo());
 		website =   new SimpleStringProperty(p.getWebsite());
 		cvLink =    new SimpleStringProperty(p.getCvLink());
-		pay =       new SimpleIntegerProperty(p.getPay());
-		numStars =  new SimpleIntegerProperty(p.getNumStars());
+		pay =       new SimpleStringProperty(p.getPay());
+		numStars =  new SimpleStringProperty(p.getNumStars());
 	}
 
 	/**
@@ -117,7 +114,7 @@ public class ProfessorDescriptor extends PersonDescriptor {
 		// Sets the Professor object to the DB if
 		// it exists && the user is connected.
 		long remoteDate = 0;// = meta.getLastDate() * -1;
-		if(fileops.Utility.isConnected()) {
+		if(Utility.isConnected()) {
 			hasData = setToRemoteData();
 			if(! hasData) {
 				remoteDate = prof.getLastDate() * -1;
@@ -166,7 +163,8 @@ public class ProfessorDescriptor extends PersonDescriptor {
 	@Override
 	public void setToLocalData() {
 		String folder = DirectoryMgr.getMediaPath('z');
-		String metaFileName = ReadFlash.getInstance().getDeckName() + ".met";
+
+		String metaFileName = FlashCardOps.getInstance().getMetaFileName();
 		File check = new File(folder + "/" + metaFileName);
 		// if the file exists and has not been
 		// retrieved from file previously for this object.
@@ -185,7 +183,7 @@ public class ProfessorDescriptor extends PersonDescriptor {
 		
 		// @TODO complete getRemoteData, need professorHash in query
 		
-		UserData user = new UserData();
+		// UserData user = new UserData();
 		// get meta from DB
 		String[] response;// = "";
 		//response = Report.getInstance().queryGetUserEcryptedData(professorHash, tableName);
@@ -215,10 +213,10 @@ public class ProfessorDescriptor extends PersonDescriptor {
 		profEmail.setValue("");
 		educationLevel.setValue("");
 		position.setValue("");
-		numStars.setValue(0);
+		numStars.setValue("0");
 		website.setValue("");
 		cvLink.setValue("");
-		pay.setValue(0);
+		pay.setValue("0.0");
 		recruiterInfo.setValue("");
 	}
 	

@@ -31,15 +31,19 @@ public class SelectableRdoField extends ToggleButton {
 	public void initialize() {
 		//getStyleClass().setAll(DEFAULT_STYLE_CLASS);
 		setAccessibleRole(AccessibleRole.LIST_ITEM);
-		// alignment is styleable through css. Calling setAlignment
+		// alignment is stylable through css. Calling setAlignment
 		// makes it look to css like the user set the value and css will not
 		// override. Initializing alignment by calling set on the
 		// CssMetaData ensures that css will be able to override the value.
 		((StyleableProperty<Pos>)(WritableValue<Pos>)alignmentProperty()).applyStyle(null, Pos.CENTER_LEFT);
 	}
-	
-	
-	
+
+
+	/**
+	 * //@TODO set user last test data to proper data in paneForFiles
+	 * @param lObject
+	 * @return
+	 */
 	public HBox buildField(LinkObj lObject) {
 		Image syncImg;
 		Text testDate;// = new Text("16/8/24  2020-7-16 ");
@@ -49,7 +53,7 @@ public class SelectableRdoField extends ToggleButton {
 			testDate = new Text("Score not visible");
 			syncImg = new Image(getClass().getResourceAsStream("/icon/24/cloud_white.png"));
 		} else {
-			//@TODO set user last test data to proper data in paneForFiles
+			// Set to proper data here!!!!
 			testDate = new Text("16/8/24  2020-7-16 ");
 			syncImg = new Image(getClass().getResourceAsStream("/icon/24/home_white.png"));
 		}
@@ -63,15 +67,16 @@ public class SelectableRdoField extends ToggleButton {
 		dateBox.setAlignment(Pos.CENTER_RIGHT);
 		
 		// The arrow image
-		Image arrowImg = new Image(getClass().getResourceAsStream("/icon/24/arrow_ltpurple.png"));
+		Image arrowImg = new Image(getClass().getResourceAsStream("/icon/24/arrow_white.png"));
 		ImageView arrowView = new ImageView(arrowImg);
 		// The deck name
 		String lObjName = lObject.getDescrpt();
 		
 		if (!lObjName.contains("copy") && !lObjName.contains("default") ) {
-			// remove file ending
-			int num = lObjName.indexOf(".");
-			String tempName = lObjName.substring(0, num);
+			// remove unique id
+			int start = lObjName.indexOf('$') + 1;
+			int end = lObjName.indexOf(".");
+			String tempName = lObjName.substring(start, end);
 			// if length is > 25, truncate and add ellipsis
 			String deckStr = tempName.length() > 25 ? tempName.substring(0, 22) + "..." : tempName;
 			
@@ -89,7 +94,7 @@ public class SelectableRdoField extends ToggleButton {
 			deckRdoBox.setId("#" + tempName);
 			
 			deckRdoBox.setOnMouseEntered(e -> {
-				deckRdoBox.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.BUTTON_PURPLE_50), CornerRadii.EMPTY, Insets.EMPTY)));
+				deckRdoBox.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.WEBSITE_BLUE), CornerRadii.EMPTY, Insets.EMPTY)));
 				FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
 			});
 			
@@ -105,7 +110,8 @@ public class SelectableRdoField extends ToggleButton {
 	 * Toggles the state of the radio button if and only if the RadioButton
 	 * has not already selected or is not part of a {@link ToggleGroup}.
 	 */
-	@Override public void fire() {
+	@Override
+	public void fire() {
 		// we don't toggle from selected to not selected if part of a group
 		if (getToggleGroup() == null || !isSelected()) {
 			super.fire();

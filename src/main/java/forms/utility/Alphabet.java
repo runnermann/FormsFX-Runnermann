@@ -36,11 +36,6 @@ public class Alphabet {
 		sb.append("{");
 		
 		for(int i = 0; i < clearTxt.length(); i++) {
-
-			System.out.println("is char at: " + i + " null: " + clearTxt.charAt(i) + " = " + encMap.get(clearTxt.charAt(i)));
-			// System.out.println("or if result is null: ");
-
-			System.out.println(encMap.get(clearTxt.charAt(i)) * (i % 10 + 1));
 			sb.append( encMap.get(clearTxt.charAt(i)) * (i % 10 + 1) );
 			if(i < clearTxt.length() - 1) {
 				sb.append(",");
@@ -56,8 +51,6 @@ public class Alphabet {
 	 */
 	public static String decrypt(String encryptNum) {
 		try {
-			System.out.println("decrypting encryptNum123: " + encryptNum);
-			System.out.println("");
 			// remove leading trailing ary brackets
 			// may break later, replaced "[" and "]" with "{" and "}"
 
@@ -79,24 +72,19 @@ public class Alphabet {
 			// create decrypt map
 			for (int i = 0; i < length; i++) {
 				decMap.put(primes[i], alphabet[i]);
-				System.out.println("decMap( " + primes[i] + ", "+ alphabet[i] + ")")
-				;
 			}
 
 			int num;
 			for (int i = 0; i < strAry.length; i++) {
 				num = Integer.parseInt(strAry[i].trim());
-				System.out.println("num: " + (num / ( i % 10 + 1)));
 
 				char c = decMap.get(num / (i % 10 + 1));
 				sb.append(c);
 			}
 
-			System.out.println("result from decrypt: ");
 			return sb.toString();
 		}catch ( Exception e) {
-			System.out.println(" ERROR" + e.getMessage());
-			e.printStackTrace();
+
 		}
 
 		return null;

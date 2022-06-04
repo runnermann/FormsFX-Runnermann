@@ -1,13 +1,11 @@
 package fileops;
 
-import authcrypt.AuthUtility;
 import authcrypt.UserData;
-import flashmonkey.ReadFlash;
+import fileops.utility.Utility;
+import flashmonkey.FlashCardOps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import type.testtypes.FMHashCode;
 
-import java.awt.image.DirectColorModel;
 import java.io.File;
 
 /**
@@ -16,23 +14,26 @@ import java.io.File;
  * @author Lowell Stadelman
  */
 
-public final class DirectoryMgr
-{
+public final class DirectoryMgr {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryMgr.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DirectoryMgr.class);
 
-    //public static final String CANVAS = "/flashMonkeyFile/canvas/";
-    //public static final String MEDIA = getWorkingDirectory() + "/flashMonkeyFile/media/";
-   // private static String userHash = FileNaming.getCardHash(UserData.getUserName(), "");
-    private static final String SYSTEM_DIR = getWorkingDirectory() + "/FlashMonkeyData/";
+    public static final String SYSTEM_DIR = getWorkingDirectory() + "/FlashMonkeyData/";
     public static final String EMOJI = "image/emojis/";
 
 
-    public DirectoryMgr() { /* no args constructor */}
+    public DirectoryMgr() {
+        /* no args constructor */
+    }
 
-    private static int getUserNameHash() {
+    /**
+     *
+     * @return Returns a hex to a safe name from an MD5 hash of the UserName or the users original_email
+     */
+    public static String getUserNameHash() {
         LOGGER.debug("DirectoryMgr getUserNameHash() userName:" + UserData.getUserName());
-        return UserData.getUserName().toLowerCase().hashCode();
+        return Utility.getMd5Hex(UserData.getUserName().toLowerCase());
     }
 
     public static boolean flashmonkeyExists() {
@@ -41,41 +42,38 @@ public final class DirectoryMgr
     }
 
 
-    public static String getWorkingDirectory()
-    {
+    public static String getWorkingDirectory() {
         String OS = (System.getProperty("os.name")).toUpperCase();
         if(OS.contains("WIN")) {
-
-            LOGGER.debug("getting or creating file: " + System.getenv("AppData"));
-
             return System.getenv("AppData");
         } else {
+            //System.out.println("\n\n **** NOT A WINDOWS SYSTEM? ***\n\n");
             String home = System.getProperty("user.home");
             return home + "/Library/Application Support";
         }
     }
 
+
+    private String getPersistentHash(String str) {
+        return Utility.getMd5Hex(str);
+    }
+
+
     /**
      * Returns the media path depending on the type of media file
-     * @param type Uses a char to set the type of file
+     * @param type <pre>
+     *             Uses a char to set the type of file
      *             Note this differs from the QuestionMM
      *             class
-     *             C = Canvas, for Image, Shapes or Both, M = Media (video or audio)
+     *             t = text, C = Canvas, for Image, Shapes or Both,
+     *             M = Media (video or audio), q = qr code, d = ????
+     *             z = user and verification data,
+     *             </pre>
+     * @return Returns the path to the directory. Note that there is not a trailing
+     * forward slash "/". It would be removed by {@code File()}
      */
-    public static String getMediaPath(char type)
-    {
+    public static String getMediaPath(char type) {
         LOGGER.debug("DirectoryMgr getMediaPath(...) called type: " + type);
-        String folderStr = ReadFlash.getInstance().getDeckName();
-    
-        System.out.println("folderStr: " + folderStr);
-        
-        if(folderStr.contains("default")) {
-            folderStr = "";
-        } else {
-            folderStr.replace(" ", "");
-            folderStr = folderStr.toLowerCase();
-            LOGGER.debug("deckName is: {}", folderStr);
-        }
 
         switch (type)
         {
@@ -86,21 +84,38 @@ public final class DirectoryMgr
             case 'M':
             case 'm':
             {
+                String folderStr = FlashCardOps.getInstance().getDeckLabelName();
+                if(folderStr.contains("default")) {
+                    //folderStr = "";
+                    LOGGER.warn("folderString contains default");
+                    System.exit(1);
+                } else {
+                    //folderStr = folderStr.substring(0, folderStr.length() -4);
+                    folderStr = folderStr.toLowerCase();
+                    LOGGER.debug("deckName is: {}", folderStr);
+                }
                 return SYSTEM_DIR + getUserNameHash() + "/" + folderStr + "/media/";
             }
             case 'z':
             {
-                return SYSTEM_DIR + getUserNameHash() + "/" + "userData/";
+                return SYSTEM_DIR + getUserNameHash() + "/userData/";
             }
+            case 'q':
+            {
+                return SYSTEM_DIR + getUserNameHash() + "/decks/qr/";
+            }
+
             case 't':
             case 'T':
             default:
             {
-                // Being inconsitent due to older file retrevial in agrFiles. Removed trailing "/"
-                if(folderStr == null) {
-                    return SYSTEM_DIR + getUserNameHash() + "/" + "decks";
-                }
-                return SYSTEM_DIR + getUserNameHash() + "/" + "decks/";
+                // commented out on 09-10-2021: 01-03-2022 causing errors?... checked. did not see a problem
+                // Being inconsistent due to older file retrieval in agrFiles. Removed trailing "/"
+//                if(folderStr == null) {
+//                    return SYSTEM_DIR + getUserNameHash() + "/decks";
+//                }
+
+                return SYSTEM_DIR + getUserNameHash() + "/decks/";
             }
         }
     }

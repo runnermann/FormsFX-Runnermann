@@ -4,14 +4,15 @@ import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
 import forms.utility.Alphabet;
-import javafx.scene.image.Image;
-import lombok.Builder;
+//import javafx.scene.image.Image;
+//import lombok.Builder;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+//import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -52,8 +53,8 @@ public enum DBFetchToMapAry {
         public ArrayList<HashMap<String, String>> query(String... args) {
             ArrayList<HashMap<String, String>> map;
                 // the columns requested and to be mapped in the return data.
-                String[] columns = {"account_id", "orig_email", "account_status", "catagory",
-                                        "paid_date", "currency", "period", "due_date", "fee"};
+                String[] columns = {"account_id", "account_status", "catagory",
+                                        "paid_date", "currency", "fee"};
 
                 String strQuery = "SELECT " + formatColumns(columns) +
                         "FROM Account JOIN PurchaseFeeSched USING(catagory, currency) " +
@@ -86,9 +87,11 @@ public enum DBFetchToMapAry {
     // --------------------------------- --------------------------------- //
 
     // LOGGING
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBFetchToMapAry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DBFetchToMapAry.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBFetchToMapAry.class);
     // the columns requested and to be mapped in the return data.
-    private final static String[] DECK_COLUMNS = {"deck_id",
+    private final static String[] DECK_COLUMNS = {
+            "deck_id",
             "deck_photo",
             "deck_descript",
             "creator_email",
@@ -111,7 +114,10 @@ public enum DBFetchToMapAry {
             "course_code",
             "deck_school",
             "deck_language",
-            "course_code"
+            "course_code",
+            "share_distro",
+            "sell_deck",
+            "full_name"
     };
 
     /**
@@ -131,7 +137,7 @@ public enum DBFetchToMapAry {
      * @return the result
      */
     private static ArrayList<HashMap<String, String>> fetchSingleResult(String strQuery, String[] columns) {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("strQuery: {}", strQuery );
 
         ArrayList<HashMap<String, String>> mapArray = new ArrayList<>();
@@ -143,7 +149,7 @@ public enum DBFetchToMapAry {
             QueryResult queryResult = future.get();
 
             if (queryResult.getRows().size() == 0) {
-                LOGGER.debug("query result has 0 rows");
+                LOGGER.warn("query result has 0 rows");
                 map.put("empty", "true");
             } else {
                 LOGGER.debug("queryResult num columns: {}", ((ArrayRowData) queryResult.getRows().get(0)).getColumns().length);
@@ -153,12 +159,7 @@ public enum DBFetchToMapAry {
                 // create the map array with the results
                 for(int i = 0; i < res.length; i++) {
                     map.put(columns[i], res[i] != null ? res[i].toString() : "0");
-                    System.out.println("column " + i + " " + columns[i] + " = " + res[i]);
                 }
- // remove from common method and use where appropriate
-            // if(map.get("last_name") != null) {
-            //        map = decryptNames(map);
-            //    }
             }
         } catch (NullPointerException e) {
             LOGGER.warn("WARNING: Null pointer exception at DBFetchToMapAry.fetchSingleResult(): may mean nothing");
@@ -172,7 +173,7 @@ public enum DBFetchToMapAry {
     }
 
     private static ArrayList<HashMap<String, String>> fetchMultiResultSerial(String strQuery, String[] columns) {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("strQuery: {}", strQuery );
 
         ArrayList<HashMap<String, String>> mapArray = new ArrayList<>();
@@ -199,10 +200,8 @@ public enum DBFetchToMapAry {
                     // create the map array with the results
                     for(int i = 0; i < res.length; i++) {
                         map.put(columns[i], res[i] != null ? res[i].toString() : "0");
-                        System.out.println("\tcolumn " + i + " " + columns[i] + " = " + res[i]);
                     }
                     mapArray.add(map);
-                    System.out.println("added deckMetaData to array");
                 }
             }
         } catch (NullPointerException e) {
@@ -235,7 +234,6 @@ public enum DBFetchToMapAry {
         String encryptedLast =  map.get("last_name");
         map.replace("first_name", Alphabet.decrypt(encryptedFirst));
         map.replace("last_name",  Alphabet.decrypt(encryptedLast));
-        System.out.println("decryptNames first_name is now: " + map.get("first_name") + " and should be: " + Alphabet.decrypt(encryptedFirst));
         return map;
     }
 }

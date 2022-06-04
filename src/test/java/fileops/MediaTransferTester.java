@@ -1,10 +1,8 @@
 package fileops;
 
-import ch.qos.logback.classic.Level;
-import core.RobotUtility;
-import flashmonkey.FlashCardOps;
-import flashmonkey.FlashMonkeyMain;
-import flashmonkey.ReadFlash;
+import fileops.utility.Utility;
+import javafx.embed.swing.JFXPanel;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -12,19 +10,25 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.junit.Test;
 import org.junit.jupiter.api.*;
-import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.testfx.api.FxRobot;
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
-
-import static junit.framework.Assert.assertEquals;
+import org.slf4j.LoggerFactory;
 import static org.junit.Assert.assertTrue;
+import authcrypt.UserData;
+import core.RobotUtility;
+import flashmonkey.FlashCardOps;
+import flashmonkey.FlashMonkeyMain;
+import org.junit.Test;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
+
 
 /**
  * Prior to using this test. Ensure that there are the correct media files in both S3 and on the local drive.
@@ -52,14 +56,17 @@ import static org.junit.Assert.assertTrue;
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-//@Tag("popup")
+@Tag("mediaTransferTester")
 public class MediaTransferTester extends ApplicationTest {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaTransferTester.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaTransferTester.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MediaTransferTester.class);
 
-    CloudOps clops = new CloudOps();
-
-    private static final String TEST_DECK = "History 2054";
+    private static final String TEST_EMAIL = "flash@flashmonkey.xyz";
+    private static final String TEST_DECK = "History 2054.dec";
+    //private static final CloudOps CO = new CloudOps();
+    private static Image localImage;
+    private String token;
 
     // The image from the snapshot in original form.
     BufferedImage buIm;
@@ -83,7 +90,10 @@ public class MediaTransferTester extends ApplicationTest {
     @Override
     public void start(Stage stage) throws Exception {
 
-        LOGGER.setLevel(Level.DEBUG);
+
+        FxToolkit.registerPrimaryStage();
+        FxToolkit.setupApplication(FlashMonkeyMain.class);
+        //LOGGER.setLevel(Level.DEBUG);
         // At the beggining of the test session, remove the file
         // if it exists
 
@@ -92,6 +102,7 @@ public class MediaTransferTester extends ApplicationTest {
         // intended stage.
         StackPane pane = new StackPane();
         pane.setStyle("-fx-background-color: TRANSPARENT");
+
 
         Scene backScene = new Scene(pane, screenWt, screenHt, Color.TRANSPARENT);
         stage = new Stage(StageStyle.TRANSPARENT);
@@ -105,13 +116,10 @@ public class MediaTransferTester extends ApplicationTest {
 
         // logs the test in
         bobTheBot.robotSetup();
-
-
-        //System.out.println("\n TestingDeck.dat removed from file was: " + bool);
     }
 
 
-    @BeforeAll
+/*    @BeforeAll
     public void setup() throws Exception {
 
         // logs the test in
@@ -119,11 +127,11 @@ public class MediaTransferTester extends ApplicationTest {
 
         //String folder = DirectoryMgr.getMediaPath('t');
         //String fileName = "testFile.JPG";
-        //String fileName = ReadFlash.getInstance().getDeckName() + ".dat";
+        //String fileName = ReadFlash.getInstance().getDeckName() + ".dec";
         //String strPath = folder + fileName;
 
 
-        //String strPath = "../flashMonkeyFile/TestingDeck.dat";
+        //String strPath = "../flashMonkeyFile/TestingDeck.dec";
         //File file = new File(strPath);
         //Path filePath = Paths.get(strPath);
         //assertTrue("Deck located at: " + strPath + " Does not exist. ", file.exists());
@@ -143,6 +151,41 @@ public class MediaTransferTester extends ApplicationTest {
         // Log-in
         //LoginTesterUtility login = new LoginTesterUtility(delta_X, delta_Y);
         //login.logIn("idk@idk.com", "bangBang#01", bob);
+    }
+
+ */
+    private void setup() {
+        S3ListObjs s3ListObjs = new S3ListObjs();
+        //ReadFlash.getInstance().setDeckName(TEST_DECK);
+        LOGGER.debug("TEST_DECK folder: {}", TEST_DECK);
+        FlashCardOps.getInstance().setDeckFileName(TEST_DECK);
+        int res = 0;
+            s3ListObjs = new S3ListObjs();
+            s3ListObjs.listDecks(TEST_EMAIL, "bangBang#01");
+
+            token = s3ListObjs.getToken();
+    }
+
+    private boolean isImageEqual(Image firstImage, Image secondImage){
+        // Prevent `NullPointerException`
+        if(firstImage != null && secondImage == null) return false;
+        if(firstImage == null) return secondImage == null;
+
+        // Compare images size
+        if(firstImage.getWidth() != secondImage.getWidth()) return false;
+        if(firstImage.getHeight() != secondImage.getHeight()) return false;
+
+        // Compare images color
+        for(int x = 0; x < firstImage.getWidth(); x++){
+            for(int y = 0; y < firstImage.getHeight(); y++){
+                int firstArgb = firstImage.getPixelReader().getArgb(x, y);
+                int secondArgb = secondImage.getPixelReader().getArgb(x, y);
+
+                if(firstArgb != secondArgb) return false;
+            }
+        }
+
+        return true;
     }
 
 
@@ -175,15 +218,8 @@ public class MediaTransferTester extends ApplicationTest {
     @Test
     public void testDeckUploads() throws Exception {
         setup();
-
-        //S3PutObjs putObj = new S3PutObjs();
-        CloudOps CO = FlashCardOps.getInstance().CO;
-        CO.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
-        //CO.putDeck("testFile.JPG");
-
-
-
-
+        S3GetObjs go = new S3GetObjs();
+        CloudOps.putDeck(FlashCardOps.getInstance().getDeckFileName());
     }
 
     @Test
@@ -196,42 +232,95 @@ public class MediaTransferTester extends ApplicationTest {
 
     }
 
-/*
+
+
+
+
     @Test
     @Order(2)
-    public void checkImageDownloadtoS3_thumbs() {
-        //clops.setBucketName("iooily.flashmonkey.deck-thumbs");
+    public void checkImageDownloadFmS3() throws Exception{
+        // The Martian
+        final String imageName = "i09090F0A0Ai_flash@flashmonkeyxyz.png";
+        FxRobot bobTheBot = new FxRobot();
+        JFXPanel jfxPanel = new JFXPanel();
+        FxToolkit.registerPrimaryStage();
+        FxToolkit.setupApplication(FlashMonkeyMain.class);
+        setup();
 
-        ArrayList<String> names = new ArrayList<>(4);
-        names.add("a823f34bac.png");
-        names.add("img1.png");
-        names.add("img2.png");
-        names.add("img3.png");
-        ArrayList<Image> imgs = clops.getMedia(names);
+        UserData.setUserName(TEST_EMAIL);
+        FlashCardOps.getInstance().setDeckFileName(TEST_DECK);
 
-        assertTrue(imgs.get(0) != null);
-        System.out.println("imgs size = " + imgs.size());
-        assertTrue(imgs.size() == 4);
+        String toDiskDir = DirectoryMgr.getMediaPath( 'M');
+        File diskFile = new File(toDiskDir + "/" + imageName);
+        LOGGER.debug("toDiskFile: {}", diskFile);
+        if(diskFile.exists()) {
+            LOGGER.debug("Image exists, deleting.");
+            diskFile.delete();
+    }
+        // retrieve the image from s3
+        S3GetObjs getObjs = new S3GetObjs();
+        ArrayList<MediaSyncObj> cloudLinks = new ArrayList<>(1);
+        cloudLinks.add(new MediaSyncObj(imageName, 'm', 4));
+
+        getObjs.serialGetMedia(cloudLinks, token);
+        localImage = new Image("File: images/Martian.png");
+
+        // test that the image received is correct
+        Image s3Img = new Image("File: " + diskFile.getPath());
+        boolean bool = isImageEqual(s3Img, localImage) && diskFile.exists();
+
+        assertTrue("Images do not match", bool);
     }
 
     @Test
     @Order(1)
-    public void checkImageUploadtos3_thumbs() {
-        CloudOps clops = new CloudOps();
-        //clops.setBucketName("iooily.flashmonkey.deck-thumbs");
-        ArrayList<String> imgNames = new ArrayList<>(5);
-        // imgNames.add("history2054.png");
-        String name = "a823f34bac.png";
+    public void checkImageUploadtos3() throws Exception {
+        // USING REFLECTION TO TEST PRIVATE METHOD
+        //Method method = SectionEditor.class.getDeclaredMethod("saveImage", Image.class, String.class, String.class);
+        //method.setAccessible(true);
 
-        clops.connectCloudOut('d',"", name);
+        FxRobot bobTheBot = new FxRobot();
+        JFXPanel jfxPanel = new JFXPanel();
+        FxToolkit.registerPrimaryStage();
+        FxToolkit.setupApplication(FlashMonkeyMain.class);
+        setup();
+        UserData.setUserName(TEST_EMAIL);
+        FlashCardOps.getInstance().setFileName(TEST_DECK);
+        //CloudOps clops = new CloudOps();
+        String filePathName = "/image/Martian.png";
+        File f = new File(filePathName);
 
-        imgNames.add(name);
-        ArrayList<Image> imgs = clops.getMediaFmS3(imgNames);
-        assertTrue("if failed, comment out seperate thread in connectCloudOut()",(imgs.get(0)) != null);
+        Image img = new Image(getClass().getResourceAsStream(filePathName));
+        BufferedImage inputImage = SwingFXUtils.fromFXImage(img, null);
+        FileNaming fileNaming = new FileNaming( FileNaming.getImageHash(inputImage), 'i', ".png");
+        boolean bool = FlashCardOps.getInstance().saveImage(fileNaming.getMediaFileName(), img, "png", 'c');
+
+        //method.invoke(img, "png", fileName.getFileName());
+
+        if(Utility.isConnected()) {
+            String[] strs = new String[1];
+            strs[0] = fileNaming.getMediaFileName();
+            S3PutObjs putObjs = new S3PutObjs();
+            ArrayList<String> l = new ArrayList<>(Arrays.asList(strs));
+            putObjs.serialPutMedia(l, token);
+        }
     }
 
- */
+    @Test
+    @Order(3)
+    public void checkShapesUploadToS3() throws TimeoutException {
+        // USING REFLECTION TO TEST PRIVATE METHOD
+        //Method method = SectionEditor.class.getDeclaredMethod("saveImage", Image.class, String.class, String.class);
+        //method.setAccessible(true);
+
+        FxRobot bobTheBot = new FxRobot();
+        JFXPanel jfxPanel = new JFXPanel();
+        FxToolkit.registerPrimaryStage();
+        FxToolkit.setupApplication(FlashMonkeyMain.class);
+        setup();
+        UserData.setUserName(TEST_EMAIL);
+        FlashCardOps.getInstance().setFileName(TEST_DECK);
 
 
-
+    }
 }

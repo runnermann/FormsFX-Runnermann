@@ -21,14 +21,11 @@ public class SearchableData extends Searchable {
 	}
 	
 	public ArrayList<String> getData() {
-		System.out.println("Calling SearchableData.getData()");
 		return stringData;
 	}
 	
 	@Override
 	public String getText() {
-		System.out.println("Calling SearchableData.getText()");
-		
 		StringBuilder sb = new StringBuilder();
 		if(stringData.isEmpty()) {
 			return null;
@@ -37,7 +34,6 @@ public class SearchableData extends Searchable {
 				sb.append(s + " ");
 			}
 		}
-		System.out.println("returns: " + sb.toString());
 		return sb.toString().trim();
 	}
 	

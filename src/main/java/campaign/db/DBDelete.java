@@ -2,6 +2,7 @@ package campaign.db;
 
 import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.QueryResult;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
@@ -22,7 +23,8 @@ public enum DBDelete {
     // --------------------------------- --------------------------------- //
 
     // LOGGING
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBDelete.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DBDelete.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBDelete.class);
 
     DBDelete() { /* NO ARGS CONSTRUCTOR */ }
 
@@ -35,7 +37,7 @@ public enum DBDelete {
 
     public static boolean doDelete(String strQuery) {
 
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         LOGGER.debug("strQuery: {}", strQuery );
 
         DBConnect db = DBConnect.getInstance();

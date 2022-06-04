@@ -1,5 +1,25 @@
+/*
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.celltypes;
 
+import javafx.scene.layout.Region;
 import uicontrols.SceneCntl;
 import fmannotations.FMAnnotations;
 import javafx.scene.Scene;
@@ -19,9 +39,7 @@ public class MediaPopUp {
     private int screenWt = SceneCntl.getScreenWd();
     private int screenHt = SceneCntl.getScreenHt();
 
-    private MediaPopUp() {
-        //window = new Stage();
-    }
+    private MediaPopUp() { /* no args constructor */}
 
     /**
      * Returns an instance of this singleton class.
@@ -30,7 +48,6 @@ public class MediaPopUp {
      * @return
      */
     public static synchronized MediaPopUp getInstance() {
-
         if(CLASS_INSTANCE == null) {
             CLASS_INSTANCE = new MediaPopUp();
         }
@@ -72,43 +89,12 @@ public class MediaPopUp {
     }
 
     /**
-     * Popup with Image:
-     * <p>Creates a popUp Scene with the image
-     * provided in the parameter</p>
-     *
-     * @param view The unscaled imageView.
-     */
-/*    public void popUpScene(ImageView view) {
-
-       //System.out.println( "called popUP using (ImageView view) ");
-
-        double wd = view.getImage().getWidth() + 4;
-        double ht = view.getImage().getHeight() + 4;
-        StackPane pane = new StackPane();
-        pane.setMaxWidth(screenWt - 50);
-        pane.setMaxHeight(screenHt - 100);
-        pane.setPrefSize(wd, ht);
-        pane.getChildren().add(view);
-        Scene scene = new Scene(pane, wd, ht);
-
-        getInstance();
-        window.setScene(scene);
-        window.setResizable(false);
-        window.show();
-    }
-
- */
-
-    /**
      * Popup with shapes only:
      * <p>Creates a popUp Scene with the shapes provided in the parameter</p>
      *
      * @param shapePane
      */
     public void popUpScene(Pane shapePane) {
-
-       //System.out.println("Called popUp using (Pane shapePane)");
-
         shapePane.setMaxWidth(screenWt);
         shapePane.setMaxHeight(screenHt);
         Scene scene = new Scene(shapePane);
@@ -127,54 +113,40 @@ public class MediaPopUp {
      * @param imgPath The image to be displayed
      */
     public void popUpScene(String imgPath) {
-
-       //System.out.println("Called popUp using (String imgPath)");
-
         Image img = new Image("File:" + imgPath);
         ImageView view = new ImageView(img);
-       //System.out.println("called popUp using (ImageView view, Pane shapePane)");
-        double wd = img.getWidth() + 4;
-        wd = wd < screenWt ? wd : screenWt;
-        double ht = img.getHeight() + 4;
-        ht = ht < screenHt ? ht : screenHt;
+        view.setPreserveRatio(true);
+
+        double wd = sizeWidth(img.getWidth() + 4);
+        double ht = sizeHeight(img.getHeight() + 4);
+
+        if(wd > ht) {
+            view.setFitHeight(ht);
+        } else {
+            view.setFitWidth(wd);
+        }
 
         StackPane stack = new StackPane(view);
-        //stack.setMaxWidth(screenWt);
-        //stack.setMaxHeight(screenHt);
-        Scene scene = new Scene(stack, wd, ht);
+        Scene scene = new Scene(stack);
         getInstance();
-        window.setResizable(false);
+        window.setResizable(true);
         window.setScene(scene);
         window.show();
+    }
+
+    private double sizeWidth(double imgWidth) {
+        double wd = imgWidth < screenWt ? imgWidth : screenWt;
+        return wd < 1024 ? wd : 1024;
+    }
+
+    private double sizeHeight(double imgHeight) {
+        double ht = imgHeight < screenHt ? imgHeight : screenHt;
+        return ht < 1024 ? ht : 1024;
     }
 
     // ******  Media MediaPopUp ******
 
-    /**
-     * Creates a popUp Scene with the image provided in the parameter
-     * @param m The media to be displayed
-     */
-    private Scene scene = null;
-    public void popUpScene(Pane pane, AVCell avCell) {
 
-       //System.out.println("Called popUp using (Pane pane, AVCell mCell)");
-
-        avCell.mediaPlayer.stop();
-
-        Pane pane1 = new Pane(pane);
-        scene = new Scene(pane1);
-
-        getInstance();
-        window.setScene(scene);
-        window.show();
-        window.setOnCloseRequest( e -> closeAV(avCell));
-    }
-
-
-    public void closeAV(AVCell avCell) {
-        avCell.onClose();
-        window.close();
-    }
 
 
     // *** FOR TESTING ***

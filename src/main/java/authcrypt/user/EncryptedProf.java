@@ -3,18 +3,21 @@ package authcrypt.user;
 import flashmonkey.FlashCardOps;
 import forms.FormData;
 
-import java.io.Serializable;
 import java.util.HashMap;
 
-public class EncryptedProf extends EncryptedPerson implements Serializable, FormData {
+/**
+ * Note that security sensitive classes should not
+ * be serializable. Removed 08-10-2021
+ */
+public class EncryptedProf extends EncryptedPerson implements FormData {
 	
 	private String profEmail;
 	private String educationLevel;
 	private String position;
-	private int    numStars;
+	private String numStars;
 	private String website;
 	private String cvLink;
-	private int    pay;
+	private String pay;
 	private String recruiterInfo;
 	
 	public EncryptedProf() {
@@ -22,8 +25,8 @@ public class EncryptedProf extends EncryptedPerson implements Serializable, Form
 		this.init();
 	}
 
-	public EncryptedProf(EncryptedPerson person, String profEmail, String educationLevel, String position, int numStars,
-						 String website, String cvLink, int pay, String recruiterInfo) {
+	public EncryptedProf(EncryptedPerson person, String profEmail, String educationLevel, String position, String numStars,
+						 String website, String cvLink, String pay, String recruiterInfo) {
 		super(person);
 		setAll(profEmail, educationLevel, position, numStars, website, cvLink, pay, recruiterInfo);
 	}
@@ -39,10 +42,10 @@ public class EncryptedProf extends EncryptedPerson implements Serializable, Form
 		profEmail = "";
 		educationLevel = "";
 		position = "";
-		numStars = 0;
+		numStars = "0";
 		website = "";
 		cvLink = "";
-		pay = 0;
+		pay = "0.0";
 		recruiterInfo = "";
 	}
 
@@ -61,12 +64,12 @@ public class EncryptedProf extends EncryptedPerson implements Serializable, Form
 
 	public static EncryptedProf getProfFmFile() {
 		String personFileName = authcrypt.UserData.getUserName().hashCode()+ "p" + ".met";
-		EncryptedProf s = new EncryptedProf((EncryptedProf) FlashCardOps.getInstance().getFO().getObjectFmFile(personFileName));
+		EncryptedProf s = new EncryptedProf((EncryptedProf) FlashCardOps.getInstance().getObjectFmFile(personFileName));
 		return s;
 	}
 
-	public void setAll(String profEmail, String educationLevel, String position, int numStars,
-					   String website, String cvLink, int pay, String recruiterInfo) {
+	public void setAll(String profEmail, String educationLevel, String position, String numStars,
+					   String website, String cvLink, String pay, String recruiterInfo) {
 		setProfEmail(profEmail);
 		setProfEmail(profEmail);
 		setEducationLevel(educationLevel);
@@ -99,10 +102,10 @@ public class EncryptedProf extends EncryptedPerson implements Serializable, Form
 		this.position = position;
 	}
 	
-	public int getNumStars() {
+	public String getNumStars() {
 		return numStars;
 	}
-	public void setNumStars(int numStars) {
+	public void setNumStars(String numStars) {
 		this.numStars = numStars;
 	}
 	
@@ -120,10 +123,10 @@ public class EncryptedProf extends EncryptedPerson implements Serializable, Form
 		this.cvLink = cvLink;
 	}
 	
-	public int getPay() {
+	public String getPay() {
 		return pay;
 	}
-	public void setPay(int pay) {
+	public void setPay(String pay) {
 		this.pay = pay;
 	}
 	
@@ -164,9 +167,10 @@ public class EncryptedProf extends EncryptedPerson implements Serializable, Form
 	 * @param dataAry
 	 */
 	@Override
-	public void setDataMap(HashMap<String, String> dataAry) {
+	public boolean setDataMap(HashMap<String, String> dataAry) {
 		//@TODO finish stub
 		/* STUB */
+		return false;
 	}
 
 	/**

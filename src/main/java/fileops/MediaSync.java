@@ -6,7 +6,6 @@ import flashmonkey.FlashCardOps;
 import flashmonkey.ReadFlash;
 import flashmonkey.Timer;
 import fmannotations.FMAnnotations;
-import forms.SignInModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import fmhashtablechain.StateHashTable;
@@ -19,8 +18,8 @@ import static habanero.edu.rice.pcdp.PCDP.*;
 
 public class MediaSync {
 	
-	//private static final Logger LOGGER = LoggerFactory.getLogger(MediaSync.class);
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaSync.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MediaSync.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaSync.class);
 	
 	private ArrayList<MediaSyncObj> download = new ArrayList<>();
 	private ArrayList<String> delete = new ArrayList<>();
@@ -60,7 +59,7 @@ public class MediaSync {
 	 * Called by CreateFlash
 	 */
 	/*public static void syncMedia() {
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("syncMedia called");
 		MediaSync ms = new MediaSync();
 		// get local media
@@ -74,7 +73,7 @@ public class MediaSync {
 	} */
 
 	public static void syncMedia(ArrayList<FlashCardMM> flashList) {
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug(" *** syncMedia called ***");
 		Timer.getClassInstance().begin();
 		MediaSync ms = new MediaSync();
@@ -84,7 +83,7 @@ public class MediaSync {
 		ArrayList<MediaSyncObj> flashlistMNames = FlashCardOps.getInstance().getFlashListMedia(flashList);
 		LOGGER.debug("flashList media length: <{}>", flashlistMNames.size());
 		// sync local media with flashList and media in the cloud.
-		boolean bool = ms.syncMediaHelper(flashlistMNames, syncObjs, ReadFlash.getInstance().getDeckName());
+		boolean bool = ms.syncMediaHelper(flashlistMNames, syncObjs, FlashCardOps.getInstance().getDeckFileName());
 		if(bool) {
 			// synchronize media
 			ms.syncCloudMediaAction();
@@ -92,7 +91,7 @@ public class MediaSync {
 		FlashCardOps.getInstance().setMediaIsSynced(true);
 		Timer.getClassInstance().end();
 		long time = Timer.getClassInstance().getTotalTime();
-		System.out.println("MediaSync: Time to sync and put files in S3: " + time);
+		LOGGER.info("MediaSync: Time to sync and put files in S3: " + time);
 	}
 
 	/**
@@ -101,17 +100,17 @@ public class MediaSync {
 	 * as a result. Media must be accessed through the local file system.
 	 * @param flashListMedia
 	 * @param localNames
-	 * @param deckName
+	 * @param deckFileName the file name, not the title name
 	 */
-	private boolean syncMediaHelper(ArrayList<MediaSyncObj> flashListMedia, ArrayList<MediaSyncObj> localNames, String deckName) {
+	private boolean syncMediaHelper(ArrayList<MediaSyncObj> flashListMedia, ArrayList<MediaSyncObj> localNames, String deckFileName) {
 		LOGGER.debug("*** syncMediaHelper called ***");
 		LOGGER.info("flashListMedia.size() {}, localNames.size() {}", flashListMedia.size(), localNames.size());
 
-		CloudOps cloudOps = new CloudOps();
+		//CloudOps cloudOps = new CloudOps();
 
 		// Get file names from media in users S3 bucket
 
-		ArrayList<CloudLink> remoteNameList = cloudOps.getS3MediaList(deckName);
+		ArrayList<CloudLink> remoteNameList = CloudOps.getS3MediaList(deckFileName);
 		// Create mediaSyncObjects from the remoteNameList
 		ArrayList<MediaSyncObj> remoteNames = getRemoteNames(remoteNameList);
 		// create the mediaState map by comparing
@@ -159,7 +158,7 @@ public class MediaSync {
 	 * @param fListMedia the flashList
 	 * @param localNames local media fileNames
 	 * @param remoteNames remote media fileNames
-	 * @return returns a @code(Map.StateHashTable<String, Integer>)
+	 * @return returns a {@code(Map.StateHashTable<String, Integer>)}
 	 */
 	private StateHashTable<String, MediaSyncObj> setMediaStateMap(ArrayList<MediaSyncObj> fListMedia, ArrayList<MediaSyncObj> localNames, ArrayList<MediaSyncObj> remoteNames) {
 		StateHashTable<String, MediaSyncObj> stateMap = new StateHashTable<>();
@@ -183,10 +182,10 @@ public class MediaSync {
 	/**
 	 * Builds the stateMap. Determines if an item should be uploaded, downloaded
 	 * deleted, cached, or do nothing.
-	 * @param local
-	 * @param remote
-	 * @param flashListOjs
-	 * @param stateMap
+	 * @param local ..
+	 * @param remote ..
+	 * @param flashListOjs ..
+	 * @param stateMap ..
 	 * @return
 	 */
 	private StateHashTable<String, MediaSyncObj> getStateMap(ArrayList<MediaSyncObj> local, ArrayList<MediaSyncObj> remote, ArrayList<MediaSyncObj> flashListOjs, StateHashTable<String, MediaSyncObj> stateMap) {
@@ -210,6 +209,7 @@ public class MediaSync {
 					// remote adds 4 to value.state
 					//.peek(e -> {
 						LOGGER.debug("for remote, remote size: {}", remote.size() );
+
 						//forallChunked(0, remote.size() -1, (i) -> {
 						for(int i = 0; i < remote.size(); i++) {
 							remote.get(i).setState(4);
@@ -232,16 +232,23 @@ public class MediaSync {
 					//}).collect(Collectors.toCollection(StateHashTable::new));
 			return stateMap;
 	}
+
+	private void clearState() {
+		this.delete.clear();
+		this.download.clear();
+		this.upload.clear();
+	}
 	
 	
 	/**
 	 * Synchronzing action based on the results contained in the mediaState map in the parameter.
 	 *
-	 * @param mediaState StateHashTable<MediaSyncObj, Integer>
-	 * @return Returns a list of mediaNames for local archive.
+	 * @param mediaState {@code StateHashTable<MediaSyncObj, Integer>}
 	 */
 	private void calcMediaState(StateHashTable<String, MediaSyncObj> mediaState) {
-		
+
+		clearState();
+
 		LOGGER.info(" *** calcMediaState called *** \n");
 		
 		// create a map<String, boolean> of the most current decks.
@@ -261,13 +268,12 @@ public class MediaSync {
 				switch (stateNum) {
 
 					case 7: {
-						// case 7 Media is where it should be. //
+						// case 7 Media is local and in the cloud. It is where it should be. //
 						break;
 					}
 
 					// download list
 					case 5: {
-						System.out.println("adding to download");
 						download.add(syncObj);
 						downloadBool = true;
 						break;
@@ -284,7 +290,7 @@ public class MediaSync {
 						uploadBool = true;
 						break;
 					}
-					// cache list
+					// media exists locally, but is not in the deck.
 					case 2: {
 						cache.add(syncObj);
 						cacheBool = true;
@@ -307,9 +313,15 @@ public class MediaSync {
 	private void syncCloudMediaAction() {
 		
 		LOGGER.info(" *** syncCloudMediaAction called *** \n");
+		LOGGER.debug("bools\n" +
+				"uploadBook: {}", uploadBool
+				+ "\ndownloadBool: {}", downloadBool
+				+ "\ndeleteBool: {}", deleteBool
+				+ "\ncachBool: {}", cacheBool);
+
 		
-		CloudOps co = new CloudOps();
-		authcrypt.UserData data = new authcrypt.UserData();
+		//CloudOps co = new CloudOps();
+		// authcrypt.UserData data = new authcrypt.UserData();
 
 		/*
 		 * Future versions should find a way to use async parallel processing
@@ -327,7 +339,7 @@ public class MediaSync {
 			// serial processing
 			//new Thread(() -> {
 				// new thread created for each item in forloop. :(
-				co.getMedia(download);
+				CloudOps.getMedia(download);
 			//}).start();
 			/*
 			long sendTime = System.currentTimeMillis();
@@ -340,27 +352,17 @@ public class MediaSync {
 
 		}
 		if(uploadBool) {
-
-			System.out.println("printing uploadBool");
-			upload.stream().forEach(e -> System.out.println(e.getFileName()));
-
-			co.putMedia(upload);
-			/*
-					long sendTime = System.currentTimeMillis();
-					forallChunked(0, upload.size() - 1, (i) -> {
-						co.connectCloudOut(upload.get(i).getType(), data.getUserName(), upload.get(i).getFileName());
-					});
-					sendTime = (System.currentTimeMillis() - sendTime);
-					LOGGER.info("Total send time in syncCloudMediaAction: {} milliseconds, numElement: {}", sendTime, upload.size());
-			*/
+			//upload.stream().forEach(e -> System.out.println(e.getFileName()));
+			CloudOps.putMedia(upload);
 		}
 		if(deleteBool) {
-			Stream.of(delete)
+			/*Stream.of(delete)
 					.peek(e -> {
 						forall(0, delete.size() - 1, (i) -> {
 							co.removeFmCloud(delete.get(i));
 						});
 					}).close();
+			 */
 		}
 		if(cacheBool) {
 			Stream.of(cache)
@@ -375,7 +377,7 @@ public class MediaSync {
 	
 	/**
 	 * Cache local media that is not in the deck.
-	 * @param cacheNames
+	 * @param cacheNames ..
 	 */
 	private void cacheLocalMedia(ArrayList<MediaSyncObj> cacheNames) {
 		// @TODO complete syncLocalMedia, meaning cache localMedia
@@ -392,8 +394,8 @@ public class MediaSync {
 	 * Returns a string array of mediaNames from the CloudLinks
 	 * in the parameter. Expects that a connection to the internet
 	 * has been confirmed previous to use of this method.
-	 * @param remoteNameList
-	 * @return
+	 * @param remoteNameList ..
+	 * @return An arraylist of the MediaSyncObjects
 	 */
 	private ArrayList<MediaSyncObj> getRemoteNames(ArrayList<CloudLink> remoteNameList) {
 		
@@ -423,7 +425,7 @@ public class MediaSync {
 
 	@FMAnnotations.DoNotDeployMethod
 	public MediaSync syncMediaTester(ArrayList<FlashCardMM> flashList, MediaSync ms) {
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.debug("syncMedia called");
 		Timer.getClassInstance().begin();
 		//MediaSync ms = new MediaSync();
@@ -433,12 +435,11 @@ public class MediaSync {
 		ArrayList<MediaSyncObj> flashlistMNames = FlashCardOps.getInstance().getFlashListMedia(flashList);
 		LOGGER.debug("flashList mediaName length: <{}>", flashlistMNames.size());
 		// sync local media with flashList and media in the cloud.
-		boolean bool = ms.syncMediaHelper(flashlistMNames, syncObjs, ReadFlash.getInstance().getDeckName());
+		boolean bool = ms.syncMediaHelper(flashlistMNames, syncObjs, FlashCardOps.getInstance().getDeckFileName());
 
 		return  ms;
 	}
 
-	@FMAnnotations.DoNotDeployMethod
 	public void clearMediaStateValues() {
 		download.clear();
 		upload.clear();

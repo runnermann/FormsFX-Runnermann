@@ -9,7 +9,7 @@ import org.testfx.framework.junit5.ApplicationTest;
 
 
 /**
- * @TODO Token testing!!!
+ * //@TODO Token testing!!!
  * <pre>
  *     Prereqs: Vertx must be running in order to check token generation. Set Token "exp" to 1 minute
  *  1) TOKEN
@@ -37,7 +37,7 @@ public class TokenTester extends ApplicationTest {
 
     private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TokenTester.class);
 
-    CloudOps clops = new CloudOps();
+    //CloudOps clops = new CloudOps();
 
     @BeforeAll
     public void setup() throws Exception {

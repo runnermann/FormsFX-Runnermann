@@ -15,7 +15,7 @@ import uicontrols.SceneCntl;
  */
 public abstract class FormParentPane extends Pane implements ViewMixin {
 	
-	protected GridPane formPane;
+	protected GridPane mainGridPain;
 	protected Pane spacer;
 	protected Pane spacer1;
 	private   HBox resetHBox;
@@ -49,12 +49,20 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 	protected FormParentPane() {
 		init();
 	}
+
+	/**
+	 * Abstract call. Implement specific actions that should occur
+	 * 	(in the pane, not the form) when the the submit button is
+	 * 	clicked. Any changes in the pane that need to be made
+	 * 	will be called by this method.
+	 */
+	public abstract void paneAction();
 	
 	/**
 	 * Returns the FormPane from the child class.
 	 * @return
 	 */
-	public abstract GridPane getFormPane();
+	public abstract GridPane getMainGridPain();
 	
 	//@Override
 	public void initialize(FormModel model, FormData data) {
@@ -69,10 +77,12 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 		resetButton = new Button("RESET");
 		clearButton = new Button("CLEAR FORM");
 		
-		formPane = new GridPane();
+		mainGridPain = new GridPane();
 		innerGPane = new GridPane();
 		this.model = model;
 		this.data = data;
+
+		//getStylesheets().add(getClass().getResource("/css/fxformStyle.css").toExternalForm());
 	}
 	
 	/**
@@ -83,7 +93,7 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 	public void setupBindings() {
 		submitButton.disableProperty().bind(model.getFormInstance().persistableProperty().not());
 		resetButton.disableProperty().bind(model.getFormInstance().changedProperty().not());
-		formRenderer.prefWidthProperty().bind(formPane.prefWidthProperty());
+		formRenderer.prefWidthProperty().bind(mainGridPain.prefWidthProperty());
 	}
 	
 	/**
@@ -99,9 +109,8 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 			model.getFormInstance().reset();
 		});
 		submitButton.setOnAction(e -> {
-			//System.out.println("submitButton clicked");
-			//model.getFormInstance().persist();
 			model.formAction(data);
+			this.paneAction();
 		});
 	}
 	
@@ -110,7 +119,7 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 	
 		
 	//	LOGGER.info("*** create MetaData form called ***");
-		formRenderer.setMaxWidth((SceneCntl.getWd() - 10));
+		formRenderer.setMaxWidth(SceneCntl.getAppBox().getWd() - 10);
 		
 		// Card info
 		innerGPane = new GridPane();
@@ -118,28 +127,18 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 		innerGPane.setVgap(10);
 		innerGPane.setAlignment(Pos.CENTER);
 		innerGPane.setPadding(new Insets(4, 2 , 4, 2));
-	//	innerGPane.addRow(0, cardNumLabel, imgNumLabel, vidNumLabel, audNumLabel);
-	//	innerGPane.addRow(1, lastScoreLabel);
 		
-		formPane.setAlignment(Pos.CENTER);
-		formPane.setHgap(10);
-		formPane.setVgap(12);
-		formPane.setPrefSize(400,600);
-		//formPane.setMaxWidth(400);
-		//formPane.setMaxHeight(600);
-	/*	formPane.setOnKeyPressed(f -> {
-			if(f.getCode() == KeyCode.ENTER) {
-				// Save/submit action
-				model.formAction(data);
-			}
-		});
-	*/
+		mainGridPain.setAlignment(Pos.CENTER);
+		mainGridPain.setHgap(10);
+		mainGridPain.setVgap(12);
+		mainGridPain.setPrefSize(500,800);
+
 		innerGPane.setId("infoPane");
 		formRenderer.setId("formPane");
-		formPane.setId("infoPane");
+		mainGridPain.setId("infoPane");
 		
-		submitButton.setMaxWidth(240);
-		submitButton.setMinWidth(240);
+		submitButton.setMaxWidth(300);
+		submitButton.setMinWidth(300);
 		submitButton.setId("signInButton");
 		
 		resetButton.setMaxWidth(120);
@@ -158,24 +157,28 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 		spacer.setMinHeight(20);
 		spacer1.setMinHeight(20);
 		
-		formPane.addRow(0, spacer);
-		formPane.addRow(1, innerGPane);
-		formPane.addRow(2, resetHBox);
-		formPane.addRow(3, formRenderer);
-		formPane.addRow(4, buttonHBox);
-		formPane.addRow(5, spacer1);
+		mainGridPain.addRow(0, spacer);
+		mainGridPain.addRow(1, innerGPane);
+		//mainPain.addRow(2, resetHBox);
+		mainGridPain.addRow(3, formRenderer);
+		mainGridPain.addRow(4, buttonHBox);
+		mainGridPain.addRow(5, spacer1);
 	}
 	
 	public void setFormPaneWidth(int w) {
-		formPane.setMaxWidth(w);
-		formPane.setMinWidth(w);
+		mainGridPain.setMaxWidth(w);
+		mainGridPain.setMinWidth(w);
+	}
+
+	public void setFormPainHeight(int ht) {
+		mainGridPain.setMaxHeight(ht);
+		mainGridPain.setMinHeight(ht);
 	}
 	
 	public void setFormDoublePane(Pane pane) {
 		BorderPane bp = new BorderPane();
-		bp.setLeft(formPane);
+		bp.setLeft(mainGridPain);
 		bp.setRight(pane);
-
 	}
 
 	/**
@@ -187,7 +190,6 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 	 * @param imageFullPath the relitive path to the image and name.
 	 */
 	protected void setInfoPane(String lbl, String msg, String imageFullPath) {
-		System.out.println("FormParentPane.setInfoPane(..., imageFullPath: " + imageFullPath);
 
 		ImageView img = new ImageView(imageFullPath);
 		img.setPreserveRatio(true);
@@ -200,5 +202,15 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
 		innerGPane.add(l, 0,0, 1, 1);
 		innerGPane.add(m,0, 1, 1, 1);
 		innerGPane.add(img, 1, 0, 1, 2);
+	}
+
+	public void setSubmitButtonTitle(String title) {
+		submitButton.setText(title);
+	}
+	public void addExitBox(GridPane exitBox) {
+		Region space = new Region();
+		space.setPrefHeight(140);
+		mainGridPain.addRow(6, space);
+		mainGridPain.addRow(7, exitBox);
 	}
 }

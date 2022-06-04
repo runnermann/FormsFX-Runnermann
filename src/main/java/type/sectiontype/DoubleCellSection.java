@@ -1,7 +1,28 @@
+/*
+ * Copyright (c) 2019 - 2022. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.sectiontype;
 
 import flashmonkey.FlashMonkeyMain;
 import flashmonkey.ReadFlash;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uicontrols.SceneCntl;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -12,6 +33,9 @@ import type.celltypes.GenericCell;
  */
 public class DoubleCellSection //extends GenericSection
 {
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DoubleCellSection.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DoubleCellSection.class);
+
     private Pane leftCell = new Pane();
     private Pane rightCell = new Pane();
     private HBox sectionHBox = new HBox();
@@ -20,30 +44,24 @@ public class DoubleCellSection //extends GenericSection
     //@Override
     public HBox sectionView(String txt, char type, int numHSections, boolean isEqual, double otherHt, String ... fileName)
     {
-        GenericCell gc = new GenericCell();
+        //LOGGER.setLevel(Level.DEBUG);
+        LOGGER.debug("in sectionView for DoubleCellSection. ");
 
-       //System.out.println("DoubleCellSection.sectionView() ");
+        GenericCell gc = new GenericCell();
         int wd = SceneCntl.getCenterWd();
         int ht = (int) ReadFlash.getInstance().getMasterBPane().getHeight();
         // text cell
         leftCell = gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
         rightCell.getChildren().clear();
         // Set the rightCell initial width and height from SceneCntl
-        rightCell = gc.cellFactory(type, rightCell, SceneCntl.getRightCellWd(), SceneCntl.getCellHt(), false, fileName);
+        rightCell = gc.cellFactory(type, rightCell, SceneCntl.getRightCellWd(), SceneCntl.calcCellHt(), fileName);
         rightCell.setMinWidth(SceneCntl.getRightCellWd());
-
-//        HBox.setHgrow(leftCell, Priority.ALWAYS);
-
-       //System.out.println("DoubleCell.sectionView filename: image = " + fileName[0] + "; shapes = " +fileName[1]);
-       //System.out.println("DoubleCell.sectionView type: " + type);
         sectionHBox.getChildren().addAll(leftCell, rightCell);
-        //sectionHBox.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
         // Set the initial section height
-        double no = SceneCntl.calcCenterHt(30, 214, FlashMonkeyMain.getWindow().getHeight());
+        double no = SceneCntl.calcCenterHt(30, 244, FlashMonkeyMain.getWindow().getHeight());
         sectionHBox.setPrefHeight(no / numHSections);
-        leftCell.setPrefHeight(no / numHSections);
 
+        leftCell.setPrefHeight(no / numHSections);
         leftCell.setPrefWidth(FlashMonkeyMain.getWindow().getWidth() - 124);
 
         // RESPONSIVE SIZING for width and height
@@ -52,9 +70,12 @@ public class DoubleCellSection //extends GenericSection
             leftCell.setMaxWidth(newVal.doubleValue() - 108);
         });
 
+
         ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newval) -> {
-            double val = newval.doubleValue() / numHSections;
-            val -= 214 / numHSections; // grrrrrr!
+            LOGGER.debug("resizing heigth line 75");
+
+            double val = newval.doubleValue() - 244.0;
+            val /= numHSections; // grrrrrr!
             sectionHBox.setPrefHeight(val);
             sectionHBox.setMaxHeight(val);
             leftCell.setPrefHeight(val);

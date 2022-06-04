@@ -1,13 +1,14 @@
 package ecosystem;
 
-import ch.qos.logback.classic.Level;
 import flashmonkey.FlashMonkeyMain;
 import forms.DeckSearchPane;
 import javafx.geometry.Pos;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uicontrols.FxNotify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +19,8 @@ import java.util.HashMap;
  */
 public class ConsumerPane extends StackPane {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ConsumerPane.class);
-    //private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchModel.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ConsumerPane.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerPane.class);
     /* VERSION */
     public static final long VERSION = FlashMonkeyMain.VERSION;
     /* SINGLETON */
@@ -30,6 +31,7 @@ public class ConsumerPane extends StackPane {
     private DeckSearchPane searchPane;
     private DeckMarketPane layer0; // everything else
 
+
     /**
      * Closes this pane and calls searchPane.onClose,
      * and sets the class_instance to null.
@@ -37,8 +39,11 @@ public class ConsumerPane extends StackPane {
     public void onClose() {
         searchPane.onClose();
         LOGGER.debug("ConsumerPane.onClose() called");
-        layer0.onClose();
-        layer1 = null;
+        if(layer0 != null) {
+            layer0.onClose();
+            layer0 = null;
+            layer1 = null;
+        }
         mainStackPane.getChildren().clear();
         mainStackPane = null;
         CLASS_INSTANCE = null;
@@ -47,13 +52,10 @@ public class ConsumerPane extends StackPane {
 
     // Double-checked locking for singleton class
     public static synchronized ConsumerPane getInstance() {
-        System.out.println("ConsumerPane getInstance called");
         if(CLASS_INSTANCE == null) {
-            System.out.println("ConsumerPane outer called new instance");
             synchronized (ConsumerPane.class) {
                 if (CLASS_INSTANCE == null) {
                     CLASS_INSTANCE = new ConsumerPane();
-                    System.out.println("ConsumerPane inner called new instance");
                 }
             }
         }
@@ -66,24 +68,19 @@ public class ConsumerPane extends StackPane {
 
     //xxxxx maparray build by search results and used by CenterPane and TeaserPane
     public void init() {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         mainStackPane = new StackPane();
-
-        //mainPane.setStyle("-fx-background-color: #D20035");
         searchPane = new DeckSearchPane();
-        layer1 = new AnchorPane(searchPane.getFormPane());
-
-
+        layer1 = new AnchorPane(searchPane.getMainGridPain());
         layoutSearch();
-        //layer0 = new DeckMarketPane(); // everything else
     }
 
 
     private void layoutSearch() {
         LOGGER.debug("layoutSearch called");
         mainStackPane.getChildren().clear();
-        layer1.setTopAnchor(searchPane.getFormPane(), 0.0);
-        layer1.setLeftAnchor(searchPane.getFormPane(), 0.0);
+        layer1.setTopAnchor(searchPane.getMainGridPain(), 0.0);
+        layer1.setLeftAnchor(searchPane.getMainGridPain(), 0.0);
         // set 20 from left and 50 from top
         //layer1.getFormPane().setPadding(new Insets(20,0,0,50));
         mainStackPane.getChildren().add(layer1);
@@ -93,8 +90,8 @@ public class ConsumerPane extends StackPane {
     public void layoutConsumer() {
         LOGGER.debug("layoutConsumer called");
         mainStackPane.setAlignment(Pos.TOP_LEFT);
-        layer1.setTopAnchor(searchPane.getFormPane(), 20.0);
-        layer1.setLeftAnchor(searchPane.getFormPane(), 50.0);
+        layer1.setTopAnchor(searchPane.getMainGridPain(), 20.0);
+        layer1.setLeftAnchor(searchPane.getMainGridPain(), 50.0);
         layer1.setMaxWidth(600);
         // EcoPurchase ep = new EcoPurchase();
         layer0 = DeckMarketPane.getInstance(); // everything else
@@ -126,10 +123,17 @@ public class ConsumerPane extends StackPane {
         }
 
         public static void purchaseAction(ArrayList<HashMap<String, String>> cartList) {
-            EcoPane ePane = new EcoPane();
-            ePane.setDeckIds(getDeckIds(cartList));
-            ePane.setCartList(cartList);
-            layoutWebView(ePane);
+            if(cartList.size() > 0) {
+                EcoPane ePane = new EcoPane();
+                ePane.setDeckIds(getDeckIds(cartList));
+                ePane.setCartList(cartList);
+                layoutWebView(ePane);
+            }
+            else {
+                String errorMessage = " Please select a deck for your purchase";
+                FxNotify.notificationBlue("Ooops!", errorMessage, Pos.CENTER, 4,
+                        "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+            }
         }
 
         private static String[] getDeckIds(ArrayList<HashMap<String, String>> cartList) {
@@ -145,7 +149,7 @@ public class ConsumerPane extends StackPane {
         private static void layoutWebView() {
             LOGGER.debug("layoutWebView called");
             EcoPane ePane = new EcoPane();
-            mainStackPane.getChildren().add(ePane.getReqMembershipPane());
+            mainStackPane.getChildren().add(ePane.getReqSubscribePane());
         }
 
         public static void reqSubscription() {
@@ -157,5 +161,4 @@ public class ConsumerPane extends StackPane {
     public StackPane getConsumerPane() {
         return this.mainStackPane;
     }
-
 }

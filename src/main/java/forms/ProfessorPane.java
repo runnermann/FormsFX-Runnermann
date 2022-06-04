@@ -4,6 +4,7 @@ import authcrypt.user.EncryptedProf;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import fmannotations.FMAnnotations;
 import javafx.scene.layout.GridPane;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -14,7 +15,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ProfessorPane extends FormParentPane {
 	
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ProfessorPane.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ProfessorPane.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProfessorPane.class);
 
 	ProfessorModel model;
 	EncryptedProf prof;
@@ -45,13 +47,7 @@ public class ProfessorPane extends FormParentPane {
 	
 	@Override
 	public void setupValueChangedListeners() {
-		//model.getFormInstance().changedProperty().addListener((observable, oldValue, newValue) -> changedLabel.setText("The form has " + (newValue ? "" : "not ") + "changed."));
-		//model.getFormInstance().validProperty().addListener((observable, oldValue, newValue) -> validLabel.setText("The form is " + (newValue ? "" : "not ") + "valid."));
-		//model.getFormInstance().persistableProperty().addListener((observable, oldValue, newValue) -> persistableLabel.setText("The form is " + (newValue ? "" : "not ") + "persistable."));
-		
-		//model.getCountry().nameProperty().addListener((observable, oldValue, newValue) -> countryLabel.setText("Country: " + newValue));
-		//model.getCountry().currencyShortProperty().addListener((observable, oldValue, newValue) -> currencyLabel.setText("Currency: " + newValue));
-		//model.getCountry().populationProperty().addListener((observable, oldValue, newValue) -> populationLabel.setText("Population: " + newValue));
+
 	}
 	
 	@Override
@@ -64,9 +60,12 @@ public class ProfessorPane extends FormParentPane {
 	}
 	
 	@Override
-	public GridPane getFormPane() {
-		return this.formPane;
+	public GridPane getMainGridPain() {
+		return this.mainGridPain;
 	}
+
+	@Override
+	public void paneAction() { /* do nothing */}
 	
 	/* *** FOR TESTING *** */
 	@FMAnnotations.DoNotDeployMethod

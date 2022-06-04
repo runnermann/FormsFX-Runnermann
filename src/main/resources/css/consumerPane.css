@@ -8,6 +8,12 @@
 }
 .root-pane {
     -fx-padding: 0;
+
+    EVE_BLUE: #0064e1;
+    ICON_BLUE: #304F8C;
+    /*ICON_PURPLE: #A65698;*/
+    ICON_YELLOW: #F2E744;
+    ICON_GOLD: #F2C744;
 }
 
 @font-face {
@@ -69,8 +75,8 @@
 }
 
 .controls {
-   // -fx-background-color: #e0e0e0;
-   // -fx-border-color: #b1b1b1;
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: #b1b1b1;
     -fx-border-width: 0 0 0 1px;
 }
 
@@ -127,6 +133,34 @@
     -fx-border-insets: 0px;
 }
 
+.scroll-pane {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-border-style: none;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 4,0,4,0;
+}
+
+.scroll-pane:focused {
+    -fx-background-insets: 0;
+}
+
+.scroll-pane .corner {
+    -fx-background-insets: 0;
+}
+
+.ScrollPane {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-border-style: none;
+    -fx-border-width: 0;
+    -fx-border-insets: 0px;
+    -fx-padding: 4,0,4,0;
+}
+
+
 #formPane {
     -fx-border-color: #D9D9D9;
     /*-fx-border-width: 0 0 0 0;*/
@@ -161,13 +195,13 @@
 
 /* consumerPane */
 #topBar {
-    -fx-background-color: #9276AC;
+    -fx-background-color: #05C7F2;
     -fx-pref-height: 40;
     -fx-padding: 10,40,0,0;
 }
 
 #lowerBar {
-    -fx-background-color: #48206E;
+    -fx-background-color: #222E73;
     -fx-pref-height: 40;
 }
 
@@ -175,6 +209,7 @@
     -fx-font-family: "Helvetica";
     -fx-background-color: #D9D9D9;
     -fx-font-size: 14;
+    -fx-text-fill: #05C7F2;
     -fx-alignment: CENTER;
 }
 
@@ -183,13 +218,19 @@
 }
 
 #titlePane {
-    -fx-padding: 0,20,0,4;
+    -fx-padding: 0,20,0,20;
 }
 
 #pricePane {
     -fx-pref-height: 40;
     -fx-pref-width: 60;
-    -fx-background-color: #e2e2e2;
+    -fx-background-color: TRANSPARENT;
+    -fx-border-color: #e2e2e2;
+    -fx-border-width: 3;
+    -fx-border-radius: 3;
+}
+#teaser {
+    -fx-background-color: TRANSPARENT;
 }
 
 #teaserPane {
@@ -202,15 +243,17 @@
     -fx-background-color: #FFFFFF;
     -fx-cursor: hand;
 }
+#teaserGrid {
+    -fx-background-color: TRANSPARENT;
+}
 
 #payPane {
     -fx-border-color: darkBlue;
-;
 }
 
 #white14 {
+    -fx-font-size: 16;
     -fx-text-fill: #D9D9D9;
-    -fx-font-size: 14;
 }
 
 #norm16 {
@@ -225,20 +268,26 @@
     -fx-font-weight: bold;
 }
 
-#purple14 {
+#whitebold14 {
+    -fx-font-family: "Helvetica-Bold";
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+}
+
+#blue14 {
     /*-fx-font-family: "Raleway-Medium.ttf";*/
-    -fx-text-fill: #9276AC;
+    -fx-text-fill: #00ADEE;
     -fx-font-size: 14;
     -fx-font-weight: bold;
 }
 
-#purpleRight {
-    -fx-text-fill: #9276AC;
+#blueRight {
+    -fx-text-fill: #00ADEE;
 }
 
 #description {
     -fx-font-family: "CenturyGothicPro";
-    -fx-font-size: 14;
+    -fx-font-size: 12;
     -fx-text-fill: #4d4d4d;
 }
 

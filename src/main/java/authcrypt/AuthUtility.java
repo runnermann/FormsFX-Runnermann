@@ -1,12 +1,10 @@
 package authcrypt;
 
-import flashmonkey.FlashMonkeyMain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,11 +12,12 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
-
-public class AuthUtility implements Serializable {
+/**
+ *
+ */
+public class AuthUtility {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthUtility.class);
-    private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
     /**
      * Compute the hashed-str given a str and salt
@@ -57,7 +56,7 @@ public class AuthUtility implements Serializable {
     /**
      * Calculates the hash for non-crypto hashing
      * @param str string
-     * @return
+     * @return hash
      */
     public String computeHash(String str) {
         final Base64.Encoder B64ENC = Base64.getEncoder();
@@ -74,9 +73,9 @@ public class AuthUtility implements Serializable {
 
     /**
      * Returns the hash from the input parameters
-     * @param skf
-     * @param spec
-     * @return
+     * @param skf ..
+     * @param spec ..
+     * @return hash
      */
     private String hash(SecretKeyFactory skf, PBEKeySpec spec) {
         try {
@@ -93,8 +92,8 @@ public class AuthUtility implements Serializable {
 
     /**
      * check if a string meets the correct length or is null
-     * @param str
-     * @return
+     * @param str ..
+     * @return true if correct
      */
     private boolean checkStr(String str) {
         //System.out.println("checkStr: " + str );

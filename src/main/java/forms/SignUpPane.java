@@ -1,9 +1,12 @@
 package forms;
 
+import authcrypt.user.EncryptedStud;
+import campaign.db.DBInsert;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import com.dlsc.formsfx.view.util.ViewMixin;
 
 import flashmonkey.FlashMonkeyMain;
+import flashmonkey.Timer;
 import fmannotations.FMAnnotations;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -67,9 +70,9 @@ public class SignUpPane extends Pane implements ViewMixin {
 		signUpHBox = new HBox();
 		msgVBox = new VBox();
 		// Action related
-		signUpBtn = new Button("Sign up");
+		signUpBtn = new Button("SIGN UP");
 		
-		signInLink = new Hyperlink("Sign in");
+		signInLink = new Hyperlink("SIGN IN");
 		signUpPane = new GridPane();
 		
 		msgLabel1 = new Label("I just need ");
@@ -77,6 +80,11 @@ public class SignUpPane extends Pane implements ViewMixin {
 		msgLabel3 = new Label("before we get started.");
 		
 		displayForm = new FormRenderer(model.getFormInstance());
+
+		// used for the first time.
+		Timer.getClassInstance().setNote("p2 SignUpPane, user signing up");
+		// EncryptedStudent is not used.
+		DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
 	}
 	
 	/**
@@ -95,13 +103,7 @@ public class SignUpPane extends Pane implements ViewMixin {
 	 */
 	@Override
 	public void setupValueChangedListeners() {
-		//model.getFormInstance().changedProperty().addListener((observable, oldValue, newValue) -> changedLabel.setText("The form has " + (newValue ? "" : "not ") + "changed."));
-		//model.getFormInstance().validProperty().addListener((observable, oldValue, newValue) -> validLabel.setText("The form is " + (newValue ? "" : "not ") + "valid."));
-		//model.getFormInstance().persistableProperty().addListener((observable, oldValue, newValue) -> persistableLabel.setText("The form is " + (newValue ? "" : "not ") + "persistable."));
-		
-		//model.getCountry().nameProperty().addListener((observable, oldValue, newValue) -> countryLabel.setText("Country: " + newValue));
-		//model.getCountry().currencyShortProperty().addListener((observable, oldValue, newValue) -> currencyLabel.setText("Currency: " + newValue));
-		//model.getCountry().populationProperty().addListener((observable, oldValue, newValue) -> populationLabel.setText("Population: " + newValue));
+
 	}
 	
 	/**
@@ -115,7 +117,7 @@ public class SignUpPane extends Pane implements ViewMixin {
 		});
 		
 		signInLink.setOnAction(e -> {
-			FlashMonkeyMain.getSignInPane();
+			FlashMonkeyMain.showSignInPane();
 		});
 		
 	}
@@ -129,25 +131,23 @@ public class SignUpPane extends Pane implements ViewMixin {
 	public void layoutParts() {
 		
 		LOGGER.info("*** create SIGN-UP called ***");
-		
-		
-		
+
 		signUpPane.setAlignment(Pos.CENTER);
 		signUpPane.setHgap(10);
 		signUpPane.setVgap(12);
 		signUpPane.setId("fileSelectPane");
-		signUpPane.setPrefSize(325, 450);
+		signUpPane.setPrefSize(340, 420);
 		signUpPane.setOnKeyPressed(f -> {
 			if(f.getCode() == KeyCode.ENTER) {
 				model.formAction();
 			}
 		});
-		
-		msgLabel1.setId("fmLabel");
-		msgLabel2.setId("fmLabel");
-		msgLabel3.setId("fmLabel");
+
+		msgLabel1.setId("label24White");
+		msgLabel2.setId("label24White");
+		msgLabel3.setId("label24White");
 		Label signInLabel = new Label("Already have an account?");
-		signInLabel.setStyle("-fx-font-size: 12");
+		signInLabel.setId("signUpLabel");
 		
 		signUpBtn.setMaxWidth(240);
 		signUpBtn.setMinWidth(240);
@@ -166,14 +166,14 @@ public class SignUpPane extends Pane implements ViewMixin {
 		spacer.setMinHeight(20);
 		spacer1.setMinHeight(20);
 		
-		displayForm.setMaxWidth(260);
+		displayForm.setMaxWidth(280);
 		
 		signUpPane.addRow(0, spacer);
 		signUpPane.addRow(1, msgVBox);
 		signUpPane.addRow(2, displayForm);
 		signUpPane.addRow(3, signUpHBox);
 		signUpPane.addRow(4, signInHBox);
-		signUpPane.addRow(5, spacer1);
+		//signUpPane.addRow(5, spacer1);
 	}
 	
 	public GridPane getSignUpPane() {

@@ -76,7 +76,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 	FxRobot robot = new FxRobot();
 	SleepRobotImpl sleep = new SleepRobotImpl();
 	DirectoryMgr directory = new DirectoryMgr();
-	String strPath = "../flashMonkeyFile/TestingDeck.dat";
+	String strPath = "../flashMonkeyFile/TestingDeck.dec";
 	Path filePath = Paths.get(strPath);
 	// for the background stage
 	private Toolkit tk = Toolkit.getDefaultToolkit();
@@ -111,14 +111,11 @@ public class MultiChoiceGUITester extends ApplicationTest
 		 Otherwise, the robots may interact with another
         window, the one in front of all the windows... */
 		stage.toFront();
-
-       
-        //System.out.println("\n TestingDeck.dat removed from file was: " + bool);
     }
 
     private void setup() throws Exception {
 
-		String strPath = "../flashMonkeyFile/TestingDeck.dat";
+		String strPath = "../flashMonkeyFile/TestingDeck.dec";
 		File file = new File(strPath);
 		Path filePath = Paths.get(strPath);
 		//file = new File(filePath);
@@ -248,7 +245,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 	 * test page is showing. Tests that a test page
 	 * is showing.
 	 * NOTE: Check that no decks exists in the
-	 * FlashMonkeyFile folder except TestingDeck.dat
+	 * FlashMonkeyFile folder except TestingDeck.dec
 	 * @throws Exception
 	 */
 	@Ignore
@@ -282,7 +279,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 
 	/**
 	 * NOTE: Check that no decks exists in the
-	 * FlashMonkeyFile folder except TestingDeck.dat
+	 * FlashMonkeyFile folder except TestingDeck.dec
 	 * @throws Exception
 	 */
 	@Ignore
@@ -302,7 +299,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 
 	/**
 	 * NOTE: Check that no decks exists in the
-	 * FlashMonkeyFile folder except TestingDeck.dat
+	 * FlashMonkeyFile folder except TestingDeck.dec
 	 * @throws Exception
 	 */
 	@Ignore
@@ -340,7 +337,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 	 * the authcrypt.user is in test mode.
 	 *
 	 * NOTE: Check that no decks exists in the
-	 * FlashMonkeyFile folder except TestingDeck.dat
+	 * FlashMonkeyFile folder except TestingDeck.dec
 	 * @throws Exception
 	 */
 	//@Ignore

@@ -5,7 +5,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.entypo.Entypo;
+import org.kordamp.ikonli.fontawesome5.*;
+//import org.kordamp.ikonli.entypo.Entypo;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 /**
@@ -16,6 +17,7 @@ public class ButtoniKonClazz {
 	
 	private Button ikonBtn;
 	private int size = 24;
+	private int textEditorSize = 16;
 	
 	/**
 	 * Creates a buttoniKon object with a FontType Ikon and setting based on
@@ -26,7 +28,6 @@ public class ButtoniKonClazz {
 	 * @param clrStr
 	 */
 	public ButtoniKonClazz(String titleStr, String toolTip, Ikon ikon, String clrStr) {
-		
 		FontIcon rIcon = new FontIcon(ikon);
 		rIcon.setIconSize(size);
 		rIcon.setFill(UIColors.convertColor(clrStr));
@@ -37,7 +38,23 @@ public class ButtoniKonClazz {
 		if(!titleStr.isEmpty()) {
 			newBtn.setTextFill(UIColors.convertColor(clrStr));
 		}
-		
+		this.ikonBtn = newBtn;
+	}
+
+	/**
+	 * Primarily used for the RichTextEditor
+	 * MenuBar buttons. Size is 16 and color is eve_blue.
+	 * @param toolTip
+	 * @param ikon
+	 */
+	public ButtoniKonClazz(String toolTip, Ikon ikon) {
+		FontIcon rIcon = new FontIcon(ikon);
+		rIcon.setIconSize(textEditorSize);
+		rIcon.setFill(UIColors.convertColor(UIColors.FOCUS_BLUE_OPAQUE));
+		Button newBtn = new Button("", rIcon);
+		if(!toolTip.isEmpty()) {
+			newBtn.setTooltip(new Tooltip(toolTip));
+		}
 		this.ikonBtn = newBtn;
 	}
 	
@@ -52,7 +69,6 @@ public class ButtoniKonClazz {
 	 * @param clrStr   The color string.
 	 */
 	public ButtoniKonClazz(String titleStr, String toolTip, String imgPath, String clrStr) {
-		
 		Image img = new Image(imgPath);
 		javafx.scene.control.Button newBtn = new Button(titleStr, new ImageView(img));
 		if(!toolTip.isEmpty()) {
@@ -70,8 +86,9 @@ public class ButtoniKonClazz {
 	}
 	
 	public Button getPlay(Button button) {
-		FontIcon icon = new FontIcon(Entypo.CONTROLLER_PLAY);
-		icon.setFill(UIColors.convertColor(UIColors.FOCUS_BLUE_OPAQUE));
+		//FontIcon icon = new FontIcon(Entypo.CONTROLLER_PLAY);
+		FontIcon icon = new FontIcon(FontAwesomeSolid.PLAY);
+		icon.setFill(UIColors.convertColor(UIColors.FM_WHITE));
 		icon.setIconSize(24);
 		button.setGraphic(icon);
 		button.setTooltip(new Tooltip("Play"));
@@ -79,8 +96,8 @@ public class ButtoniKonClazz {
 	}
 	
 	public Button getPause(Button button) {
-		FontIcon icon = new FontIcon(Entypo.CONTROLLER_PAUS);
-		icon.setFill(UIColors.convertColor(UIColors.FOCUS_BLUE_OPAQUE));
+		FontIcon icon = new FontIcon(FontAwesomeSolid.PAUSE);
+		icon.setFill(UIColors.convertColor(UIColors.FM_WHITE));
 		icon.setIconSize(24);
 		button.setGraphic(icon);
 		button.setTooltip(new Tooltip("Pause"));

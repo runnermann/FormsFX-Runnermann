@@ -1,16 +1,15 @@
 package forms;
 
 import campaign.db.DBFetchToMapAry;
-import ch.qos.logback.classic.Level;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Section;
-import com.dlsc.formsfx.view.util.ColSpan;
 import ecosystem.ConsumerPane;
 import ecosystem.DeckMarketPane;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.SearchRemoteDescriptor;
 import javafx.geometry.Pos;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
@@ -20,8 +19,8 @@ import java.util.HashMap;
 
 public class DeckSearchModel extends ModelParent {
 	
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckSearchModel.class);
-	//private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchModel.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckSearchModel.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchModel.class);
 	private SearchRemoteDescriptor descriptor = new SearchRemoteDescriptor();
 	
 	/**
@@ -29,7 +28,7 @@ public class DeckSearchModel extends ModelParent {
 	 */
 	@Override
 	public void createForm() {
-		LOGGER.setLevel(Level.DEBUG);
+		//LOGGER.setLevel(Level.DEBUG);
 		LOGGER.info("DeckSearchModel createForm called");
 		//String[] pwCheck = new String[1];
 		// For search by Class, Search by keyword, search by book, search by Prof, search by catagory subcatagory, university bldg classroom
@@ -56,13 +55,6 @@ public class DeckSearchModel extends ModelParent {
 		formInstance = Form.of( s, y )
 				.title("form_label")
 				.i18n(rbs);
-
-				/*Section.of(
-				
-				).title("search_email_bar"),
-				Section.of(
-				
-				).title("search_deckkey_bar")*/
 	}
 	
 	
@@ -78,34 +70,27 @@ public class DeckSearchModel extends ModelParent {
 
 
             DeckMarketPane dm = DeckMarketPane.getInstance();
+
 			String institute = descriptor.getSelectedTut().getText();
 			String prof = descriptor.getSelectedProf();
 			String courseCode = descriptor.getSelectedCourseCode();
 			// an arrayList of hashMaps. Contains a hashMap of columnNames for
 			// each row from the DB resonse.
 			ArrayList<HashMap<String, String>> response;
-			
-				System.out.println(" data selected by form is: institute<" + institute ); //+
-
-
 			if (prof != null & courseCode == null) {
 				String[] strAry = {institute.strip(), prof.strip()};
-				System.out.println("DeckSearchModel query for PROF only: ");
 				response = this.query(0, strAry);
 				dm.setMapArray(response);
 
 			} else if (prof == null & courseCode != null) {
 				String[] strAry = {institute.strip(), courseCode.strip()};
-				System.out.println("DeckSearchModel query for PROF and COURSECODE");
 				response = this.query(1, strAry);
                 dm.setMapArray(response);
 			} else if (prof != null & courseCode != null) {
 				String[] strAry = {institute.strip(), prof.strip(), courseCode.strip()};
-				System.out.println("DeckSearchModel query for CourseCode only");
 				response = this.query(2, strAry);
                 dm.setMapArray(response);
 			} else {
-				System.out.println("DeckSearchModel query using neither PROF NOR COURSECODE");
 				//System.out.println("DeckSearchModel query returning: " + query(3, institute));
 				response = this.query(3, institute);
                 dm.setMapArray(response);
@@ -124,6 +109,7 @@ public class DeckSearchModel extends ModelParent {
 			FlashMonkeyMain.getActionWindow().setMinHeight(SceneCntl.getConsumerPaneHt());
 			FlashMonkeyMain.getActionWindow().minWidthProperty().bind(ConsumerPane.getInstance().widthProperty());
 			FlashMonkeyMain.getActionWindow().minHeightProperty().bind(ConsumerPane.getInstance().heightProperty());
+			// Note that onClose is called from FlashMonkeyMain
 			FlashMonkeyMain.getActionWindow().setOnHidden( e -> {
 				ConsumerPane.getInstance().onClose();
 				FlashMonkeyMain.closeActionWindow();
@@ -155,21 +141,16 @@ public class DeckSearchModel extends ModelParent {
 
 		LOGGER.debug("DeckSearchModel.query() called");
 
-		StringBuilder sb = new StringBuilder(" WHERE deck_school = '" + searchBy[0] + "'");
+		StringBuilder sb = new StringBuilder(" WHERE deck_school = '" + searchBy[0] + "' AND sell_deck = true");
 		switch(queryType) {
 			// include professor only
 			case 0: {
 				sb.append(" AND deck_prof = '" + searchBy[1].strip() + "';");
-				
-				System.out.println("sending query: " + sb.toString());
-				
 				return DBFetchToMapAry.DECK_METADATA_MULTIPLE.query(sb.toString());
 			}
 			// include class only
 			case 1: {
 				sb.append(" AND deck_class = '" + searchBy[1].strip() + "';");
-				
-				System.out.println("sending query: " + sb.toString());
 
 				return DBFetchToMapAry.DECK_METADATA_MULTIPLE.query(sb.toString());
 			}
@@ -192,5 +173,10 @@ public class DeckSearchModel extends ModelParent {
 		}
 		// This should not be reached, but is the default.
 		return new ArrayList<HashMap<String, String>>();
+	}
+
+	@Override
+	public void formAction() {
+		/* stub */
 	}
 }

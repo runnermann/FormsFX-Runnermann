@@ -2,171 +2,208 @@ package authcrypt;
 
 
 import campaign.db.DBFetchUnique;
+import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
-import fileops.Utility;
+import fileops.utility.Utility;
 import flashmonkey.FlashCardOps;
-import flashmonkey.FlashMonkeyMain;
-import javafx.geometry.Pos;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uicontrols.FxNotify;
 
 import java.io.File;
-import java.io.Serializable;
+//import java.io.Serializable;
 
+/**
+ * This class should only be accessed by Auth
+ * -- Removed Serializable --
+ * Security sensitive classes should not be serializable. See JavaDocs Security vulnerabilities at:
+ * https://www.oracle.com/java/technologies/javase/seccodeguide.html
+ */
+public class Verify {
 
-public class Verify implements Serializable {
+    //private static final Logger LOGGER = LoggerFactory.getLogger(Verify.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Verify.class);
 
-    private static final long serialVersionUID = FlashMonkeyMain.VERSION;
-    private static final Logger LOGGER = LoggerFactory.getLogger(Verify.class);
 
     //private static String userName;
     private static int validInt;
     private static AuthUtility authUtility;
+    private int s3res;
+    //private boolean s3IsSet;
 
-    public Verify() { /* no args constructor */ }
-
-    public Verify(String pw, String userName) {
-        UserAuthInfo userAuthInfo = new UserAuthInfo();
-
-        LOGGER.info("Verify constructor( ... ) called");
-        // set data from file if exists.
-        // verify userPW and userName
-        if(pw == null || pw.length() < 8 || userName == null || userName.length() < 6) {
-            LOGGER.warn("verification failed pw or username is malformed");
-        } else {
-            // if the user exists on this system
-            // then validate thier info
-            if (userAuthInfo.setUserData()) {
-                userAuthInfo.validateUserInfo(pw, userName);
-            }
-            // else check if they exist in the cloud
-            // @TODO checkUserCloudExists()
-   /*         else if (checkUserCloudExists()){
-                // if they exist in the cloud, and the data is correct
-                // create locally
-                LOGGER.info("verification Failed");
-
-                // if not have them reset their password by email
-
-            } */
-            // else notify them to create a new user on this
-            // system and in the cloud.
-            else {
-                LOGGER.info("user does not exist locally or in the cloud");
-            }
-        }
-    }
-
-    // @TODO finish checkUserCloudExists
-    private boolean checkUserCloudExists() {
-        return false;
+    private Verify() {
+        LOGGER.setLevel(Level.DEBUG);
+        /* no args constructor */
     }
 
     /**
-     * @TODO create syncronization for users pw and userNames.
-     * Stores the users data to file if the user is new to
-     * this system. And if(isConnnected) the user's pw & name
-     * are correct.
-     * @param pw
-     * @param name
-     * @return returns the response if successful or not.
+     * Sets the validInt.
+     * @param x1 pw
+     * @param x2 email aka userName
+     * @param loc for remote use 'b' (both). For local only use 'l'.
+     *            default will check both if connected. The lower process
+     *           will not fail if the user does not exist.
      */
-    private File userDir;
+    protected Verify(String x1, String x2, char loc) {
+        //LOGGER.setLevel(Level.DEBUG);
+        LOGGER.info("Verify constructor( ... ) called");
 
+        loc = loc == 0 ? 'b' : loc;
 
-    public String newUser(String pw, String name) {
-        String defaultMsg = "Something isn't right.";
-        // 1. Check that user does not exist locally
-        // 2. Check if user is connected. For this version, user must be connected to initially create the account.
-        // 3. Check s3getUser, if user exists, and password passes then
-        //		a. deck list will be downloaded
-        //		b. and user is validated in one single trip.
-        // 4. If user does not pass remotely, then notify user to retry creating user, or rest remote password.
-        // 5. If user does not exist remotely, !?!?!?!!!! And they are connected.
-        // 		-- create user remotely???
-        String errorMessage = "";
-        // save user auth info
-        LOGGER.info("Verify.newUser(...) ");
-        if(DirectoryMgr.getWorkingDirectory() != null) {
-            new DirectoryMgr();
-        }
-        // verify if user's directory already exists, if not
-        // return to caller
-        userDir = new File(DirectoryMgr.getMediaPath('z'));
-        if(userDir.exists()) {
-            return "Sorry that email exists. Try resetting the password or create a new user.";
+        int remoteState = 0;
+        // verify if the user exists locally, then set the bits
+        int localState = validateLocal(x2, x1);
+        // if localState == 0 pw or name is malformed
+        LOGGER.debug("localState: {}", localState);
+        if(localState == 0) {
+            return;
         }
 
-        if(Utility.isConnected()) {
-            if(existsRemote(name)) {
-                // create local user if local & remote password
-                // are the same.
-                int res = FlashCardOps.getInstance().setObjsFmS3(name, pw);
-                switch (res) {
+        // if connected, set user state for remote
+        if(loc != 'l' && Utility.isConnected()) {
+            remoteState = validateRemote(x2, x1);
+        }
+        validInt = remoteState + localState;
+        LOGGER.debug("validInt: " + validInt);
+    }
+
+    /**
+     * Assumes that the user is connected to the internet. Must check
+     * prior to the use of this method.
+     * @param x1 email
+     * @param x2 pw
+     * @return returns 128 if the PW and email were correct. Returns 16 if the email
+     * does not exist, returns 1 if the PW is wrong , returns 0 if pw or email is
+     * too short.
+     */
+    private int validateRemote(String x1, String x2) {
+        if(x1.length() > 5 && x2.length() > 7) {
+            if (existsRemote(x1)) {
+                /** return either 1 or 128 **/
+                s3res = FlashCardOps.getInstance().setObjsFmS3(x1, x2);
+                switch (s3res) {
                     case 1: {
-                        // successful
-                        UserAuthInfo authInfo = new UserAuthInfo();
-                        // sequence is important. Gen Salt is called
-                        // and set in setPassword
-                        authInfo.setSalt();
-                        boolean bool1 = authInfo.setHashUserName(name);
-                        boolean bool2 = authInfo.setPassword(pw);
-                        // store to file
-                        if (bool1 && bool2) {
-                            return store(authInfo);
-                        }
-                        errorMessage = defaultMsg;
-                        break;
+                        // correct
+                        return 128;
                     }
+                    default:
                     case 0: {
-                        UserData.clear();
-                        errorMessage = "There is a problem with your email-password combination in the cloud.\n" +
-                                " Retry your password or use \"reset password\" to reset the cloud password.";
-                        break;
-                    }
-                    case -1: {
-                        errorMessage = "Wow! That's unusual. The network may be down. " +
-                                "\nWait a few minutes and try again.";
-                        break;
-                    }
-                    default: {
-                        errorMessage = defaultMsg;
+                        // wrong password
+                        return 1;
                     }
                 }
-            }
-            else {
-                // User's name does not exist in the cloud
-                // errorMessage user that they need to download
-                // the app.
-                UserData.clear();
-                errorMessage = "Ooops!! We need to check if your real. \nPlease go to https://www.flashmonkey.xyz\n and download the app.\nThanks";
+            } else {
+                // does not exist
+                return 16;
             }
         }
         else {
-            // errorMessage user that they must be
-            // connected to create a local account.
-            UserData.clear();
-            errorMessage = "The initial configuration requires that you are online when you first install on a new computer.";
+            // bad pw, log in again
+            return 1;
         }
+    }
+
+    /**
+     *
+     * @param x1 email
+     * @param x2 pw
+     * @return 64 if the email {@code &} pw are correct. 2 if incorrect but exists,
+     * 4 if the email does not exist locally, and 0 if there is a problem
+     * with the pw or email entry.
+     */
+    private int validateLocal(String x1, String x2) {
+        // save user auth info
+        //LOGGER.info("validateLocal(...) ");
+        if(DirectoryMgr.getWorkingDirectory() != null) {
+            new DirectoryMgr();
+        }
+        File userFile = new File(DirectoryMgr.getMediaPath('z') + "verifyData.met");
+        if(userFile.exists()) {
+            UserAuthInfo userAuthInfo = new UserAuthInfo();
+            userAuthInfo.setUserData();
+            // if the user exists on this system
+            // then validatorActionSwitch their info.
+            // Sets the response to validInt.
+            userAuthInfo.validateUserInfo(x2, x1);
+            // returns, see chart in notes
+            return userAuthInfo.result();
+        }
+        else {
+            // does not exist locally
+            //LOGGER.debug("returning 4. User does not exist locally");
+            return 4;
+        }
+    }
+
+    private File userDir;
+    /**
+     * Stores the users data to file if the user is new to
+     * this system. And <pre>if(isConnnected)</pre> the user's pw  {@code & } name
+     * are correct.
+     * @param x1 pw
+     * @param x2 name
+     * @return returns the response if successful or not.
+     */
+    public String newUser(String x1, String x2) {
+        String defaultMsg = "Something isn't right.";
+        // 1. Check that user does not exist locally
+        // 2. Check if user is connected.
+        // 3. Check s3getUser, if user exists, and password passes then
+        //		a. deck list will be downloaded
+        //		b. and user is validated in one single trip.
+        // 4. If user does not pass remotely, then notify user to retry creating user, or reset remote password.
+        // 5. If user does not exist remotely, !?!?!?!!!! And they are connected.
+        // 		-- create user remotely
+        String errorMessage = "";
+        // save user auth info
+        if(DirectoryMgr.getWorkingDirectory() != null) {
+            new DirectoryMgr();
+        }
+        UserAuthInfo authInfo = new UserAuthInfo();
+        // sequence is important. Gen Salt is called
+        // and set in setPassword
+        authInfo.setSalt();
+        boolean bool1 = authInfo.setHashUserName(x2);
+        boolean bool2 = authInfo.setPassword(x1);
+        // store to file
+        if (bool1 && bool2) {
+            return store(authInfo.getArry());
+        }
+        errorMessage = "Failed";
 
         return errorMessage;
     }
 
+    protected String resetUserInfo(String pw, String name) {
+        //LOGGER.debug("called resetUserInfo for reseting the user. User exists remotely, and pw " +
+        //        "is different from local. PW is correct for remote. Overwrites local");
+        UserAuthInfo authInfo = new UserAuthInfo();
+        // sequence is important. Gen Salt is called
+        // and set in setPassword
+        authInfo.setSalt();
+        boolean bool1 = authInfo.setHashUserName(name);
+        boolean bool2 = authInfo.setPassword(pw);
+        // store to file
+        if (bool1 && bool2) {
+            return reset(authInfo.getArry());
+        }
+        return "Something isn't right.";
+    }
 
     private boolean existsRemote( String name) {
-        LOGGER.info("App is connected");
+        //LOGGER.info("existsRemote called");
         String[] args = {name};
         String[] columnData = DBFetchUnique.STUDENTS_UUID.query(args);
-        if(columnData[0].equals("EMPTY")) {
+        // as of 01-20-2022 If the user has just been created, pw will be
+        // set to AAAAA in step 1. It is possible that they
+        // will exist in a state that they cannot create a new password.
+        // Thus we request pw and check for default of AAAAA.
+        if(columnData[0].equals("EMPTY") || columnData[1].equals("AAAAA")) {
             return false;
         }
         return true;
     }
 
     /**
-     * If successful in creating new user, validInt
-     * is set to correct number.
+     * Returns the validInt
      * @return String
      */
     public int succeeded() {
@@ -175,14 +212,29 @@ public class Verify implements Serializable {
 
     /**
      * Stores the users authInfo to file.
-     * @param authInfo
+     * @param authInfo array of auth info
      * @return private
      */
-    private String store(UserAuthInfo authInfo) {
-        return FlashCardOps.getInstance().getFO().setVerifyInFile(authInfo);
+    private String store(String[] authInfo) {
+        //LOGGER.debug("Storing authInfo");
+        return FlashCardOps.getInstance().setVerifyInFile(authInfo);
     }
-    
-    public String getUserHash() {
+
+    /**
+     * Resets the users authInfo
+     * @param authInfo ...
+     * @return private
+     */
+    private String reset(String[] authInfo) {
+        return FlashCardOps.getInstance().resetVerifyInFile(authInfo);
+    }
+
+    /**
+     * Not used for local storage. See DirectoryMgr
+     *      for local storage.
+     * @return Returns the MD5Hash.
+     */
+    public String getUserMD5Hash() {
         UserAuthInfo info = new UserAuthInfo();
         info.setUserData();
         if(info.getHashUserName() == "") {
@@ -190,20 +242,25 @@ public class Verify implements Serializable {
         }
         return info.getHashUserName();
     }
+
+
     
     /** ************************************** ***
      *                 INNER CLASS
+     *                 NOTE: Security sentitive classes should not use
+     *                 serializable. removed 08-10-2021
      ** ************************************** ***/
-    private static class UserAuthInfo implements Serializable {
+    private static class UserAuthInfo {
 
-        private static final long serialVersionUID = FlashMonkeyMain.VERSION;
+
 
         private String s1; // HashUserName
         private String s2; // Password
         private String s3; // Salt
         private String s4; // hint
         private String s5; // retry code
-        private long num1; // valid retry time
+
+        private int retNum = 0;
 
         private UserAuthInfo() {
             authUtility = new AuthUtility();
@@ -212,85 +269,91 @@ public class Verify implements Serializable {
             s3 = "";
             s4 = "";
             s5 = "";
-            num1 = 100;
+        }
+
+        private int result() {
+            return retNum;
         }
 
         /**
          * if the userAuthInfo is null, returns false,
          * else, sets the data to the info in other.
-         * @param other
+         * @param userAuthInfoStr ...
          * @return if the userAuthInfo is null, returns false,
          *          else, sets this fields to the data in other.
          */
-        private boolean set(UserAuthInfo other) {
+        private boolean set(String[] userAuthInfoStr) {
             // if a directory did not exist, this will be null
-            if(other == null) {
-                //LOGGER.info("in set(...), other is null");
+            if(userAuthInfoStr == null || userAuthInfoStr[0].length() == 0) {
                 return false;
             } else {
-                //LOGGER.info("set other.hashUserName is: {} submitted hashUserName: {}" + other.hashUserName);
-                s1 = other.s1;
-                //LOGGER.info("in set and other.pwHash: {} submitted pwHash: {}", other.password);
-                this.s2 = other.s2;
-                this.s3 = other.s3;
-                this.s4 = other.s4;
+                this.s1 = userAuthInfoStr[0];
+                this.s2 = userAuthInfoStr[1];
+                this.s3 = userAuthInfoStr[2];
+                this.s4 = "";
                 this.s5 = "";
-                this.num1 = 0L;
                 return true;
             }
         }
 
 
         private void validateUserInfo(String pw, String name) {
-            
             // Check if files exist,
-            if(ifNotExists(s1, s2, s3)) {
-                LOGGER.debug("validateUserInfo FAILED: data does is null");
-                validInt = 0;
+            if( ! checkExists(pw, name)) {
                 return;
             }
-            
-            if(pw.length() < 8 || name.length() < 6) {
-                LOGGER.debug("validateUserInfo FAILED: pw.length or name.length too short");
-                validInt = 0;
-                return;
-            }
-            // s3 = salt, s2 = password
-            if(this.s3.length() < 8 || this.s2.length() < 8) {
-                LOGGER.debug("validateUserInfo FAILED: salt.length or password.length too short");
-                LOGGER.debug("this.salt: {}", this.s3);
-                LOGGER.debug("this.password: {}", this.s2);
-                validInt = 0;
-                return;
-            }
-            // s1 = userHashName
-            if(this.s1.length() < 8 ) {
-                LOGGER.debug("validateUserInfo FAILED: hashUserName.length < 8");
-            }
-
             AuthUtility ut = new AuthUtility();
             String createdPWHash = ut.computeHash(pw, this.s3, "PBKDF2WithHmacSHA512");
             String createdUName =  ut.computeHash(name, this.s3, "PBKDF2WithHmacSHA512");
 
-
             if(createdPWHash.equals(this.s2) && createdUName.equals(this.s1)) {
-                //userName = name;
-                LOGGER.debug("validateUserInfo succeeded returning correct int");
-                validInt = 8675309;
+                retNum = 64;
             } else {
-                validInt = 0;
+                retNum = 2;
                 clear();
-                LOGGER.debug("validateUserInfo({} {}) failed ", pw, name);
             }
+        }
+
+        private boolean checkExists(String pw, String name) {
+            if(ifNotExists(s1, s2, s3)) {
+                //LOGGER.debug("validateUserInfo FAILED: data is null");
+                retNum = 0;
+                return false;
+            }
+            if(isMalformed(6, name)) {
+                //LOGGER.debug("validateUserInfo FAILED: pw.length or name.length too short");
+                retNum = 0;
+                return false;
+            }
+            String[] str = {pw, s1,s2,s3};
+            if(isMalformed(8, str)) {
+                //LOGGER.debug("validateUserInfo FAILED: hashUserName.length < 8: {} ", this.s1);
+                //LOGGER.debug("validateUserInfo FAILED: salt.length or password.length too short");
+                //LOGGER.debug("this.salt: {}", this.s3);
+                //LOGGER.debug("this.password: {}", this.s2);
+                retNum = 0;
+                return false;
+            }
+            return true;
+        }
+
+
+        private boolean isMalformed(int length, String ... str) {
+            for(String s : str) {
+                if( s.length() < length) {
+                    return true;
+                }
+            }
+            return false;
         }
     
         /**
          * Helper method to validateUserInfo. If there is a failure, and
          * information is null, return false.
-         * @param s2
-         * @param s3
-         * @param s1
-         * @return
+         * @param s2  any string
+         * @param s3 any string
+         * @param s1 any string
+         * @return true if passes
          */
         private boolean ifNotExists(String s2, String s3, String s1) {
             if(s2 == null || s2.isEmpty()
@@ -311,8 +374,8 @@ public class Verify implements Serializable {
 
         private boolean setUserData() {
             // get object from file
-            LOGGER.debug("called authCrypt.Verify$UserAuthInfo.setUserData()");
-            return set( (UserAuthInfo) FlashCardOps.getInstance().getFO().getVerifyFmFile());
+            //LOGGER.debug("called authCrypt.Verify$UserAuthInfo.setUserData()");
+            return set( (String[]) FlashCardOps.getInstance().getVerifyFmFile());
         }
         
         
@@ -327,26 +390,32 @@ public class Verify implements Serializable {
             return false;
         }
 
-        private String getHashUserName() {
-            return s1;
-        }
-
         /**
          * Sets the users hashName stored for validation.
          * <b>NOT</b> used for local storage: See fileops.DirectoryMgr
-         * @param userName
-         * @return
+         * @param userName ...
+         * @return true if successful
          */
         private boolean setHashUserName(String userName) {
             if(this.s3 != null && this.s3 != "") {
                 this.s1 = authUtility.computeHash(userName, this.s3, "PBKDF2WithHmacSHA512");
                 return true;
             }
-            
             return false;
         }
 
+        private String[] getArry() {
+            String[] ary = new String[3];
+            ary[0] = this.s1;
+            ary[1] = this.s2;
+            ary[2] = this.s3;
+            //ary[3] = this.s4;
+            return ary;
+        }
 
+        private String getHashUserName() {
+            return s1;
+        }
 
         private String getS4() {
             return s4;
@@ -363,14 +432,6 @@ public class Verify implements Serializable {
         private void setS5(String s5) {
             this.s5 = s5;
         }
-
-        private long getRetryValidtime() {
-            return num1;
-        }
-
-        private void setNum1(long num1) {
-            this.num1 = num1;
-        }
         
         private void clear() {
             s1 = "";
@@ -378,7 +439,6 @@ public class Verify implements Serializable {
             s3 = "";
             s4 = "";
             s5 = "";
-            num1 = 100;
         }
     }
 

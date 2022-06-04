@@ -14,6 +14,8 @@ public interface FormModel {
 	 * @param data
 	 */
 	public void formAction(FormData data);
+
+	public void formAction();
 	
 	/**
 	 * The button action once the form is

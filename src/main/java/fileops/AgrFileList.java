@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import flashmonkey.FlashCardOps;
 import flashmonkey.Timer;
 import fmhashtablechain.PriorityHashTable;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.*;
@@ -72,8 +73,8 @@ public class AgrFileList
 {
     // THE LOGGER
     // REMOVE BEFORE DEPLOYING
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AgrFileList.class);
-    // private static final Logger LOGGER = LoggerFactory.getLogger(AgrFileList.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AgrFileList.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgrFileList.class);
     // 90 days = 5126400000
     private static final long MINUS_NINETY = System.currentTimeMillis() - (1000l * 60 * 60 * 24 * 93);
 
@@ -108,8 +109,15 @@ public class AgrFileList
      * @param folder 
      */
     public AgrFileList(File folder) {
-        LOGGER.setLevel(Level.DEBUG);
-        LOGGER.debug("AgrFileList full constructor called. folder: {}", folder.getPath());
+        //LOGGER.setLevel(Level.DEBUG);
+        LOGGER.debug("AgrFileList constructor. seeking folder: {}", folder.getPath());
+        // @TODO remove tester if statement
+        /*if(folder.getPath().contains("userData")) {
+            System.out.println("seeking folder contains \"userData\": ending...");
+            System.exit(1);
+        }*/
+
+
         LOGGER.debug("MINUS_NINETY days: {}, currentTimeMillis: {}" , MINUS_NINETY, System.currentTimeMillis());
         //LOGGER.debug("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
         //Thread.dumpStack();
@@ -117,7 +125,7 @@ public class AgrFileList
         //@TODO uncomment line below after testing!!! if this is still needed
         //FlashCardOps.getInstance().fileExists("default", FlashCardOps.getInstance().getDeckFolder());
         localFiles  = folder.listFiles();
-        ArrayList<CloudLink> cloudLinks = FlashCardOps.getInstance().CO.getCloudLinks();
+        ArrayList<CloudLink> cloudLinks = CloudOps.getCloudLinks();
         // Get decks from S3
         if(cloudLinks != null && cloudLinks.size() != 0) {
             // testing
@@ -254,8 +262,8 @@ public class AgrFileList
             q.poll();
         }
         // short circut
-        if(linkObj1.getDescrpt() == null || ! linkObj1.getDescrpt().endsWith("dat")) {
-            LOGGER.warn("linkObj1 descript was null or did not end with .dat");
+        if(linkObj1.getDescrpt() == null || ! linkObj1.getDescrpt().endsWith(".dec")) {
+            LOGGER.warn("linkObj1 descript was null or did not end with .dec");
             q.poll();
             return recentSplit(q);
         }
@@ -301,19 +309,20 @@ public class AgrFileList
     // *** INNER CLASS ****
     
     /**
+     * <pre>
      * Creates a queue with an alphabetized list of local and remote files
      *  - check if there are any files locally or remotely
      *      - If not, send authcrypt.user to create a new file.
      *  - If there are local files
-     *      - add them to the @code( Map<String name, LinkObj> ).
+     *      - add them to the{@code( Map<String name, LinkObj> )}.
      *  - If there are remote files
-     *      - add them to the @code( Map<String name, LinkObj> ).
+     *      - add them to the {@code( Map<String name, LinkObj> )}.
      *  - If there is a collision.
-     *      - Gaurd against overwrite with zero
+     *      - Gard against overwrite with zero
      *      - Compare by LinkObj.getDate(). Youngest wins
-     *
-     * @return Returns a queue of decks contianed remotely and locally. If there are two that are the same name,
-     * returns the youngest of the two. The oldest is overwritten.
+     *</pre>
+     * <p>Creates a queue of decks contained remotely and locally. If there are two that are the same name,
+     * returns the youngest of the two. The oldest is overwritten.</p>
      *
      * @author Lowell Stadelman
     */
@@ -323,22 +332,17 @@ public class AgrFileList
         public SyncFiles() { /* do nothing */ }
 
         private void syncFiles(File[] localFiles, ArrayList<CloudLink> remoteLinks) {
-            
             Map<String, LinkObj> syncMap = new PriorityHashTable<>();
-    
-    //        LOGGER.info(" syncFiles( ... ) called, <localFiles size: <{}> , <remoteLinks size: <{}>", localFiles.length, remoteLinks.size());
     
             // If there are local files. Create LinkObj's and
             // Add them to the Map.
             if(localFiles != null && localFiles.length > 0) {
-                
                 LOGGER.info("Adding local files to HashMap");
-                
                 for(File f : localFiles) {
     
                     LOGGER.debug("localFiles(i) name: " + f.getName());
                     
-                    if( f.getName().endsWith("dat") ) {
+                    if( f.getName().endsWith(".dec") ) {
                         syncMap.put(f.getName(), new LinkObj(f.getName(), f, f.length()));
                     }
                 }
@@ -348,7 +352,7 @@ public class AgrFileList
             if(remoteLinks != null && remoteLinks.size() > 0) {
                 LOGGER.debug("Adding remoteFiles to hashMap");
                 for(CloudLink c : remoteLinks) {
-                    if( c.getName().endsWith("dat")) {
+                    if( c.getKey().endsWith(".dec")) {
                         LOGGER.info("\t cloudFileName: {}", c.getName());
                         syncMap.put(c.getName(), new LinkObj(c.getName(), c, c.getSize()));
                     }

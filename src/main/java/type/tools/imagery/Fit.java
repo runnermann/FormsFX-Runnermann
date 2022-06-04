@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.tools.imagery;
 
 import javafx.scene.image.Image;
@@ -25,8 +44,8 @@ public abstract class Fit {
 
 
     /**
-     * Restrict image to fit inside of the Hbox, VBox, Pane... it is contained in,
-     * and returns it scaled to fit in the width and heigth provided in the
+     * Restrict image to fit inside the Hbox, VBox, Pane... it is contained in,
+     * and returns it scaled to fit in the width and height provided in the
      * parameters.
      * @param image The image to be set in the box
      * @param paneW The desired width of the image
@@ -71,7 +90,7 @@ public abstract class Fit {
 
     /**
      * Restrict a mediaplayer/view to fit inside of the HBox, VBox, Pane... etc that it is
-     * contained in. Returns it scaaled to fit in the lesser of the width or height privided
+     * contained in. Returns it scaled to fit in the lesser of the width or height provided
      * in the parameters.
      * @param player A Media Player containing the media to be played
      * @param paneW The pane width
@@ -191,7 +210,7 @@ public abstract class Fit {
     /**
      * Returns the scale used to resize a shape from the original, to the new
      * desired width and height. Ensures that the shape will fit in the new
-     * container and does not care if the new contianer's height or width
+     * container and does not care if the new container's height or width
      * matches with the same ratio of the original. Ensures that it will
      * maintain the same appearance.
      * @param originalWd
@@ -201,15 +220,10 @@ public abstract class Fit {
      * @return returns the scale to resize the shape
      */
     public static double calcScale(double originalWd, double originalHt, double newWd, double newHt) {
-
-       //System.out.println("*~*~* IN FIT.CALCSCALE() scaling using pane *~*~*");
         if(originalWd >= originalHt) {
-
             double w = (newWd > originalWd ? originalWd : newWd);
             return w / originalWd;
-
         } else {
-
             double h = ( originalHt > newHt ? newHt : originalHt);
             return h / originalHt;
         }

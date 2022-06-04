@@ -90,19 +90,14 @@ public class CloudLink implements Comparable<CloudLink> {
      * // Should not call a method from another package from a utility package.
      */
     public void retrieveDeckFmCloud() {
-        S3GetObjs getObj = new S3GetObjs();
         LOGGER.debug("Called retrieveDeckFmCloud()");
-
-        // get the deck from S3 using key and the token,
-        // and save the deck to file.
-        getObj.getDeck(DirectoryMgr.getMediaPath('t') + "/" + name, this.key, FlashCardOps.getInstance().CO.getToken());
+        // get the deck from S3 using key and the token.
+        CloudOps.retrieveDeck(name, this.key);
     }
 
     // Compares by dateInMillis
     @Override
     public int compareTo(@NotNull CloudLink otherFile) {
-        System.out.println(" in CloudLink compareTo");
-        
         if(this.dateInMillis > otherFile.dateInMillis ) {
             return 1;
         } else {

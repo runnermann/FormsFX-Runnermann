@@ -15,9 +15,6 @@ public class AnswerMM extends Answer implements Serializable, Comparable
 
     /** VARIABLES **/
     private char aType;
-    // The files for this answer
-    // [0] is either an image, or video/audio
-    // [1] is the listOfShapes file
     private String[] aFiles;
 
     /**
@@ -43,31 +40,17 @@ public class AnswerMM extends Answer implements Serializable, Comparable
         super(txt, aNum, ansSet);
         this.aType = type;
         this.aFiles = fileAry;
-
-        //System.out.println("~*~*~*~ AnswerMM constructor called ~*~*~*~");
-        //System.out.println("\t mediaType is: " + this.aType);
-
     }
 
-    // DESCRIPTION: CopyConstructor
+    // CopyConstructor
     public AnswerMM(AnswerMM original)
     {
         super();
-        //if(original == null)
-        //{
-          //  System.err.println("ERROR: Answer Multi-Media class Copy Constructor given "
-          //          + "NULL. Exiting.");
-         //   System.exit(0);
-        //}
-        //else
-        //{
-            //this.fileName = original.fileName;
-            this.setAText(original.getAText());
-            this.setANumber(original.getANumber());
-            this.setAnswerSet( new ArrayList<>(original.getAnswerSet())); // is this wrong?
-            this.aFiles = new String[] {original.aFiles[0], original.aFiles[1]};
-            this.aType = original.aType;
-        //}
+        this.setAText(original.getAText());
+        this.setANumber(original.getANumber());
+        this.setAnswerSet( new ArrayList<>(original.getAnswerSet())); // is this wrong?
+        this.aFiles = new String[] {original.aFiles[0], original.aFiles[1]};
+        this.aType = original.aType;
     }
 
 
@@ -101,9 +84,6 @@ public class AnswerMM extends Answer implements Serializable, Comparable
      */
     public char getAType()
     {
-        //System.out.println("\n ~*~*~*~ called getMediaType() ~*~*~*~" +
-        //        "\t mediaType: " + this.aType);
-
         return this.aType;
     }
 
@@ -115,9 +95,6 @@ public class AnswerMM extends Answer implements Serializable, Comparable
 
     @Override
     public boolean equals(Object obj) {
-
-        //System.out.println("\n AnswerMM equals called ( " + this + " ) equals ( " + obj + " )");
-
         if(obj != null) {
             AnswerMM mm = (AnswerMM) obj;
             return ( this.getAText().equals(mm.getAText()) );

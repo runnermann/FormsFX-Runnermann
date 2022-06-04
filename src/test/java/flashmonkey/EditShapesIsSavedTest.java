@@ -51,7 +51,7 @@ public class EditShapesIsSavedTest extends ApplicationTest {
     FxRobot robot;// = new FxRobot();
     SleepRobotImpl sleep = new SleepRobotImpl();
 
-    String strPath = "../flashMonkeyFile/TestingDeck.dat";
+    String strPath = "../flashMonkeyFile/TestingDeck.dec";
     // image paths
     String imgPath = "src/resources/testing/TestImage.png";
     String otherPath = "src/resources/testing/beniofWifeAndFriend.png";
@@ -108,7 +108,7 @@ public class EditShapesIsSavedTest extends ApplicationTest {
     //@BeforeAll
     public void setUpFileExists() throws Exception {
         robot = new FxRobot();
-        String strPath = "../flashMonkeyFile/TestingDeck.dat";
+        String strPath = "../flashMonkeyFile/TestingDeck.dec";
         File file = new File(strPath);
         //Path filePath = Paths.get(strPath);
         assertTrue("Deck located at: " + strPath + " Does not exist. " +

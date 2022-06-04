@@ -99,8 +99,8 @@ public enum Open_Enclosure implements OperatorInterface {
 
     /**
      * Constructor
-     * @param sym
-     * @param p
+     * @param sym ..
+     * @param p ..
      */
     Open_Enclosure(String sym, int p) {
         symbol = sym;
@@ -110,7 +110,7 @@ public enum Open_Enclosure implements OperatorInterface {
     /**
      * - Open_Enclosures are always placed on the opStack, they do not
      * reOrganize the stack. They act as a stop for close_enclosures.
-     * - If EncryptedUser.EncryptedUser did not insert an operator previous to
+     * - If there is not an operator previous to
      * the opening enclosure. Inserts a Multiply operator prior to
      * the Open_Enclosure.
      * pre-condition: Expects the previous item excluding any white space.
@@ -123,11 +123,9 @@ public enum Open_Enclosure implements OperatorInterface {
      */
     @Override
     public void stackAction(Object previous, ExpNode exp, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
-
-        //System.out.println(" in open_enclosure stackAction() Name of class: " + previous.getClass().getName() + " " +
-        //        "\n and previous operator is: " + previous);
-
-        if( ! previous.getClass().getName().contains("Exp") && ! previous.toString().equals(")") ) {
+        //if( ! previous.getClass().getName().contains("Exp") && ! previous.toString().equals(")") ) {
+        // The above appears to be wrong, causes an expression such as ( 1 + 2 ) ( 1 - 2 ) to be incorrect ???
+        if( ! previous.getClass().getName().contains("Exp")|| previous.toString().equals(")")) {
             // Index should be the current size of the writerList
             ExpNode exp1 = new ExpNode(Operator.MULTIPLY,  " * ", index);
             cPriorityNPush(opStack, outQueue, exp1);
@@ -137,7 +135,6 @@ public enum Open_Enclosure implements OperatorInterface {
     }
 
     private static void negStackAction(Object previous, ExpNode exp, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
-
         // If there is not an operator previous to the negitive opening enclosure
         // add a multiply prior to the -1
         if(! previous.getClass().getName().contains("Exp")) {
@@ -166,9 +163,9 @@ public enum Open_Enclosure implements OperatorInterface {
     /**
      * Removes operators that have a higher or equal priority from the top of the opStack and offers them to the outQueue.
      * Note that all operators have a higher priority.
-     * @param opStack
-     * @param outQueue
-     * @param exp
+     * @param opStack ..
+     * @param outQueue ..
+     * @param exp ..
      */
     private static void cPriorityNPush(Stack<ExpNode> opStack, ArrayQueue outQueue, ExpNode exp) {
         // System.out.println("checkPriority and push called for: " + exp.getOp().getSymbol());

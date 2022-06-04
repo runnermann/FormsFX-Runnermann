@@ -1,12 +1,9 @@
 package flashmonkey;
 
-import draw.shapes.FMTriangle;
-import draw.shapes.GenericShape;
+import type.draw.shapes.GenericShape;
 import org.controlsfx.control.PrefixSelectionComboBox;
-import org.junit.Test;
 import org.junit.jupiter.api.*;
 import type.celleditors.SectionEditor;
-import uicontrols.UIColors;
 
 import java.util.ArrayList;
 import static junit.framework.Assert.assertEquals;

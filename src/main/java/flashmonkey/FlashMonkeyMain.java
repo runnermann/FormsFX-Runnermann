@@ -4,14 +4,19 @@
 package flashmonkey;
 
 
+import authcrypt.UserData;
 import campaign.Report;
-import ch.qos.logback.classic.Level;
 import ecosystem.ConsumerPane;
-import fileops.Utility;
+
+import ecosystem.EcoPane;
+import ecosystem.PayPane;
+import fileops.utility.Utility;
 import flashmonkey.utility.Sleep;
+import flashmonkey.utility.VersionTimeStamp;
 import fmannotations.FMAnnotations;
 import forms.*;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.*;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
@@ -23,27 +28,25 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
-
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uicontrols.ButtoniKon;
-import uicontrols.FxNotify;
-import uicontrols.SceneCntl;
+import type.celltypes.VideoPlayerPopUp;
+import uicontrols.*;
 
-//import java.awt.event.MouseEvent;
+import java.util.prefs.BackingStoreException;
 
-import static fileops.DirectoryMgr.flashmonkeyExists;
 import static flashmonkey.FlashCardOps.*;
+import static fileops.DirectoryMgr.flashmonkeyExists;
+
 
 
 /**
  * <p>Adding Multi-Media, at last! as well as a Test type. This version has a flexable
  * layout that is planned to provide Multiple Card layout types, section types, and TestTypes. The
  * previous version, did not fully implement sections but fully implemented the
- * tree as a navigator/ progress indicator to the EncryptedUser.EncryptedUser. It provided flexibility
- * in allowing the EncryptedUser.EncryptedUser to delete cards and hide them. It prioritized cards
- * for the EncryptedUser.EncryptedUser based on thier performance on tests. It provided only two layouts.
- * A layout for the standard question and answer FlashCard, and a multiple-choice
- * test.</p>
+ * tree as a navigator/ progress indicator to the EncryptedUser. It provided flexibility
+ * in allowing the EncryptedUser to delete cards and hide them. It prioritized cards
+ * for based on thier performance on tests. </p>
  *
  * <p>This version, allows multiple testing types, and multiple section types.
  * Section types are key to implementing multi-media. Card types allow for multiple
@@ -51,15 +54,18 @@ import static flashmonkey.FlashCardOps.*;
  * sections. This version also begins to look at more interactive activities
  * for learning.</p>
  *
- * @version iOOily: FlashMonkey Multi-Media and Multi-Test
+ * @version This version adds Stylable Formatted Text to the text area's
  * @author Lowell Stadelman
  */
 public class FlashMonkeyMain extends Application {
     
     @SuppressWarnings("rawtypes")
+
+    // The publicly known version
+    public static final String VERSION_STR = "2.0.0-BETA";
     // for serializing objects to file. The serial version.
     // Used with "serialVersionUID"
-    public static final long VERSION = 20200612;
+    public static final long VERSION = 20220512;//20200612;
     public static final AVLTreePane AVLT_PANE = new AVLTreePane();
     
     private static Stage window;
@@ -71,15 +77,17 @@ public class FlashMonkeyMain extends Application {
     
     private static CreateFlash createFlash;
     private static ReadFlash readFlash;
-    private static Button sceneOneButton;
+
     //protected static AVLTreePane avltPane = new AVLTreePane();
     protected static Scene sceneTree;
+    private static Scene searchScene;
     private static BorderPane treePane;
     private static BorderPane firstPane;
 //    private static Button exitButton;
     private static Button searchRscButton;
     private static Button menuButton;
     private static Button createButton;
+    private static Button backButton;
     // campaign
     // @TODO Add report back in
     //private static Report report;
@@ -87,96 +95,63 @@ public class FlashMonkeyMain extends Application {
     private static String errorMsg = "";
     // FLAGS
     private static boolean isInEditMode;
-    // THE LOGGER
-    //private static final Logger LOGGER = LoggerFactory.getLogger(FlashMonkeyMain.class);
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(FlashMonkeyMain.class);
+    private static boolean returnToFullScreen;
 
-    
-    /** Testing MemoryChartPane **/
-    //private static Stage chartWindow;
-    //private static Scene chartScene;
-    //private static BorderPane chartPane;
+    // THE LOGGER
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlashMonkeyMain.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(FlashMonkeyMain.class);
 
 
     // *** Java FX UI *** STAGE *** ***
     @Override
     public void start(Stage primaryStage) {
-        LOGGER.setLevel(Level.DEBUG);
-        // set to call stop() when stage is closed
-        primaryStage.setOnHidden( e -> stop());
-        // reporting app performace to DB
-        //LOGGER.debug("start called");
-        Report.getInstance().sessionStart();
-        LOGGER.debug("timeCheck line 111 fmMain. Completed Report.getInstance90.sessionStart()");
-        // failure flag if authcrypt.user is
-        // in edit mode. If true, save work
-        // before closing.
-        isInEditMode = false;
-
-        window = primaryStage;
-        treeWindow = new Stage();
-
-        // Preserve deck-data if something happens
-        // and do not over-write decks with nothing.
-        // If the computer goes to sleep, or focus changes from Flashmonkey,
-        // save the users data
-  /*
-        primaryStage.focusedProperty().addListener((observable, oldValue, newValue ) ->
-        {
-    
-            System.err.println("\n *** Start() primaryStage.focusedProperty() Focus has changed *** \n");
-            
-            if(oldValue) {
-                try
-                {   // If the user is creating/editing cards
-                    if (createFlash.getFlashListChanged()) {
-                        Timer time = Timer.getClassInstance();
-                        createFlash.eventSave();
-                        LOGGER.info("Changed focus: Window closed at " + time.printTimeNow());
-
-                    // Or the user is testing / studying
-                   } else if (FlashCardOps.getInstance().getFlashList().size() > 4) {
-
-                        //@todo replace refreshFlashList in FlashMonkeyMain stop() method with another save method.
-                        FlashCardOps.getInstance().saveFListToFile();
-                        LOGGER.info("\n %^& Changed focus Saving flashList %^& ");
-                    }
-                } catch (Exception e) {
-
-                    //@todo create message method and variable, and output messages to the user
-                    // SomeClass.message = "Current deck failed to save on exit"
-                    LOGGER.warn("ERROR: Focus Changed caused an Exception saving file in start() {}", this.getClass().getName());
-
-                }
+        try {
+            // set the app to the users preferences
+            SceneCntl.setPref();
+            //LOGGER.setLevel(Level.DEBUG);
+            // set to call stop() when stage is closed
+            primaryStage.setOnHidden(e -> stop());
+            // reporting app performace to DB
+            //LOGGER.debug("start called");
+            Report.getInstance().sessionStart();
+            //LOGGER.debug("timeCheck line 111 fmMain. Completed Report.getInstance90.sessionStart()");
+            // failure flag if authcrypt.user is
+            // in edit mode. If true, save work
+            // before closing.
+            isInEditMode = false;
+            window = primaryStage;
+            treeWindow = new Stage();
+            // Getting image resources as a stream is finicky. No more than two dashes per name,
+            // and cannot be under a subdirectory. Although conveniently finds the resource directory
+            // on it's own.
+            flash = new Image(getClass().getResourceAsStream("/image/logo/vertical_logo_white_8per_120x325.png"));
+            Image icon = new Image(getClass().getResourceAsStream("/image/logo/blue_flash_128.png"));
+            window.getIcons().add(icon);
+            // Determine if FlashMonkey Data Directory
+            // exists and show signUp or signIn
+            if (flashmonkeyExists()) {
+                showSignInPane();
+            } else {
+                showIntroPane();
             }
-        });
-        
-   */
-        // Uncomment to create the memory monitor
-        //chartWindow = new Stage();
-        //buildChartWindow();
-        // Getting image resources as a stream is finicky. No more than two dashes per name,
-        // and cannot be under a subdirectory. Although conveniently finds the resource directory
-        // on it's own.
-        //  flash = new Image(getClass().getResourceAsStream("/image/flash_astronaut_150.png"));
-	    
-        flash = new Image(getClass().getResourceAsStream("/image/logo/BLUE_7_128.png"));
-        Image icon = new Image(getClass().getResourceAsStream("/icon/flashMonkey_Icon.png"));
-        window.getIcons().add(icon);
 
-        // Determine if FlashMonkey Data Directory
-        // exists and show signUp or signIn
-        if(flashmonkeyExists()) {
-            getSignInPane();
-        } else {
-            getSignUpPane();
+    //        window.setX(SceneCntl.getAppBox().getX());
+    //        window.setY(20);
+            window.setTitle("FlashMonkey");
+            window.show();
+        } catch (BackingStoreException e) {
+            LOGGER.warn(e.getMessage());
+            e.printStackTrace();
+        }catch (Exception e) {
+            e.printStackTrace();
         }
-
-        window.setTitle("FlashMonkey");
-        window.show();
 
         //LOGGER.debug("in FlashMonkeyMain and window x = " + window.getX());
     } // ******** END START ******* //
+
+    public static String getVersionStr() {
+        return VERSION_STR;
+    }
     
     /**
      *   The first scene is the sign-in or signUp page. Then either
@@ -185,33 +160,31 @@ public class FlashMonkeyMain extends Application {
      * @return Returns the first scene or landing scene
      */
     public static Scene getFirstScene(GridPane focusPane) {
-        //LOGGER.debug("*** getFirstScene called ***");
-
         Scene firstScene;
         firstPane = new BorderPane();
         VBox spacer = new VBox();
-        spacer.setPrefHeight(32);
+        spacer.setPrefHeight(40);
+        VBox spacerL = new VBox();
+        spacerL.setPrefHeight(40);
 
         // For the lower panel on initial window
-        ColumnConstraints col0 = new ColumnConstraints();
-        col0.setPercentWidth(50);
+//        ColumnConstraints col0 = new ColumnConstraints();
+//        col0.setPercentWidth(50);
 
         GridPane gridPane1 = new GridPane();
 
         // Calculate logo fit height
-        int fitHeight = 128; //calcFitHeight((int) focusPane.getPrefHeight());
+        int fitHeight = 120; //calcFitHeight((int) focusPane.getPrefHeight());
         int gapHeight = (int) calcGapHeight(fitHeight);
 
-        Label label = new Label("FlashMonkey");
-        label.setId("fmLabel");
         ImageView iconView = new ImageView(flash);
+        //iconView.setFitHeight(fitHeight);
         iconView.setFitHeight(fitHeight);
         iconView.setPreserveRatio(true);
-   //     iconView.setSmooth(true);
+        iconView.setSmooth(true);
         VBox imageBox = new VBox();
-        imageBox.getChildren().addAll(iconView, label);
+        imageBox.getChildren().add(iconView);
         imageBox.setAlignment(Pos.CENTER);
-        imageBox.setSpacing(8);
         
         gridPane1.setAlignment(Pos.TOP_CENTER);
         gridPane1.setVgap(gapHeight);
@@ -220,15 +193,31 @@ public class FlashMonkeyMain extends Application {
         gridPane1.getChildren().clear();
         gridPane1.addRow(0, spacer);
         gridPane1.addRow(1, imageBox); // column 0, row 1
-        gridPane1.addRow(2, focusPane);
+        gridPane1.addRow(2, spacerL);
+        gridPane1.addRow(3, focusPane);
 
         firstPane.setCenter(gridPane1);
+        // grey #393E46  // #29AbE2
+        firstPane.setStyle("-fx-background-color:" + UIColors.FM_GREY); //#393E46"); //086ABF
         // firstPane.setBottom(getExitBox());
         menuButton = ButtoniKon.getMenuButton();
-        firstPane.setId("bckgnd_image"); // the background image)
-        firstScene = new Scene(firstPane, SceneCntl.getWd(), SceneCntl.getHt());
+        firstPane.setId("bckgnd_image"); // the background image
+        firstScene = new Scene(firstPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
         firstScene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
         Sleep.storeOnDetected(firstScene, window);
+
+        ChangeListener<Number> stagePropsListener = (observable, oldVal, newVal) -> {
+            SceneCntl.getAppBox().setHt((int) firstScene.getHeight());
+            SceneCntl.getAppBox().setWd((int) firstScene.getWidth());
+            SceneCntl.getAppBox().setX((int) firstScene.getX());
+            SceneCntl.getAppBox().setY((int) firstScene.getY());
+        };
+
+        window.widthProperty().addListener(stagePropsListener);
+        window.heightProperty().addListener(stagePropsListener);
+        window.xProperty().addListener(stagePropsListener);
+        window.yProperty().addListener(stagePropsListener);
+
         return firstScene;
     }
     
@@ -280,7 +269,6 @@ public class FlashMonkeyMain extends Application {
         Button studyButton = ButtoniKon.getStudyButton();
         studyButton.setOnAction(e -> studyButtonAction() );
 
-        
         // go to create pane
         createButton = ButtoniKon.getCreateButton();
         createButton.setOnAction(e -> {
@@ -299,7 +287,7 @@ public class FlashMonkeyMain extends Application {
         mainPane.setTop(getAccountBox());
         mainPane.setCenter(gridPane);
         mainPane.setBottom(getExitBox());        
-        mainScene = new Scene(mainPane, SceneCntl.getWd(), SceneCntl.getHt());
+        mainScene = new Scene(mainPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
         mainScene.getStylesheets().addAll("css/mainStyle.css", "css/buttons.css");
 	    menuButton.setDisable(true);
         
@@ -310,7 +298,6 @@ public class FlashMonkeyMain extends Application {
         isInEditMode = true;
         Timer.getClassInstance().startTime();
         createFlash = CreateFlash.getInstance();
-        // getInstance().refreshFlashList();
         menuButton.setDisable(false);
         window.setScene(createFlash.createFlashScene());   // called once
     }
@@ -340,15 +327,16 @@ public class FlashMonkeyMain extends Application {
         LOGGER.debug("called");
 
         treePane = new BorderPane();
-        AVLT_PANE.setStyle("-fx-background-color: #393E46" );
+        AVLT_PANE.setStyle("-fx-background-color:" +UIColors.FM_GREY );
         treePane.setCenter(AVLT_PANE);
         sceneTree = new Scene(treePane);
 
         treeWindow.setTitle("Navigation and Status tree");
         treeWindow.setScene(sceneTree);
-        treeWindow.show();
+        if(!window.isFullScreen()) {
+            treeWindow.show();
+        }
     }
-
 
 
 
@@ -359,20 +347,6 @@ public class FlashMonkeyMain extends Application {
     private static GridPane getExitBox() {
         GridPane buttonBox = new GridPane(); // HBox with spacing provided
         buttonBox.setHgap(2);
-   /*     Button exitButton = ButtoniKon.getExitButton();
-        exitButton.setOnAction(e -> {
-            try {
-                Report.getInstance().endSessionTime();
-            } catch (NullPointerException f){
-                LOGGER.warn(f.getMessage(), f.getStackTrace());
-                f.printStackTrace();
-            } finally {
-                System.exit(0);
-            }
-            
-        });
-
-    */
         menuButton = ButtoniKon.getMenuButton();
         ColumnConstraints col0 = new ColumnConstraints();
         col0.setPercentWidth(50);
@@ -380,54 +354,58 @@ public class FlashMonkeyMain extends Application {
         buttonBox.getColumnConstraints().add(col0);
         buttonBox.setPadding(new Insets(15, 15, 15, 15));
         buttonBox.addColumn(2, menuButton);
-        //buttonBox.addColumn(2, exitButton);
-        
+
         return buttonBox;
     }
     
-    
-    
+
     private static HBox getAccountBox() {
         HBox hBox = new HBox(2);
         hBox.setAlignment(Pos.CENTER_RIGHT);
         hBox.setPadding(new Insets(2, 2, 2, 2));
+
+        String name = UserData.getFirstName();
+        Button acctBtn = ButtoniKon.getAccountButton();
+        Button iGotPdBtn = ButtoniKon.getIgotPdButton();
+
+        acctBtn.setOnMousePressed(e -> {
+            if(e.isSecondaryButtonDown()) {
+                acctSecondaryAction();
+            } else {
+                // @TODO CHANGE THIS!!!! WTF????
+                window.setScene(getFirstScene(AccountProfileMenu.profileMenu(actionWindow)));
+                firstPane.setOnMouseReleased(f -> window.setScene(getFirstScene(getFilePane())));
+                firstPane.setTop(getAccountBox());
+            }
+        });
+
+        // @TODO implement the getPaidPane with real data
+        // and uncomment this page.
+        // iGotPdBtn.setOnMouseClicked(e -> getPaidPane());
+        // cursors
+        acctBtn.setOnMouseEntered(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND));
+        acctBtn.setOnMouseExited(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT));
+        iGotPdBtn.setOnMouseEntered(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND));
+        iGotPdBtn.setOnMouseExited(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT));
         
-
-        authcrypt.UserData user = new authcrypt.UserData();
-        String name = user.getFirstName();
-        ImageView userImg = new ImageView(user.getUserImage());
-        userImg.setFitHeight(60);
-        userImg.setSmooth(true);
-        userImg.setPreserveRatio(true);
-        // Verify the user is logged in
-        userImg.setOnMouseClicked(e -> {
-            getAccountPane();
-            //accountClickAction(e);
-        });
-
-        userImg.setOnMouseEntered(e -> {
-            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
-        });
-
-        userImg.setOnMouseExited(e -> {
-            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
-        });
-
-        // If not send to log in pane
-
-        // If true show user a drop down menu
-        // for now show the user the StudentInfoForm
-        
-        hBox.getChildren().addAll(new Label(name), userImg);
+        hBox.getChildren().addAll(new Label(name), acctBtn, iGotPdBtn);
 
         return hBox;
     }
-    
-    /*private static void accountClickAction(MouseEvent e) {
-        getAccountPane();
-    }*/
 
-    /** Getter Setter for error message **/
+    private static void acctSecondaryAction() {
+        String version = VersionTimeStamp.getVersionBuildStamp();
+        FxNotify.notificationDark("Version", version, Pos.CENTER, 10, "image/blue_flash_128.png", FlashMonkeyMain.getWindow());
+    }
+
+
+    public static void setReturnToFullScreen(boolean bool) {
+        returnToFullScreen = bool;
+    }
+
+    public static boolean isSetToFullScreen() {
+        return returnToFullScreen;
+    }
 
     /**
      * Sets the error message to be displayed
@@ -457,9 +435,7 @@ public class FlashMonkeyMain extends Application {
      * File methods that this method relies on are in the FlashCard() class.
      * @return Returns the BorderPane containing the files
      */
-    //
     private static GridPane getFilePane() {
-
         Button newDeckButton;
         int width = SceneCntl.getFileSelectPaneWd();
         GridPane gridPane1 = new GridPane();
@@ -468,78 +444,69 @@ public class FlashMonkeyMain extends Application {
         scrollP.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollP.setPrefWidth(width);
         scrollP.setMaxHeight(446);
+        //scrollP.setMinHeight(446);
         scrollP.setStyle("-fx-background-color:transparent");
-        
-        //label.setFont(Font.loadFont("File:font/Raleway-Medium.ttf", 25));
+
         Label selectLabel = new Label("Select a deck to study");
-    //    selectLabel.setPadding(new Insets(0,0,20,0));
         selectLabel.setId("label24White");
         gridPane1.setId("fileSelectPane");
         gridPane1.setAlignment(Pos.TOP_CENTER);
-        //gridPane1.setVgap(20);
         gridPane1.setPrefHeight(width);
-        
+
         // *** PLACE NODES IN PANE ***
         GridPane.setHalignment(selectLabel, HPos.CENTER);
-        FlashCardOps.FileSelectPane fsp = getInstance().new FileSelectPane();
-        fsp.selectFilePane();
 
-        fsp.paneForFiles.setPrefWidth(width);
-        fsp.paneForFiles.setId("fileSelectPane");
+        DeckSelectorPane deckSelector = new DeckSelectorPane();
+        deckSelector.selectFilePane();
+        deckSelector.paneForFiles.setPrefWidth(width);
+        deckSelector.paneForFiles.setId("fileSelectPane");
 
         // The search for resources button
         searchRscButton = ButtoniKon.getSearchRsc();
-        
+
         // If there are files, display them in a ScrollPane  */
         // from import static FlashCardOps
         if(getInstance().getAgrListSize() > 0) {
-            scrollP.setContent(fsp.paneForFiles);
+            scrollP.setContent(deckSelector.paneForFiles);
 
             gridPane1.addRow(1, scrollP); // column 0, row 1
             newDeckButton = ButtoniKon.getNewDeck();
-            
+
             HBox buttonBox = new HBox(25);
             buttonBox.setPadding(new Insets(20, 0, 6, 0));
-            //buttonBox.setPrefWidth(350);
             buttonBox.getChildren().addAll(newDeckButton, searchRscButton);
+            gridPane1.addRow(0, selectLabel);
+            gridPane1.addRow(3, buttonBox);
+
+            backButton = ButtoniKon.getBackButton();
+            backButton.setAlignment(Pos.CENTER);
+            backButton.setOnAction(e -> {
+                deckSelector.paneForFiles.getChildren().clear();
+                gridPane1.getChildren().clear();
+                window.setScene(getFirstScene(getFilePane()));
+            });
 
             // new file button action
             newDeckButton.setOnAction(e -> {
                 gridPane1.getChildren().clear();
+                HBox hb = new HBox(25);
+                hb.setPadding(new Insets(20, 0, 6, 0));
+                hb.getChildren().addAll(backButton, searchRscButton);
                 // from flashmonkey.FlashCardOps.fileSelectPane()
-                fsp.paneForFiles.getChildren().clear();
-                fsp.paneForFiles.getChildren().add(fsp.newFile());
-                gridPane1.addRow(0, fsp.paneForFiles);
-                gridPane1.addRow(2, sceneOneButton);
+                deckSelector.paneForFiles.getChildren().clear();
+                gridPane1.addRow(0, deckSelector.newFile());
+                gridPane1.addRow(2, hb);
             });
-            gridPane1.addRow(0, selectLabel);
-            gridPane1.addRow(3, buttonBox);
         }
         else // else display a new file pane
         {
             searchRscButton.setPadding(new Insets(20,0,0,0));
-            gridPane1.addRow(2, fsp.paneForFiles);
+            gridPane1.addRow(2, deckSelector.paneForFiles);
             gridPane1.addRow(4, searchRscButton);
         }
-        
+
         searchRscButton.setOnAction(e -> {
             getSearchPane();
-        });
-        
-        // Takes the authcrypt.user back to
-        // the select file pane when the createNewDeck
-        // scene is displayed.
-        sceneOneButton = new Button("Back");
-        //sceneOneButton.setFont(Font.loadFont("File:font/Raleway-Medium.ttf", 25));
-        /*
-         * Button action: Create a new file/deck
-         * Shows the EncryptedUser.EncryptedUser the new file textArea where
-         * the EncryptedUser.EncryptedUser may enter the FlashCard deck name
-         */
-        sceneOneButton.setOnAction(e -> {
-            fsp.paneForFiles.getChildren().clear();
-            gridPane1.getChildren().clear();
-            window.setScene(getFirstScene(getFilePane()));
         });
 
         menuButton.setDisable(true);
@@ -547,17 +514,16 @@ public class FlashMonkeyMain extends Application {
     }
     
     
-    public static void getSignInPane() {
-        //LOGGER.debug("getSignInPane() called");
+    public static void showSignInPane() {
+        //LOGGER.debug("showSignInPane() called");
         SignInModel model = new SignInModel();
         SignInPane signInPane = new SignInPane(model);
         model.getFormInstance();
-
-        window.setScene(getFirstScene(signInPane.getSignInPane()));
-        signInPane.getSignInPane().requestFocus();
+        window.setScene(getFirstScene(signInPane.getMainGridPane()));
+        signInPane.getMainGridPane().requestFocus();
     }
     
-    public static void getSignUpPane() {
+    public static void showSignUpPane() {
         SignUpModel model = new SignUpModel();
         SignUpPane signUpPane = new SignUpPane(model);
         model.getFormInstance();
@@ -565,16 +531,55 @@ public class FlashMonkeyMain extends Application {
         signUpPane.getSignUpPane().requestFocus();
     }
 
+    public static void showConfirmPane() {
+        // @TODO REmove model if not needed
+        // Do we need the model here?
+        ConfirmationModel model = new ConfirmationModel();
+        ConfirmationPane confirmPane = new ConfirmationPane(model);
+        model.getFormInstance();
+        window.setScene(getFirstScene(confirmPane.getConfirmPane()));
+        confirmPane.requestFocus();
+    }
+
+    private static void showIntroPane() {
+        IntroPane introPane = new IntroPane();
+        introPane.getSignInBtn().setOnAction( e -> showSignInPane());
+        introPane.getSignUpBtn().setOnAction(e -> showSignUpPane());
+        window.setScene(getFirstScene(introPane.getIntroPane()));
+        introPane.getIntroPane().requestFocus();
+    }
+
+    public static void showResetOnePane() {
+        // @TODO REmove model if not needed
+        // Do we need the model here?
+        ResetOneModel model = new ResetOneModel();
+        ResetOnePane reset = new ResetOnePane();
+        //model.getFormInstance();
+        window.setScene(getFirstScene(reset.getMainGridPane()));
+        reset.getMainGridPain().requestFocus();
+    }
+
+    public static void showResetTwoPane() {
+        // @TODO REmove model if not needed
+        // Do we need the model here?
+        ResetTwoModel model = new ResetTwoModel();
+        ResetTwoPane reset = new ResetTwoPane();
+        //model.getFormInstance();
+        window.setScene(getFirstScene(reset.getMainGridPane()));
+        reset.getMainGridPain().requestFocus();
+    }
+
+
     /**
-     * The users account pane
+     * Displays the users pay.
      */
-    public static void getAccountPane() {
+    private static void getPaidPane() {
         if(Utility.isConnected()) {
-            StudentModel model = new StudentModel();
-            StudentPane stuPane = new StudentPane();
-            model.getFormInstance();
-            Scene scene = new Scene(stuPane.getFormPane());
-            scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
+            Scene scene = new Scene(PayPane.getPayPane());
+            scene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
+            if(actionWindow != null && actionWindow.isShowing()) {
+                actionWindow.close();
+            }
             actionWindow = new Stage();
             actionWindow.setScene(scene);
             actionWindow.show();
@@ -589,13 +594,79 @@ public class FlashMonkeyMain extends Application {
     }
 
     public static void resetActionWindow(Pane pane) {
-        actionWindow.setScene(new Scene(pane));
-        actionWindow.show();
+        if(actionWindow != null && actionWindow.isShowing()) {
+            actionWindow.setScene(new Scene(pane));
+            actionWindow.show();
+        }
     }
 
     public static void closeActionWindow() {
-        actionWindow.close();
-        actionWindow = null;
+        if(actionWindow != null && actionWindow.isShowing()) {
+            actionWindow.close();
+            actionWindow = null;
+        }
+    }
+
+    public static void getProfilePane() {
+        if(Utility.isConnected()) {
+            StudentModel model = new StudentModel();
+            StudentPane stuPane = new StudentPane();
+            model.getFormInstance();
+            Scene scene = new Scene(stuPane.getMainGridPain());
+            scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
+            if(actionWindow != null && actionWindow.isShowing()) {
+                actionWindow.close();
+            }
+            actionWindow = new Stage();
+            actionWindow.setScene(scene);
+            actionWindow.show();
+        } else {
+            // show error message
+            //showPopup();
+        }
+    }
+
+    public static void getSubscribePane() {
+        if(Utility.isConnected()) {
+            EcoPane ePane = new EcoPane();
+            Scene scene = new Scene(ePane.getReqSubscribePane());
+            if(actionWindow != null && actionWindow.isShowing()) {
+                actionWindow.close();
+            }
+            actionWindow = new Stage();
+
+            actionWindow.setScene(scene);
+            actionWindow.show();
+        } else {
+            //showPopup();
+        }
+    }
+    /**
+     * The users account form
+     */
+    public static void getFMSAccountPane() {
+        AccountPane actPane = new AccountPane();
+        Scene scene = new Scene(actPane.getMainGridPain());
+        if(actionWindow != null && actionWindow.isShowing()) {
+            actionWindow.close();
+        }
+        actionWindow = new Stage();
+        actionWindow.setScene(scene);
+        actionWindow.show();
+    }
+
+    /**
+     * General Purpose webview window
+     */
+    public static void getWebView(String page) {
+        EcoPane eco = new EcoPane();
+        Scene scene = new Scene(eco.getWebViewPane(page, 400, 650));
+        if(actionWindow != null && actionWindow.isShowing()) {
+            actionWindow.close();
+        }
+        actionWindow = new Stage();
+        actionWindow.setScene(scene);
+        actionWindow.show();
     }
 
     /**
@@ -603,20 +674,53 @@ public class FlashMonkeyMain extends Application {
      */
     public static void getSearchPane() {
         LOGGER.debug("getSearchWindow() called");
-        if(actionWindow == null) {
-            //ConsumerPane cPane = ConsumerPane.getInstance();
-            Scene scene = new Scene(ConsumerPane.getInstance().getConsumerPane());
-            scene.getStylesheets().addAll("css/consumerButtons.css", "css/consumerPane.css");
-            actionWindow = new Stage();
-            actionWindow.setScene(scene);
+        if(actionWindow != null && actionWindow.isShowing()) {
+            actionWindow.close();
         }
+
+        Scene scene = new Scene(ConsumerPane.getInstance().getConsumerPane());
+        scene.getStylesheets().addAll("css/consumerButtons.css", "css/consumerPane.css");
+        actionWindow = new Stage();
+        actionWindow.setScene(scene);
+        actionWindow.setOnHidden( e -> {
+            ConsumerPane.getInstance().onClose();
+            FlashMonkeyMain.closeActionWindow();
+        });
         actionWindow.show();
+    }
+
+    /**
+     * The video player popup
+     * @return
+     */
+    public static void getVideoWindow(String mediaPathString) {
+        LOGGER.debug("getVideoWindow called");
+        if(actionWindow != null && actionWindow.isShowing()) {
+            actionWindow.close();
+        }
+        VideoPlayerPopUp vidPlayPopup = VideoPlayerPopUp.getInstance(mediaPathString);
+        StackPane playerStackPane = vidPlayPopup.getVideoPlayerPane();
+        playerStackPane.setPrefSize(1054, 644);
+        playerStackPane.setId("vidPlayerVBox");
+        Scene scene = new Scene(playerStackPane);
+        scene.getStylesheets().addAll("css/mainStyle.css", "css/buttons.css");
+        //vidPlayPopup.isReady().addListener((obs, ov, nv) -> {
+        //    System.out.println("isReady nv: " + nv);
+        //    if(nv == true) {
+
+        actionWindow = new Stage();
+        actionWindow.setScene(scene);
+        actionWindow.setOnHidden( e -> {
+            vidPlayPopup.onClose();
+            FlashMonkeyMain.closeActionWindow();
+        });
+        actionWindow.show();
+
     }
 
     public static Stage getActionWindow() {
         return actionWindow;
     }
-    
     public static void getFileSelectPane() {
         window.setScene(getFirstScene(getFilePane()));
     }
@@ -673,180 +777,15 @@ public class FlashMonkeyMain extends Application {
      * by other actions with exception to the exit button.
      * Saves the current flashDeck to file
      */
-    // @TODO add stop() back in
     @Override
-    public void stop()
-    {
+    public void stop() {
+        SceneCntl.onStop();
         LOGGER.info("stop() called");
-
-        // close out deck session then send
-        // deck_metadata to DB.
-        //report.endSessionTime();
-
-        /*
-        if(treeWindow.isShowing()) {
-            treeWindow.close();
-        }
-
-        LOGGER.info("\n*** stop() called ***");
-        try {
-            if(createFlash.getLength() != 0)
-            {
-                createFlash.saveOnExit();
-            }
-            else
-            {
-                //@todo replace refreshFlashList in FlashMonkeyMain stop() method with another save method.
-                FlashCardOps.getInstance().saveFListToFile();
-                //flashOps.refreshFlashList();
-            }
-
-        } catch(Exception e) {
-            //@todo create message method and variable, and output messages to user
-            // SomeClass.message = "Current deck failed to save on exit"
-            System.exit(0);
-        }
-        LOGGER.info("\n\n** Saved current flashList to local file  **"
-                        +"\n************** End of program **************");
-
-         */
         System.exit(0);
     }
 
-    // memory used chart follows
-    /*
-    protected void buildChartWindow()
-    {
 
-        System.out.println("*^*^* BuidTreeWindow called *^*^*");
-
-        chartPane = createMemoryMonitor();
-        //avltPane.setStyle("-fx-background-color: #393E46" );
-        //chartPane.setCenter(avltPane);
-
-        //   flashOps.refreshAll(); // commented out. Duplicates treebuild call on its own when needed.
-        chartScene = new Scene(chartPane);
-        chartWindow.setTitle("MemoryMonitor");
-        chartWindow.setScene(chartScene);
-        chartWindow.show();
-    }
-
-
-
-    int i = 0;
-    Long[] changeAry = new Long[360];
-    int size = 0;
-    int count = 1;
-    Long oldUsedMemory = 0l;
-    long calculatedAvgGrowth = 8661; // bias
-
-    private Long avgMemoryConsumed() {
-
-        Long sum = 0l;
-        Long change = 0l;
-
-        // removing the first and last elements
-        for(int i = 1; i < size; i++) {
-
-
-
-            if (changeAry[i] > 10)
-            {
-                sum += changeAry[i];
-                count++;
-                //System.out.println("What is null? i = " + i + " value " + changeAry[i]);
-            } else {
-                //System.out.println("Mem used is < 10");
-                //System.out.println(changeAry[i]);
-            }
-        }
-
-        sum /= count;
-        change = sum - calculatedAvgGrowth;
-
-        //System.out.println("Sum = " + sum + "\n\n");
-        return change;
-    }
-
-    private BorderPane createMemoryMonitor() {
-
-        LongProperty totalMemory = new SimpleLongProperty(Runtime.getRuntime().totalMemory());
-        LongProperty freeMemory  = new SimpleLongProperty(Runtime.getRuntime().freeMemory());
-        LongProperty maxMemory   = new SimpleLongProperty(Runtime.getRuntime().maxMemory());
-        NumberBinding usedMemory = totalMemory.subtract(freeMemory);
-        // for estimating the amount of memory consumed by this application.
-        LongProperty memoryUse   = new SimpleLongProperty();
-
-        Label usedMemoryLabel = new Label();
-        usedMemoryLabel.textProperty().bind(usedMemory.asString("Used memory: %,d "));
-        Label freeMemoryLabel = new Label();
-        freeMemoryLabel.textProperty().bind(freeMemory.asString("Free memory: %,d"));
-        Label totalMemoryLabel = new Label();
-        totalMemoryLabel.textProperty().bind(totalMemory.asString("Total memory: %,d"));
-        Label maxMemoryLabel = new Label();
-        maxMemoryLabel.textProperty().bind(maxMemory.asString("Max memory: %,d"));
-
-        Label memoryUseLabel = new Label();
-        memoryUseLabel.textProperty().bind(memoryUse.asString("Avg Memory Consumed: %,d"));
-
-        Series<Number, Number> series = new Series<>();
-        series.setName("Used memory");
-
-        AtomicInteger time = new AtomicInteger();
-
-        Timeline updateMemory = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-
-            totalMemory.set(Runtime.getRuntime().totalMemory());
-            freeMemory.set(Runtime.getRuntime().freeMemory());
-            maxMemory.set(Runtime.getRuntime().maxMemory());
-            series.getData().add(new Data<>(time.incrementAndGet(), usedMemory.getValue()));
-            if (series.getData().size() > 100) {
-                series.getData().subList(0, series.getData().size() - 100).clear();
-            }
-
-            //System.out.println(" usedMemory " + usedMemory.longValue());
-            //System.out.println(" oldUsedMemory " + oldUsedMemory);
-            //System.out.println(usedMemory.longValue() - oldUsedMemory);
-
-            changeAry[i] = usedMemory.longValue() - oldUsedMemory;
-            //System.out.println("memoryUsed[i] = " + changeAry[i]);
-
-            // When the GC collects memory used is less than 0
-            // Remove cycles that are 0 or less for a more accurate
-            // understanding of this monitors average use.
-            if(i > 0) {
-                memoryUse.set(avgMemoryConsumed());
-            }
-            i++;
-            size++;
-            oldUsedMemory = usedMemory.longValue();
-        }));
-
-        // Seconds ... or number of cycles to test
-        updateMemory.setCycleCount(359);
-        updateMemory.play();
-
-        // Display the labels above the chart
-        VBox labels = new VBox(usedMemoryLabel, freeMemoryLabel, totalMemoryLabel, maxMemoryLabel, memoryUseLabel);
-        labels.setAlignment(Pos.CENTER);
-
-        // The chart
-        NumberAxis xAxis = new NumberAxis();
-        xAxis.setLabel("Time");
-        xAxis.setForceZeroInRange(false);
-        NumberAxis yAxsis = new NumberAxis();
-        yAxsis.setLabel("Memory");
-        LineChart<Number, Number> chart = new LineChart<>(xAxis, yAxsis);
-        chart.setAnimated(false);
-        chart.getData().add(series);
-
-        BorderPane chartPane = new BorderPane(chart, labels, null, null, null);
-
-        return chartPane;
-    }
-    */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         launch(args);
     }
 

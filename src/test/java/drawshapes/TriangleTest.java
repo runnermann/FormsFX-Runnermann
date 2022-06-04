@@ -1,6 +1,6 @@
 package drawshapes;
 
-import draw.shapes.FMTriangle;
+import type.draw.shapes.FMTriangle;
 import uicontrols.UIColors;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

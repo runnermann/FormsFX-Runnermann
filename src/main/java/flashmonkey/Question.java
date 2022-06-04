@@ -18,24 +18,22 @@ public abstract class Question implements Serializable, Comparable
 {
    private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
-    //*** CONSTANTS ***
     public static final String DEFAULT_QUESTION = "";
-
     private String qText;
 
-    // DESCRIPTION: DEFAULT CONSTRUCTOR
+    // DEFAULT CONSTRUCTOR
     public Question()
     {
         this.qText = DEFAULT_QUESTION;
     }
 
-    // DESCRIPTION: FULL CONSTRUCTOR
+    // FULL CONSTRUCTOR
     public Question(String q)
     {
         this.qText = q;
     }
 
-    // DESCRIPTION: SHALLOW COPY CONSTRUCTOR
+    // SHALLOW COPY CONSTRUCTOR
     public Question(Question original)
     {
         if(original != null)
@@ -44,7 +42,6 @@ public abstract class Question implements Serializable, Comparable
         }
         else
         {
-           //System.out.println("Error: Cannot copy a null object");
             System.exit(0);                 
         }
     }

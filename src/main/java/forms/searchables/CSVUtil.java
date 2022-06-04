@@ -26,7 +26,7 @@ public class CSVUtil {
 	// Descriminate if header file
 	private static boolean notHeader = false;
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		
 		String csvIN = "/Users/localmini/IdeaProjects/parse-csv/src/main/java/flashmonkey/utility/InstitutionCampus.csv";
 		String csvOUT = "/Users/localmini/IdeaProjects/flashmonkey-betaB/src/main/resources/processedCampus.dat";
@@ -39,12 +39,11 @@ public class CSVUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 	
 	
 	
 	public static void parseFile(String csvIn, String csvOut) throws FileNotFoundException, Exception {
-		
 		File file = new File(csvOut);
 		file.createNewFile();
 		
@@ -58,30 +57,13 @@ public class CSVUtil {
 			//DataOutputStream dos = CsvOutput.dos;
 			
 			while ((line = br.readLine()) != null) {
-				//System.out.println("\n" + line);
 				
 				cellList = parseLine(line);
 				if (notHeader) {
-					
-					System.out.println(cellList.get(0));
-					
 					String state = cellList.get(7);
 					int num = state.lastIndexOf(",");
 					state = state.substring(num + 2, num + 4);
-					
 					schoolList.add( new SchoolObj(cellList.get(3), cellList.get(7), state));
-					
-					//String toOutput = SEPARATOR + cellList.get(3) + SEPARATOR + cellList.get(7) + SEPARATOR + state + SEPARATOR + "\"";
-					
-					//System.out.println(count++ + ". School obj: name = [" + cellList.get(3) + "] address = [" + cellList.get(7) + "]" + " , state = [" + state + "]");
-					//System.out.println(count++ + ". School obj: [name = " + schoolData[0] + ", street = " + schoolData[1]);// + ", city = " + city + ", state = " + state + ", zip " + zip + "]");
-					
-					//SchoolObj slObj = new SchoolObj(cellList.get(3), cellList.get(7), state);
-					
-					//result = new ArrayList<>();
-					
-					
-					// dos.writeChars(toOutput);
 				}
 			}
 			//write the ArrayList to file
@@ -118,12 +100,8 @@ public class CSVUtil {
 			two = one;
 			one = ch;
 			
-			//System.out.println(one + " " + two + " " + three);
-			
 			// if matches a cell divider
 			if(one == '\"' & two == ',' & three == '\"') {
-				
-				System.out.println("divider \n" + cell.toString() + " \n");
 				// indicate it's not a header
 				notHeader = true;
 				// Remove last three chars

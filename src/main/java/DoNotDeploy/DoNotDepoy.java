@@ -13,7 +13,7 @@ import javafx.scene.image.Image;
  * this class is using computationally heavy recursion or graphs. More practical to
  * simply remove methods and classes which should not exist before deployment using
  * annotations.
- * @Author Lowell Stadelman
+ * @author Lowell Stadelman
  */
 @FMAnnotations.DoNotDeployType
 public class DoNotDepoy {

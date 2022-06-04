@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.testtypes;
 
 //import flashmonkey.ReadFlash;
@@ -29,7 +48,7 @@ import java.util.BitSet;
 public interface GenericTestType<A extends GenericTestType>
 {
     // @todo finish GenericTestType
-    
+
     
     /**
      * If this card/test type is disabled
@@ -43,7 +62,7 @@ public interface GenericTestType<A extends GenericTestType>
      * @param a
      * @return
      */
-    public abstract Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a);
+    public abstract Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane);
 
     /**
      * Returns the readPane that contains the testType.
@@ -84,9 +103,11 @@ public interface GenericTestType<A extends GenericTestType>
     public abstract Button[] getAnsButtons();
 
     /**
-     * returns each tests answerButton as opposed
-     * to the array of AnswerButtons.
-     * @return
+     * The ReadFlash class expects this method to return the implementation
+     * from the TestType for its answerButton. An answerButton should provide
+     * the testTypes expected behavior, format changes, when the EncryptedUser
+     * clicks on the AnswerButton. Include correct and incorrect behavior as
+     * a minimum.
      */
     public abstract Button getAnsButton();
 

@@ -1,16 +1,15 @@
 package fileops;
 
-import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.PresignedUrlDownloadRequest;
+import fileops.utility.ProcessingUtility;
+import fileops.utility.Utility;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
-import flashmonkey.ReadFlash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,18 +34,17 @@ import static habanero.edu.rice.pcdp.PCDP.forallChunked;
  */
 
 public class S3GetObjs {
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(S3GetObjs.class);
-    //private static final Logger LOGGER = LoggerFactory.getLogger(S3PutObjs.class);
-    private static final String BUCKET_NAME = "iooily-flashmonkey";
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(S3GetObjs.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3GetObjs.class);
     private static final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(2))
             .build();
     /**
-     * COnstructor
+     * Constructor
      */
     public S3GetObjs() {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         //LOGGER.debug("S3GetObjs constructor called");
     }
 
@@ -59,16 +57,17 @@ public class S3GetObjs {
      * must contain the correct username and token.</p>
      * <p> End result is deck is saved to local file, and FlashListMM
      * is reset to the deck in ReadFlash. </p>
-     * @param key the S3 key with deckName. ie idk@idk.com/decks/adcd123Test.dat
+     * @param pathName The full pathName to the file including the file
+     * @param key the S3 key with deckName. ie idk@idk.com/decks/adcd123Test.dec
      * @param token
      */
-    public void getDeck(String fileName, String key, String token) {
+    public void getDeck(String pathName, String key, String token) {
 
         if(! Utility.isConnected()) {
             LOGGER.warn("I am not connected... returning nothing");
             return;// flashListMM;
         }
-        // a jsonArray
+        // jsonArray
         String json = "[{\"username\":\"" + authcrypt.UserData.getUserName() + "\",\"token\":\"" + token + "\"},{\"key\":\"" + key + "\"}]";
         LOGGER.debug("getDeck called. userName: {}, key: <{}>, token <{}>", authcrypt.UserData.getUserName(),  key, token);
 
@@ -95,10 +94,11 @@ public class S3GetObjs {
             // (2)
                 LOGGER.debug("response code {}", response.statusCode());
                 LOGGER.debug("response body: {}", sURL);  // signedUrl
-                File file = new File(fileName);
+                File file = new File(pathName);
                 if(!file.exists()) {
-                    file.createNewFile();
-                    LOGGER.warn("File does not exist: {}", file);
+                    FlashCardOps.getInstance().getDeckFolder().mkdirs();
+                    boolean bool = file.createNewFile();
+                    LOGGER.debug("File was created for new file in S3getObjs: <{}>", bool);
                 }
                 retrieveDeckHelper(file, sURL);
                 //@TODO do something when s == "failed":"true"
@@ -106,6 +106,9 @@ public class S3GetObjs {
                 LOGGER.warn("WARNING!!! 0 objects found in s3 for key: {}", key);
             }
         } catch (IOException e) {
+            LOGGER.warn(e.getMessage());
+            e.printStackTrace();
+        } catch (SecurityException e) {
             LOGGER.warn(e.getMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -117,7 +120,6 @@ public class S3GetObjs {
         LOGGER.debug("called retrieveDeckHelper( file, String)");
         URI fileToBeDownloaded = null;
         try {
-            System.out.println("the troubled signedURL: " + signedurl);
             fileToBeDownloaded = new URI(signedurl);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -148,8 +150,8 @@ public class S3GetObjs {
     /**
      * Helper method for cloudGetDeckFmS3
      * Retrieves an object from the cloud using a signedUrl as the param
+     * Creates An arraylist containing the deck elements used by the class
      * @param key signedURL to access the S3 object.
-     * @return An arraylist containing the deck elements.
      */
     private void retrieveDeckHelper(String key) {
         ArrayList<FlashCardMM> flashMM = new ArrayList<>();
@@ -169,13 +171,7 @@ public class S3GetObjs {
             // once we get the signedURL, make the request using a separate thread.
             //new Thread(() -> {
                 try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(new URL(key).openStream()))) {
-
-                    int i = 0;
-                    while (flashMM.add(( FlashCardMM) input.readObject())) {
-                       System.out.println(i++ + " items");
-                    }
-
-                    FlashCardOps.getInstance().getFO().setListinFile(flashMM, '+');
+                    FlashCardOps.getInstance().setListinFile(flashMM, '+');
                 } catch (EOFException e) {
                     // do nothing, it is expected.
 
@@ -198,7 +194,9 @@ public class S3GetObjs {
         LOGGER.debug("cloudGetDeck() returned flashListMM with {} cards", flashMM.size());
     }
 
+    // ***************************************************************** //
     // ************************* MEDIA RELATED ************************* //
+    // ***************************************************************** //
 
     private String localURL;
     private File diskFile;
@@ -217,14 +215,21 @@ public class S3GetObjs {
         String toDiskDir = DirectoryMgr.getMediaPath( 'M');
         diskFile = new File(toDiskDir);
         FileOpsUtil.folderExists(diskFile);
-        LOGGER.debug("cloudGetMedia line 192 called");
+        LOGGER.info("serialGetMedia called " +
+                "\n mediaObjs.size: {}", mediaObjs.size());
 
         // 1st we get the signedURL's from Vert.x
         ArrayList<String> signedUrls = getMediaURLs(mediaObjs, token);
-        LOGGER.debug("cloudGetMedia called. signedURLs length: {}", signedUrls.size());
+
+        // **** FOR TESTING ****
+        if(signedUrls.size() != mediaObjs.size()) {
+            System.err.println("ERROR: S3GetObjs.serialGetMedia did not return the correct number of media objects");
+            LOGGER.debug("cloudGetMedia called. Returning <{}> signedURLs. Should be: <{}>", signedUrls.size(), mediaObjs.size());
+            //System.exit(1);
+        }
+
         // Process signedURLs
         for(String signedurl : signedUrls) {
-
             LOGGER.debug("cloudGetMedia called. signedURL is null: {}", signedurl == null);
             // make multiple requests using a threadPool.
             //new Thread(() -> {
@@ -234,11 +239,18 @@ public class S3GetObjs {
                 } catch (URISyntaxException e) {
                     e.printStackTrace();
                 }
-                String cntStr = UserData.getUserName() + ReadFlash.getInstance().getDeckName();
-                int count = cntStr.length() + 2;
+                //String cntStr = UserData.getUserName() + ReadFlash.getInstance().getDeckName();
+                //String cntStr = UserData.getUserName() + FlashCardOps.getInstance().getDeckFileName();
+                //int count = cntStr.length();
                 AmazonS3URI s3URI = new AmazonS3URI(fileToBeDownloaded);
                 LOGGER.debug("s3.getBucketName() {}, s3.getKey: {}", s3URI.getBucket(), s3URI.getKey());
-                localURL = toDiskDir + "/" + s3URI.getKey().substring(count);
+
+                int slash = s3URI.getKey().indexOf('/') + 1;
+                String key1 = s3URI.getKey().substring(slash);
+                localURL = toDiskDir + key1;
+
+                LOGGER.debug("The localURL: {}", localURL);
+
                 File file = new File(localURL);
 
                 AmazonS3 client = AmazonS3ClientBuilder.standard()
@@ -255,7 +267,9 @@ public class S3GetObjs {
                     e.printStackTrace();
                 }
                 catch (AmazonS3Exception e) {
-                    LOGGER.warn("ERROR: something wasn't right when attempting to upload a deck", e.getMessage());
+                    // requested user may not exist.
+                    LOGGER.warn("ERROR: something wasn't right when attempting to download media", e.getMessage());
+                    e.printStackTrace();
                 }
            // }).start();
         }
@@ -309,16 +323,16 @@ public class S3GetObjs {
      */
 
     /**
-     * Returns a ArrayList of signedURLs
+     * Returns an ArrayList of signedURLs
      * @param mediaObjs
      * @param token
      * @return an arraylist of signed URLs
      */
     private ArrayList<String> getMediaURLs(ArrayList<MediaSyncObj> mediaObjs, String token) {
-        // cerate array of download names
-        String keys = getKeys(mediaObjs);
+        // create array of download names
+        String keys = getMediaKeys(mediaObjs);
 
-        System.out.println("the keys look like: " + keys);
+        LOGGER.debug("getting keys: {}", keys);
 
         if(! Utility.isConnected()) {
             LOGGER.warn("I am not connected... returning nothing");
@@ -342,7 +356,7 @@ public class S3GetObjs {
                     s = response.body();
                     //s = s.substring(2, s.length() - 2);
                     LOGGER.debug("response code {}", response.statusCode());
-                    LOGGER.debug("response body: {}", s);  // signedUrl
+                    //LOGGER.debug("response body: {}", s);  // signedUrl
                     if(s.isEmpty()) {
                         if(count >= 4) {
                             LOGGER.warn("failed to download media URLs");
@@ -353,7 +367,9 @@ public class S3GetObjs {
                     count++;
                 }
 
-                return httpParse(s);
+            Set resSet = ProcessingUtility.httpParse(s);
+            // The hashSet is converted by the arrayList constructor. :)
+            return new ArrayList<>(resSet);
 
 
                 //@TODO do something on error "failed":"true"
@@ -368,18 +384,29 @@ public class S3GetObjs {
         return new ArrayList<String>();
     }
 
-    private String getKeys(ArrayList<MediaSyncObj> mediaObjs) {
+    /**
+     * Builds the request keys for the mediaObjs provided
+     * @param mediaObjs
+     * @return
+     */
+    private String getMediaKeys(ArrayList<MediaSyncObj> mediaObjs) {
         StringBuilder keyBuilder = new StringBuilder();
-        // we do not add a comma on the last element
+        String s3mediaSubDir = FileNaming.getMediaSubDir(FlashCardOps.getInstance().getFileName());
+        // We do not add a comma on the last element
         for(int i = 0; i < mediaObjs.size() - 1; i++) {
-            keyBuilder.append( UserData.getUserName() + "/" + ReadFlash.getInstance().getDeckName() +
-                    "/" + mediaObjs.get(i).getFileName() + ",");
+            keyBuilder.append( s3mediaSubDir + "/" + mediaObjs.get(i).getFileName() + ",");
         }
-        keyBuilder.append(UserData.getUserName() + "/" + ReadFlash.getInstance().getDeckName() +
-                "/" + mediaObjs.get(mediaObjs.size() - 1).getFileName());
+        // the last element with no comma.
+        keyBuilder.append(s3mediaSubDir + "/" + mediaObjs.get(mediaObjs.size() - 1).getFileName());
         return keyBuilder.toString();
     }
 
+    /**
+     * Returns the HttpRequest
+     * @param json
+     * @param destination
+     * @return
+     */
     private HttpRequest getRequest(String json, String destination) {
         return HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
@@ -389,16 +416,5 @@ public class S3GetObjs {
                 .build();
     }
 
-    private ArrayList<String> httpParse(String response) {
-        LOGGER.debug("response: {}", response);
-        String res = response.substring(1, response.length()-1);
-        System.err.println("RESPONSE: " + res);
-        String[] rAry = res.split(",");
-        ArrayList<String> e = new ArrayList();
-        for(int i = 0; i < rAry.length; i++) {
-            e.add(rAry[i].substring(1, rAry[i].length() -1));
-            System.out.println("element: " + rAry[i]);
-        }
-        return e;
-    }
+
 }

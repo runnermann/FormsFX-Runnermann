@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ *
+ * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
+ *  authorized relationship with FlashMonkey Inc..
+ *
+ * DISCLAIMER OF WARRANTY.
+ *
+ * COVERED CODE IS PROVIDED UNDER THIS LICENSE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY
+ *  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES THAT THE COVERED
+ *  CODE IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE
+ *  ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE COVERED CODE IS WITH YOU. SHOULD ANY
+ *  COVERED CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+ *  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR CORRECTION. THIS
+ *  DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE.  NO USE OF ANY COVERED
+ *  CODE IS AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+ *
+ */
+
 package type.testtypes;
 
 import javafx.scene.control.Button;
@@ -40,9 +59,8 @@ public class AIMode implements GenericTestType<AIMode>
     }
     
     @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a)
+    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
     {
-        System.out.println("\ncalled getTEditorPane in AIMode");
         // Instantiate vBox and "set spacing" !important!!!
         VBox vBox = new VBox(2);
         vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
@@ -58,7 +76,6 @@ public class AIMode implements GenericTestType<AIMode>
     @Override
     public int getTestType()
     {
-        System.out.println("\ncalled getTestType in AIMode");
         // could use 31 but this is more visual
         return 0b0000000000011111;
     }
@@ -66,14 +83,12 @@ public class AIMode implements GenericTestType<AIMode>
     @Override
     public char getCardLayout()
     {
-        System.out.println("\n called getCardLayout in AIMode");
         return 'D'; // double horizontal
     }
 
     @Override
     public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane)
     {
-        System.out.println("\ncalled getTReadPane in AIMode :) ");
         return new Pane();
     }
 

@@ -43,7 +43,7 @@ public class VanillaTextQA  {
 
     private ArrayList<FlashCardMM> creatorList;// = new ArrayList<>(10);
     private FlashCardOps ops;// = new FlashCardOps();
-    protected FlashCardOps.FileOperations innerObj;// = ops.new FileOperations();
+    //protected FileOperations innerObj;// = ops.new FileOperations();
 
     StringBuilder stringBuilder;
 
@@ -62,7 +62,7 @@ public class VanillaTextQA  {
 
         creatorList = new ArrayList<>(10);
         ops = FlashCardOps.getInstance();
-        innerObj = ops.new FileOperations();
+        //innerObj = ops.new FileOperations();
 
         stringBuilder = new StringBuilder();
         deckName = "";
@@ -92,25 +92,19 @@ public class VanillaTextQA  {
         // parse the file
         parseFile(textFile);
         // Save the creatorList to file, keep the last element
-        innerObj.setListinFile(creatorList, '+');
-        CloudOps co = new CloudOps();
-        co.putDeck(ReadFlash.getInstance().getDeckName() + ".dat");
+        // innerObj.setListinFile(creatorList, '+');
+        //CloudOps co = new CloudOps();
+        CloudOps.putDeck(FlashCardOps.getInstance().getDeckFileName());
         //innerObj.
     }
 
 
     private void parseFile( File textFile) {
-
-        System.out.println("Starting to parse the file");
-
         // Get the text from the stream.
         try (Scanner scan = new Scanner(new FileInputStream(textFile))) {
 
             // Read data from a file
             while (scan.hasNext()) {
-
-                System.out.print(" . ");
-
                 // get the next item and check for opening and closing angle braces
                 String read = scan.next();
                 // get question
@@ -142,8 +136,8 @@ public class VanillaTextQA  {
 
                             aText = stringBuilder.toString();
                             if(! saveCard()) {
-                                System.out.println("Card not saved");
-                                System.exit(0);
+                                //System.out.println("Card not saved");
+                                //System.exit(0);
                             };
                             stringBuilder.setLength(0);
                             break;
@@ -174,7 +168,7 @@ public class VanillaTextQA  {
         FileNaming naming = new FileNaming();
             // Create the new card
             FlashCardMM newCard = new FlashCardMM(
-                    naming.getCardHash(ReadFlash.getInstance().getDeckName(), "SHA"),                    // cardId
+                    naming.getCardHash(FlashCardOps.getInstance().getDeckLabelName(), "SHA"),                    // cardId
                     cardNum,                    // cardNumber
                     multiChoice.getTestType(),// BitSet testTypes
                     multiChoice.getCardLayout(),// cardLayout
@@ -200,15 +194,7 @@ public class VanillaTextQA  {
 
     protected void printCards(File deckName) {
 
-        ArrayList<FlashCardMM> testList;
-        testList = innerObj.getListFromFile();
 
-        System.out.println("Printing cards if I was successful");
-
-        for(FlashCardMM mm : testList) {
-            System.out.println(mm.getQText());
-            System.out.println(mm.getAText());
-        }
     }
 
     /**

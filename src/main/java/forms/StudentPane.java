@@ -34,10 +34,6 @@ public class StudentPane extends FormParentPane {
 		model = new StudentModel();
 		student = new EncryptedStud();
 		this.initialize(model, student);
-		
-		// get data from DB if exists
-
-		
 	}
 	
 	/**
@@ -51,28 +47,22 @@ public class StudentPane extends FormParentPane {
 	
 	@Override
 	public void setupValueChangedListeners() {
-		//model.getFormInstance().changedProperty().addListener((observable, oldValue, newValue) -> changedLabel.setText("The form has " + (newValue ? "" : "not ") + "changed."));
-		//model.getFormInstance().validProperty().addListener((observable, oldValue, newValue) -> validLabel.setText("The form is " + (newValue ? "" : "not ") + "valid."));
-		//model.getFormInstance().persistableProperty().addListener((observable, oldValue, newValue) -> persistableLabel.setText("The form is " + (newValue ? "" : "not ") + "persistable."));
-		
-		//model.getCountry().nameProperty().addListener((observable, oldValue, newValue) -> countryLabel.setText("Country: " + newValue));
-		//model.getCountry().currencyShortProperty().addListener((observable, oldValue, newValue) -> currencyLabel.setText("Currency: " + newValue));
-		//model.getCountry().populationProperty().addListener((observable, oldValue, newValue) -> populationLabel.setText("Population: " + newValue));
+		/* empty */
 	}
 	
 	@Override
 	public void layoutParts() {
 		super.layoutParts();
 		LOGGER.info(" layoutParts called");
-		
-		// innerGPane.addRow(0, idkPane) // not used
-		
 	}
 	
 	@Override
-	public GridPane getFormPane() {
-		return this.formPane;
+	public GridPane getMainGridPain() {
+		return this.mainGridPain;
 	}
+
+	@Override
+	public void paneAction() { /* do nothing */}
 	
 	/* *** FOR TESTING *** */
 	@FMAnnotations.DoNotDeployMethod

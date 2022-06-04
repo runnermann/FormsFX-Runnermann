@@ -1,22 +1,21 @@
 package campaign;
 
 import authcrypt.UserData;
-import authcrypt.Verify;
 import campaign.db.DBConnect;
-import ch.qos.logback.classic.Level;
+import campaign.db.DBFetchUnique;
 import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
-import fileops.Utility;
+import fileops.utility.Utility;
 import flashmonkey.EndGame;
-import flashmonkey.ReadFlash;
+import flashmonkey.FlashCardOps;
 import flashmonkey.Timer;
 import forms.utility.Alphabet;
 import metadata.DeckMetaData;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
@@ -30,11 +29,9 @@ import java.util.concurrent.ExecutionException;
  */
 public final class Report {
 
-    // private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Report.class);
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Report.class);
-    
-    
-    //@TODO Create authcrypt.user hash and replace in Report.
+    private static final Logger LOGGER = LoggerFactory.getLogger(Report.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Report.class);
+
     private static Connection connect;
     private Timer fmTimer;
     private static Report CLASS_INSTANCE;
@@ -44,11 +41,9 @@ public final class Report {
     }
 
     public static synchronized Report getInstance() {
-        LOGGER.setLevel(Level.DEBUG);
+        //LOGGER.setLevel(Level.DEBUG);
         //LOGGER.info("getInstance called");
-    // @TODO remove setLevel
 
-        
         if(CLASS_INSTANCE == null) {
             CLASS_INSTANCE = new Report();
         }
@@ -69,7 +64,6 @@ public final class Report {
             fmTimer = Timer.getClassInstance();
         }
         catch (Exception e) {
-            System.out.println("EXCEPTION: @init() did not connect to DB");
             connect = null;
             e.printStackTrace();
         }
@@ -89,14 +83,14 @@ public final class Report {
      * the table object set in setTable();
      */
     public void endSessionTime() {
-        if(connect != null && fileops.Utility.isConnected()) {
+        if(connect != null && Utility.isConnected()) {
             LOGGER.info("called endSessionTime()");
 
             DBConnect db = DBConnect.getInstance();
             fmTimer.end();
             Long useTime = fmTimer.getTotalTime();
     
-            Verify v = new Verify();
+            //Verify v = new Verify();
             
             try {
                 CompletableFuture<QueryResult> future = db.getConnection()
@@ -109,7 +103,7 @@ public final class Report {
                                 "test_usetime, " +
                                 "total_usetime, " +
                                 "session_score) VALUES ('"
-                                + v.getUserHash() + "', '"
+                                + Alphabet.encrypt(UserData.getUserName()) + "', '"
                                 + fmTimer.getBeginTime() + "', '"
                                 + fmTimer.getCreateNotesTime() + "', '"
                                 + fmTimer.getCreateTestsTime() + "', '"
@@ -134,12 +128,13 @@ public final class Report {
     }
     
     /**
-     * Sets metadata to the database. Returns true if successful
-     * false otherwise.
-     * @param metaData
-     * @return true if successful, false otherwise.
+     * Sets metadata to the database. Depending on if the deck exists, this method will
+     * conduct an insert or an update. Returns a long. Negitive numbers are an error.
+     * @param metaData ..
+     * @return Returns the deck_id if successful, otherwise returns -1 if the insert failed, or
+     * -2 if the update failed
      */
-    public boolean reportDeckMetadata(DeckMetaData metaData) {
+    public long reportDeckMetadata(DeckMetaData metaData) {
         //query DB for username and deckname, get ID, and do update
         long id = queryGetDeckID();
     
@@ -148,18 +143,18 @@ public final class Report {
         if(id == -99) {
             // item does not exist, do insert
             LOGGER.debug("result was -99. inserting new row");
-            return insertDeckMetadata(metaData);
+            return insertDeckMetadata(metaData) ? id : -1;
         } else {
             // item exists, do update
             LOGGER.debug("result was " + id + ". updating!");
-            return updateDeckMetadata(metaData, id);
+            return updateDeckMetadata(metaData, id) ? id : -2;
         }
     }
 
     /**
      * Updates test metaData, uses same array as
      * reportDeckMetadata
-     * @param metaDataAry
+     * @param metaDataAry ..
      */
     public void reportTestMetaData(HashMap<String, String> metaDataAry) {
         //query DB for username and deckname, get ID, and do update
@@ -170,21 +165,21 @@ public final class Report {
     
     
     /**
-     * The initial insert of this decks metadata into the DB
-     * @param metaObj
-     * @return
+     * The initial insert of this decks metadata into the DB. If the deck was originally
+     * created by this user it will set the name of the creator to this user. Otherwise
+     * it will query the DB for the correct user.
+     * @param metaObj ..
+     * @return ..
      */
     private boolean insertDeckMetadata(DeckMetaData metaObj) {
         if (connect != null && Utility.isConnected()) {
             //UserData user = new UserData();
-            
+            String sep = "', '";
             LOGGER.info("inserting data into deckMetadata.");
-            System.out.println("UserName is: " + authcrypt.UserData.getUserName());
 
             StringBuffer sbuffer = new StringBuffer();
             String insertQuery = "INSERT INTO deckMetadata(" +
                     "last_date, " +     // 0 lastdate
-        //            "create_date, " +
                     "deck_descript, " + // 1 descript
                     "user_email, " +    // 2 userName
                     "creator_email, " + // 3 origAuthor
@@ -194,7 +189,6 @@ public final class Report {
                     "deck_prof, " +     // 7 prof
                     "subj, " +          // 8 ie physics
                     "section, " +       // 9 ie mechanics // previously cat
-                    //"sub_section, " +   // previously Cat
                     "deck_language, " + // 10 lang
                     "deck_name, " +     // 11 deckName
                     "test_types, " +    // 12 testtypes
@@ -202,35 +196,40 @@ public final class Report {
                     "num_imgs, " +      // 14 numImg
                     "num_video, " +     // 15 numVid
                     "num_audio, " +     // 16 numAud
-                    "course_code, " +     // 17 courseCode
-		     //       "session_score, " +
-                    "session_count) VALUES ('";
+                    "course_code, " +   // 17 courseCode
+                    "session_count, " + // 18 add to the session count
+                    "share_distro, " +  // 19 will share distro
+                    "sell_deck, " +     // 20 will share deck
+                    "full_name, " +     // 21 The deck file full name
+                    "user_hash, " +     // 22 This user's md5Hash
+                    "price) VALUES ('"; // 23 requested price
             sbuffer.append(insertQuery);
             // subtract the last element from the array. We are
             // not reporting the session score here.
-            sbuffer.append(metaObj.getLastDate() + "', '");
-            sbuffer.append(metaObj.getDescript() + "', '");
-            sbuffer.append(Alphabet.encrypt(authcrypt.UserData.getUserName()) + "', '");
-            sbuffer.append(Alphabet.encrypt(authcrypt.UserData.getUserName())  + "', '");
-            sbuffer.append(metaObj.getDeckSchool() + "', '");
-            sbuffer.append(metaObj.getDeckBook() + "', '");
-            sbuffer.append(metaObj.getDeckClass() + "', '");
-            sbuffer.append(metaObj.getDeckProf() + "', '");
-            sbuffer.append(metaObj.getSubj() + "', '");
-            sbuffer.append(metaObj.getCat() + "', '");
-            sbuffer.append(metaObj.getLang() + "', '");
-            sbuffer.append(ReadFlash.getInstance().getDeckName() + "', '");
-            sbuffer.append(metaObj.getTestTypes() + "', '");
-            sbuffer.append(metaObj.getNumCard() + "', '");
-            sbuffer.append(metaObj.getNumImg() + "', '");
-            sbuffer.append(metaObj.getNumVideo() + "', '");
-            sbuffer.append(metaObj.getNumAudio() + "', '");
-            sbuffer.append(metaObj.getCourseCode() + "', '");
-            //sbuffer.append(0 + "' ");
-            //sbuffer.append(0 + "' ");
-            
-            // add one to session_count
-            sbuffer.append( 1 + "')");
+            sbuffer.append(metaObj.getLastDate() + sep);
+            sbuffer.append(metaObj.getDescript() + sep);
+            sbuffer.append(Alphabet.encrypt(authcrypt.UserData.getUserName()) + sep);
+            sbuffer.append(getOriginalCreator(authcrypt.UserData.getUserName())  + sep);
+            sbuffer.append(metaObj.getDeckSchool() + sep);
+            sbuffer.append(metaObj.getDeckBook() + sep);
+            sbuffer.append(metaObj.getDeckClass() + sep);
+            sbuffer.append(metaObj.getDeckProf() + sep);
+            sbuffer.append(metaObj.getSubj() + sep);
+            sbuffer.append(metaObj.getCat() + sep);
+            sbuffer.append(metaObj.getLang() + sep);
+            sbuffer.append(FlashCardOps.getInstance().getDeckLabelName() + sep);
+            sbuffer.append(metaObj.getTestTypes() + sep);
+            sbuffer.append(metaObj.getNumCard() + sep);
+            sbuffer.append(metaObj.getNumImg() + sep);
+            sbuffer.append(metaObj.getNumVideo() + sep);
+            sbuffer.append(metaObj.getNumAudio() + sep);
+            sbuffer.append(metaObj.getCourseCode() + sep);
+            sbuffer.append( 1 + sep);
+            sbuffer.append(metaObj.isShareDistro() + sep);
+            sbuffer.append(metaObj.isSellDeck() + sep);
+            sbuffer.append(FlashCardOps.getInstance().getDeckFileName() + sep);
+            sbuffer.append(authcrypt.UserData.getUserMD5Hash() + sep);
+            sbuffer.append(metaObj.getPrice() + "')");
             
             DBConnect db = DBConnect.getInstance();
 
@@ -238,8 +237,10 @@ public final class Report {
 
             try {
                 CompletableFuture<QueryResult> future = db.getConnection()
-                        .sendPreparedStatement(sbuffer.toString());
+                        //.sendPreparedStatement(sbuffer.toString()); // causes an error :(
+                        .sendQuery(sbuffer.toString());
                 future.get();
+                return true;
             } catch (ExecutionException e) {
                 LOGGER.warn("WARNING: DBConnection ERROR: {}", e.getMessage() ); //+ " " + e.getStackTrace());
                 e.printStackTrace();
@@ -253,23 +254,40 @@ public final class Report {
             LOGGER.info(" reportDeckMetaData() DB is not connected. Check network connection.");
             return false;
         }
-        
-        return true;
+    }
+
+    /**
+     * Returns this user if they are the original creator
+     * of the deck. Otherwise sends a query to the DB to
+     * request based on the Hash provided in the deckName.
+     * @param thisUserText ..
+     * @return the oriignal creator
+     */
+    private String getOriginalCreator(String thisUserText ) {
+        String name = FlashCardOps.getInstance().getDeckFileName();
+        String firstHash = name.substring(0, name.indexOf("_"));
+
+        if(authcrypt.UserData.getUserMD5Hash().equals(firstHash)) {
+            return Alphabet.encrypt(thisUserText);
+        }
+        else {
+            String[] creatorEncrypted = DBFetchUnique.CREATOR_HASH.query(firstHash);
+            return creatorEncrypted[0];
+        }
     }
     
     /**
      * Most frequently, MetaData will come from an update.
      * Sends data from the MetaDataAry to the MetaData Table
      * recieves data from updateDataAry in DeckMetaData
-     * @param metaObj
-     * @param id
-     * @return
+     * @param metaObj ..
+     * @param id ..
+     * @return ..true if successful
      */
     private boolean updateDeckMetadata(DeckMetaData metaObj, long id) {
         boolean bool = false;
-    
+
         LOGGER.info("updateDeckMetadata sending, ID: {}" + id);
-        System.out.println("updateing DeckMetaDataDB in Report");
     
         if (connect != null) {
             int i = 0;
@@ -282,7 +300,7 @@ public final class Report {
                     ", deck_class ='" +    metaObj.getDeckClass() + "'" +
                     ", deck_prof ='" +     metaObj.getDeckProf() + "'" +
                     ", subj ='" +          metaObj.getSubj() + "'" +
-                    ", section ='" +       metaObj.getCat() + "'" +     // formerly cat
+                    ", section ='" +       metaObj.getCat() + "'" +
                     ", deck_language ='" + metaObj.getLang() + "'" +
                     ", test_types ='" +    metaObj.getTestTypes() + "'" +
                     ", num_cards ='" +     metaObj.getNumCard() + "'" +
@@ -290,18 +308,21 @@ public final class Report {
                     ", num_video ='" +     metaObj.getNumVideo() + "'" +
                     ", num_audio ='" +     metaObj.getNumAudio() + "'" +
                     ", session_score ='" + metaObj.getScores().toString() + "'" +
+                    ", share_distro = '" + metaObj.isShareDistro() + "'" +
+                    ", sell_deck = '" +    metaObj.isSellDeck() + "'" +
+                    ", price = '" +        metaObj.getPrice() + "'" +
                     ", session_count = session_count+1 " +
-                    " WHERE deck_id =" + id + ";";
-    
+                    " WHERE deck_id = " + id + ";";
+
             LOGGER.debug("query: " + updateDB);
     
             DBConnect db = DBConnect.getInstance();
-    
             try {
                 CompletableFuture<QueryResult> future = db.getConnection()
-                        .sendPreparedStatement(updateDB);
+                        .sendQuery(updateDB);
                 future.get();
                 bool = true;
+
             } catch (ExecutionException e) {
                 LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
                 e.printStackTrace();
@@ -321,14 +342,14 @@ public final class Report {
      * Only updates testScore, last date, and increments
      * session_count to DB
      * @param map Uses same string as insertDeckMetadata
-     * @param id
-     * @return
+     * @param id ..
+     * @return true if successful
      */
     private boolean updateTestMetaData(HashMap<String, String> map, long id) {
         boolean bool = false;
 
         LOGGER.info("updateDeckMetadata sending, ID: {}" + id);
-        if (connect != null && fileops.Utility.isConnected()) {
+        if (connect != null && Utility.isConnected()) {
 
             String updateDB = "UPDATE deckMetadata SET" +
                     " last_date = '" + map.get("last_date") + "'" +
@@ -361,14 +382,13 @@ public final class Report {
     /**
      * returns the deck_id if successful. If not returns
      * -99l;
-     * @return
+     * @return ..
      */
     private long queryGetDeckID() {
         long id = -99;
-        UserData user = new UserData();
         String idQuery = "SELECT deck_id FROM deckMetadata"
-                + " WHERE user_email = " + "'" + Alphabet.encrypt(user.getUserName()) + "'"
-                + " AND deck_name = " + "'" + ReadFlash.getInstance().getDeckName() + "'"
+                + " WHERE user_email = " + "'" + Alphabet.encrypt(UserData.getUserName()) + "'"
+                + " AND deck_name = " + "'" + FlashCardOps.getInstance().getDeckLabelName() + "'"
                 + ";";
     
 
@@ -398,114 +418,4 @@ public final class Report {
         
         return id;
     }
-    
-    
-    /**
-     * Queries the MetaData DB for this decks metaData if it exists
-     * @return A string containing the returned query.
-     */
-    /*
-    public String queryGetDeckMetaData(String userName, String deckName) {
-        
-        String strQuery = "SELECT * FROM deckMetadata"
-                            + " WHERE user_email = " + "'" + userName + "'"
-                            + " AND deck_name = " + "'" + deckName + "'"
-                        + ";";
-        
-        return query(strQuery);
-    }
-     */
-    
-    
-    /**
-     * Queries the table provided in the param for the users encrypted data if it exists.
-     * Use constants for PROFFESSOR or STUDENT tables
-     * @param studentHash: The hashed original username, usually their original email address.
-     * @return A string containing the encrypted query.
-     */
-    /*public String queryGetUserEcryptedData(String studentHash, String table) {
-        String strQuery = "SELECT * FROM " + table +
-                " WHERE student_hash = " + studentHash +
-                ";";
-        
-        return query(strQuery);
-    }
-     */
-    
-    
-    /**
-     * Sends a query statement to the DB and returns the response.
-     * @param strQuery
-     * @return The response if successful or an empty string if not.
-     */
-    /*
-    private String query(String strQuery) {
-    
-        DBConnect db = DBConnect.getInstance();
-        try {
-            CompletableFuture<QueryResult> future = db.getConnection()
-                    .sendPreparedStatement(strQuery);
-            QueryResult queryResult = future.get();
-            if (queryResult.getRows().size() == 0) {
-                LOGGER.debug("query result has 0 rows");
-                return "";
-            } else {
-                LOGGER.debug("query result has rows of data");
-                return Arrays.toString(((ArrayRowData) (queryResult.getRows().get(0))).getColumns());
-                //num = num.replaceAll("\\D", "");
-                //id = Long.valueOf(num);
-            }
-        } catch (NullPointerException e) {
-            LOGGER.warn("WARNING: Null pointer exception at getDeckMetaData. Deck may not exist. ");
-        } catch (ExecutionException e) {
-            LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
-        } catch (InterruptedException e) {
-            LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
-        }
-        LOGGER.debug("returning an empty string");
-        return "";
-    }
-     */
-    
-    
-    
-    /*
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-    
-        
-        
-        String[] str = new String[18];
-        str[0] = Long.toString(System.currentTimeMillis());//last_date: system.now()
-        str[1] = Long.toString(System.currentTimeMillis());//create_date system.file().getDate()
-        str[2] = "Essential database knowledge for entering, manipulating and maintaining data in databases, Course " +
-                "is primarily the Stanford First Course in Databases";
-        str[3] = "lowell.stadelman@gmail.com";//user_email EncryptedUser.EncryptedUser.getEmail()
-        str[4] = "lowell.stadelman@gmail.com";//null;//creator_email if(oringalAuthor) EncryptedUser.EncryptedUser.getEmail()
-        str[5] = "College of San Mateo"; //authcrypt.user.getSchool();//deck_school
-        str[6] = "Database Systems, The Complete Book, Second Edition"; //deck_book
-        str[7] = "CIS-132-OLH-Introduction to Databases"; //deck_class
-        str[8] = "Mounjed Moussalem";//deck_prof
-        str[9] = "Comp Sci";//subj_cat
-        str[10] = "english"; //null;//deck_language EncryptedUser.EncryptedUser.getLang()
-        str[11] = "Small cats pur";//deck_name getDeckName()
-        str[12] = "3226";//test_types account for testTypes
-        str[13] = "19";//num_cards flashList.size()
-        str[14] = "21";//num_imgs count number of images in filesystem
-        str[15] = "1";//num_video count number of videos in filesystem
-        str[16] = "2";//num_audio count number of audio files in filesystem
-        str[17] = "97.3";
-        //str[17] = "1";//session_count increment this number
-        
-        String[] metaDataAry = str;
-    
-
-        LOGGER.debug("Sending to DB: " );
-        for(String s : str) {
-            System.out.print(s + ", ");
-        }
-    
-        getInstance().reportDeckMetadata(metaDataAry);
-    }
-    
-     */
 }

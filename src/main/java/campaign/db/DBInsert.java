@@ -1,9 +1,12 @@
 package campaign.db;
 
+import authcrypt.UserData;
 import authcrypt.user.EncryptedStud;
 import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.QueryResult;
+import flashmonkey.Timer;
 import forms.utility.Alphabet;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
@@ -12,22 +15,18 @@ import java.util.concurrent.ExecutionException;
 public enum DBInsert {
 	
 	STUDENT_ENCRYPTED_DATA() {
-		
 		@Override
 		public boolean doInsert(EncryptedStud student) {
-			LOGGER.setLevel(Level.DEBUG);
+			//LOGGER.setLevel(Level.DEBUG);
 			LOGGER.debug("orig_email: {} ", student.getOrigUserEmail());
 			LOGGER.debug("userName: {}", authcrypt.UserData.getUserName());
-			String btw = "','";
+
 			String statement = //" BEGIN; " +
 					" INSERT INTO Person (first_name, last_name, middle_name, orig_email, current_email, phone, age, ip_connect, institution, descript, photo_link) " +
 							" VALUES ('" +
 							Alphabet.encrypt(student.getFirstName()) + btw +
 							Alphabet.encrypt(student.getLastName())  + btw +
 							student.getMiddleName() + btw +
-							// currently the orig_email
-							//Alphabet.encrypt(authcrypt.UserData.getUserName()) + btw +
-							//Alphabet.encrypt(authcrypt.UserData.getUserName()) + btw +
 							Alphabet.encrypt(student.getOrigUserEmail()) + btw +
 							Alphabet.encrypt(student.getOrigUserEmail()) + btw +
 							student.getPhone() + btw +
@@ -38,13 +37,6 @@ public enum DBInsert {
 							student.getPhotoLink() +
 							"'); " +
 
-							"INSERT INTO Account (Account_id, orig_email, catagory) VALUES (" +
-							"lastVal()" + ",'" +
-							Alphabet.encrypt(student.getOrigUserEmail()) + btw +
-							"free" +
-							"'); " +
-
-							// insert all (orig_email, education_level, major, minor, cv_link)
 							"INSERT INTO Student  VALUES ('" +
 							// currently the orig_email
 							Alphabet.encrypt(student.getOrigUserEmail()) + btw +
@@ -54,22 +46,36 @@ public enum DBInsert {
 							student.getCvLink() +
 							"'); " +
 							"COMMIT;";
-
 			
-			System.out.println("doInsert: " + statement);
-			
-			boolean bool = query(statement);
-			if(bool) {
-				return true;
-			}
-			
-			return false;
+			return query(statement);
 		}
-	};
+	},
+	/**
+	 * Note: Does not use EncryptedStudent.
+	 */
+	SESSION_NOTE() {
+		private Timer fmTimer = Timer.getClassInstance();
+		@Override
+		public boolean doInsert(EncryptedStud student) {
 
-	//private static final Logger LOGGER = LoggerFactory.getLogger(DBInsert.class);
+		    String name = UserData.getUserName() != null ? Alphabet.encrypt(UserData.getUserName()) : "not set yet";
+
+			String statement = "INSERT INTO sessions (uhash, event_localtime, note) " +
+					" VALUES ('" +
+					name + btw +
+					fmTimer.getBeginTime() + btw +
+					fmTimer.getNote() +
+					"'); ";
+
+			return query((statement));
+		}
+
+	};;
+
+	String btw = "','";
 	// LOGGING
-	private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBInsert.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DBInsert.class);
+	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBInsert.class);
 
 	DBInsert() { /* NO ARGS CONSTRUCTOR */ }
 	

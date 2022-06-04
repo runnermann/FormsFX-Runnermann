@@ -20,9 +20,6 @@ public class QuestionMM extends Question implements Serializable, Comparable
 
     /** VARIABLES **/
     private char qType;
-    // The files for this question
-    // [0] is either an image, or video/audio
-    // [1] is the listOfShapes file
     private String[] qFiles;
 
     /** DEFAULT CONSTRUCTOR **/

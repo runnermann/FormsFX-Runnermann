@@ -1,7 +1,9 @@
 package campaign.db;
 
+import authcrypt.UserData;
 import authcrypt.user.EncryptedStud;
 import com.github.jasync.sql.db.QueryResult;
+import flashmonkey.Timer;
 import forms.utility.Alphabet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,7 @@ public enum DBUpdate {
 
             LOGGER.debug("DBUpdate.doUpdate() called");
  // (Message, column "person" of relation "student" does not exist), (Position, 21), (File, analyze.c), (Line, 2346), (Routine, transformUpdateTargetList)])
-            String btw = "'";
+
             String statement = "BEGIN; " +
                     " UPDATE Person SET " +
                     " first_name = '" + Alphabet.encrypt(student.getFirstName()) + btw +
@@ -38,15 +40,18 @@ public enum DBUpdate {
                     whereStatement + ";" +
                     " COMMIT;";
 
-            System.out.println("sending statement: {}" + statement);
-
             return query(statement);
         }
     };
 
+    // ********************* COMMON ********************
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DBUpdate.class);
+    String btw = "'";
+
 
     public abstract boolean doUpdate(EncryptedStud student, String whereStatement);
+
     public static boolean query(String statement) {
         DBConnect db = DBConnect.getInstance();
         try{
