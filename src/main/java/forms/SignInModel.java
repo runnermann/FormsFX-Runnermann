@@ -28,111 +28,116 @@ import java.util.ResourceBundle;
  * @author Lowell Stadelman
  */
 public class SignInModel {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(SignInModel.class);
-	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SignInModel.class);
-	private StringProperty field1 = new SimpleStringProperty("");
-	private FirstDescriptor descriptor = new FirstDescriptor();
-	
-	/**
-	 * These are the resource bundles for german and english.
-	 */
-	private ResourceBundle rbDE = ResourceBundle.getBundle("demo-locale", new Locale("de", "CH"));
-	private ResourceBundle rbEN = ResourceBundle.getBundle("demo-locale", new Locale("en", "UK"));
-	
-	/**
-	 * The default locale is English, thus the {@code ResourceBundleService} is
-	 * initialised with it.
-	 */
-	private ResourceBundleService rbs = new ResourceBundleService(rbEN);
 
-	private Form formInstance;
-	/**
-	 * Creates or simply returns to form singleton instance.
-	 * @return Returns the form instance.
-	 */
-	public Form getFormInstance() {
-		if (formInstance == null) {
-			createForm();
-		}
-		return formInstance;
-	}
-	
-	/**
-	 * Creates a new form instance with the required information.
-	 */
-	private void createForm() {
-		//LOGGER.info("createForm called");
-		formInstance = Form.of(
-				Group.of(
-						Field.ofStringType(descriptor.siOrigEmailProperty())
-								.id("form-field")
-								.required("email_placeholder")
-								.placeholder("email_placeholder")
-		  						.validate(StringLengthValidator.between(6, 40,"email_error_message")),
-						Field.ofPasswordType(field1)
-								.placeholder("password_first")
-								.required("password_first")
-								.validate(StringLengthValidator.between(3, 40,"non_error_message"))
-				)
-		).title("form_label")
-				.i18n(rbs);
-	}
-	
+      private static final Logger LOGGER = LoggerFactory.getLogger(SignInModel.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SignInModel.class);
+      private final StringProperty field1 = new SimpleStringProperty("");
+      private final FirstDescriptor descriptor = new FirstDescriptor();
 
-	protected void formAction() {
-		getFormInstance().persist();
-		UserData.setUserName(descriptor.getSiOrigEmail().toLowerCase());
+      /**
+       * These are the resource bundles for german and english.
+       */
+      private final ResourceBundle rbDE = ResourceBundle.getBundle("demo-locale", new Locale("de", "CH"));
+      private final ResourceBundle rbEN = ResourceBundle.getBundle("demo-locale", new Locale("en", "UK"));
 
-		LOGGER.debug("formAction() userName from form: {}", descriptor.getSiOrigEmail().toLowerCase());
+      /**
+       * The default locale is English, thus the {@code ResourceBundleService} is
+       * initialised with it.
+       */
+      private final ResourceBundleService rbs = new ResourceBundleService(rbEN);
 
-		if(validate()) {
-			UserData.setFirstName(descriptor.getSiFirstName());
-			FlashMonkeyMain.getFileSelectPane();
-			FlashMonkeyMain.setTopPane();
-		}
-		else {
-			// set message that user does not exist,
-			// and send to create new user form
-			getFormInstance().changedProperty().setValue(false);
-			getFormInstance().reset();
-			field1.setValue("");
-		}
-	}
+      private Form formInstance;
 
-	// validatorActionSwitch user information, if successful then return true
-	// else we create a popup and return false.
-	// returns true if not connected and pw username passes. If connected, returns
-	// the response from Vert.x if the pw and username passes.
-	// ifConnected & ifSuccessful, gets deckList from s3 and synchronizes with local list if exists.
-	private boolean validate() {
-		LOGGER.info("validatorActionSwitch() called");
-		// We interface with s3resources underneath to prevent storing unencrypted passwords.
-		Auth a = new Auth(field1.get(), descriptor.getSiOrigEmail().toLowerCase());
-		// validatorActionSwitch, the forms input.
-		return a.validatorActionSwitch(field1.get(), descriptor.getSiOrigEmail().toLowerCase(), "signin");
-	}
+      /**
+       * Creates or simply returns to form singleton instance.
+       *
+       * @return Returns the form instance.
+       */
+      public Form getFormInstance() {
+            if (formInstance == null) {
+                  createForm();
+            }
+            return formInstance;
+      }
 
-	
-	/**
-	 * Sets the locale of the form.
-	 *
-	 * @param language The language identifier for the new locale. Either DE or EN.
-	 */
-	public void translate(String language) {
-		switch (language) {
-			case "EN":
-				rbs.changeLocale(rbEN);
-				break;
-			case "DE":
-				rbs.changeLocale(rbDE);
-				break;
-			default:
-				throw new IllegalArgumentException("Not a valid locale");
-		}
-	}
-	
-	public FirstDescriptor getDataModel() {
-		return this.descriptor;
-	}
+      /**
+       * Creates a new form instance with the required information.
+       */
+      private void createForm() {
+            //LOGGER.info("createForm called");
+            formInstance = Form.of(
+                    Group.of(
+                        Field.ofStringType(descriptor.siOrigEmailProperty())
+                            .id("form-field")
+                            .required("email_placeholder")
+                            .placeholder("email_placeholder")
+                            .validate(StringLengthValidator.between(6, 40, "email_error_message")),
+                        Field.ofPasswordType(field1)
+                            .placeholder("password_first")
+                            .required("password_first")
+                            .validate(StringLengthValidator.between(3, 40, "non_error_message"))
+                    )
+                ).title("form_label")
+                .i18n(rbs);
+      }
+
+
+      protected void formAction() {
+            getFormInstance().persist();
+            UserData.setUserName(descriptor.getSiOrigEmail().toLowerCase());
+
+            LOGGER.debug("formAction() userName from form: {}", descriptor.getSiOrigEmail().toLowerCase());
+
+            if (validate()) {
+                  FlashMonkeyMain.setLoggedinToTrue();
+                  UserData.setFirstName(descriptor.getSiFirstName());
+                  FlashMonkeyMain.getFileSelectPane();
+                  FlashMonkeyMain.setTopPane();
+                  // Avoid unneccessary traffic to VERTX. Not
+                  // used for privileges.
+
+            } else {
+                  // set message that user does not exist,
+                  // and send to create new user form
+                  getFormInstance().changedProperty().setValue(false);
+                  getFormInstance().reset();
+                  field1.setValue("");
+            }
+      }
+
+      // validatorActionSwitch user information, if successful then return true
+      // else we create a popup and return false.
+      // returns true if not connected and pw username passes. If connected, returns
+      // the response from Vert.x if the pw and username passes.
+      // ifConnected & ifSuccessful, gets deckList from s3 and synchronizes with local list if exists.
+      private boolean validate() {
+            LOGGER.info("validatorActionSwitch() called");
+            // We interface with s3resources underneath to prevent storing unencrypted passwords.
+            Auth a = new Auth(field1.get(), descriptor.getSiOrigEmail().toLowerCase());
+            // validatorActionSwitch, the forms input.
+            return a.validatorActionSwitch(field1.get(), descriptor.getSiOrigEmail().toLowerCase(), "signin");
+      }
+
+
+      /**
+       * Sets the locale of the form.
+       *
+       * @param language The language identifier for the new locale. Either DE or EN.
+       */
+      public void translate(String language) {
+            switch (language) {
+                  case "EN":
+                        rbs.changeLocale(rbEN);
+                        break;
+                  case "DE":
+                        rbs.changeLocale(rbDE);
+                        break;
+                  default:
+                        throw new IllegalArgumentException("Not a valid locale");
+            }
+      }
+
+      public FirstDescriptor getDataModel() {
+            return this.descriptor;
+      }
 }

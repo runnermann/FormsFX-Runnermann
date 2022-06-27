@@ -23,12 +23,12 @@ import java.util.EventObject;
  * Created by hansolo on 05.01.16.
  */
 public class UpdateEvent extends EventObject {
-    public enum EventType { RECALC, REDRAW, RESIZE, LED, LCD, VISIBILITY, INTERACTIVITY, FINISHED, SECTION, ALERT, VALUE }
+      public enum EventType {RECALC, REDRAW, RESIZE, LED, LCD, VISIBILITY, INTERACTIVITY, FINISHED, SECTION, ALERT, VALUE}
 
-    public final EventType eventType;
+      public final EventType eventType;
 
-    public UpdateEvent(final Object SRC, final EventType EVENT_TYPE) {
-        super(SRC);
-        eventType = EVENT_TYPE;
-    }
+      public UpdateEvent(final Object SRC, final EventType EVENT_TYPE) {
+            super(SRC);
+            eventType = EVENT_TYPE;
+      }
 }

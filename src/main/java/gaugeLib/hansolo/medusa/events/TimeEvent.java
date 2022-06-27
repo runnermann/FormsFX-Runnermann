@@ -24,16 +24,16 @@ import java.util.EventObject;
  * Created by hansolo on 24.02.16.
  */
 public class TimeEvent extends EventObject {
-    public enum TimeEventType { HOUR, MINUTE, SECOND }
+      public enum TimeEventType {HOUR, MINUTE, SECOND}
 
-    public final ZonedDateTime TIME;
-    public final TimeEventType TYPE;
+      public final ZonedDateTime TIME;
+      public final TimeEventType TYPE;
 
 
-    // ******************** Constructors **************************************
-    public TimeEvent(final Object SRC, final ZonedDateTime TIME, final TimeEventType TYPE) {
-        super(SRC);
-        this.TIME = TIME;
-        this.TYPE = TYPE;
-    }
+      // ******************** Constructors **************************************
+      public TimeEvent(final Object SRC, final ZonedDateTime TIME, final TimeEventType TYPE) {
+            super(SRC);
+            this.TIME = TIME;
+            this.TYPE = TYPE;
+      }
 }

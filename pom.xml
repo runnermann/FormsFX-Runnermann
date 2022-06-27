@@ -6,10 +6,13 @@
 
     <groupId>app.flashmonkey</groupId>
     <artifactId>flashmonkey-deploy</artifactId>
-    <version>2.0.0-BETA</version>
+    <version>1.2.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- java version 11 LTS latest as of Mar 11 2022 -->
+        <!--<maven.compiler.source>11.0.14</maven.compiler.source>
+        <maven.compiler.target>11.0.14</maven.compiler.target>-->
         <javafx.version>17.0.2</javafx.version>
         <mavenshade.version>3.2.0</mavenshade.version>
         <!-- JAXB -->
@@ -88,33 +91,6 @@
             <artifactId>formsfx-core-runnermann</artifactId>
             <version>8.4.0</version>
         </dependency>
-        <!-- Rich Text Editor -->
-<!--        <dependency>-->
-<!--            <groupId>type.richtext</groupId>-->
-<!--            <artifactId>richtextfx</artifactId>-->
-<!--            <version>0.10.9</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.reactfx</groupId>
-            <artifactId>reactfx</artifactId>
-            <version>2.0-M5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.fxmisc.undo</groupId>
-            <artifactId>undofx</artifactId>
-            <version>2.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.fxmisc.flowless</groupId>
-            <artifactId>flowless</artifactId>
-            <version>0.6.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.fxmisc.wellbehaved</groupId>
-            <artifactId>wellbehavedfx</artifactId>
-            <version>0.3.3</version>
-        </dependency>
-
         <!-- QR Code generator -->
         <dependency>
             <groupId>com.google.zxing</groupId>
@@ -149,7 +125,6 @@
             <artifactId>webcam-capture</artifactId>
             <version>0.3.12</version>
         </dependency>
-
         <!-- JAVE2 video -->
         <dependency>
             <groupId>ws.schild</groupId>
@@ -279,6 +254,7 @@
         </dependency>
 
         <!-- TESTING -->
+        <!-- as of Jun 18 2022 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

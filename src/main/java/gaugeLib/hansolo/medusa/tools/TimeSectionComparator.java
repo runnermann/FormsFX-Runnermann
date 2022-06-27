@@ -26,8 +26,9 @@ import java.util.Comparator;
  * Created by hansolo on 31.01.16.
  */
 public class TimeSectionComparator implements Comparator<TimeSection>, Serializable {
-    @Override public int compare(final TimeSection SECTION_1, final TimeSection SECTION_2) {
-        return SECTION_1.compareTo(SECTION_2);
-    }
+      @Override
+      public int compare(final TimeSection SECTION_1, final TimeSection SECTION_2) {
+            return SECTION_1.compareTo(SECTION_2);
+      }
 }
 

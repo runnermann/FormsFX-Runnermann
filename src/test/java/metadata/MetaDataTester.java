@@ -336,7 +336,7 @@ public class MetaDataTester extends ApplicationTest {
 	@Order(7)
 	public void formSavesData() throws Exception {
 		
-		bobTheBot.robotSetup();
+		bobTheBot.robotSetup("idk@idk.com","bangBang#01");
 		
 		// erase the files data
 		// 4) Save metaData to file
@@ -428,7 +428,7 @@ public class MetaDataTester extends ApplicationTest {
 	@Order(8)
 	public void fieldsHaveData() throws Exception {
 		
-		bobTheBot.robotSetup();
+		bobTheBot.robotSetup("idk@idk.com","bangBang#01");
 		
 		// click on create button
 		Point2D xy = FlashMonkeyMain.getCreateButtonXY();

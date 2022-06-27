@@ -25,12 +25,12 @@ import java.util.EventObject;
  * Created by hansolo on 28.01.16.
  */
 public class AlarmEvent extends EventObject {
-    public final Alarm ALARM;
+      public final Alarm ALARM;
 
 
-    // ******************** Constructors **************************************
-    public AlarmEvent(final Object SRC, final Alarm ALARM) {
-        super(SRC);
-        this.ALARM = ALARM;
-    }
+      // ******************** Constructors **************************************
+      public AlarmEvent(final Object SRC, final Alarm ALARM) {
+            super(SRC);
+            this.ALARM = ALARM;
+      }
 }

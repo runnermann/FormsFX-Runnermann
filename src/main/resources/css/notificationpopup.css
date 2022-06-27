@@ -18,14 +18,14 @@
 }
 
 .notification-bar > .pane .title {
-    -fx-font-size: 1.25em; /*15px;*/
+    -fx-font-size: 16px; /*15px;*/
     -fx-text-fill: #292929;
     /*-fx-font-weight: bold;*/
     -fx-alignment: top-center;
 }
 
 .notification-bar > .pane .label {
-    -fx-font-size: 1em; /*15px;*/
+    -fx-font-size: 16px; /*15px;*/
     -fx-text-fill: #292929;
 }
 
@@ -77,6 +77,23 @@
 .notification-bar.dark > .pane .title,
 .notification-bar.dark > .pane .label {
     -fx-text-fill: #ebebeb;
+}
+
+/******************************************************************************
+ *
+ * Warning theme
+ *
+ *****************************************************************************/
+
+.notification-bar.warning > .pane {
+    -fx-background-radius: 3, 3, 3, 3;
+    /*-fx-background-color: TRANSPARENT, TRANSPARENT, linear-gradient(#FFAF19, #E09100 37%, #E09100);*/
+    -fx-background-color: TRANSPARENT, TRANSPARENT, linear-gradient(#595959, #474747 37%, #343434);
+}
+
+.notification-bar.warning > .pane .title,
+.notification-bar.warning > .pane .label {
+    -fx-text-fill: #FFAF19; /*#ebebeb;*/
 }
 
 

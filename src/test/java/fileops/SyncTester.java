@@ -114,7 +114,7 @@ public class SyncTester extends ApplicationTest {
         stage.toFront();
 
         // logs the test in
-        bobTheBot.robotSetup();
+        bobTheBot.robotSetup("idk@idk.com","bangBang#01");
     }
 
 
@@ -122,7 +122,7 @@ public class SyncTester extends ApplicationTest {
     public void setup() throws Exception {
 
         // logs the test in
-        bobTheBot.robotSetup();
+        bobTheBot.robotSetup("idk@idk.com","bangBang#01");
 
         String folder = DirectoryMgr.getMediaPath('t');
         String fileName = "abcdTestDeck.dec";

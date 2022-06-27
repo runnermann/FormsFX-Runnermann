@@ -3,6 +3,7 @@ package flashmonkey;
 
 
 
+import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import fileops.FileOpsUtil;
 import javafx.application.Platform;
@@ -20,10 +21,13 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
+
+
 import org.slf4j.LoggerFactory;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.robot.impl.SleepRobotImpl;
+
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
 
@@ -83,6 +87,11 @@ public class CreateCards extends ApplicationTest {
      */
     void writeDeckNameHelper() //throws Exception
     {
+        // Delete the file directory if it exists already
+        LOGGER.setLevel(Level.DEBUG);
+        // Directory for idk@idk.com
+        String deckName = "TestingDeck";
+
         //String fileName = "TestingDeck";
 
         // click on create new textƒield
@@ -91,7 +100,7 @@ public class CreateCards extends ApplicationTest {
         //robot.moveTo(xy);
         //robot.clickOn(xy);
         sleep(150);
-        write("TestingDeck").push(KeyCode.ENTER);
+        write(deckName).push(KeyCode.ENTER);
     }
 
 
@@ -128,6 +137,8 @@ public class CreateCards extends ApplicationTest {
             LOGGER.warn("Image in " + find.getClass().getName() + " was not in upperBox.");
             System.exit(0);
         }
+
+        System.out.println("foundNode name: " + foundNode.getClass().getName());
    
         GridPane gp = (GridPane) foundNode;
         
@@ -251,8 +262,8 @@ public class CreateCards extends ApplicationTest {
 
             // take a node snapshot of the questionTextArea
             Platform.runLater(() -> {
-                // @TODO EditTextIsSavedTest textImages line 254
-//                    images[i][0] = CreateFlash.getInstance().getEditorU().textEditor.getTextArea().snapshot(snapParams, null);
+
+                    images[i][0] = CreateFlash.getInstance().getEditor_U_ForTestingOnly().tCell.getTextArea().snapshot(snapParams, null);
                     try {
                         System.out.println("\n\n\n ********* saved the " + qFile.getName() + " image for " + i + " ********** \n\n\n");
                         ImageIO.write(SwingFXUtils.fromFXImage(images[i][0], null), "png", qFile);
@@ -264,16 +275,16 @@ public class CreateCards extends ApplicationTest {
             });
             // create FMsnapshot for upper editor and save the image to the array
             // save the image to the array
-            images[i][1] = takeSnapShotWShapes((i + 1) * 40, (i + 1) * 40, CreateFlash.getInstance().getEditorU(), DrawTools.getInstance(), shapesDblAry[i]);
+            images[i][1] = takeSnapShotWShapes((i + 1) * 40, (i + 1) * 40, CreateFlash.getInstance().getEditor_U_ForTestingOnly(), DrawTools.getInstance(), shapesDblAry[i]);
 
 
        //     xy = dt.getSaveBtnXY();
        //     robot.moveTo(xy);
        //     robot.clickOn(xy);
-            xy = dt.getExitBtnXY();
-            robot.moveTo(xy);
-            robot.clickOn(xy);
-            sleep(500);
+       //     xy = dt.getExitBtnXY();
+        //    robot.moveTo(xy);
+       //     robot.clickOn(xy);
+       //     sleep(500);
 
             // click answer area
             robot.clickOn(createFlash.getLowerTextXY());
@@ -283,8 +294,7 @@ public class CreateCards extends ApplicationTest {
             Platform.runLater(() -> {
                     // take a snapshot of the questionTextArea
                     //CreateFlashPane.getInstance().getEditorL().tCell.getTextArea().setCursor(Cursor.NONE);
-                // @TODO EditTextIsSavedTest textImages line 286
-//                    images[i][2] = CreateFlash.getInstance().getEditorL().textEditor.getTextArea().snapshot(snapParams, null);
+                    images[i][2] = CreateFlash.getInstance().getEditor_L_ForTestingOnly().tCell.getTextArea().snapshot(snapParams, null);
 
                     try {
                         ImageIO.write(SwingFXUtils.fromFXImage(images[i][2], null), "png", aFile);
@@ -299,15 +309,15 @@ public class CreateCards extends ApplicationTest {
             System.out.println("rev idx: " + (shapesDblAry.length - i - 1));
 
 
-            images[i][3] = takeSnapShotWShapes((i + 1) * 60, (i + 1) * 60, CreateFlash.getInstance().getEditorL(), DrawTools.getInstance(), revShapesDblAry[i]);
+            images[i][3] = takeSnapShotWShapes((i + 1) * 60, (i + 1) * 60, CreateFlash.getInstance().getEditor_L_ForTestingOnly(), DrawTools.getInstance(), revShapesDblAry[i]);
 
 
         //    xy = dt.getSaveBtnXY();
         //    robot.clickOn(xy);
-            xy = dt.getExitBtnXY();
-            robot.moveTo(xy);
-            robot.clickOn(xy);
-            sleep(200);
+        //    xy = dt.getExitBtnXY();
+        //    robot.moveTo(xy);
+        //    robot.clickOn(xy);
+        //    sleep(200);
 
             // click next card button
             CreateFlash cfp = CreateFlash.getInstance();
@@ -325,7 +335,7 @@ public class CreateCards extends ApplicationTest {
     void saveFile() {
 
         //FlashCardOps fo = new FlashCardOps();
-        robot.clickOn(CreateFlash.getInstance().getSaveDeckButtonXY());
+        robot.clickOn(CreateFlash.getInstance().getSaveDeckBtnXY());
         //fo.saveFlashList();
     }
 
@@ -408,11 +418,15 @@ public class CreateCards extends ApplicationTest {
 
 
 
-    public boolean removePrevFile(String fullPathName) throws IOException
+    public boolean removePrevFile() throws IOException
     {
-        File file = new File(fullPathName);
-        if(file.exists()) {
+        File dir = new File(DirectoryMgr.getWorkingDirectory() + "/FlashMonkeyData/906b1830bb8c5bcbe8a90541d5a8c30d/decks" );
+        File file = new File(dir + "/906b1830bb8c5bcbe8a90541d5a8c30d_906b1830bb8c5bcbe8a90541d5a8c30d$TestingDeck.dec");
+        LOGGER.debug("deleting directory: {}", dir);
+        if(file.exists())  {
+            LOGGER.debug("directory exists? {} ... deleting", true );
             file.delete();
+            dir.delete();
             return true;
         }
         return false;

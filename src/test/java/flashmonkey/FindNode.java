@@ -1,5 +1,6 @@
 package flashmonkey;
 
+import ch.qos.logback.classic.Level;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -29,6 +30,8 @@ public class FindNode {
     Map<Node, Integer> map;
 
     public FindNode() {
+        LOGGER.setLevel(Level.DEBUG);
+
         limit = 0;
         HBox testHBox = new HBox();
         scene = new Scene(testHBox);
@@ -43,17 +46,16 @@ public class FindNode {
         Scene scene = window.getScene();
         Parent parent = scene.getRoot();
         map = new HashMap<>();
-        root = (Pane) parent.getChildrenUnmodifiable().get(0);
+        GridPane gp = (GridPane) parent.getChildrenUnmodifiable().get(0);
 
-        if(root.getChildren().get(1).getClass().isInstance(new GridPane())) {
+        if(gp.getClass().isInstance(new GridPane())) {
             LOGGER.debug("In findNode and Pane is a gridpane");
 
             // BorderPane bp = (BorderPane) root;
-            Node newNode = (Pane) root.getChildren().get(1);
+            Node newNode = (Pane) gp.getChildren().get(1);
             map.put(newNode, 0);
-            return findNodeInPaneGraph(findNode, newNode, root, 0);
+            return findNodeInPaneGraph(findNode, newNode, gp, 0);
         }
-        
         // find this node, the first child node, the root node
         //map.put(root, 0);
         return findNodeInPaneGraph(findNode, root.getChildren().get(0), root, 0);
@@ -88,29 +90,29 @@ public class FindNode {
     Node returnNode = null;
 
     private Node findNodeInPaneGraph(Node findMe, Node childNode, Pane parentPane, int idx ) {
-        // System.out.println("\nfindNodeInPaneGraph(findMe, node, pane) called\n");
+        System.out.println("\nfindNodeInPaneGraph(findMe, node, pane) called\n");
     
-        // System.out.println(" Searching for: " + findMe.getClass().getName());
-        // // System.out.println(" This Pane is class: " + parentPane.getClass().getName() +
-           //     "\n Num children in this pane: " + parentPane.getChildren().size() + " idx: " + idx +
-           //     "\n Start child node is: " + childNode.getClass().getName());
- //       printChildren(parentPane.getChildren().size() - 1, (Pane) childNode);
+         System.out.println(" Searching for: " + findMe.getClass().getName());
+         System.out.println(" This Pane is class: " + parentPane.getClass().getName() +
+              "\n Num children in this pane: " + parentPane.getChildren().size() + " idx: " + idx +
+              "\n Start child node is: " + childNode.getClass().getName() +
+         "\n childNode has num children: " + ((Pane) childNode).getChildren().size());
+
+        printChildren(parentPane.getChildren().size() - 1, parentPane);
         if(parentPane.getParent() != null) {
-            // System.out.println("FYI, Parent is not null: pane.getParent(): " + parentPane.getParent().getClass().getName());
+             System.out.println("FYI, Parent is not null: pane.getParent(): " + parentPane.getParent().getClass().getName());
         }
-        // System.out.println("line 96");
+        System.out.println("line 96");
 
         // If map returns idx > size
         if (childNode == root && map.get(childNode) >= root.getChildren().size()) {
-            // System.out.println("returning null");
+            System.out.println("returning null");
             returnNode = null;
         }
-        
-        
         // if thisNode is the node we are looking for
         else if (childNode.getClass().getName().equals(findMe.getClass().getName())) {
       //  else if (true) {
-            //System.out.println("Found it, returning: " + childNode.getClass().getName());
+            System.out.println("Found it, returning: " + childNode.getClass().getName());
             returnNode = childNode;
         }
         // else if thisNode is a Pane
@@ -122,15 +124,17 @@ public class FindNode {
 
             Pane pane;
 
-            // System.out.println("node is: " + childNode.getClass().getName());
+            System.out.println("node is: " + childNode.getClass().getName());
 
-            if(childNode.getClass().getName().equals("BorderPane")) {
-                //System.out.println("BorderPane selected");
+            if (childNode.getClass().getName().equals("BorderPane")) {
+                System.out.println("BorderPane selected");
 
                 BorderPane bp = (BorderPane) childNode;
-                pane = (Pane) bp.getCenter();
+                pane = bp;
+                Node newNode = (Node) bp.getCenter();
+                findNodeInPaneGraph(findMe, newNode, bp, 0);
             } else if (childNode.getClass().getName().equals("GridPane")) {
-                //System.out.println("GridPane selected");
+                System.out.println("GridPane selected");
 
                 GridPane gp = (GridPane) childNode;
                 pane = gp;
@@ -138,26 +142,32 @@ public class FindNode {
                 Bounds bounds = gp.getBoundsInLocal();
                 Bounds screenBounds = gp.localToScreen(bounds);
 
-                //System.out.println("gp data " + screenBounds.toString());
+                System.out.println("gp data " + screenBounds.toString());
+
+            } else if(childNode.getClass().isInstance(new VBox())) {
+                VBox vBox = (VBox) childNode;
+                printChildren(vBox.getChildren().size(), vBox);
+                return vBox.getChildren().get(0);
 
             }
             else {
-                // System.out.println("pane is now childNode");
+                System.out.println("pane is now childNode");
                 pane = (Pane) childNode;
+                System.out.println("childNode.getName: " + childNode.getClass().getName());
             }
     
-            // System.out.println("line 144");
+             System.out.println("line 144");
             
             map.put(pane, 0);
             // get the first child in the Pane.
             Node newNode = pane.getChildren().get(0);
 
-                // System.out.println(childNode.getClass().getName() + " at idx " + idx +
-               //         " spawned, new recursive loop for: " + newNode.getClass().getName() +
-               //         " \n numChildren: " + pane.getChildren().size());
-                findNodeInPaneGraph(findMe, newNode, pane, 0);
+             System.out.println(childNode.getClass().getName() + " at idx " + idx +
+                    " spawned, new recursive loop for: " + newNode.getClass().getName() +
+                    " \n numChildren: " + pane.getChildren().size());
+            findNodeInPaneGraph(findMe, newNode, pane, 0);
     
-            // System.out.println("line 155");
+            System.out.println("line 155");
         } else {
             
             try {
@@ -230,16 +240,18 @@ public class FindNode {
      * @param pane
      */
     void printChildren(int num, Pane pane) {
+        System.out.println("in printChildren: ");
 
         if(pane != null && num > 0) {
             StringBuilder sb = new StringBuilder();
             sb.append(pane.getClass().getName() + " |   ->");
             for (int i = 0; i < num; i++) {
                 String str = pane.getChildren().get(i).getClass().getName();
-                sb.append(str + " | ");
+                String c = " contents size: " + ((Pane) pane.getChildren().get(i)).getChildren().size();
+                sb.append(str + c + " | ");
             }
     
-            // System.out.println("child nodes: " + sb.toString());
+            System.out.println("child nodes: " + sb.toString());
         }
     }
 

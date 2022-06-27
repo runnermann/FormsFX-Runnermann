@@ -23,97 +23,137 @@ import javafx.scene.text.Font;
  * Created by hansolo on 11.12.15.
  */
 public class Fonts {
-    private static final String DIGITAL_NAME;
-    private static final String DIGITAL_READOUT_NAME;
-    private static final String DIGITAL_READOUT_BOLD_NAME;
-    private static final String ELEKTRA_NAME;
-    private static final String ROBOTO_THIN_NAME;
-    private static final String ROBOTO_LIGHT_NAME;
-    private static final String ROBOTO_REGULAR_NAME;
-    private static final String ROBOTO_MEDIUM_NAME;
-    private static final String ROBOTO_BOLD_NAME;
-    private static final String ROBOTO_LIGHT_CONDENSED_NAME;
-    private static final String ROBOTO_REGULAR_CONDENSED_NAME;
-    private static final String ROBOTO_BOLD_CONDENSED_NAME;
-    private static final String LATO_LIGHT_NAME;
-    private static final String LATO_REGULAR_NAME;
-    private static final String LATO_BOLD_NAME;
+      private static final String DIGITAL_NAME;
+      private static final String DIGITAL_READOUT_NAME;
+      private static final String DIGITAL_READOUT_BOLD_NAME;
+      private static final String ELEKTRA_NAME;
+      private static final String ROBOTO_THIN_NAME;
+      private static final String ROBOTO_LIGHT_NAME;
+      private static final String ROBOTO_REGULAR_NAME;
+      private static final String ROBOTO_MEDIUM_NAME;
+      private static final String ROBOTO_BOLD_NAME;
+      private static final String ROBOTO_LIGHT_CONDENSED_NAME;
+      private static final String ROBOTO_REGULAR_CONDENSED_NAME;
+      private static final String ROBOTO_BOLD_CONDENSED_NAME;
+      private static final String LATO_LIGHT_NAME;
+      private static final String LATO_REGULAR_NAME;
+      private static final String LATO_BOLD_NAME;
 
-    private static String digitalName;
-    private static String digitalReadoutName;
-    private static String digitalReadoutBoldName;
-    private static String elektraName;
+      private static String digitalName;
+      private static String digitalReadoutName;
+      private static String digitalReadoutBoldName;
+      private static String elektraName;
 
-    private static String robotoThinName;
-    private static String robotoLightName;
-    private static String robotoRegularName;
-    private static String robotoMediumName;
-    private static String robotoBoldName;
+      private static String robotoThinName;
+      private static String robotoLightName;
+      private static String robotoRegularName;
+      private static String robotoMediumName;
+      private static String robotoBoldName;
 
-    private static String robotoLightCondensedName;
-    private static String robotoRegularCondensedName;
-    private static String robotoBoldCondensedName;
+      private static String robotoLightCondensedName;
+      private static String robotoRegularCondensedName;
+      private static String robotoBoldCondensedName;
 
-    private static String latoLightName;
-    private static String latoRegularName;
-    private static String latoBoldName;
-
-
-    static {
-        try {
-            digitalName                = Font.loadFont(Fonts.class.getResourceAsStream("/font/digital.ttf"), 10).getName();
-            digitalReadoutName         = Font.loadFont(Fonts.class.getResourceAsStream("/font/digitalreadout.ttf"), 10).getName();
-            digitalReadoutBoldName     = Font.loadFont(Fonts.class.getResourceAsStream("/font/digitalreadoutb.ttf"), 10).getName();
-            elektraName                = Font.loadFont(Fonts.class.getResourceAsStream("/font/elektra.ttf"), 10).getName();
-            robotoThinName             = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Thin.ttf"), 10).getName();
-            robotoLightName            = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Light.ttf"), 10).getName();
-            robotoRegularName          = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Regular.ttf"), 10).getName();
-            robotoMediumName           = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Medium.ttf"), 10).getName();
-            robotoBoldName             = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Bold.ttf"), 10).getName();
-            robotoLightCondensedName   = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Light.ttf"), 10).getName();
-            robotoRegularCondensedName = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Regular.ttf"), 10).getName();
-            robotoBoldCondensedName    = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Bold.ttf"), 10).getName();
-            latoLightName              = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Lig.otf"), 10).getName();
-            latoRegularName            = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Reg.otf"), 10).getName();
-            latoBoldName               = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Bol.otf"), 10).getName();
-        } catch (Exception exception) { }
-        DIGITAL_NAME                  = digitalName;
-        DIGITAL_READOUT_NAME          = digitalReadoutName;
-        DIGITAL_READOUT_BOLD_NAME     = digitalReadoutBoldName;
-        ELEKTRA_NAME                  = elektraName;
-        ROBOTO_THIN_NAME              = robotoThinName;
-        ROBOTO_LIGHT_NAME             = robotoLightName;
-        ROBOTO_REGULAR_NAME           = robotoRegularName;
-        ROBOTO_MEDIUM_NAME            = robotoMediumName;
-        ROBOTO_BOLD_NAME              = robotoBoldName;
-        ROBOTO_LIGHT_CONDENSED_NAME   = robotoLightCondensedName;
-        ROBOTO_REGULAR_CONDENSED_NAME = robotoRegularCondensedName;
-        ROBOTO_BOLD_CONDENSED_NAME    = robotoBoldCondensedName;
-        LATO_LIGHT_NAME               = latoLightName;
-        LATO_REGULAR_NAME             = latoRegularName;
-        LATO_BOLD_NAME                = latoBoldName;
-    }
+      private static String latoLightName;
+      private static String latoRegularName;
+      private static String latoBoldName;
 
 
-    // ******************** Methods *******************************************
-    public static Font digital(final double SIZE) { return new Font(DIGITAL_NAME, SIZE); }
+      static {
+            try {
+                  digitalName = Font.loadFont(Fonts.class.getResourceAsStream("/font/digital.ttf"), 10).getName();
+                  digitalReadoutName = Font.loadFont(Fonts.class.getResourceAsStream("/font/digitalreadout.ttf"), 10).getName();
+                  digitalReadoutBoldName = Font.loadFont(Fonts.class.getResourceAsStream("/font/digitalreadoutb.ttf"), 10).getName();
+                  elektraName = Font.loadFont(Fonts.class.getResourceAsStream("/font/elektra.ttf"), 10).getName();
+                  robotoThinName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Thin.ttf"), 10).getName();
+                  robotoLightName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Light.ttf"), 10).getName();
+                  robotoRegularName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Regular.ttf"), 10).getName();
+                  robotoMediumName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Medium.ttf"), 10).getName();
+                  robotoBoldName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Roboto-Bold.ttf"), 10).getName();
+                  robotoLightCondensedName = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Light.ttf"), 10).getName();
+                  robotoRegularCondensedName = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Regular.ttf"), 10).getName();
+                  robotoBoldCondensedName = Font.loadFont(Fonts.class.getResourceAsStream("/font/RobotoCondensed-Bold.ttf"), 10).getName();
+                  latoLightName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Lig.otf"), 10).getName();
+                  latoRegularName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Reg.otf"), 10).getName();
+                  latoBoldName = Font.loadFont(Fonts.class.getResourceAsStream("/font/Lato-Bol.otf"), 10).getName();
+            } catch (Exception exception) {
+            }
+            DIGITAL_NAME = digitalName;
+            DIGITAL_READOUT_NAME = digitalReadoutName;
+            DIGITAL_READOUT_BOLD_NAME = digitalReadoutBoldName;
+            ELEKTRA_NAME = elektraName;
+            ROBOTO_THIN_NAME = robotoThinName;
+            ROBOTO_LIGHT_NAME = robotoLightName;
+            ROBOTO_REGULAR_NAME = robotoRegularName;
+            ROBOTO_MEDIUM_NAME = robotoMediumName;
+            ROBOTO_BOLD_NAME = robotoBoldName;
+            ROBOTO_LIGHT_CONDENSED_NAME = robotoLightCondensedName;
+            ROBOTO_REGULAR_CONDENSED_NAME = robotoRegularCondensedName;
+            ROBOTO_BOLD_CONDENSED_NAME = robotoBoldCondensedName;
+            LATO_LIGHT_NAME = latoLightName;
+            LATO_REGULAR_NAME = latoRegularName;
+            LATO_BOLD_NAME = latoBoldName;
+      }
 
-    public static Font digitalReadout(final double SIZE) { return new Font(DIGITAL_READOUT_NAME, SIZE); }
-    public static Font digitalReadoutBold(final double SIZE) { return new Font(DIGITAL_READOUT_BOLD_NAME, SIZE); }
 
-    public static Font elektra(final double SIZE) { return new Font(ELEKTRA_NAME, SIZE); }
+      // ******************** Methods *******************************************
+      public static Font digital(final double SIZE) {
+            return new Font(DIGITAL_NAME, SIZE);
+      }
 
-    public static Font robotoThin(final double SIZE) { return new Font(ROBOTO_THIN_NAME, SIZE); }
-    public static Font robotoLight(final double SIZE) { return new Font(ROBOTO_LIGHT_NAME, SIZE); }
-    public static Font robotoRegular(final double SIZE) { return new Font(ROBOTO_REGULAR_NAME, SIZE); }
-    public static Font robotoMedium(final double SIZE) { return new Font(ROBOTO_MEDIUM_NAME, SIZE); }
-    public static Font robotoBold(final double SIZE) { return new Font(ROBOTO_BOLD_NAME, SIZE); }
+      public static Font digitalReadout(final double SIZE) {
+            return new Font(DIGITAL_READOUT_NAME, SIZE);
+      }
 
-    public static Font robotoCondensedLight(final double SIZE) { return new Font(ROBOTO_LIGHT_CONDENSED_NAME, SIZE); }
-    public static Font robotoCondensedRegular(final double SIZE) { return new Font(ROBOTO_REGULAR_CONDENSED_NAME, SIZE); }
-    public static Font robotoCondensedBold(final double SIZE) { return new Font(ROBOTO_BOLD_CONDENSED_NAME, SIZE); }
+      public static Font digitalReadoutBold(final double SIZE) {
+            return new Font(DIGITAL_READOUT_BOLD_NAME, SIZE);
+      }
 
-    public static Font latoLight(final double SIZE) { return new Font(LATO_LIGHT_NAME, SIZE); }
-    public static Font latoRegular(final double SIZE) { return new Font(LATO_REGULAR_NAME, SIZE); }
-    public static Font latoBold(final double SIZE) { return new Font(LATO_BOLD_NAME, SIZE); }
+      public static Font elektra(final double SIZE) {
+            return new Font(ELEKTRA_NAME, SIZE);
+      }
+
+      public static Font robotoThin(final double SIZE) {
+            return new Font(ROBOTO_THIN_NAME, SIZE);
+      }
+
+      public static Font robotoLight(final double SIZE) {
+            return new Font(ROBOTO_LIGHT_NAME, SIZE);
+      }
+
+      public static Font robotoRegular(final double SIZE) {
+            return new Font(ROBOTO_REGULAR_NAME, SIZE);
+      }
+
+      public static Font robotoMedium(final double SIZE) {
+            return new Font(ROBOTO_MEDIUM_NAME, SIZE);
+      }
+
+      public static Font robotoBold(final double SIZE) {
+            return new Font(ROBOTO_BOLD_NAME, SIZE);
+      }
+
+      public static Font robotoCondensedLight(final double SIZE) {
+            return new Font(ROBOTO_LIGHT_CONDENSED_NAME, SIZE);
+      }
+
+      public static Font robotoCondensedRegular(final double SIZE) {
+            return new Font(ROBOTO_REGULAR_CONDENSED_NAME, SIZE);
+      }
+
+      public static Font robotoCondensedBold(final double SIZE) {
+            return new Font(ROBOTO_BOLD_CONDENSED_NAME, SIZE);
+      }
+
+      public static Font latoLight(final double SIZE) {
+            return new Font(LATO_LIGHT_NAME, SIZE);
+      }
+
+      public static Font latoRegular(final double SIZE) {
+            return new Font(LATO_REGULAR_NAME, SIZE);
+      }
+
+      public static Font latoBold(final double SIZE) {
+            return new Font(LATO_BOLD_NAME, SIZE);
+      }
 }

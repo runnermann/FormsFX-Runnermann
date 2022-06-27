@@ -23,27 +23,32 @@ import java.time.Instant;
  * Created by hansolo on 01.11.16.
  */
 public class Data {
-    private final Instant timestamp;
-    private final double  value;
+      private final Instant timestamp;
+      private final double value;
 
 
-    // ******************** Constructors **************************************
-    public Data(final double VALUE) {
-        value     = VALUE;
-        timestamp = Instant.now();
-    }
+      // ******************** Constructors **************************************
+      public Data(final double VALUE) {
+            value = VALUE;
+            timestamp = Instant.now();
+      }
 
 
-    // ******************** Methods *******************************************
-    public double getValue() { return value; }
+      // ******************** Methods *******************************************
+      public double getValue() {
+            return value;
+      }
 
-    public Instant getTimestamp() { return timestamp; }
+      public Instant getTimestamp() {
+            return timestamp;
+      }
 
-    @Override  public String toString() {
-        return new StringBuilder().append("{\n")
-                                  .append("  \"timestamp\":").append(timestamp.getEpochSecond()).append(",\n")
-                                  .append("  \"value\":").append(value).append(",\n")
-                                  .append("}")
-                                  .toString();
-    }
+      @Override
+      public String toString() {
+            return new StringBuilder().append("{\n")
+                .append("  \"timestamp\":").append(timestamp.getEpochSecond()).append(",\n")
+                .append("  \"value\":").append(value).append(",\n")
+                .append("}")
+                .toString();
+      }
 }

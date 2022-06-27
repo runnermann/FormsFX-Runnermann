@@ -1,19 +1,20 @@
 package type.tools.calculator;
 
 import queue.ArrayQueue;
+
 import java.util.Stack;
 
 public interface OperatorInterface {
 
-    public abstract String getSymbol();
+      String getSymbol();
 
-    public abstract int getPriority();
+      int getPriority();
 
-    public abstract void stackAction(Object previous, ExpNode op, ArrayQueue outQueue, Stack<ExpNode> opStack, int index);
+      void stackAction(Object previous, ExpNode op, ArrayQueue outQueue, Stack<ExpNode> opStack, int index);
 
-    public abstract double execute(ExpNode exp, double x, double value);
+      double execute(ExpNode exp, double x, double value);
 
-    public abstract String getStrExpr(String x, String y, OperatorInterface op);
+      String getStrExpr(String x, String y, OperatorInterface op);
 
-    public abstract boolean isUnaryOp();
+      boolean isUnaryOp();
 }

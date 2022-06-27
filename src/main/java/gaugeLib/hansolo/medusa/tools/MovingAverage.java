@@ -27,52 +27,58 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by hansolo on 01.11.16.
  */
 public class MovingAverage {
-    public  static final int         MAX_PERIOD     = 1000;
-    private static final int         DEFAULT_PERIOD = 10;
-    private        final Queue<Data> window;
-    private              int         numberPeriod;
-    private              double      sum;
+      public static final int MAX_PERIOD = 1000;
+      private static final int DEFAULT_PERIOD = 10;
+      private final Queue<Data> window;
+      private final int numberPeriod;
+      private double sum;
 
 
-    // ******************** Constructors **************************************
-    public MovingAverage() {
-        this(DEFAULT_PERIOD);
-    }
-    public MovingAverage(final int NUMBER_PERIOD) {
-        numberPeriod = Helper.clamp(0, MAX_PERIOD, NUMBER_PERIOD);
-        window       = new ConcurrentLinkedQueue<>();
-    }
+      // ******************** Constructors **************************************
+      public MovingAverage() {
+            this(DEFAULT_PERIOD);
+      }
+
+      public MovingAverage(final int NUMBER_PERIOD) {
+            numberPeriod = Helper.clamp(0, MAX_PERIOD, NUMBER_PERIOD);
+            window = new ConcurrentLinkedQueue<>();
+      }
 
 
-    // ******************** Methods *******************************************
-    public void addData(final Data DATA) {
-        sum += DATA.getValue();
-        window.add(DATA);
-        if (window.size() > numberPeriod) {
-            sum -= window.remove().getValue();
-        }
-    }
-    public void addValue(final double VALUE) {
-        addData(new Data(VALUE));
-    }
+      // ******************** Methods *******************************************
+      public void addData(final Data DATA) {
+            sum += DATA.getValue();
+            window.add(DATA);
+            if (window.size() > numberPeriod) {
+                  sum -= window.remove().getValue();
+            }
+      }
 
-    public Queue<Data> getWindow() { return new LinkedList<>(window); }
+      public void addValue(final double VALUE) {
+            addData(new Data(VALUE));
+      }
 
-    public double getAverage() {
-        if (window.isEmpty()) return 0; // technically the average is undefined
-        return (sum / window.size());
-    }
+      public Queue<Data> getWindow() {
+            return new LinkedList<>(window);
+      }
 
-    public double getTimeBasedAverageOf(final Duration DURATION) {
-        assert !DURATION.isNegative() : "Time period must be positive";
-        Instant now     = Instant.now();
-        double  average = window.stream()
-                                .filter(v -> v.getTimestamp().isAfter(now.minus(DURATION)))
-                                .mapToDouble(Data::getValue)
-                                .average()
-                                .getAsDouble();
-        return average;
-    }
+      public double getAverage() {
+            if (window.isEmpty()) return 0; // technically the average is undefined
+            return (sum / window.size());
+      }
 
-    public void reset() { window.clear(); }
+      public double getTimeBasedAverageOf(final Duration DURATION) {
+            assert !DURATION.isNegative() : "Time period must be positive";
+            Instant now = Instant.now();
+            double average = window.stream()
+                .filter(v -> v.getTimestamp().isAfter(now.minus(DURATION)))
+                .mapToDouble(Data::getValue)
+                .average()
+                .getAsDouble();
+            return average;
+      }
+
+      public void reset() {
+            window.clear();
+      }
 }

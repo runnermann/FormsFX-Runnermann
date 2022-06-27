@@ -24,17 +24,14 @@ import javafx.scene.input.MouseEvent;
 import type.draw.shapes.GenericShape;
 
 /**
- *
- *
- *     @author Lowell Stadelman
+ * @author Lowell Stadelman
  */
-public interface CopyPasteInterface<T extends GenericShape>
-{
+public interface CopyPasteInterface<T extends GenericShape> {
 
-    void copyAction(MouseEvent mouse, GenericShape gs);
+      void copyAction(MouseEvent mouse, GenericShape gs);
 
-    void pasteAction(MouseEvent mouse);
+      void pasteAction(MouseEvent mouse);
 
-    //Shape editableShapeAction(Shape shape, GenericShape gs);
+      //Shape editableShapeAction(Shape shape, GenericShape gs);
 
 }

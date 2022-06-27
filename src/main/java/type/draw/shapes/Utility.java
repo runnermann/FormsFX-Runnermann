@@ -25,115 +25,114 @@ import java.util.ArrayList;
 
 public class Utility {
 
-    static double rise;
-    static double run;
+      static double rise;
+      static double run;
 
-    /**
-     * Given two points of a line(the second is an intersection), and a distance from the intersection/point,
-     * return two points of a line that intersects the 1st lines 2nd point.
-     * @param origin
-     * @param mouse
-     * @param length length of traingle
-     * @return
-     */
-    public ArrayList<Point2D> calcRectBase(Point2D origin, Point2D mouse, double length) {
-        ArrayList<Point2D> points = new ArrayList<>(4);
-        // rise is 90 deg from points
-        double headLength = length * .5;
-        double triWidth = length * .3;
-        double m = 0;
-        // current slope
-        m = calcSlope(origin, mouse);
-        //System.out.println("calcRectBase slope == " + m);
-        // Returns intersecting point. intersectionPoint = pts[1]
-        ArrayList<Point2D> pts = getPoints(origin, headLength, m);
+      /**
+       * Given two points of a line(the second is an intersection), and a distance from the intersection/point,
+       * return two points of a line that intersects the 1st lines 2nd point.
+       *
+       * @param origin
+       * @param mouse
+       * @param length length of traingle
+       * @return
+       */
+      public ArrayList<Point2D> calcRectBase(Point2D origin, Point2D mouse, double length) {
+            ArrayList<Point2D> points = new ArrayList<>(4);
+            // rise is 90 deg from points
+            double headLength = length * .5;
+            double triWidth = length * .3;
+            double m = 0;
+            // current slope
+            m = calcSlope(origin, mouse);
+            //System.out.println("calcRectBase slope == " + m);
+            // Returns intersecting point. intersectionPoint = pts[1]
+            ArrayList<Point2D> pts = getPoints(origin, headLength, m);
 
-        // new slope
-        m = invertSlope() * -1;
-        //System.out.println("m = " + m);
-        // triangle base points
-        points.addAll(getPoints(pts.get(0), triWidth, m));
-        // rectangle intersection points
-        points.addAll(getPoints(pts.get(0),triWidth * .4, m));
-        // rectangle end points
-        points.addAll(getPoints(mouse, triWidth * .4, m));
-        return points;
-    }
-
-
-    /**
-     * @return returns M. The slope of the line.
-     */
-    private double calcSlope(Point2D pt1, Point2D pt2) {
-        rise = pt1.getY() - pt2.getY() + .01;
-        run =  pt1.getX() - pt2.getX() + .01;
-
-        //System.out.println(" rise: " + rise);
-        //System.out.println("------------");
-        //System.out.println(" run:  " + run);
-
-        return rise / run;
-    }
-
-    private double invertSlope() {
-        return run / rise;
-    }
+            // new slope
+            m = invertSlope() * -1;
+            //System.out.println("m = " + m);
+            // triangle base points
+            points.addAll(getPoints(pts.get(0), triWidth, m));
+            // rectangle intersection points
+            points.addAll(getPoints(pts.get(0), triWidth * .4, m));
+            // rectangle end points
+            points.addAll(getPoints(mouse, triWidth * .4, m));
+            return points;
+      }
 
 
+      /**
+       * @return returns M. The slope of the line.
+       */
+      private double calcSlope(Point2D pt1, Point2D pt2) {
+            rise = pt1.getY() - pt2.getY() + .01;
+            run = pt1.getX() - pt2.getX() + .01;
 
-    /**
-     * Helper method for calcRectBase. Calculates the
-     * points
-     * @param source
-     * @param l
-     * @param m
-     */
-    private ArrayList<Point2D> getPoints(Point2D source, double l, double m)
-    {
-        // m is the slope of line, and the
-        // required Point lies distance l
-        // away from the source Point
-        Point a = new Point();
-        Point b = new Point();
+            //System.out.println(" rise: " + rise);
+            //System.out.println("------------");
+            //System.out.println(" run:  " + run);
 
-        if (run < 0){
-            double dx = l / Math.sqrt(1 + (m * m));
-            double dy = m * dx;
-            a.x = source.getX() + dx;
-            a.y = source.getY() + dy;
-            b.x = source.getX() - dx;
-            b.y = source.getY() - dy;
-        }
-        else {
+            return rise / run;
+      }
 
-            double dx = l / Math.sqrt(1 + (m * m));
-            double dy = m * dx;
-            a.x = source.getX() - dx;
-            a.y = source.getY() - dy;
-            b.x = source.getX() + dx;
-            b.y = source.getY() + dy;
-        }
+      private double invertSlope() {
+            return run / rise;
+      }
 
-        ArrayList<Point2D> line = new ArrayList<>(2);
-        line.add(new Point2D(a.x, a.y));
-        line.add(new Point2D(b.x, b.y));
-        return line;
-    }
 
-    // Class to represent a co-ordinate
-    // point
-    private static class Point {
-        double x, y;
-        Point()
-        {
-            x = y = 0;
-        }
-        Point(double a, double b)
-        {
-            x = a;
-            y = b;
-        }
-    }
+      /**
+       * Helper method for calcRectBase. Calculates the
+       * points
+       *
+       * @param source
+       * @param l
+       * @param m
+       */
+      private ArrayList<Point2D> getPoints(Point2D source, double l, double m) {
+            // m is the slope of line, and the
+            // required Point lies distance l
+            // away from the source Point
+            Point a = new Point();
+            Point b = new Point();
+
+            if (run < 0) {
+                  double dx = l / Math.sqrt(1 + (m * m));
+                  double dy = m * dx;
+                  a.x = source.getX() + dx;
+                  a.y = source.getY() + dy;
+                  b.x = source.getX() - dx;
+                  b.y = source.getY() - dy;
+            } else {
+
+                  double dx = l / Math.sqrt(1 + (m * m));
+                  double dy = m * dx;
+                  a.x = source.getX() - dx;
+                  a.y = source.getY() - dy;
+                  b.x = source.getX() + dx;
+                  b.y = source.getY() + dy;
+            }
+
+            ArrayList<Point2D> line = new ArrayList<>(2);
+            line.add(new Point2D(a.x, a.y));
+            line.add(new Point2D(b.x, b.y));
+            return line;
+      }
+
+      // Class to represent a co-ordinate
+      // point
+      private static class Point {
+            double x, y;
+
+            Point() {
+                  x = y = 0;
+            }
+
+            Point(double a, double b) {
+                  x = a;
+                  y = b;
+            }
+      }
 
     /*public static void main(String[] args) {
         Utility u = new Utility();

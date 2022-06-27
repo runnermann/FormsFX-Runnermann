@@ -33,271 +33,278 @@ import java.util.ArrayList;
 
 import static uicontrols.UIColors.convertColor;
 
-public class FMPolygon extends GenericShape<FMPolygon> implements Serializable
-{
-	private static final Logger LOGGER = LoggerFactory.getLogger(FMPolygon.class);
-	
-	double[] points;
-	
-	protected double x0;
-	protected double y0;
-	
-	private double strokeWidth;
-	private String strokeColor;
-	private String fillColor;
+public class FMPolygon extends GenericShape<FMPolygon> implements Serializable {
+      private static final Logger LOGGER = LoggerFactory.getLogger(FMPolygon.class);
 
-	// For rounded corners
-	private double arcWidth = 0.0;
-	private double arcHeight = 0.0;
+      double[] points;
 
-	// A shape knows its index in the
-	// shape array
-	private int shapeAryIdx;
-	
-	/**
-	 * No args constructor
-	 */
-	public FMPolygon(){ /* empty */ }
+      protected double x0;
+      protected double y0;
 
+      private double strokeWidth;
+      private String strokeColor;
+      private String fillColor;
 
-	/**
-	 * Called by shape builders that extend this class.
-	 * @param points
-	 * @param strokeW
-	 * @param stroke
-	 * @param fill
-	 * @param index
-	 */
-	public FMPolygon(double[] points, double strokeW, String stroke, String fill, int index) {
-		LOGGER.debug("constructor called in FMPolygon. Constructor for builders that extend this class.");
-		double[] pAry = new double[points.length];
-		int i = 0;
-		for(double thisDbl : points) {
-			pAry[i] = thisDbl;
-			i++;
-		}
-		this.points = pAry;
-		x0 = pAry[0];
-		y0 = pAry[1];
-		this.strokeWidth = strokeW;
-		this.strokeColor = stroke;
-		this.fillColor = fill;
-		this.shapeAryIdx = index;
-		this.strokeColor = stroke;
-	}
+      // For rounded corners
+      private final double arcWidth = 0.0;
+      private final double arcHeight = 0.0;
 
-	/**
-	 * Copy constructor
-	 * @param other
-	 */
-	public FMPolygon(FMPolygon other) {
-		LOGGER.debug("FMPolygon cosntructor called");
-		this.points = other.points;
-		this.x0 = other.x0;
-		this.y0 = other.y0;
-		this.strokeColor = other.strokeColor;
-		this.fillColor = other.fillColor;
-		this.strokeWidth = other.strokeWidth;
-		this.shapeAryIdx = other.getShapeAryIdx();
-	}
+      // A shape knows its index in the
+      // shape array
+      private int shapeAryIdx;
 
-	/**
-	 * Returns a deep copy of this FMPolygon
-	 * @return
-	 */
-	public FMPolygon clone() {
-		double[] pts = new double[points.length];
-		for(int i = 0; i < points.length; i++ ) {
-			pts[i] = points[i];
-		}
-		return new FMPolygon(
-				pts,
-				this.strokeWidth,
-				this.strokeColor,
-				this.fillColor,
-				this.shapeAryIdx
-		);
-	}
+      /**
+       * No args constructor
+       */
+      public FMPolygon() { /* empty */ }
 
 
-	/** ************************************************************************************************************ ***
-	 *                                                                                                                 *
-	 SETTERS
-	 *                                                                                                                 *
-	 ** ************************************************************************************************************ **/
-	
+      /**
+       * Called by shape builders that extend this class.
+       *
+       * @param points
+       * @param strokeW
+       * @param stroke
+       * @param fill
+       * @param index
+       */
+      public FMPolygon(double[] points, double strokeW, String stroke, String fill, int index) {
+            LOGGER.debug("constructor called in FMPolygon. Constructor for builders that extend this class.");
+            double[] pAry = new double[points.length];
+            int i = 0;
+            for (double thisDbl : points) {
+                  pAry[i] = thisDbl;
+                  i++;
+            }
+            this.points = pAry;
+            x0 = pAry[0];
+            y0 = pAry[1];
+            this.strokeWidth = strokeW;
+            this.strokeColor = stroke;
+            this.fillColor = fill;
+            this.shapeAryIdx = index;
+            this.strokeColor = stroke;
+      }
 
-	@Override
-	public void setPoints(ObservableList<Double> pts) {
-		points = new double[pts.size()];
-		if(pts.size() > 1) {
-			for(int i = 0; i < points.length; i++ ) {
-				points[i] = pts.get(i);
-			}
-		}
-	}
-	
-	@Override
-	public void setX(double x0) {
-		this.points[0] = x0;
-		this.x0 = x0;
-	}
-	
-	@Override
-	public void setY(double y0) {
-		this.points[0] = y0;
-		this.y0 = y0;
-	}
-	
-	@Override
-	public void setShapeAryIdx(int i) {
-		this.shapeAryIdx = i;
-	}
-	
-	@Override
-	public void setStrokeWidth(double strokeWd) {
-		this.strokeWidth = strokeWd;
-	}
-	
-	@Override
-	public void setStrokeColor(String strokeClr) {
-		this.strokeColor = strokeClr;
-	}
-	
-	@Override
-	public void setFillColor(String fillClr) {
-		this.fillColor = fillClr;
-	}
+      /**
+       * Copy constructor
+       *
+       * @param other
+       */
+      public FMPolygon(FMPolygon other) {
+            LOGGER.debug("FMPolygon cosntructor called");
+            this.points = other.points;
+            this.x0 = other.x0;
+            this.y0 = other.y0;
+            this.strokeColor = other.strokeColor;
+            this.fillColor = other.fillColor;
+            this.strokeWidth = other.strokeWidth;
+            this.shapeAryIdx = other.getShapeAryIdx();
+      }
 
-
-
-	/** ************************************************************************************************************ ***
-	 *                                                                                                                 *
-	 GETTERS
-	 *                                                                                                                 *
-	 ** ************************************************************************************************************ **/
-
-
-	@Override
-	public double[] getDblPts() {
-		return new double[0];
-	}
-
-	@Override
-	public double getX() {
-		return this.x0;
-	}
-	
-	@Override
-	public double getY() {
-		return this.y0;
-	}
-	
-	@Override
-	public int getShapeAryIdx() {
-		return this.shapeAryIdx;
-	}
-	
-	@Override
-	public double getStrokeWidth() {
-		return this.strokeWidth;
-	}
-	
-	@Override
-	public String getStrokeColor() {
-		return this.strokeColor;
-	}
-	
-	@Override
-	public String getFillColor() {
-		return this.fillColor;
-	}
-	
-	@Override
-	public Polygon getShape() {
-		Polygon p = new Polygon(this.points);
-		
-		p.setStrokeWidth(this.strokeWidth);
-		p.setStroke(convertColor(this.strokeColor));
-		p.setFill(convertColor(this.fillColor));
-		return p;
-	}
-	
-	@Override
-	public Polygon getScaledShape(double scaleY) {
-		double[] pAry = new double[this.points.length];
-		int i = 0;
-		for(double d : this.points) {
-			pAry[i] = d * scaleY;
-			i++;
-		}
-		
-		Polygon p = new Polygon(pAry);
-		p.setStrokeWidth(this.getStrokeWidth() * scaleY);
-		p.setStroke(convertColor(this.getStrokeColor()));
-		p.setFill(convertColor(this.getFillColor()));
-		return p;
-	}
-	
-	@Override
-	public GenericBuilder<FMPolygon, PolygonBuilder> getBuilder(SectionEditor editor, boolean scaled) {
-		DrawTools dt = DrawTools.getInstance();
-		//scaled to be used later = scaled
-		return new PolygonBuilder(
-				this,
-				dt.getCanvas(),
-				dt.getGrapContext(),
-				dt.getOverlayPane(),
-				editor
-		);
-	}
-
-	@Override
-	public GenericBuilder<FMPolygon, PolygonBuilder> getBuilder(SectionEditor editor) {
-		DrawTools draw = DrawTools.getInstance();
-		return new PolygonBuilder(
-				draw.getCanvas(),
-				draw.getGrapContext(),
-				draw.getOverlayPane(),
-				editor,
-				this.getStrokeColor(),
-				this.getFillColor()
-		);
-	}
+      /**
+       * Returns a deep copy of this FMPolygon
+       *
+       * @return
+       */
+      public FMPolygon clone() {
+            double[] pts = new double[points.length];
+            for (int i = 0; i < points.length; i++) {
+                  pts[i] = points[i];
+            }
+            return new FMPolygon(
+                pts,
+                this.strokeWidth,
+                this.strokeColor,
+                this.fillColor,
+                this.shapeAryIdx
+            );
+      }
 
 
-	/** ************************************************************************************************************ ***
-	 *                                                                                                                 *
-	 OTHER METHODS
-	 *                                                                                                                 *
-	 ** ************************************************************************************************************ **/
+      /**
+       * *********************************************************************************************************** ***
+       * *
+       * SETTERS
+       * *
+       * * ************************************************************************************************************
+       **/
 
-	
-	@Override
-	public Canvas convertToCanvas(Canvas canvas) {
-		GraphicsContext gc = canvas.getGraphicsContext2D();
-		int size = this.points.length / 2;
-		double[] xPoints = new double[size];
-		double[] yPoints = new double[size];
 
-		for(int i = 0; i < size; i++) {
-			// x = odds
-			xPoints[i] = points[i];
-			// y = evens
-			i++;
-			yPoints[i] = points[i];
-		}
-		
-		gc.strokePolygon(xPoints, yPoints, size);
-		gc.setStroke(convertColor(this.getStrokeColor()));
-		gc.setFill(convertColor(this.getFillColor()));
-		gc.setLineWidth(this.getStrokeWidth());
-		
-		return canvas;
-	}
-	
-	@Override
-	public GenericShape convertFmCanvas(Canvas poly) {
+      @Override
+      public void setPoints(ObservableList<Double> pts) {
+            points = new double[pts.size()];
+            if (pts.size() > 1) {
+                  for (int i = 0; i < points.length; i++) {
+                        points[i] = pts.get(i);
+                  }
+            }
+      }
+
+      @Override
+      public void setX(double x0) {
+            this.points[0] = x0;
+            this.x0 = x0;
+      }
+
+      @Override
+      public void setY(double y0) {
+            this.points[0] = y0;
+            this.y0 = y0;
+      }
+
+      @Override
+      public void setShapeAryIdx(int i) {
+            this.shapeAryIdx = i;
+      }
+
+      @Override
+      public void setStrokeWidth(double strokeWd) {
+            this.strokeWidth = strokeWd;
+      }
+
+      @Override
+      public void setStrokeColor(String strokeClr) {
+            this.strokeColor = strokeClr;
+      }
+
+      @Override
+      public void setFillColor(String fillClr) {
+            this.fillColor = fillClr;
+      }
+
+
+      /**
+       * *********************************************************************************************************** ***
+       * *
+       * GETTERS
+       * *
+       * * ************************************************************************************************************
+       **/
+
+
+      @Override
+      public double[] getDblPts() {
+            return new double[0];
+      }
+
+      @Override
+      public double getX() {
+            return this.x0;
+      }
+
+      @Override
+      public double getY() {
+            return this.y0;
+      }
+
+      @Override
+      public int getShapeAryIdx() {
+            return this.shapeAryIdx;
+      }
+
+      @Override
+      public double getStrokeWidth() {
+            return this.strokeWidth;
+      }
+
+      @Override
+      public String getStrokeColor() {
+            return this.strokeColor;
+      }
+
+      @Override
+      public String getFillColor() {
+            return this.fillColor;
+      }
+
+      @Override
+      public Polygon getShape() {
+            Polygon p = new Polygon(this.points);
+
+            p.setStrokeWidth(this.strokeWidth);
+            p.setStroke(convertColor(this.strokeColor));
+            p.setFill(convertColor(this.fillColor));
+            return p;
+      }
+
+      @Override
+      public Polygon getScaledShape(double scaleY) {
+            double[] pAry = new double[this.points.length];
+            int i = 0;
+            for (double d : this.points) {
+                  pAry[i] = d * scaleY;
+                  i++;
+            }
+
+            Polygon p = new Polygon(pAry);
+            p.setStrokeWidth(this.getStrokeWidth() * scaleY);
+            p.setStroke(convertColor(this.getStrokeColor()));
+            p.setFill(convertColor(this.getFillColor()));
+            return p;
+      }
+
+      @Override
+      public GenericBuilder<FMPolygon, PolygonBuilder> getBuilder(SectionEditor editor, boolean scaled) {
+            DrawTools dt = DrawTools.getInstance();
+            //scaled to be used later = scaled
+            return new PolygonBuilder(
+                this,
+                dt.getCanvas(),
+                dt.getGrapContext(),
+                dt.getOverlayPane(),
+                editor
+            );
+      }
+
+      @Override
+      public GenericBuilder<FMPolygon, PolygonBuilder> getBuilder(SectionEditor editor) {
+            DrawTools draw = DrawTools.getInstance();
+            return new PolygonBuilder(
+                draw.getCanvas(),
+                draw.getGrapContext(),
+                draw.getOverlayPane(),
+                editor,
+                this.getStrokeColor(),
+                this.getFillColor()
+            );
+      }
+
+
+      /**
+       * *********************************************************************************************************** ***
+       * *
+       * OTHER METHODS
+       * *
+       * * ************************************************************************************************************
+       **/
+
+
+      @Override
+      public Canvas convertToCanvas(Canvas canvas) {
+            GraphicsContext gc = canvas.getGraphicsContext2D();
+            int size = this.points.length / 2;
+            double[] xPoints = new double[size];
+            double[] yPoints = new double[size];
+
+            for (int i = 0; i < size; i++) {
+                  // x = odds
+                  xPoints[i] = points[i];
+                  // y = evens
+                  i++;
+                  yPoints[i] = points[i];
+            }
+
+            gc.strokePolygon(xPoints, yPoints, size);
+            gc.setStroke(convertColor(this.getStrokeColor()));
+            gc.setFill(convertColor(this.getFillColor()));
+            gc.setLineWidth(this.getStrokeWidth());
+
+            return canvas;
+      }
+
+      @Override
+      public GenericShape convertFmCanvas(Canvas poly) {
 		/*
 		return new FMPolygon(
 				poly.getLayoutX(),
@@ -310,39 +317,39 @@ public class FMPolygon extends GenericShape<FMPolygon> implements Serializable
 				0);
 		)
 		 */
-		return new FMPolygon();
-	}
-	
-	@Override
-	public boolean equals(Object other) {
-		if(! other.getClass().getName().equals("FMPolygon")) {
-			return false;
-		}
-		FMPolygon otherFMPoly = (FMPolygon) other;
-		double[] othPoints = otherFMPoly.points;
-		int i = 0;
-		for(double pt : this.points) {
-			if(pt != othPoints[i]) {
-				return false;
-			}
-			i++;
-		}
-		return true;
-	}
-	
-	@Override
-	public int hashCode() {
-		int hash = this.getClass().getName().hashCode();
-		for(double p : points) {
-			hash += p;
-		}
-		return hash;
-	}
-	
-	@Override
-	public String toString() {
-		return " this is a FMPolygon";
-	}
-	
+            return new FMPolygon();
+      }
+
+      @Override
+      public boolean equals(Object other) {
+            if (!other.getClass().getName().equals("FMPolygon")) {
+                  return false;
+            }
+            FMPolygon otherFMPoly = (FMPolygon) other;
+            double[] othPoints = otherFMPoly.points;
+            int i = 0;
+            for (double pt : this.points) {
+                  if (pt != othPoints[i]) {
+                        return false;
+                  }
+                  i++;
+            }
+            return true;
+      }
+
+      @Override
+      public int hashCode() {
+            int hash = this.getClass().getName().hashCode();
+            for (double p : points) {
+                  hash += p;
+            }
+            return hash;
+      }
+
+      @Override
+      public String toString() {
+            return " this is a FMPolygon";
+      }
+
 
 }

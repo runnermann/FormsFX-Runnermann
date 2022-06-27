@@ -20,77 +20,83 @@
 package type.draw;
 
 /**
- * Class used to pass values from SnapShot to DrawTools. 
+ * Class used to pass values from SnapShot to DrawTools.
  */
 public class DrawObj {
-	
-	private int minX;
-	private int minY;
-	private int deltaX;
-	private int deltaY;
-	private String fileName;
-	private String imageName;
-	
-	/**
-	 * Default constructor. Sets all values to a default.
-	 */
-	public DrawObj() { /*default constructor*/ }
-	
-	/**
-	 * Contains demensions set in SnapShot to be used by
-	 * DrawTools.
-	 * @param minX
-	 * @param minY
-	 * @param deltaX
-	 * @param deltaY
-	 */
-	public void setDems(int minX, int minY, int deltaX, int deltaY) {
-		this.minX = minX;
-		this.minY = minY;
-		this.deltaX = deltaX;
-		this.deltaY = deltaY;
-	}
-	
-	/**
-	 * Sets the full path name
-	 * @param fileName
-	 */
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
-	}
-	
-	public void setImageName(String imgName) { imageName = imgName; }
-	
-	public String getImageName() { return imageName; }
 
-	//public String getShapesFileName() { return imageName.substring(0, imageName.length() - 3) + "dat";}
-	
-	public int getMinX() {
-		return minX;
-	}
-	
-	public int getMinY() {
-		return minY;
-	}
-	
-	public int getDeltaX() {
-		return deltaX;
-	}
-	
-	public int getDeltaY() {
-		return deltaY;
-	}
-	
-	public String getFileName() {
+      private int minX;
+      private int minY;
+      private int deltaX;
+      private int deltaY;
+      private String fileName;
+      private String imageName;
 
-		return fileName;
-	}
-	
-	public void clearDrawObj() {
-		minX = 0;
-		minY = 0;
-		deltaX = 0;
-		deltaY = 0;
-		fileName = "";
-	}
+      /**
+       * Default constructor. Sets all values to a default.
+       */
+      public DrawObj() { /*default constructor*/ }
+
+      /**
+       * Contains demensions set in SnapShot to be used by
+       * DrawTools.
+       *
+       * @param minX
+       * @param minY
+       * @param deltaX
+       * @param deltaY
+       */
+      public void setDems(int minX, int minY, int deltaX, int deltaY) {
+            this.minX = minX;
+            this.minY = minY;
+            this.deltaX = deltaX;
+            this.deltaY = deltaY;
+      }
+
+      /**
+       * Sets the full path name
+       *
+       * @param fileName
+       */
+      public void setFileName(String fileName) {
+            this.fileName = fileName;
+      }
+
+      public void setImageName(String imgName) {
+            imageName = imgName;
+      }
+
+      public String getImageName() {
+            return imageName;
+      }
+
+      //public String getShapesFileName() { return imageName.substring(0, imageName.length() - 3) + "dat";}
+
+      public int getMinX() {
+            return minX;
+      }
+
+      public int getMinY() {
+            return minY;
+      }
+
+      public int getDeltaX() {
+            return deltaX;
+      }
+
+      public int getDeltaY() {
+            return deltaY;
+      }
+
+      public String getFileName() {
+
+            return fileName;
+      }
+
+      public void clearDrawObj() {
+            minX = 0;
+            minY = 0;
+            deltaX = 0;
+            deltaY = 0;
+            fileName = "";
+      }
 }

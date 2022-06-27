@@ -5,29 +5,31 @@ import com.dlsc.formsfx.model.structure.Form;
 public interface FormModel {
 
 
-	public Form getFormInstance();
-	
-	public void createForm();
-	
-	/**
-	 * Creates the form
-	 * @param data
-	 */
-	public void formAction(FormData data);
+      Form getFormInstance();
 
-	public void formAction();
-	
-	/**
-	 * The button action once the form is
-	 * completed by the user.
-	 * @param data
-	 * @return
-	 */
-	public boolean doAction(FormData data);
-	
-	public void translate(String language);
-	
-	public Descriptor getDescriptor();
-	
-	
+      void createForm();
+
+      /**
+       * Creates the form
+       *
+       * @param data
+       */
+      void formAction(FormData data);
+
+      void formAction();
+
+      /**
+       * The button action once the form is
+       * completed by the user.
+       *
+       * @param data
+       * @return
+       */
+      boolean doAction(FormData data);
+
+      void translate(String language);
+
+      Descriptor getDescriptor();
+
+
 }

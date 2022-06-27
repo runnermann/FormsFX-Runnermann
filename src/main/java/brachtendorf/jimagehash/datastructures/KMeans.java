@@ -13,137 +13,138 @@ import java.util.logging.Logger;
 
 /**
  * @author Kilian
- *
  */
 public class KMeans {
 
-	private static final Logger LOGGER = Logger.getLogger(KMeans.class.getSimpleName());
-	
-	/**
-	 * The number of cluster the data will be partitioned into
-	 */
-	protected int k;
+      private static final Logger LOGGER = Logger.getLogger(KMeans.class.getSimpleName());
 
-	/**
-	 * Create a KMeans clusterer
-	 * 
-	 * @param clusters the number of cluster to partition the data into
-	 */
-	public KMeans(int clusters) {
-		this.k = Require.positiveValue(clusters);
-	}
+      /**
+       * The number of cluster the data will be partitioned into
+       */
+      protected int k;
 
-	public ClusterResult cluster(Hash[] hashes) {
-		return cluster(hashes, Integer.MAX_VALUE);
-	}
+      /**
+       * Create a KMeans clusterer
+       *
+       * @param clusters the number of cluster to partition the data into
+       */
+      public KMeans(int clusters) {
+            this.k = Require.positiveValue(clusters);
+      }
 
-	public ClusterResult cluster(Hash[] hashes, int maxIter) {
+      public ClusterResult cluster(Hash[] hashes) {
+            return cluster(hashes, Integer.MAX_VALUE);
+      }
 
-		int[] cluster = new int[hashes.length];
+      public ClusterResult cluster(Hash[] hashes, int maxIter) {
 
-		
-		// If only one cluster is available return an array indicating all data
-		// belonging to this one cluster
-		if (k == 1) {
-			return new ClusterResult(cluster, hashes);
-		} else if (k > hashes.length) {
-			ArrayUtil.fillArray(cluster, i ->{ return i;});
-			return new ClusterResult(cluster, hashes);
-		}
+            int[] cluster = new int[hashes.length];
 
-		// 0 = choose random start clusters
-		FuzzyHash[] clusterMeans = computeStartingClusters(hashes);
-		// Iteratively improve clusters
-		computeKMeans(cluster, clusterMeans, hashes, maxIter);
 
-		return new ClusterResult(cluster, hashes);
-	}
+            // If only one cluster is available return an array indicating all data
+            // belonging to this one cluster
+            if (k == 1) {
+                  return new ClusterResult(cluster, hashes);
+            } else if (k > hashes.length) {
+                  ArrayUtil.fillArray(cluster, i -> {
+                        return i;
+                  });
+                  return new ClusterResult(cluster, hashes);
+            }
 
-	protected FuzzyHash[] computeStartingClusters(Hash[] hashes) {
+            // 0 = choose random start clusters
+            FuzzyHash[] clusterMeans = computeStartingClusters(hashes);
+            // Iteratively improve clusters
+            computeKMeans(cluster, clusterMeans, hashes, maxIter);
 
-		PcgRSFast rng = new PcgRSFast();
+            return new ClusterResult(cluster, hashes);
+      }
 
-		// Lets randomly pick hashes
-		List<Integer> randomIndices = new ArrayList<>(k);
+      protected FuzzyHash[] computeStartingClusters(Hash[] hashes) {
 
-		for (int i = 0; i < hashes.length; i++) {
-			randomIndices.add(i);
-		}
+            PcgRSFast rng = new PcgRSFast();
 
-		Collections.shuffle(randomIndices, rng);
+            // Lets randomly pick hashes
+            List<Integer> randomIndices = new ArrayList<>(k);
 
-		FuzzyHash[] startingClusters = new FuzzyHash[k];
-		
-		for (int i = 0; i < k; i++) {
-			startingClusters[i] = new FuzzyHash();
-			startingClusters[i].mergeFast(hashes[randomIndices.remove(0)]);
-		}
+            for (int i = 0; i < hashes.length; i++) {
+                  randomIndices.add(i);
+            }
 
-		return startingClusters;
-	}
+            Collections.shuffle(randomIndices, rng);
 
-	protected void computeKMeans(int[] cluster, FuzzyHash[] clusterMeans, Hash[] hashes, int maxIter) {
+            FuzzyHash[] startingClusters = new FuzzyHash[k];
 
-		int iter = 0;
+            for (int i = 0; i < k; i++) {
+                  startingClusters[i] = new FuzzyHash();
+                  startingClusters[i].mergeFast(hashes[randomIndices.remove(0)]);
+            }
 
-		boolean dirty = false;
+            return startingClusters;
+      }
 
-		do {
-			dirty = false;
-			// For each datapoint
-			for (int dataIndex = 0; dataIndex < hashes.length; dataIndex++) {
+      protected void computeKMeans(int[] cluster, FuzzyHash[] clusterMeans, Hash[] hashes, int maxIter) {
 
-				// TODO reset
-				double minDistance = Double.MAX_VALUE;
-				int bestCluster = -1;
+            int iter = 0;
 
-				for (int clusterIndex = 0; clusterIndex < clusterMeans.length; clusterIndex++) {
+            boolean dirty = false;
+
+            do {
+                  dirty = false;
+                  // For each datapoint
+                  for (int dataIndex = 0; dataIndex < hashes.length; dataIndex++) {
+
+                        // TODO reset
+                        double minDistance = Double.MAX_VALUE;
+                        int bestCluster = -1;
+
+                        for (int clusterIndex = 0; clusterIndex < clusterMeans.length; clusterIndex++) {
 
 //					double distToCluster = clusterMeans[clusterIndex].weightedDistance(hashes[dataIndex]);
 
-					double distToCluster = clusterMeans[clusterIndex].normalizedHammingDistanceFast(hashes[dataIndex]);
+                              double distToCluster = clusterMeans[clusterIndex].normalizedHammingDistanceFast(hashes[dataIndex]);
 
-					if (distToCluster < minDistance) {
-						bestCluster = clusterIndex;
-						minDistance = distToCluster;
-					}
-				}
+                              if (distToCluster < minDistance) {
+                                    bestCluster = clusterIndex;
+                                    minDistance = distToCluster;
+                              }
+                        }
 
-				if (cluster[dataIndex] != bestCluster) {
-					cluster[dataIndex] = bestCluster;
-					dirty = true;
-				}
-			}
+                        if (cluster[dataIndex] != bestCluster) {
+                              cluster[dataIndex] = bestCluster;
+                              dirty = true;
+                        }
+                  }
 
-			if (dirty) {
-				// recompute cluster means
+                  if (dirty) {
+                        // recompute cluster means
 
-				// Reset
+                        // Reset
 //				ArrayUtil.fillArrayMulti(clusterMeans, () -> {
 //					return new FuzzyHash(hashResolution);
 //				});
 
-				Hash[] clones = new Hash[clusterMeans.length];
-				int i = 0;
-				for (FuzzyHash fuzzy : clusterMeans) {
-					fuzzy.reset();
-					clones[i++] = new Hash(fuzzy.getHashValue(), fuzzy.getBitResolution(), fuzzy.getAlgorithmId());
-				}
+                        Hash[] clones = new Hash[clusterMeans.length];
+                        int i = 0;
+                        for (FuzzyHash fuzzy : clusterMeans) {
+                              fuzzy.reset();
+                              clones[i++] = new Hash(fuzzy.getHashValue(), fuzzy.getBitResolution(), fuzzy.getAlgorithmId());
+                        }
 
-				for (int dataIndex = 0; dataIndex < hashes.length; dataIndex++) {
-					int clusterIndex = cluster[dataIndex];
-					clusterMeans[clusterIndex].mergeFast(hashes[dataIndex]);
-				}
+                        for (int dataIndex = 0; dataIndex < hashes.length; dataIndex++) {
+                              int clusterIndex = cluster[dataIndex];
+                              clusterMeans[clusterIndex].mergeFast(hashes[dataIndex]);
+                        }
 
-				for (int j = 0; j < clones.length; j++) {
-					clusterMeans[j].subtractFast(clones[j]);
-				}
-			}
+                        for (int j = 0; j < clones.length; j++) {
+                              clusterMeans[j].subtractFast(clones[j]);
+                        }
+                  }
 
-			if (iter++ > maxIter) {
-				break;
-			}
+                  if (iter++ > maxIter) {
+                        break;
+                  }
 //			System.out.println("iter: " + iter++ + " " + totalError);
-		} while (dirty);
-	}
+            } while (dirty);
+      }
 }

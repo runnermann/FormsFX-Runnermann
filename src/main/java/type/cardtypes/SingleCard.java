@@ -31,15 +31,13 @@ import type.sectiontype.GenericSection;
  *
  * @author Lowell Stadelman
  */
-public class SingleCard extends GenericCard
-{
-    //@Override
-    public Pane retrieveCard(String text, char mmType, String ... path)
-    {
-        GenericSection gs = GenericSection.getInstance();
-        StackPane pane = new StackPane();
-        pane.getChildren().add( gs.sectionFactory(text, mmType, 1, true, 0, path) );
-        pane.setAlignment(Pos.CENTER);
-        return pane;
-    }
+public class SingleCard extends GenericCard {
+      //@Override
+      public Pane retrieveCard(String text, char mmType, String... path) {
+            GenericSection gs = GenericSection.getInstance();
+            StackPane pane = new StackPane();
+            pane.getChildren().add(gs.sectionFactory(text, mmType, 1, true, 0, path));
+            pane.setAlignment(Pos.CENTER);
+            return pane;
+      }
 }

@@ -24,6 +24,6 @@ import java.util.EventListener;
  */
 @FunctionalInterface
 public interface AlarmEventListener extends EventListener {
-    void onAlarmEvent(final AlarmEvent EVENT);
+      void onAlarmEvent(final AlarmEvent EVENT);
 }
 

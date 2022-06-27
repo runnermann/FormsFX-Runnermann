@@ -49,7 +49,6 @@ public class EditShapesIsSavedTest extends ApplicationTest {
 
 
     FxRobot robot;// = new FxRobot();
-    SleepRobotImpl sleep = new SleepRobotImpl();
 
     String strPath = "../flashMonkeyFile/TestingDeck.dec";
     // image paths
@@ -189,7 +188,7 @@ public class EditShapesIsSavedTest extends ApplicationTest {
             // CLICK ON RIGHT PANE
             // popUp should be created with editable
             // shapes and popUp DrawTools
-            xy = cfp.getEditorU().getRightPaneXY();
+            xy = cfp.getEditor_U_ForTestingOnly().getRightPaneXY();
             //       robot.moveTo(xy);
             robot.clickOn(xy);
             sleep(750);
@@ -289,9 +288,9 @@ public class EditShapesIsSavedTest extends ApplicationTest {
         //    robot.clickOn(xy);
             sleep(50);
 
-            xy = dt.getExitBtnXY();
-            robot.clickOn(xy);
-            sleep(100);
+//            xy = dt.getExitBtnXY();
+//            robot.clickOn(xy);
+//            sleep(100);
 
 
             // *** EDIT THE LOWER SECTION SHAPES *** //
@@ -300,7 +299,7 @@ public class EditShapesIsSavedTest extends ApplicationTest {
             // CLICK ON RIGHT PANE
             // popUp should be created with editable
             // shapes and popUp DrawTools
-            xy = cfp.getEditorL().getRightPaneXY();
+            xy = cfp.getEditor_L_ForTestingOnly().getRightPaneXY();
             robot.moveTo(xy);
             //sleep(2000);
             robot.clickOn(xy);
@@ -404,14 +403,14 @@ public class EditShapesIsSavedTest extends ApplicationTest {
        //     xy = dt.getSaveBtnXY();
        //     robot.clickOn(xy);
        //     sleep(50);
-            xy = dt.getExitBtnXY();
-            robot.clickOn(xy);
+//            xy = dt.getExitBtnXY();
+//            robot.clickOn(xy);
 
             sleep(1000);
         }
 
         // save changes
-        xy = cfp.getSaveDeckButtonXY();
+//        xy = cfp.getSaveDeckButtonXY();
         robot.clickOn(xy);
 
         // check if shapeFileNames are the same

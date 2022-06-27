@@ -1,5 +1,5 @@
 /*
- * AUTHOR: Lowell Stadelman 
+ * AUTHOR: Lowell Stadelman
  */
 
 package flashmonkey;
@@ -7,6 +7,8 @@ package flashmonkey;
 // *** JAVAFX IMPORTS ***
 
 import campaign.Report;
+import ch.qos.logback.classic.Level;
+import fileops.BaseInterface;
 import fileops.CloudOps;
 import fileops.MediaSync;
 import fileops.utility.Utility;
@@ -14,29 +16,28 @@ import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import forms.DeckMetaModel;
 import forms.DeckMetaPane;
-import javafx.application.Platform;
+//import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import metadata.DeckMetaData;
 import org.controlsfx.control.PrefixSelectionComboBox;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.cardtypes.GenericCard;
+import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
-import type.testtypes.AIMode;
 import type.testtypes.GenericTestType;
+import type.testtypes.MultiChoice;
 import type.testtypes.TestList;
-import uicontrols.ButtoniKon;
-import uicontrols.FMAlerts;
-import uicontrols.FxNotify;
-import uicontrols.SceneCntl;
+import uicontrols.*;
 //import uicontrols.api.ComboBoxAutoComplete;
 //import uicontrols.api.FMAutoCompleteBox;
 //import uicontrols.api.SerialAutoCompleteBox;
@@ -156,1572 +157,1771 @@ import java.util.concurrent.atomic.AtomicInteger;
  ******************************************************************************/
 
 
-public final class CreateFlash<C extends GenericCard> {
+public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlash.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(CreateFlash.class);
-    // Only one instance of this class may exist within a JVM. Not
-    // a 100% solution.
-    private static CreateFlash CLASS_INSTANCE;
-    // Multi-threading
-    
-    //private FlashCardOps fcOps;
-    // The generic reference
-    private GenericCard gCard;
-    
-    // The message when the card is not enabled
-    String cardNotEnabledMsg = null;
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlash.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(CreateFlash.class);
+      // Only one instance of this class may exist within a JVM. Not
+      // a 100% solution.
+      private static CreateFlash CLASS_INSTANCE;
 
-    // if cards in flashList have changed
-    // ensures that if there is an exit, the users
-    // modifications are saved.
-    private boolean flashListChanged;
+      // The message when the card is not enabled
+      String cardNotEnabledMsg = null;
+      // if cards in flashList have changed
+      // ensures that if there is an exit, the users
+      // modifications are saved.
+      private boolean flashListChanged;
 
-    // Editors
-    private SectionEditor editorU = new SectionEditor();
-    private SectionEditor editorL = new SectionEditor();
+      // MarketPlace/sell button
+      private Button metaButton;
+      // Buttons for deckActions and card
+      private Button saveReturnButton, insertCardButton, newCardButton, abandButton;
+      // prev and next buttons for editing existing cards
+      private Button nextQButton, prevQButton, deleteQButton, undoQButton;
+      // resets all q's performance metrics to zero
+      private Button resetDeckButton;
+      private VBox masterPane;
+      private VBox cfpCenter;
+      private Stage metaWindow;
 
-    // MarketPlace/sell button
-    private Button metaButton;
-    // Button to add FlashCard question and answer
-    private Button saveDeckButton, insertCardButton, newCardButton, abandButton;
-    // prev and next buttons for editing existing cards
-    private Button nextQButton, prevQButton, deleteQButton, undoQButton;
-    // resets all q's performance metrics to zero
-    private Button resetDeckButton;
-    // The card buttons HBox
-    private HBox cardBtnBox;
-    private VBox masterPane;
-    private VBox cfpCenter;
-    private Stage metaWindow;// = new Stage();
+      // flags
+      private boolean isDisabled;
 
 
-    /**
-     * currentCard = is always a card stored in
-     *      the creatorList. The last card on the list
-     *      is always empty after start. The last card
-     *      is removed before being set in the list in
-     *      FlashCardOps.setListInFile(...)
-     */
-    private FlashCardMM currentCard;
+      /**
+       * currentCard = is always a card stored in
+       * the creatorList. The last card on the list
+       * is always empty after start. The last card
+       * is removed before being set in the list in
+       * FlashCardOps.setListInFile(...)
+       */
+      private FlashCardMM currentCard;
 
-    //*** VARIABLES ***
-    private int startSize;
-    private PrefixSelectionComboBox<TestMapper> entryComboBox;
-    private DeckMetaData meta;// = new DeckMetaData();
+      //*** VARIABLES ***
+      private int startSize;
 
-    //*** ARRAY List ***
-    private static volatile ArrayList<FlashCardMM> creatorList;//  = new ArrayList<>(20);
 
-    // The iterator index. Starts at the last existing
-    // index prior to the new card added.
-    private int listIdx;// = creatorList.size();
+      private DeckMetaData meta;// = new DeckMetaData();
 
-    /**
-     * Used by the ComboBox Test Selector.
-     * Note: Combobox contains placeholder classes that
-     *      currently do nothing.
-     *      To select the test types in the ComboBox.
-     */
-    private final ObservableList<TestMapper> TESTS = FXCollections.observableArrayList( TestMapper.getTestList(TestList.TEST_TYPES));
+      //*** ARRAY List ***
+      private static volatile ArrayList<FlashCardMM> creatorList;//  = new ArrayList<>(20);
 
-    /* ***** FOR TESTING ONLY ********/
-    DeckMetaPane metaPane;
-    
-    
-    /*******  METHODS ********/
+      // The iterator index. Starts at the last existing
+      // index prior to the new card added.
+      private int listIdx;// = creatorList.size();
 
-    /**
-     * no args constructor
-     */
-    private CreateFlash() {
-        flashListChanged = false;
-    }
+      /**
+       * Used by the ComboBox Test Selector.
+       * Note: Combobox contains placeholder classes that
+       * currently do nothing.
+       * To select the test types in the ComboBox.
+       */
+      private final ObservableList<TestMapper> TESTS = FXCollections.observableArrayList(TestMapper.getTestList(TestList.TEST_TYPES));
+      private static final PrefixSelectionComboBox<TestMapper> entryComboBox = new PrefixSelectionComboBox<TestMapper>();
 
-    /* ------------------------------------------------------- **/
+      /* ***** FOR TESTING ONLY ********/
+      DeckMetaPane metaPane;
 
-    /**
-     * Returns an instance of the class. If getInstance hasn't been called before
-     * a new instance of the class is created. otherwise it returns the existing
-     * instance.
-     * To intialize: ReadFlash readFlashObj = ReadFlash.getInstance();
-     * @return ReadFlash
-     */
-    public static synchronized CreateFlash getInstance() {
-        if(CLASS_INSTANCE == null) {
-            CLASS_INSTANCE = new CreateFlash();
-        }
-        return CLASS_INSTANCE;
-    }
+      // Editors
+      private static Editors editors;
+      private static class Editors {
+                  private final  SectionEditor EDITOR_U;
+                  private final  SectionEditor EDITOR_L;
 
-    /* ------------------------------------------------------- **/
+                  Editors(SectionEditor editorU, SectionEditor editorL) {
+                        EDITOR_U = editorU;
+                        EDITOR_L = editorL;
+                  }
+      }
 
-    /**
-     * Scene CONSTRUCTOR
-     */
-    public Scene createFlashScene() {  // package private
-    
-        //LOGGER.setLevel(Level.DEBUG);
-        
-        LOGGER.debug("called createFlashScene()");
-        //String name = FlashCardOps.getInstance().getDeckFileName();
-        LOGGER.debug("deckName: {}", FlashCardOps.getInstance().getDeckLabelName());
-    
-        /*metaWindow = new Stage();
-        meta = DeckMetaData.getInstance();*/
-        // Label at top of window
-        // Get deck name from readflash.
-        FlashCardOps fcOps = FlashCardOps.getInstance();
-        fcOps.resetDeckLabelName();
-        Label mainLabel = new Label("Deck name:  " + fcOps.getDeckLabelName());
-        // Set id for style in CSS
-        mainLabel.setId("deckNameLabel");
 
-        // If we are working on a deck that was just downloaded
-        // Then update the FlashList.
-        if(fcOps.getFlashList() == null || fcOps.getFlashList().isEmpty()) {
-            fcOps.refreshFlashList();
-        } else {
-            // @todo remove always save to cloud in saveFlashList
-            fcOps.saveFlashList();
-            fcOps.refreshFlashList();
-        }
-        
-        LOGGER.debug("flashList is empty: {}", fcOps.getFlashList().isEmpty());
-        
-        // If this is adding cards to an existing flashCard list, then
-        // creates the list to be added to. Also sets the
-        // startSize and the cardNum
-        if ( ! fcOps.getFlashList().isEmpty()) {
-            setCreatorList();
-        } else {
-            LOGGER.debug("flashList is empty.");
-            creatorList = new ArrayList<>(10);
-        }
+      /*******  METHODS ********/
 
-        // The list's index starts at the end
-        // for the purpose of editing. It
-        // starts at the end of the list.
-        if(creatorList != null) {
-            listIdx = creatorList.size();
-        }
+      /**
+       * no args constructor
+       */
+      private CreateFlash() {
+            LOGGER.setLevel(Level.ALL);
+      }
 
-        // NORTH & CENTER PANES entry fields
-        HBox cfpNorth = new HBox(4);
-        cfpNorth.setPadding(new Insets(2, 4, 2, 4 ));
-        // Contains the CardType
-        cfpCenter = new VBox(2);
-        //cfpCenter.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        cfpCenter.setPadding(new Insets(0, 4, 0, 4 ));
-        cfpCenter.setSpacing(2);
+      /* ------------------------------------------------------- **/
 
-        // contains the buttons in a horizontal row
-        VBox cfpSouth;
-        cfpNorth.setId("cfpNorthPane");
+      /**
+       * Returns an instance of the class. If getInstance hasn't been called before
+       * a new instance of the class is created. otherwise it returns the existing
+       * instance.
+       * To intialize: ReadFlash readFlashObj = ReadFlash.getInstance();
+       *
+       * @return ReadFlash
+       */
+      public static synchronized CreateFlash getInstance() {
+            if (CLASS_INSTANCE == null) {
+                  CLASS_INSTANCE = new CreateFlash();
+            }
+            return CLASS_INSTANCE;
+      }
 
-        /*
-         * ****  ComboBox selects the Test type. Default is no mode.  ****
-         * This is OBE.
-         * 0 = Default = multi-choice, multi-answer, T or F, and Write in.
-         * 1 = Multiple choice
-         * 2 = Multiple answer
-         * 3 = True or false
-         * 4 = Write it in
-         * 5 = FITB fill in the blank
-         * 6 = Turn in audio
-         * 7 = Turn in video
-         * 8 = Turn in Drawing
-         * 9 = Draw over image
-         * 10 = MathCard
-         * 11 = GraphCard
-         * 12 = NoteTaker
-         */
-        entryComboBox = new PrefixSelectionComboBox<>();
-        // Set the array of TESTS in comboList
-        // entryComboBox.editableProperty().setValue(true);
-        entryComboBox.getItems().addAll(TESTS);
-        // Set tooltip
-        entryComboBox.setTooltip(new Tooltip("Select the test mode for this card." +
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Scene CONSTRUCTOR
+       */
+      public Scene createFlashScene() {
+
+            flashListChanged = false;
+            LOGGER.setLevel(Level.ALL);
+
+            LOGGER.debug("called createFlashScene()");
+            //String name = FlashCardOps.getInstance().getDeckFileName();
+            LOGGER.debug("deckName: {}", FlashCardOps.getInstance().getDeckLabelName());
+
+            metaWindow = new Stage();
+            meta = DeckMetaData.getInstance();
+            // Label at top of window
+            // Get deck name from readflash.
+            FlashCardOps fcOps = FlashCardOps.getInstance();
+            fcOps.resetDeckLabelName();
+            Label mainLabel = new Label("Deck name:  " + fcOps.getDeckLabelName());
+            // Set id for style in CSS
+            mainLabel.setId("deckNameLabel");
+
+            // If we are working on a deck that was just downloaded
+            // Then update the FlashList.
+            if (fcOps.getFlashList() == null || fcOps.getFlashList().isEmpty()) {
+                  fcOps.refreshFlashList();
+            } else {
+                  // @todo remove always save to cloud in saveFlashList
+                  //fcOps.unsafeSaveFlashList();
+                  fcOps.safeSaveFlashList();
+                  fcOps.refreshFlashList();
+            }
+
+            LOGGER.debug("flashList is empty: {}", fcOps.getFlashList().isEmpty());
+
+            // If this is adding cards to an existing flashCard list, then
+            // creates the list to be added to. Also sets the
+            // startSize and the cardNum
+            if (!fcOps.getFlashList().isEmpty()) {
+                  setCreatorList();
+            } else {
+                  LOGGER.debug("flashList is empty.");
+                  creatorList = new ArrayList<>(10);
+            }
+
+            // The list's index starts at the end
+            // for the purpose of editing. It
+            // starts at the end of the list.
+            if (creatorList != null) {
+                  listIdx = creatorList.size();
+            }
+
+            // NORTH & CENTER PANES entry fields
+            HBox cfpNorth = new HBox(4);
+            cfpNorth.setPadding(new Insets(2, 4, 2, 4));
+            // Contains the CardType
+            cfpCenter = new VBox(2);
+            //cfpCenter.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            cfpCenter.setPadding(new Insets(0, 4, 0, 4));
+            cfpCenter.setSpacing(2);
+
+            // contains the buttons in a horizontal row
+            VBox cfpSouth;
+            cfpNorth.setId("cfpNorthPane");
+
+            /*
+             * ****  ComboBox selects the Test type. Default is no mode.  ****
+             * This is OBE.
+             * 0 = Default = multi-choice, multi-answer, T or F, and Write in.
+             * 1 = Multiple choice
+             * 2 = Multiple answer
+             * 3 = True or false
+             * 4 = Write it in
+             * 5 = FITB fill in the blank
+             * 6 = Turn in audio
+             * 7 = Turn in video
+             * 8 = Turn in Drawing
+             * 9 = Draw over image
+             * 10 = MathCard
+             * 11 = GraphCard
+             * 12 = NoteTaker
+             */
+            // Set the array of TESTS in comboList
+            // entryComboBox.editableProperty().setValue(true);
+            entryComboBox.getItems().addAll(TESTS);
+            // Set tooltip
+            entryComboBox.setTooltip(new Tooltip("Select the test mode for this card." +
                 //"\nAI: (Default) Intelligent selection mode, Intelligently selects top 4 modes." +
                 //"\nAll others are as stated. " +
                 "\nEffects the card layout. " +
                 "\n** Type a card name in for rapid search"));
-        // Set prefered width and height of combo box
-        entryComboBox.setMaxWidth(Double.MAX_VALUE);
-        entryComboBox.setPrefHeight(15);
-        entryComboBox.setPromptText("CARD TYPE");
-        // set number of rows visible
-        entryComboBox.setVisibleRowCount(5);
-
-        // For quick search of combobox items
-        // new SerialAutoCompleteBox(entryComboBox);
-
-    // Set section editors for Upper area and lower area
-        gCard = new GenericCard();
-        // create blank card with new cID for the first card
-        // and add it to creatorList. getCID from card in list.
-        currentCard = new FlashCardMM();
-        creatorList.add(currentCard);
-        currentCard.setCNumber(999);
-    
-        LOGGER.info("CreatorList size: {}, listIdx: {}", creatorList.size(), listIdx);
-        // section editors
-        editorU = new SectionEditor(makeQPrompt(listIdx), 'U', this.currentCard.getCID());
-        editorL = new SectionEditor("Enter the answer here", 'L', this.currentCard.getCID());
+            // Set prefered width and height of combo box
+            entryComboBox.setMaxWidth(Double.MAX_VALUE);
+            entryComboBox.setPrefHeight(15);
+            entryComboBox.setPromptText("CARD TYPE");
+            // set number of rows visible
+            entryComboBox.setVisibleRowCount(5);
 
 
-        // If this is the first session, set the default create to AIMode
-        if (cfpCenter.getChildren().isEmpty()) {
-            AIMode aiMode = new AIMode();
-            cfpCenter.getChildren().addAll(aiMode.getTEditorPane(creatorList, editorU, editorL, cfpCenter));
-        }
+            // For quick search of combobox items
+            // new SerialAutoCompleteBox(entryComboBox);
 
-        // Action call
-        entryComboBox.setOnAction(e -> {
-            cfpCenter.getChildren().clear();
-            if(entryComboBox.getValue().getTestType().isDisabled()) {
-                cardNotEnabledMsg = "Arrrff! This feature will be enabled in a future version. It is on our to do list " +
-                        "and is not yet available. :(";
-            } else {
-                cardNotEnabledMsg = null;
+            // create blank card with new cID for the first card
+            // and add it to creatorList. getCID from card in list.
+            currentCard = new FlashCardMM();
+            creatorList.add(currentCard);
+            currentCard.setCNumber(999);
+
+            LOGGER.info("CreatorList size: {}, listIdx: {}", creatorList.size(), listIdx);
+            // section editors
+            editors = new Editors(new SectionEditor( "", makeQPrompt(listIdx), 'U', this.currentCard.getCID() ),
+                                          new SectionEditor("", "Enter the answer here", 'L', this.currentCard.getCID()) );
+
+            // Disable buttons if entrycombobox is showing.
+            if (entryComboBox.isVisible()) {
+                  disableEditors();
             }
-            editorU.styleToPrompt();
-            editorU.setPrompt(makeQPrompt(listIdx));
-            cfpCenter.getChildren().addAll(entryComboBox.getValue().getTestType().getTEditorPane(creatorList, editorU, editorL, cfpCenter));
-        });
 
-        // Add comboBox to buttonBox
-        cfpNorth.getChildren().addAll(entryComboBox, mainLabel);
-        
-        //****         CFP SOUTH AND BUTTON ACTIONS         ***
-        // CFP south contains buttons gauges and non content control/information
-        masterPane = new VBox(2);
-        getKeyboardShortcuts();
-        cfpSouth = getCreatorButtons();
-    //    cfpSouth.setPrefHeight(125);
-    //    cfpSouth.setMinHeight(Region.USE_PREF_SIZE);
-    //    cfpSouth.setMaxHeight(Region.USE_PREF_SIZE);
-        cfpSouth.setPadding(new Insets(10, 4, 10, 4));
-        // Create a master borderPane then add buttons to the scene
-        masterPane.setAlignment(Pos.CENTER);
-        masterPane.setId("cfMasterPane");
-        masterPane.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
-        masterPane.getChildren().addAll(cfpNorth, cfpCenter, cfpSouth);
-        // create the scene and set it's size
-        Scene masterScene = new Scene(masterPane, SceneCntl.getCreateFlashHt(), SceneCntl.getCreateFlashHt());
-        changeListenerBinding(masterScene);
-        
-        // the initial displayed element "last in list" is empty. Other
-        // cards are handled by nav buttons
-        FMTWalker.getInstance().setCurrentNode(currentCard);
-        fcOps.buildTree(creatorList);
-        fcOps.refreshTreeWalker(creatorList);
-        if (!FlashMonkeyMain.getWindow().isFullScreen() && !FlashMonkeyMain.treeWindow.isShowing()) {
-            FlashMonkeyMain.buildTreeWindow();
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-            entryComboBox.show();
-        }
+            // If this is the first session, set the default create to multichoice
+            if (cfpCenter.getChildren().isEmpty()) {
+                  MultiChoice mode = MultiChoice.getInstance();
+                  cfpCenter.getChildren().addAll(mode.getTEditorPane(creatorList, editors.EDITOR_U, editors.EDITOR_L, cfpCenter));
+            }
 
-        return masterScene;
+            // Action call
+            entryComboBox.setOnAction(e -> {
+                  cfpCenter.getChildren().clear();
+//                  if (entryComboBox.getValue().getTestType().isDisabled()) {
+//                        cardNotEnabledMsg = "Arrrff! This feature will be enabled in a future version. It is on our to do list " +
+//                            "and is not yet available. :(";
+//                  } else {
+//                        cardNotEnabledMsg = null;
+//                  }
+                  editors.EDITOR_U.styleToPrompt();
+                  editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
+                  cfpCenter.getChildren().addAll(entryComboBox.getValue().getTestType().getTEditorPane(creatorList, editors.EDITOR_U, editors.EDITOR_L, cfpCenter));
+                  enableEditors();
+            });
 
-    }   /* END createFlashScene() ***/
+            // Add comboBox to buttonBox
+            cfpNorth.getChildren().addAll(entryComboBox, mainLabel);
 
-    /* ------------------------------------------------------- **/
+            //****         CFP SOUTH AND BUTTON ACTIONS         ***
+            // CFP south contains buttons gauges and non content control/information
+            masterPane = new VBox(2);
+            getKeyboardShortcuts();
+            cfpSouth = getCreatorButtons();
+            cfpSouth.setPadding(new Insets(10, 4, 10, 4));
+            // Create a master borderPane then add buttons to the scene
+            masterPane.setAlignment(Pos.CENTER);
+            masterPane.setId("cfMasterPane");
+            masterPane.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
+            masterPane.getChildren().addAll(cfpNorth, cfpCenter, cfpSouth);
+            // create the scene and set it's size and bind it so it is
+            // responsive to the window size
+            Scene masterScene = new Scene(masterPane, SceneCntl.getCreateFlashHt(), SceneCntl.getCreateFlashHt());
+            changeListenerBinding(masterScene);
+            // the initial displayed element "last in list" is empty. Other
+            // cards are handled by nav buttons
+            FMTWalker.getInstance().setCurrentNode(currentCard);
+            fcOps.buildTree(creatorList);
+            fcOps.refreshTreeWalker(creatorList);
+            if ( ! FlashMonkeyMain.getWindow().isFullScreen() && ! FlashMonkeyMain.treeWindow.isShowing()) {
+                  FlashMonkeyMain.buildTreeWindow();
+                  FlashMonkeyMain.AVLT_PANE.displayTree();
+                  entryComboBox.show();
+            }
 
-    /**
-     * Binds the masterBPane to SceneCntl
-     */
-    private void changeListenerBinding(Scene masterScene) {
-        ChangeListener<Number> sceneBoxListener = (observable, oldVal, newVal) -> {
-            SceneCntl.getReadFlashBox().setHt((int)masterScene.getHeight());
-            SceneCntl.getReadFlashBox().setWd((int)masterScene.getWidth());
-            SceneCntl.getReadFlashBox().setX((int)masterScene.getX());
-            SceneCntl.getReadFlashBox().setY((int)masterScene.getY());
-        };
+            return masterScene;
+      }   /* END createFlashScene() ***/
 
-        masterScene.widthProperty().addListener(sceneBoxListener);
-        masterScene.heightProperty().addListener(sceneBoxListener);
-        masterScene.xProperty().addListener(sceneBoxListener);
-        masterScene.yProperty().addListener(sceneBoxListener);
-    }
+      /* ------------------------------------------------------- **/
 
-    /* ------------------------------------------------------- **/
-    
-    /**
-     * Returns this cards cID
-     * @return
-     */
-    public String getCurrentCID() {
-        return new String(this.currentCard.getCID());
-    }
-    
-    /* ------------------------------------------------------- **/
-    
+      /**
+       * Binds the masterBPane to SceneCntl
+       */
+      private void changeListenerBinding(Scene masterScene) {
+            ChangeListener<Number> sceneBoxListener = (observable, oldVal, newVal) -> {
+                  SceneCntl.getReadFlashBox().setHt((int) masterScene.getHeight());
+                  SceneCntl.getReadFlashBox().setWd((int) masterScene.getWidth());
+                  SceneCntl.getReadFlashBox().setX((int) masterScene.getX());
+                  SceneCntl.getReadFlashBox().setY((int) masterScene.getY());
+            };
 
-    /**
-     * @return the selected testType in the comboBox.
-     */
-    public GenericTestType getTestType() {
-        if(null != entryComboBox && null != entryComboBox.getValue()) {
-            return entryComboBox.getValue().getTestType(); //getTestType();
-        }
-        return null;
-    }
+            masterScene.widthProperty().addListener(sceneBoxListener);
+            masterScene.heightProperty().addListener(sceneBoxListener);
+            masterScene.xProperty().addListener(sceneBoxListener);
+            masterScene.yProperty().addListener(sceneBoxListener);
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Returns this cards cID
+       *
+       * @return
+       */
+      public String getCurrentCID() {
+            return this.currentCard.getCID();
+      }
+
+      /* ------------------------------------------------------- **/
 
 
-    /* ------------------------------------------------------- **/
+      /**
+       * @return the selected testType in the comboBox.
+       */
+      public static GenericTestType getTestType() {
+            if (null != entryComboBox && null != entryComboBox.getValue()) {
+                  return entryComboBox.getValue().getTestType(); //getTestType();
+            }
+            return null;
+      }
 
-    protected final boolean getFlashListChanged() {
-        return this.flashListChanged;
-    }
 
-    /* ------------------------------------------------------- **/
+      /* ------------------------------------------------------- **/
 
-    /**
-     * DESCRIPTION: returns the length of the creatorList.
-     *
-     * @return returns the length of the creator list
-     */
-    protected int getLength() {
-        return creatorList.size();
-    }
+      protected boolean getFlashListChanged() {
+            return (this.flashListChanged);
+      }
 
-    /* ------------------------------------------------------- **/
+      /**
+       * Checks if the currentCard is equal with it's index in the FLashCardOps.FlashList
+       * Uses the underlying equals methods from FlashCardMM and sub-classes to
+       * verify if the content: e.g. media, shapes, and text;  are the same.
+       * <p><b>NOTE:</b> Does not check if this is the last card in the deck.</p>
+       *
+       * @param currentCard
+       * @return 1 if true,  0 if it is false, and -1 if currentCard is out of range,
+       */
+      private int cardEqualsOriginal(FlashCardMM currentCard) {
+            if (listIdx > FlashCardOps.getInstance().getFlashList().size() -1) {
+                  return -1;
+            }
 
-    /**
-     * Returns the current card number for the next card with exception to 0.
-     *
-     * @return
-     */
+            LOGGER.debug("printing current card:\n {}", currentCard );
+
+            boolean isEqual = currentCard.equals(FlashCardOps.getInstance().getFlashList().get(currentCard.getANumber()));
+            LOGGER.debug("currentCard.equals flashList: {}", isEqual);
+            if ( ! isEqual ) {
+                  this.flashListChanged = true;
+                  return 0;
+            }
+            return 1;
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * DESCRIPTION: returns the length of the creatorList.
+       *
+       * @return returns the length of the creator list
+       */
+      protected int getLength() {
+            return creatorList.size();
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Returns the current card number for the next card with exception to 0.
+       *
+       * @return
+       */
   /*  public static int getCardNum() {
         return cardNum;
     }
   */
-    /* ------------------------------------------------------- **/
+      /* ------------------------------------------------------- **/
+      public VBox getCFPCenter() {
+            return this.cfpCenter;
+      }
 
-    public VBox getCFPCenter() {
-        return this.cfpCenter;
-    }
+      /**
+       * Returns the upper SectionEditor reference
+       *
+       * @return upper SectionEditor referenc
+       */
+//    public SectionEditor getEditorU() { return this.editorU; }
 
-    /**
-     * Returns the upper SectionEditor reference
-     * @return upper SectionEditor referenc
-     */
-    public SectionEditor getEditorU() { return this.editorU; }
+      /* ------------------------------------------------------- **/
 
-    /* ------------------------------------------------------- **/
-    /**
-     * Returns the lower SectionEditor reference
-     * @return lower SectionEditor reference
-     */
-    public SectionEditor getEditorL() { return this.editorL; }
+      /**
+       * Returns the lower SectionEditor reference
+       *
+       * @return lower SectionEditor reference
+       */
+//    public SectionEditor getEditorL() { return this.editorL; }
 
-    /* ------------------------------------------------------- **/
+      /* ------------------------------------------------------- **/
 
-    /**
-     * Helper method for previous and next buttons
-     * Sets the CreateFlash UI
-     * <pre>
-     * - sets the upper and lower editors fields
-     * - sets the ComboBox
-     * </pre>
-     * @param currentCard
-     */
-    protected void setUIFields(FlashCardMM currentCard) {
-        this.currentCard = currentCard;
+      /**
+       * Helper method for previous, next buttons, and  AVLTree
+       * next prev card
+       * Sets the CreateFlash UI
+       * <pre>
+       * - sets the upper and lower editors fields
+       * - sets the ComboBox
+       * </pre>
+       * @param currentCard
+       */
+      void setSectionEditors(FlashCardMM currentCard) {
+            this.currentCard = currentCard;
+            // Get the test and set it in the ComboBox.
+            // Uses the bitset from the TestType.
+            GenericTestType ga = TestList.selectTest(currentCard.getTestType());
+            entryComboBox.setValue(new TestMapper(ga.getName(), ga));
 
-        // Get the test and set it in the ComboBox.
-        // Uses the bitset from the TestType.
-        GenericTestType ga = TestList.selectTest(currentCard.getTestType());
-        entryComboBox.setValue(new TestMapper(ga.getName(), ga));
-
-        if(editorU.hasTextCell(currentCard.getQType())) {
-            editorU.setText(currentCard.getQText());
-        }
-        if(editorL.hasTextCell(currentCard.getAType())) {
-            editorL.setText(currentCard.getAText());
-        }
-
-        if(currentCard.getQType() != 't') {
-            editorU.setSectionMedia(currentCard.getQFiles(), currentCard.getQType(), 'U', currentCard.getCID());
-            editorU.setSectionType(currentCard.getQType());
-        }
-
-        if(currentCard.getAType() != 't' ) {
-            editorL.setSectionMedia(currentCard.getAFiles(), currentCard.getAType(), 'L', currentCard.getCID());
-            editorL.setSectionType(currentCard.getAType());
-        }
-    }
-
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Used in SnapShot to set edit mode.
-     * @param bool
-     */
-    public void setFlashListChanged(boolean bool) {
-        this.flashListChanged = bool;
-    }
-
-    /* ------------------------------------------------------- **/
-
-    public void setListIdx(int idx) {
-        this.listIdx = idx;
-    }
-
-
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Disables the buttons for SectionEditor.
-     */
-    public void disableButtons() {
-        this.editorL.disableEditorBtns();
-        this.editorU.disableEditorBtns();
-        this.insertCardButton.setDisable(true);
-        this.newCardButton.setDisable(true);
-        this.prevQButton.setDisable(true);
-        this.nextQButton.setDisable(true);
-        this.resetDeckButton.setDisable(true);
-        this.saveDeckButton.setDisable(true);
-        this.deleteQButton.setDisable(true);
-    }
-
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Enables the buttons for SectionEditor.
-     */
-    public void enableButtons() {
-        this.editorL.enableEditorBtns();
-        this.editorU.enableEditorBtns();
-        this.insertCardButton.setDisable(false);
-        if(this.listIdx > 0) {
-            this.prevQButton.setDisable(false);
-            this.undoQButton.setDisable(false);
-        }
-        if(this.listIdx < creatorList.size() - 1) {
-            this.nextQButton.setDisable(false);
-            this.undoQButton.setDisable(false);
-        }
-        this.resetDeckButton.setDisable(false);
-        this.newCardButton.setDisable(false);
-        this.saveDeckButton.setDisable(false);
-        this.deleteQButton.setDisable(false);
-    }
-
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Sets the buttons for CreatorList and returns a vBox containing
-     * the buttons
-     * @return VBox containing the buttons for this pane
-     */
-    private VBox getCreatorButtons() {
-        newCardButton = ButtoniKon.getNewCardButton();
-        newCardButton.setMaxWidth(Double.MAX_VALUE);
-        newCardButton.setOnAction(e ->
-        {
-            // Check content and save, or give user
-            // an error message. Respond based on user
-            // choice.
-            CardSaver cs = new CardSaver();
-            boolean ret = cs.saveCard(editorU, editorL);
-            if(ret) {
-                return;
+            if ( editors.EDITOR_U.hasTextCell(currentCard.getQType())) {
+                  editors.EDITOR_U.setText(currentCard.getQText());
             }
-            //editorU.textEditor.getTextArea().requestFocus();
-        });
+            if ( editors.EDITOR_L.hasTextCell(currentCard.getAType())) {
+                  editors.EDITOR_L.setText(currentCard.getAText());
+            }
 
-        //  "Add" & "Save" Buttons in the south pane
-        insertCardButton = ButtoniKon.getInsertCardButton();
-        
-        // Actions and buttons
-        insertCardButton.setOnAction(e -> {
-            insertCardAction(listIdx);
-            //editorU.textEditor.getTextArea().requestFocus();
-        });
-        
-        // Save button & Action.
-        // Exits createFlash scene
-        saveDeckButton = ButtoniKon.getSaveDeckButton();
-        saveDeckButton.setMaxWidth(Double.MAX_VALUE);
-        saveDeckButton.setOnAction(e -> {
-            saveDeckAction();
-            // May cause a NullPointerException if
-            // there is not a popUp pane open from
-            // one of these.
-            if(editorL.getDrawTools() != null) {
-                editorL.getDrawTools().justClose();
-            } else if (editorU.getDrawTools() != null) {
-                editorU.getDrawTools().justClose();
+            if (currentCard.getQType() != 't') {
+                  editors.EDITOR_U.setSectionMedia(currentCard.getQFiles(), currentCard.getQType(), 'U', currentCard.getCID() );
+                  editors.EDITOR_U.setSectionType(currentCard.getQType());
+            } else {
+                  editors.EDITOR_U.getArrayOfFMShapes().clear();
+                  editors.EDITOR_U.setTextCellWidthFull();
             }
-            closeMetaWindow();
-        });
-        
-        
-        // Abandon button & Action
-        // Exits createFlash scene
-        abandButton = ButtoniKon.getQuitChangesButton();
-        abandButton.setOnAction(e ->
-        {
-            // May cause a NullPointerException if
-            // there is not a popUp pane open from
-            // both of these.
-            if(editorL.getDrawTools() != null) {
-                editorL.getDrawTools().justClose();
-            } else if (editorU.getDrawTools() != null) {
-                editorU.getDrawTools().justClose();
+
+            if (currentCard.getAType() != 't') {
+                  editors.EDITOR_L.setSectionMedia(currentCard.getAFiles(), currentCard.getAType(), 'L', currentCard.getCID());
+                  editors.EDITOR_L.setSectionType(currentCard.getAType());
+            } else {
+                  editors.EDITOR_L.getArrayOfFMShapes().clear();
+                  editors.EDITOR_L.setTextCellWidthFull();
             }
-    
-            closeMetaWindow();
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Used in SnapShot to set edit mode.
+       * @param bool
+       */
+      public void setFlashListChanged(boolean bool) {
+            this.flashListChanged = bool;
+      }
+
+      /* ------------------------------------------------------- **/
+
+      public void setListIdx(int idx) {
+            this.listIdx = idx;
+      }
+
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Disables all buttons for CreateFlash and SectionEditors.
+       */
+      public void disableButtons() {
+            editors.EDITOR_L.disableEditorBtns();
+            editors.EDITOR_U.disableEditorBtns();
+            this.insertCardButton.setDisable(true);
+            this.newCardButton.setDisable(true);
+            this.prevQButton.setDisable(true);
+            this.nextQButton.setDisable(true);
+            this.resetDeckButton.setDisable(true);
+            this.saveReturnButton.setDisable(true);
+            this.deleteQButton.setDisable(true);
+      }
+
+      /* ------------------------------------------------------- **/
+
+      private void disableEditors() {
+            this.isDisabled = true;
+            editors.EDITOR_L.disableEditorBtns();
+            editors.EDITOR_U.disableEditorBtns();
+            editors.EDITOR_L.tCell.getTextArea().setEditable(false);
+            editors.EDITOR_U.tCell.getTextArea().setEditable(false);
+            editors.EDITOR_U.tCell.getTextArea().setOnMouseClicked(e -> {
+                  if (isDisabled) {
+                        notifyEditorsDiabled();
+                        entryComboBox.show();
+                  }
+            });
+            editors.EDITOR_L.tCell.getTextArea().setOnMouseClicked(e -> {
+                  if (isDisabled) {
+                        notifyEditorsDiabled();
+                        entryComboBox.show();
+                  }
+            });
+            cfpCenter.setOnMouseClicked(e -> {
+                  if (isDisabled) {
+                        notifyEditorsDiabled();
+                        entryComboBox.show();
+                  }
+            });
+      }
+
+      private void enableEditors() {
+            this.isDisabled = false;
+            editors.EDITOR_L.enableEditorBtns();
+            editors.EDITOR_U.enableEditorBtns();
+            editors.EDITOR_L.tCell.getTextArea().setEditable(true);
+            editors.EDITOR_U.tCell.getTextArea().setEditable(true);
+
+      }
+
+      private void notifyEditorsDiabled() {
+            String msg = "    Please set the \"CARD TYPE\"";
+            FxNotify.notificationWarning("Oooph!", msg, Pos.TOP_LEFT, 7,
+                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow(), 100);
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Enables all buttons for createFlash and SectionEditors.
+       */
+      public void enableButtons() {
+            editors.EDITOR_L.enableEditorBtns();
+            editors.EDITOR_U.enableEditorBtns();
+            this.insertCardButton.setDisable(false);
+            if (this.listIdx > 0) {
+                  this.prevQButton.setDisable(false);
+                  this.undoQButton.setDisable(false);
+            }
+            if (this.listIdx < creatorList.size() - 1) {
+                  this.nextQButton.setDisable(false);
+                  this.undoQButton.setDisable(false);
+            }
+            this.resetDeckButton.setDisable(false);
+            this.newCardButton.setDisable(false);
+            this.saveReturnButton.setDisable(false);
+            this.deleteQButton.setDisable(false);
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Sets the buttons for CreatorList and returns a vBox containing
+       * the buttons
+       *
+       * @return VBox containing the buttons for this pane
+       */
+      private VBox getCreatorButtons() {
+            newCardButton = ButtoniKon.getNewCardButton();
+            newCardButton.setMaxWidth(Double.MAX_VALUE);
+            newCardButton.setOnAction(e -> newCardButtonAction());
+
+            //  "Add" & "Save" Buttons in the south pane
+            insertCardButton = ButtoniKon.getInsertCardButton();
+
+            // Actions and buttons
+            insertCardButton.setOnAction(e -> {
+                  insertCardAction(listIdx);
+                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
+            });
+
+            // Save button & Action.
+            // Exits createFlash scene
+            saveReturnButton = ButtoniKon.getSaveDeckButton();
+            saveReturnButton.setMaxWidth(Double.MAX_VALUE);
+            saveReturnButton.setOnAction(e -> {
+                  //FlashMonkeyMain.setWindowToMenu();
+                  saveReturnAction();
+            });
+            // Abandon button & Action
+            // Exits createFlash scene
+            abandButton = ButtoniKon.getQuitChangesButton();
+            abandButton.setOnAction(e -> abandAction());
+
+            nextQButton = ButtoniKon.getCreateQNextButton();
+            nextQButton.setMaxWidth(Double.MAX_VALUE);
+            nextQButton.setOnAction(e -> nextQButtonAction());
+
+            prevQButton = ButtoniKon.getCreateQPrevButton();
+            prevQButton.setMaxWidth(Double.MAX_VALUE);
+            prevQButton.setOnAction(e -> prevQButtonAction());
+
+            undoQButton = ButtoniKon.getUndoChangesButton();
+            undoQButton.setMaxWidth(Double.MAX_VALUE);
+            undoQButton.setOnAction(e -> undoQButtonAction(currentCard));
+
+            deleteQButton = ButtoniKon.getDeleteCardButton();
+            deleteQButton.setMaxWidth(Double.MAX_VALUE);
+            deleteQButton.setOnAction(e -> deleteCardAction(currentCard));
+
+            resetDeckButton = ButtoniKon.getResetOrderButton();
+            resetDeckButton.setOnAction(e -> FlashCardOps.getInstance().resetPerformance());
+
+            metaButton = ButtoniKon.getSellButton();
+            metaButton.setMaxWidth(Double.MAX_VALUE);
+            metaButton.setMaxHeight(Double.MAX_VALUE);
+            metaButton.setOnAction(e -> metaButtonAction());
+
+            // Organize the button boxes and sellButton into left and right
+            GridPane navGrid = new GridPane();
+            // Navigation
+            HBox navH = new HBox(4);
+            navH.getChildren().addAll(prevQButton, nextQButton);
+            HBox.setHgrow(prevQButton, Priority.ALWAYS);
+            HBox.setHgrow(nextQButton, Priority.ALWAYS);
+            navGrid.add(navH, 0, 0, 5, 1);
+            // Bind nav width to BorderPane width
+            cfpCenter.widthProperty().addListener((obs, oldval, newVal) -> navH.setPrefWidth(newVal.doubleValue()));
+
+            VBox southBox = new VBox(10);
+
+            southBox.setAlignment(Pos.CENTER);
+            VBox southBPane = getToolBoxContainer();
+            southBPane.setAlignment(Pos.CENTER);
+            southBox.getChildren().addAll(navGrid, southBPane);
+
+            return southBox;
+      }
+
+      /* ------------------------------------------------------- **/
+
+      public void saveReturnAction() {
+            saveOnExit();
+            onClose();
+      }
+
+      /**
+       * Deck save action for this class that is called when FlashMonkey
+       * is closed. May be used outside of the class. Single point call
+       * that is always called when class is closed. Should be implemented
+       * by any class that contains files to be saved to file or the cloud.
+       * E.g. ReadFlash and CreateFlash.
+       * Calls child action classes, e.g. drawtools "saveOnExit()" before saving
+       * at this level.
+       */
+      @Override
+      public void saveOnExit() {
+            // SHAPES
+            try {
+                  if( DrawTools.instanceExists()) {
+                        DrawTools.getInstance().saveOnExit();
+                  }
+
+                  Timer.getClassInstance().createTestTimeStop();
+                  saveDeckAction();
+                  creatorList.clear();
+            } catch (Exception e) {
+                  LOGGER.warn(e.getMessage());
+                  e.printStackTrace();
+            }
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * User is asked if they want to abandon all changes before exiting. If
+       * false, the user is returned to the previous screen.
+       */
+      private void abandAction() {
+            // If greater than the flashList size & deck hasChanged or the currentCard is not equal to the original
+            if ( flashListChanged ||  0 == cardEqualsOriginal(currentCard)) {
+                  FMAlerts alert = new FMAlerts();
+                  String msg = "Delete ALL changes to this deck\n\nAre you Sure?";
+                  int res = alert.choiceOptionActionPopup(
+                      "Hmmmmm!", msg,
+                      "emojis/flashFaces_sunglasses_60.png",
+                      UIColors.FM_RED_WRONG_OPAQUE,
+                      "DELETE CHANGES",
+                      "SAVE CHANGES");
+                  if (res == 1) {
+                        FlashMonkeyMain.setWindowToMenu();
+                        onClose();
+                  } else {
+                        // Send User back
+                        return;
+                  }
+            }
+            FlashMonkeyMain.setWindowToMenu();
+            //return;
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Closes Create Flash. Clears the tree. Closes the treeWindow. Does NOT save
+       * the current work.
+       */
+      @Override
+      public void onClose() {
+
+            DrawTools.getInstance().onClose();
+            if (metaWindow.isShowing()) {
+                  closeMetaWindow();
+            }
+            FlashMonkeyMain.treeWindow.close();
 
             Timer.getClassInstance().createTestTimeStop();
             LOGGER.info("createTestTime: {}", Timer.getClassInstance().getCreateTestsTime());
             creatorList.clear();
-            FlashMonkeyMain.setWindowToNav();
-        });
+            //return;
+      }
 
+      /* ------------------------------------------------------- **/
 
-        nextQButton = ButtoniKon.getCreateQNextButton();
-        nextQButton.setMaxWidth(Double.MAX_VALUE);
-        nextQButton.setOnAction(e -> {
-            nextQButtonAction();
-        });
+      private VBox getToolBoxContainer() {
 
-        prevQButton = ButtoniKon.getCreateQPrevButton();
-        prevQButton.setMaxWidth(Double.MAX_VALUE);
-        prevQButton.setOnAction(e ->
-                prevQButtonAction()
-        );
-        undoQButton = ButtoniKon.getUndoChangesButton();
-        undoQButton.setMaxWidth(Double.MAX_VALUE);
-        undoQButton.setOnAction(e -> {
-            undoQButtonAction(currentCard);
-        });
-        deleteQButton = ButtoniKon.getDeleteCardButton();
-        deleteQButton.setMaxWidth(Double.MAX_VALUE);
-        deleteQButton.setOnAction(e -> {
-            deleteQButtonAction(currentCard);
-        });
-        resetDeckButton = ButtoniKon.getResetOrderButton();
-        resetDeckButton.setOnAction(e -> FlashCardOps.getInstance().resetPerformance());
-        metaButton = ButtoniKon.getSellButton();
-        metaButton.setMaxWidth(Double.MAX_VALUE);
-        metaButton.setMaxHeight(Double.MAX_VALUE);
-        metaButton.setOnAction(e -> metaButtonAction());
+            Pane leftSpacer = new Pane();
+            Pane rightSpacer = new Pane();
+            HBox.setHgrow(leftSpacer, Priority.SOMETIMES);
+            HBox.setHgrow(rightSpacer, Priority.SOMETIMES);
+            ToolBar tBar = new ToolBar( leftSpacer, newCardButton, undoQButton, deleteQButton, new Separator( Orientation.VERTICAL ),
+                resetDeckButton, saveReturnButton, abandButton, new Separator( Orientation.VERTICAL ),
+                metaButton, rightSpacer );
+            tBar.setStyle("-fx-background-color: TRANSPARENT");
+            VBox vBox = new VBox();
+            vBox.getChildren().add(tBar);
+            vBox.setAlignment(Pos.CENTER);
 
-        // Organize the button boxes and sellButton into left and right
-        GridPane navGrid = new GridPane();
-        // Navigation
-        HBox navH = new HBox(4);
-        navH.getChildren().addAll(prevQButton, nextQButton);
-        HBox.setHgrow(prevQButton, Priority.ALWAYS);
-        HBox.setHgrow(nextQButton, Priority.ALWAYS);
-        navGrid.add(navH,0, 0, 5, 1);
-        // Bind nav width to BorderPane width
-        cfpCenter.widthProperty().addListener((obs, oldval, newVal)  -> navH.setPrefWidth( newVal.doubleValue()));
+            return vBox;
+      }
 
-        VBox southBox = new VBox(10);
+      /* ------------------------------------------------------- **/
 
-        southBox.setAlignment(Pos.CENTER);
-        VBox southBPane = getToolBoxContainer();
-        southBPane.setAlignment(Pos.CENTER);
-        southBox.getChildren().addAll(navGrid, southBPane);
+      private void deleteCardAction(FlashCardMM cc) {
+            FMAlerts alert = new FMAlerts();
+            String msg = "Delete this card\n\nAre you sure?";
+            boolean b = alert.choiceOnlyActionPopup(
+                "DELETE THIS CARD", msg,
+                "emojis/flashFaces_sunglasses_60.png",
+                UIColors.ICON_ELEC_BLUE);
+            if (b) {
+                  deleteQButtonAction(cc);
+            } else {
+                  // Send User back
+                  return;
+            }
+            return;
+      }
 
-        return southBox;
-    }
+      /* ------------------------------------------------------- **/
 
-    /* ------------------------------------------------------- **/
-
-    private VBox getToolBoxContainer() {
-
-        Pane leftSpacer = new Pane();
-        Pane rightSpacer = new Pane();
-        HBox.setHgrow(leftSpacer, Priority.SOMETIMES);
-        HBox.setHgrow(rightSpacer, Priority.SOMETIMES);
-        ToolBar tBar = new ToolBar(leftSpacer, newCardButton, undoQButton, deleteQButton, new Separator(Orientation.VERTICAL),
-                                    resetDeckButton,saveDeckButton, abandButton, new Separator(Orientation.VERTICAL),
-                                    metaButton, rightSpacer);
-        tBar.setStyle("-fx-background-color: TANSPARENT");
-        VBox vBox = new VBox();
-        vBox.getChildren().add(tBar);
-        vBox.setAlignment(Pos.CENTER);
-
-        return vBox;
-    }
-    
-    /* ------------------------------------------------------- **/
-    
-    public void closeMetaWindow() {
-        if(this.metaWindow != null && this.metaWindow.isShowing()) {
-            this.metaWindow.close();
-            DeckMetaData.getInstance().close();
-        }
-    }
-    
-    /* ------------------------------------------------------- **/
-
-    // The "describe this deck" button
-    private void metaButtonAction() {
-        LOGGER.debug("sellButtonAction clicked");
-        // @TODO make metaPane local variable
-        if(metaWindow != null) {
-            metaPane = new DeckMetaPane();
-            metaWindow = new Stage();
-        }
-        meta = DeckMetaData.getInstance();
-
-        Scene scene = new Scene(metaPane.getMainGridPain());
-        scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
-        
-        metaWindow.setScene(scene);
-        metaWindow.show();
-    }
-
-
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Sets the UI to the next card for
-     * editing
-     */
-    private void nextQButtonAction() {
-        LOGGER.info("called nextQButtonAction");
-    
-        // Check content and save, or give user
-        // an error message. Respond based on user
-        // choice.
-        if(flashListChanged) {
-            CardSaver cs = new CardSaver();
-            boolean ret = cs.saveCard(editorU, editorL);
+      void newCardButtonAction() {
+            // Check content and save, or give user
+            // an error message. Respond based on user
+            // choice.
+            boolean ret = cardOnExitActions();
             if (ret) {
-                return;
+                  return;
             }
-        }
-        flashListChanged = false;
-        // increment the cardIdx and for
-        // setting fileNames to each card
-        listIdx++;
-        // clear editor fields
-        editorU.resetSection();
-        editorL.resetSection();
+            editors.EDITOR_U.tCell.getTextArea().requestFocus();
+      }
 
-        // if there is an exit, should data be saved.
-        // flashListChanged = true;
-        if (listIdx > -1 && listIdx < creatorList.size()) {
+      /* ------------------------------------------------------- **/
 
-            // set the current cards data into the fields
-            FlashCardMM currentCard = creatorList.get(listIdx);
-            
-            editorU.setPrompt(makeQPrompt(listIdx));
-            editorL.setPrompt("Enter answer");
-            setUIFields(currentCard);
-            FMTWalker.getInstance().setCurrentNode(currentCard);
-            if(!FlashMonkeyMain.getWindow().isFullScreen()) {
-                FlashMonkeyMain.AVLT_PANE.displayTree();
+      public void closeMetaWindow() {
+            if (this.metaWindow != null && this.metaWindow.isShowing()) {
+                  this.metaWindow.close();
+                  DeckMetaData.getInstance().close();
             }
-        }
+      }
 
-        // Enable buttons according to idx
-        navButtonDisplay(listIdx);
+      /* ------------------------------------------------------- **/
 
-        String insertBtnMsg = "Insert a new card at " + (listIdx + 1) ;
-        insertCardButton.setTooltip(new Tooltip(insertBtnMsg));
-    }
+      // The "describe this deck" button
+      private void metaButtonAction() {
+            LOGGER.debug("sellButtonAction clicked");
+            // @TODO make metaPane local variable
+            if (metaWindow != null) {
+                  metaPane = new DeckMetaPane();
+                  metaWindow = new Stage();
+            }
+            meta = DeckMetaData.getInstance();
+
+            Scene scene = new Scene(metaPane.getMainGridPain());
+            scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
+
+            metaWindow.setScene(scene);
+            metaWindow.show();
+      }
 
 
-    /* ------------------------------------------------------- **/
-    
+      /* ------------------------------------------------------- **/
 
-    /**
-     * Sets the UI to the previous existing card for
-     * editing
-     */
-    private void prevQButtonAction() {
-        LOGGER.info("prevQButtonAction called");
-    
-        String insertBtnMsg = "Insert a new card at " + listIdx;
-        insertCardButton.setTooltip(new Tooltip(insertBtnMsg));
+/*      public static final void resetSectionEditors() {
+            editorU = new SectionEditor();
+            editors.EDITOR_L = new SectionEditor();
+      }*/
 
-        // Check content and save, or give user
-        // an error message. Respond based on user
-        // choice.
-        if(flashListChanged) {
-            CardSaver cs = new CardSaver();
-            boolean ret = cs.saveCard(editorU, editorL);
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Sets the UI to the next card for
+       * editing
+       */
+      private void nextQButtonAction() {
+            LOGGER.info("called nextQButtonAction");
+            // Check content and save, or give user
+            // an error message. Respond based on user
+            // choice.
+            boolean ret = cardOnExitActions();
             if (ret) {
-                return;
+                  return;
             }
-        }
-        flashListChanged = false;
-        // clear editor fields
-        editorU.resetSection();
-        editorL.resetSection();
 
-        // decrement the cardNumber for setting fileNames to each card
-        listIdx--;
+            // increment the cardIdx and for
+            // setting fileNames to each card
+            listIdx++;
+            // clear editor fields
+            //resetSectionEditors();
+            //editors.EDITOR_U.resetSection();
+            //editors.EDITOR_L.resetSection();
 
-        LOGGER.info(Integer.toString(listIdx));
+            // if there is an exit, should data be saved.
+            // flashListChanged = true;
+            if (listIdx > -1 && listIdx < creatorList.size()) {
 
-        // set the UI to the current card
-        if(listIdx > -1 ) {
-            if(listIdx >= creatorList.size()) {
-            //    --cardNum;
-                listIdx = listIdx - 1;
+                  // set the current cards data into the fields
+                  FlashCardMM currentCard = creatorList.get(listIdx);
+
+                  //editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
+                  //editors.EDITOR_L.setPrompt("Enter answer");
+                  setSectionEditors(currentCard);
+                  FMTWalker.getInstance().setCurrentNode(currentCard);
+                  if (!FlashMonkeyMain.getWindow().isFullScreen()) {
+                        FlashMonkeyMain.AVLT_PANE.displayTree();
+                  }
             }
-            FlashCardMM currentCard = creatorList.get(listIdx);
-            editorU.setPrompt(makeQPrompt(listIdx));
-            editorL.setPrompt("Enter answer");
-            setUIFields(currentCard);
-            FMTWalker.getInstance().setCurrentNode(currentCard);
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-        }
-        // if there is an exit, should data be saved.
-        // flashListChanged = true;
-        // enable buttons according to idx
-        LOGGER.info("listIdx: <{}>", listIdx);
-        navButtonDisplay(listIdx);
-        // close popup if exists
 
-    }
-    
+            // Enable buttons according to idx
+            navButtonDisplay(listIdx);
 
-    /* ------------------------------------------------------- **/
+            String insertBtnMsg = "Insert a new card at " + (listIdx + 1);
+            insertCardButton.setTooltip(new Tooltip(insertBtnMsg));
+      }
 
 
-    private void navButtonDisplay(final int idx) {
-        
-        if(idx < 1) {
-            prevQButton.setDisable(true);
-            undoQButton.setDisable(true);
-            //insertCardButton.setDisable(true);
-
-        } else if (idx > (creatorList.size() -2)) {
-            nextQButton.setDisable(true);
-            prevQButton.setDisable(false);
-            //insertCardButton.setDisable(false);
-            deleteQButton.setDisable(true);
-            undoQButton.setDisable(true);
-
-            //cardBtnBox.getChildren().clear();
-            //cardBtnBox.getChildren().addAll(newCardButton, prevQButton, nextQButton, undoQButton, deleteQButton);
-        } else {
-            metaButton.setDisable(false);
-            prevQButton.setDisable(false);
-            nextQButton.setDisable(false);
-            deleteQButton.setDisable(false);
-            insertCardButton.setDisable(false);
-            undoQButton.setDisable(false);
-            //cardBtnBox.getChildren().clear();
-            //cardBtnBox.getChildren().addAll(insertCardButton, prevQButton, nextQButton, undoQButton, deleteQButton);
-        }
-    }
+      /* ------------------------------------------------------- **/
 
 
-    /* ------------------------------------------------------- **/
+      /**
+       * Sets the UI to the previous existing card for
+       * editing
+       */
+      private void prevQButtonAction() {
+            LOGGER.info("prevQButtonAction called");
 
+            String insertBtnMsg = "Insert a new card at " + listIdx;
+            insertCardButton.setTooltip(new Tooltip(insertBtnMsg));
 
-    private void getKeyboardShortcuts() {
-        //@TODO CreateFlash.getKeyboardShortcuts()
-        // Keyboard shortcut, Moves between text fields
-//        editorU.textEditor.getTextArea().setOnKeyPressed((KeyEvent e) -> {
-//            if (e.isAltDown() || e.isShiftDown()) {
-//                if (e.getCode() == KeyCode.ENTER) {
-//                    // Check content and save, or give user
-//                    // an error message. Respond based on user
-//                    // choice.
-//                    CardSaver cs = new CardSaver();
-//                    boolean ret = cs.saveCard(editorU, editorL);
-//                    if(ret) {
-//                        return;
-//                    }
-//                }
-//            }
-//        });
-        // Keyboard shortcut, Moves between text fields
-//        editorL.textEditor.getTextArea().setOnKeyPressed((KeyEvent e) -> {
-//            if (e.isAltDown() || e.isShiftDown()) {
-//                if (e.getCode() == KeyCode.ENTER) {
-//                    // Check content and save, or give user
-//                    // an error message. Respond based on user
-//                    // choice.
-//                    CardSaver cs = new CardSaver();
-//                    boolean ret = cs.saveCard(editorU, editorL);
-//                    if(ret) {
-//                        return;
-//                    }
-//                }
-//            }
-//        });
-    }
-    
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Returns this masterPane
-     * @return
-     */
-    public VBox getMasterPane() { return this.masterPane; }
-
-    
-    /* ------------------------------------------------------- **/
-
-
-    /**
-     * Checks if the last card question has either
-     * text or files.length {@code >} 0;
-     * @return true if the last cards question has data.
-     */
-    private boolean lastCardQHasData() {
-        FlashCardMM lastCard = creatorList.get(creatorList.size() -1);
-        return !lastCard.getQText().isEmpty() || lastCard.getQFiles().length > 0;
-    }
-    
-    /* ------------------------------------------------------- **/
-
-    /**
-     * If the comboBox has a testType selected it returns true
-     * otherwise it returns false and a pop-up error message
-     * is displayed.
-     * @return
-     */
-    private boolean checkComboBox() {
-        if(entryComboBox.getValue() == null) {
-            String emojiPath = "emojis/flashFaces_sunglasses_60.png";
-            String message = "  Ooops! \n  Please select a test type  ";
-            int w = 400; // (int) editorU.textEditor.getTextCellVbox().getWidth();
-            double x = editorU.sectionHBox.getScene().getWindow().getX() + (w / 8);
-            double y = editorU.sectionHBox.getScene().getWindow().getY() + 50;
-            FMPopUpMessage.setPopup(
-                    x,
-                    y,
-                    w,
-                    message,
-                    emojiPath,
-                    FlashMonkeyMain.getWindow(),
-                    3000
-            );
-            return false;
-        }
-        return true;
-    }
-    
-    /* ------------------------------------------------------- **/
-    
-    private void insertCardAction(int prevCNum) {
-    
-        LOGGER.info("\n *** insertCardAction() *** \n");
-        LOGGER.debug("\t creatorList size: {}", creatorList.size() + 1);
-    
-        // create new card for next round.
-        currentCard = new FlashCardMM();
-        // insert new card at the current location
-        creatorList.add(listIdx, currentCard);
-        currentCard.setCNumber(listIdx);
-    
-        // Reset
-        editorU.resetSection();
-        editorL.resetSection();
-        //gT.reset();
-    
-        FlashCardOps fcOps = FlashCardOps.getInstance();
-        fcOps.buildTree(creatorList);
-        fcOps.refreshTreeWalker(creatorList);
-        if (!FlashMonkeyMain.treeWindow.isShowing()) {
-            FlashMonkeyMain.buildTreeWindow();
-        }
-        FlashMonkeyMain.AVLT_PANE.displayTree();
-        
-    }
-    
-
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Deleting and adding cards from the center of the list creates numbering issues.
-     * To solve this issue, we begin with the listIdx which may not be accurate.
-     * Then search using the binary search method and perform an equals on a cards CID
-     * with the desired delete CID.
-     * @param currentCard
-     */
-    private void deleteQButtonAction(FlashCardMM currentCard) {
-        // The closest reliable number to this cards
-        // location in the current deck.
-        String delCID = currentCard.getCID();
-        int fwdIdx = listIdx;
-        int revIdx = listIdx - 1;
-
-        LOGGER.info("called");
-
-        while( fwdIdx < creatorList.size() && revIdx > -1 ) {
-
-        //    FlashCard is not deleted when using treePane, Although the list length shows that
-        //            the card has been removed. Apparently the card is still in the lsit that
-        //            the tree is uing to build from. ??? IDK!!!
-
-            if(fwdIdx < creatorList.size() && creatorList.get(fwdIdx).getCID().equals(delCID)) {
-
-                ListIterator<FlashCardMM> iterator = creatorList.listIterator(fwdIdx);
-                iterator.next();
-                iterator.remove();
-                listIdx = fwdIdx - 1;
-                currentCard = creatorList.get(listIdx);
-                setUIFields(currentCard);
-
-                break;
-            } else if (revIdx > -1 && creatorList.get(revIdx).getCID().equals(delCID)) {
-
-                ListIterator iterator = creatorList.listIterator(revIdx);
-                iterator.previous();
-                iterator.remove();
-                listIdx = revIdx - 1;
-                currentCard = creatorList.get(listIdx);
-                setUIFields(currentCard);
-
-                break;
+            // Check content and save, or give user
+            // an error message. Respond based on user
+            // choice.
+            boolean ret = cardOnExitActions();
+            if (ret) {
+                  return;
             }
-        }
+            // flashListChanged = false;
+            // clear editor fields
+            //resetSectionEditors();
+            //editors.EDITOR_U.resetSection();
+            //editors.EDITOR_L.resetSection();
 
-        if(creatorList.size() > 0) {
+            // decrement the cardNumber for setting fileNames to each card
+            listIdx--;
+
+            LOGGER.info(Integer.toString(listIdx));
+
+            // set the UI to the current card
+            if (listIdx > -1) {
+                  if (listIdx >= creatorList.size()) {
+                        //    --cardNum;
+                        listIdx = listIdx - 1;
+                  }
+                  FlashCardMM currentCard = creatorList.get(listIdx);
+                  // editors.EDITOR_UPrompt(listIdx));
+                  // editors.EDITOR_L.setPrompt("Enter answer");
+                  setSectionEditors(currentCard);
+                  FMTWalker.getInstance().setCurrentNode(currentCard);
+                  FlashMonkeyMain.AVLT_PANE.displayTree();
+            }
+            // if there is an exit, should data be saved.
+            // flashListChanged = true;
+            // enable buttons according to idx
+            LOGGER.info("listIdx: <{}>", listIdx);
+            navButtonDisplay(listIdx);
+            // close popup if exists
+
+      }
+
+
+      /* ------------------------------------------------------- **/
+
+
+      private void navButtonDisplay(final int idx) {
+
+            if (idx < 1) {
+                  prevQButton.setDisable(true);
+                  undoQButton.setDisable(true);
+                  //insertCardButton.setDisable(true);
+
+            } else if (idx > (creatorList.size() - 2)) {
+                  nextQButton.setDisable(true);
+                  prevQButton.setDisable(false);
+                  //insertCardButton.setDisable(false);
+                  deleteQButton.setDisable(true);
+                  undoQButton.setDisable(true);
+            } else {
+                  metaButton.setDisable(false);
+                  prevQButton.setDisable(false);
+                  nextQButton.setDisable(false);
+                  deleteQButton.setDisable(false);
+                  insertCardButton.setDisable(false);
+                  undoQButton.setDisable(false);
+            }
+      }
+
+
+      /* ------------------------------------------------------- **/
+
+
+      private void getKeyboardShortcuts() {
+            // Keyboard shortcut, Moves between text fields
+            editors.EDITOR_U.tCell.getTextArea().setOnKeyPressed((KeyEvent e) -> {
+                  if (e.isAltDown() || e.isShiftDown()) {
+                        if (e.getCode() == KeyCode.ENTER) {
+                              // Check content and save, or give user
+                              // an error message. Respond based on user
+                              // choice.
+                              boolean ret = cardOnExitActions();
+                              if (ret) {
+                                    return;
+                              }
+                        }
+                  }
+            });
+            // Keyboard shortcut, Moves between text fields
+            editors.EDITOR_L.tCell.getTextArea().setOnKeyPressed((KeyEvent e) -> {
+                  if (e.isAltDown() || e.isShiftDown()) {
+                        if (e.getCode() == KeyCode.ENTER) {
+                              // Check content and save, or give user
+                              // an error message. Respond based on user
+                              // choice.
+                              boolean ret = cardOnExitActions();
+                              if (ret) {
+                                    return;
+                              }
+                        }
+                  }
+            });
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Returns this masterPane
+       *
+       * @return
+       */
+      public VBox getMasterPane() {
+            return this.masterPane;
+      }
+
+
+      /* ------------------------------------------------------- **/
+
+
+      /**
+       * Checks if the last card question has either
+       * text or files.length {@code >} 0;
+       *
+       * @return true if the last cards question has data.
+       */
+      private boolean lastCardQHasData() {
+            FlashCardMM lastCard = creatorList.get(creatorList.size() - 1);
+            return !lastCard.getQText().isEmpty() || lastCard.getQFiles().length > 0;
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * If the comboBox has a testType selected it returns true
+       * otherwise it returns false and a pop-up error message
+       * is displayed.
+       *
+       * @return
+       */
+      private boolean checkComboBox() {
+            if (entryComboBox.getValue() == null) {
+                  String emojiPath = "emojis/flashFaces_sunglasses_60.png";
+                  String message = "  Ooops! \n  Please select a test type  ";
+                  int w = 400; // (int) editors.EDITOR_U.textEditor.getTextCellVbox().getWidth();
+                  double x = editors.EDITOR_U.sectionHBox.getScene().getWindow().getX() + (w / 8);
+                  double y = editors.EDITOR_U.sectionHBox.getScene().getWindow().getY() + 50;
+                  FMPopUpMessage.setPopup(
+                      x,
+                      y,
+                      w,
+                      message,
+                      emojiPath,
+                      FlashMonkeyMain.getWindow(),
+                      3000
+                  );
+                  return false;
+            }
+            return true;
+      }
+
+      /* ------------------------------------------------------- **/
+
+      private void insertCardAction(int prevCNum) {
+            LOGGER.info("\n *** insertCardAction() *** \n");
+            LOGGER.debug("\t creatorList size: {}", creatorList.size() + 1);
+
+            boolean ret = cardOnExitActions();
+            if (ret) {
+                  return;
+            }
+
+            // create new card for next round.
+            currentCard = new FlashCardMM();
+            // insert new card at the current location
+            creatorList.add(listIdx, currentCard);
+            currentCard.setCNumber(listIdx);
+
+            // Reset
+            //resetSectionEditors();
+            //editors.EDITOR_U.resetSection();
+            //editors.EDITOR_L.resetSection();
+            //gT.reset();
+
             FlashCardOps fcOps = FlashCardOps.getInstance();
             fcOps.buildTree(creatorList);
             fcOps.refreshTreeWalker(creatorList);
             if (!FlashMonkeyMain.treeWindow.isShowing()) {
-                FlashMonkeyMain.buildTreeWindow();
+                  FlashMonkeyMain.buildTreeWindow();
             }
             FlashMonkeyMain.AVLT_PANE.displayTree();
-        }
-    }
 
-    /* ------------------------------------------------------- **/
+      }
 
-    /**
-     * Reverts the current card shown in the users display
-     * to it's original version.
-     * <p><b>NOTES:</b> Due to adding and deleting cards, the index
-     * that this cards number originated from may no longer
-     * be correct. Thus, this method conducts a search starting at
-     * the original index and working from there in both directions.</p>
-     * Algorithm
-     *  <pre>
-     *      1) Get this card's aNumber
-     *      2) find this card in creatorList starting at this aNumber
-     *      3) change found card in creatorList to the flashlist(aNumber)
-     *  </pre>
-     * @param currentCard
-     */
-    private void undoQButtonAction(FlashCardMM currentCard) {
 
-        LOGGER.debug("undoQButtonAction called");
-        
-        //FlashCardOps fcOps = FlashCardOps.getInstance();
-        // The closest reliable number to this cards
-        // location in the current deck.
-        final ArrayList<FlashCardMM> copyFlashList = FlashCardOps.getInstance().getFlashList();
-        int aNum = currentCard.getANumber();
-        int fwdIdx = aNum;
-        int revIdx = aNum - 1;
-        
-        // finding the card
-        while( fwdIdx < copyFlashList.size() && revIdx > -1 ) {
-            if(fwdIdx < copyFlashList.size() && copyFlashList.get(fwdIdx).getANumber() == aNum) {
-                
-                creatorList.set(fwdIdx, copyFlashList.get(aNum));
-                fwdIdx++;
-                break;
-            } else if (revIdx > -1 && copyFlashList.get(revIdx).getANumber() == aNum) {
-                
-                creatorList.set(revIdx, copyFlashList.get(aNum));
-                revIdx--;
-                break;
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Deleting and adding cards from the center of the list creates numbering issues.
+       * To solve this issue, we begin with the listIdx which may not be accurate.
+       * Then search using the binary search method and perform an equals on a cards CID
+       * with the desired delete CID.
+       *
+       * @param currentCard
+       */
+      private void deleteQButtonAction(FlashCardMM currentCard) {
+            // The closest reliable number to this cards
+            // location in the current deck.
+            String delCID = currentCard.getCID();
+            int fwdIdx = listIdx;
+            int revIdx = listIdx - 1;
+
+            LOGGER.info("called");
+
+            while (fwdIdx < creatorList.size() && revIdx > -1) {
+
+                  //    FlashCard is not deleted when using treePane, Although the list length shows that
+                  //            the card has been removed. Apparently the card is still in the list that
+                  //            the tree is using to build from. ??? IDK!!!
+
+                  if (fwdIdx < creatorList.size() && creatorList.get(fwdIdx).getCID().equals(delCID)) {
+
+                        ListIterator<FlashCardMM> iterator = creatorList.listIterator(fwdIdx);
+                        iterator.next();
+                        iterator.remove();
+                        listIdx = fwdIdx - 1;
+                        currentCard = creatorList.get(listIdx);
+                        setSectionEditors(currentCard);
+
+                        break;
+                  } else if (revIdx > -1 && creatorList.get(revIdx).getCID().equals(delCID)) {
+
+                        ListIterator iterator = creatorList.listIterator(revIdx);
+                        iterator.previous();
+                        iterator.remove();
+                        listIdx = revIdx - 1;
+                        currentCard = creatorList.get(listIdx);
+                        setSectionEditors(currentCard);
+
+                        break;
+                  }
             }
-        }
-        
-        
-    
-        editorU.resetSection();
-        editorL.resetSection();
-        
-        setUIFields(creatorList.get(listIdx));
-    }
 
-    public boolean saveCurrentCardExt() {
-        if( ! flashListChanged) {
-            return false;
-        }
-        CardSaver cs = new CardSaver();
-        return cs.saveCard(this.editorU, this.editorL);
-    }
-
-
-    // ********************* INNER CLASS ************************* //
-    
-    private class CardSaver {
-    
-    
-        CardSaver() { /* empty no args constructor */}
-    
-        /**
-         * Returns true if the user requests to return to the editor
-         * else it continues.
-         * @param editorU
-         * @param editorL
-         * @return
-         */
-        boolean saveCard(SectionEditor editorU, SectionEditor editorL) {
-            // Check if there is content and save, or give user
-            // an error message. Respond based on user
-            // choice.
-            int result = checkContent(editorU, editorL);
-            LOGGER.debug("saveCard(...) \"result\": <{}>", result);
-    
-            int ret = statusResponse(result);
-
-            LOGGER.debug("status response returned: <{}>", result);
-            if (ret == -1) {
-                return true;
+            if (creatorList.size() > 0) {
+                  FlashCardOps fcOps = FlashCardOps.getInstance();
+                  fcOps.buildTree(creatorList);
+                  fcOps.refreshTreeWalker(creatorList);
+                  if (!FlashMonkeyMain.treeWindow.isShowing()) {
+                        FlashMonkeyMain.buildTreeWindow();
+                  }
+                  FlashMonkeyMain.AVLT_PANE.displayTree();
             }
-            if (ret == 1) {
-                if (listIdx < creatorList.size() -1 && listIdx > -1) {
-                    saveEdtdCardInCreator(currentCard);
-                } else {
-                    addCardAction();
-                }
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Reverts the current card shown in the users display
+       * to it's original version.
+       * <p><b>NOTES:</b> Due to adding and deleting cards, the index
+       * that this cards number originated from may no longer
+       * be correct. Thus, this method conducts a search starting at
+       * the original index and working from there in both directions.</p>
+       * Algorithm
+       * <pre>
+       *      1) Get this card's aNumber
+       *      2) find this card in creatorList starting at this aNumber
+       *      3) change found card in creatorList to the flashlist(aNumber)
+       *  </pre>
+       *
+       * @param currentCard
+       */
+      private void undoQButtonAction(FlashCardMM currentCard) {
+
+            LOGGER.debug("undoQButtonAction called");
+
+            //FlashCardOps fcOps = FlashCardOps.getInstance();
+            // The closest reliable number to this cards
+            // location in the current deck.
+            final ArrayList<FlashCardMM> copyFlashList = FlashCardOps.getInstance().getFlashList();
+            int aNum = currentCard.getANumber();
+            int fwdIdx = aNum;
+            int revIdx = aNum - 1;
+
+            // finding the card
+            while (fwdIdx < copyFlashList.size() && revIdx > -1) {
+                  if (fwdIdx < copyFlashList.size() && copyFlashList.get(fwdIdx).getANumber() == aNum) {
+
+                        creatorList.set(fwdIdx, copyFlashList.get(aNum));
+                        fwdIdx++;
+                        break;
+                  } else if (revIdx > -1 && copyFlashList.get(revIdx).getANumber() == aNum) {
+
+                        creatorList.set(revIdx, copyFlashList.get(aNum));
+                        revIdx--;
+                        break;
+                  }
             }
-            return false;
-        }
+
+            //resetSectionEditors();
+            //editors.EDITOR_U.resetSection();
+            //editors.EDITOR_L.resetSection();
+
+            setSectionEditors(creatorList.get(listIdx));
+      }
+
+      /**
+       * <p>This method helps to ensure conformance with data completion.</p>
+       * <p> Provides a single point for the actions needed when a card is closed.
+       * IE when a card is simply displayed vs edited.
+       * The underlying process checks that the card is complete, provides
+       * a choice message if iti s not. If the card is complete and it was edited
+       * then it saves the card with no popup. If the card is new and complete, it saves the
+       * card with no popup. If the card was not edited, it does not save the card
+       * and there is no popup. Incomplete cards always create a popup.</p>
+       * <p><b>NOTE:</b>Uses the underlying objects equal methods and
+       * compares the currentCard from the CreatorList with the corresponding
+       * card in the FlashCardOps.FlashList. </p>
+       * <p><b>NOTE:</b> This is a heavy processing action due to the amount
+       * of work being done.</p>
+       * <p>Helps to ensure that decks are complete or reminds the creator
+       * that there are incomplete cards.  Also important for the ecosystem.</p>
+       *
+       * @return Returns a true if it is safe to move to the next card, and a
+       * false if the upstream navigation method should not move to the
+       * next card.
+       */
+      public boolean cardOnExitActions() {
+            // verify data completeness
+            closeDrawToolsOnTreeClick( editors.EDITOR_U, editors.EDITOR_L);
+            CardSaver cs = new CardSaver();
+            int result = CardSaver.checkContent();
+            // Check response. Popup error with buttons, return
+            // an integer for next action
+            int status = cs.statusResponse(result);
+            boolean bool;
+            switch (status) {
+                  // user requests delete
+                  case -2: {
+                        deleteCardAction(currentCard);
+                        bool = true;
+                        break;
+                  }
+                  // user requests to edit the card
+                  // return false and send user back
+                  case -1: {
+                        bool = false;
+                        break;
+                  }
+                  case 1: {
+                        // save actions:
+                        // Check if the card has been changed by comparing with
+                        // the corresponding card in the FlashCardOps.FlashList.
+                        // If the card is not a new card, and it is equal, then just return
+                        // true.
+                        int opsFlashSize = FlashCardOps.getInstance().getFlashList().size();
+                        //LOGGER.debug("\n\n**** printing Current Card **** \ncounter: {}\n{}", counter++,  currentCard);
+                        LOGGER.debug("listIdx: {} is less than Ops FlashList.size: {} == {}",  listIdx, opsFlashSize, listIdx < opsFlashSize );
+                        boolean inRange = listIdx < opsFlashSize && listIdx > -1;
+                        if (inRange && 1 == cardEqualsOriginal(currentCard)) {
+                              System.out.println("no change detected. not saving\n ////////////////////////\n");
+                              // No changes, continue to next card
+                              bool = true;
+                              break;
+                        }
+                        // save
+                        if (listIdx < creatorList.size() - 1 && listIdx > -1) {
+                              cs.saveEdtdCardInCreator(currentCard);
+                        } else {
+                              cs.addCardAction();
+                        }
+                        bool = true;
+                        break;
+                  }
+                  default:
+                  case 0: {
+                        // There is no content. Do not save, just move on.
+                        bool = true;
+                        break;
+                  }
+            }
+
+             return bool;
+      }
 
 
-        /**
-         * DESCRIPTION: Adds flashCard (question and answer objects)
-         * to the creatorList arrayList. Send media to the cloud
-         */
-        private void addCardAction() {
-            LOGGER.info("\n *** addCardAction() *** \n");
-            LOGGER.debug("\n\t saved as qID, The qID: {}", currentCard.getCID());
-            LOGGER.debug("\t cNum {}", currentCard.getCNumber());
-            LOGGER.debug("\t creatorList size: {}", creatorList.size() + 1);
-            // Send this cards media.
-            // runs using executor service. On separate thread.
-            sendAndCheck();
-            // Order is important for proper display of
-            // card number.
-            // update the listIdx
-            listIdx++;
-            // Save this card to the creator list
-            saveNewCardToCreator();
-            // set the prompt
-            editorU.styleToPrompt();
-            editorU.setPrompt(makeQPrompt(listIdx));
-//            editorU.textEditor.getTextArea().requestFocus();
+      // ********************* INNER CLASS ************************* //
 
-            insertCardButton.setText("New card");
-            // display in the nav tree
-            navButtonDisplay(listIdx);
-        }
+      private class CardSaver {
+            CardSaver() { /* empty no args constructor */}
 
-        private void sendAndCheck() {
-            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(3);
-            AtomicInteger count = new AtomicInteger(); // increased to 5, for bad networks.
-            AtomicBoolean bool = new AtomicBoolean(false);
-            if(Utility.isConnected()) {
+            /**
+             * Returns true if the user requests to return to the editor
+             * else it continues.
+             *
+             * @return Returns true if the user requests to go back to editing
+             * otherwise returns false.
+             */
+            boolean saveCard() {
+                  // Check if there is content and save, or give user
+                  // an error message. Respond based on user
+                  // choice.
+                  int result = checkContent();
+                  LOGGER.debug("saveCard(...) \"result\": <{}>", result);
 
-                String[] uploads = mergeToUnique(editorU.getMediaFileNames(), editorL.getMediaFileNames());
-                Runnable task = () -> {
-                    count.getAndIncrement();
-                    if (!sendMedia(uploads) || count.get() >= 5) {
-                        scheduledExecutor.shutdownNow();
+                  // Check response. Popup error with buttons, return
+                  // an integer for next action
+                  int status = statusResponse(result);
+
+                  LOGGER.debug("status response returned: <{}>", result);
+                  if (status == 0) {
+                        return false;
+                  }
+                  if (status == 1) {
+                        if (listIdx < creatorList.size() - 1 && listIdx > -1) {
+                              saveEdtdCardInCreator(currentCard);
+                        } else {
+                              addCardAction();
+                        }
+                        return false;
+                  }
+                  // user request to go back to editing
+                  return true;
+            }
+
+
+            /**
+             * DESCRIPTION: Adds flashCard (question and answer objects)
+             * to the creatorList arrayList. Send media to the cloud
+             */
+            private void addCardAction() {
+                  LOGGER.info("\n *** addCardAction() *** \n");
+                  LOGGER.debug("\n\t saved as qID, The qID: {}", currentCard.getCID());
+                  LOGGER.debug("\t cNum {}", currentCard.getCNumber());
+                  LOGGER.debug("\t creatorList size: {}", creatorList.size() + 1);
+                  // Order is important for proper display of
+                  // card number.
+                  // update the listIdx
+                  listIdx++;
+                  // Save this card to the creator list
+                  saveNewCardToCreator();
+                  // Send this cards media.
+                  // runs using executor service. On separate thread.
+                  sendAndCheck();
+                  // set the prompt
+                  editors.EDITOR_U.styleToPrompt();
+                  editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
+                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
+
+                  insertCardButton.setText("New card");
+                  // display in the nav tree
+                  navButtonDisplay(listIdx);
+            }
+
+            private void sendAndCheck() {
+                  ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(3);
+                  AtomicInteger count = new AtomicInteger(); // increased to 5, for bad networks.
+                  AtomicBoolean bool = new AtomicBoolean(false);
+                  if (Utility.isConnected()) {
+                        String[] uploads = mediaMergeUnique(editors.EDITOR_U.getMediaNameArray(), editors.EDITOR_L.getMediaNameArray());
+                        Runnable task = () -> {
+                              count.getAndIncrement();
+                              if (!sendMedia(uploads) || count.get() >= 5) {
+                                    scheduledExecutor.shutdownNow();
                         /*if (count.get() >= 5) {
                             String errorMessage = " Not all media was uploaded. \nPlease check if your connected to the internet.";
                             FxNotify.notificationDark("Ooops!", errorMessage, Pos.CENTER, 6,
                                     "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
                         }*/
-                    }
-                };
-                scheduledExecutor.scheduleWithFixedDelay(task, 0, 3, TimeUnit.SECONDS);
+                              }
+                        };
+                        scheduledExecutor.scheduleWithFixedDelay(task, 0, 3, TimeUnit.SECONDS);
 
+                  }
             }
-        }
 
-        private boolean sendMedia(String[] uploads) {
-
-            // upload
-            if(uploads.length == 0) {
-                return true;
+            private boolean sendMedia(String[] uploads) {
+                  // upload
+                  if (uploads.length == 0) {
+                        return true;
+                  }
+                  CloudOps.putMedia(uploads);
+                  // check
+                  String[] tryAgain = CloudOps.checkExistsInS3(uploads, FlashCardOps.getInstance().getDeckFileName());
+                  // if list is not 0 try to upload 5 more times,
+                  // if fails, send message to user.
+                  int tries = 0;
+                return tryAgain == null || tryAgain[0] == null;
             }
-            CloudOps.putMedia(uploads);
-            // check
-            String[] tryAgain = CloudOps.checkExistsInS3(uploads, FlashCardOps.getInstance().getDeckFileName());
-            // if list is not 0 try to upload 5 more times,
-            // if fails, send message to user.
-            int tries = 0;
-            if (tryAgain == null || tryAgain[0] == null) {
-                return true;
-            } else {
-                return false;
+
+            /**
+             * adds the mediaFiles from upper and lower SectionEditors into a
+             * single array. If The upper and lower media elements are the same
+             * image, returns only one image.
+             *
+             * @param uAry
+             * @param lAry
+             * @return returns all of the mediafiles from upper and lower section
+             * editors. If an array contains no elements, will return an array with the first element as null.
+             * thus, this method may return null elements.
+             */
+            private String[] mediaMergeUnique(String[] uAry, String[] lAry) {
+                  ArrayList<String> strAry = new ArrayList<>();
+                  if (uAry[0] != null) strAry.add(uAry[0]);
+                  if (uAry.length == 2 && uAry[1] != null) strAry.add(uAry[1]);
+                  if (lAry[0] != null && !lAry[0].equals(uAry[0])) strAry.add(lAry[0]);
+                  if (lAry.length == 2 && lAry[1] != null) strAry.add(lAry[1]);
+                  return strAry.toArray(new String[strAry.size()]);
             }
-        }
 
-        /**
-         * adds the mediaFiles from upper and lower SectionEditors into a
-         * single array. If The upper and lower media elements are the same
-         * image, returns only one image.
-         * @param uAry
-         * @param lAry
-         * @return returns all of the mediafiles from upper and lower section
-         * editors. If an array contains no elements, will return an array with the first element as null.
-         * thus, this method may return null elements.
-         */
-        private String[] mergeToUnique(String[] uAry, String[] lAry) {
-            ArrayList<String> strAry= new ArrayList<>();
-            if(uAry[0] != null) strAry.add(uAry[0]);
-            if(uAry.length == 2 && uAry[1] != null) strAry.add(uAry[1]);
-            if(lAry[0] != null && ! lAry[0].equals(uAry[0])) strAry.add(lAry[0]);
-            if(lAry.length == 2 && lAry[1] != null) strAry.add(lAry[1]);
-            return strAry.toArray(new String[strAry.size()]);
-        }
+            /**
+             * Adds a new card to the end of the creator list. Numbering is
+             * updated when a deck is uploaded from a file.
+             * <p>
+             * Assumes that the card is complete
+             */
+            private void saveNewCardToCreator() {
+                  LOGGER.info("\n *** IN SAVE NEW CARD TO CREATOR *** \n");
+                  //if(checkContent(editors.EDITOR_U, editors.EDITOR_L) == 1) {
+                  // Assign currentTest from combobox
+                  GenericTestType gT = entryComboBox.getValue().getTestType();
+                  // card at end of list, or ??
+                  int cardNum = listIdx;
+                  // Create a new FlashCardMM
+                  currentCard.setAll(
+                      cardNum * 10,        // Not super important until later. cardNumbers end as a multiple of ten. Used to set a card in the Tree
+                      gT.getTestType(),           // BitSet TESTS
+                      gT.getCardLayout(),         // cardLayout
+                      editors.EDITOR_U.getText(),          // questionText
+                      editors.EDITOR_U.getMediaType(),     // question Section Layout 'M', Also the media type
+                      editors.EDITOR_U.getMediaNameArray(),    // String[] of media files
+                      editors.EDITOR_L.getText(),          // answerText
+                      cardNum,                    // Not super important until later. answerNumber is a cards index in FlashList
+                      editors.EDITOR_L.getMediaType(),     // answer section layout
+                      editors.EDITOR_L.getMediaNameArray(),    // String[] of media files
+                      new ArrayList<Integer>()    // Arraylist of other correct answers
+                  );
 
-        /**
-         * Adds a new card to the end of the creator list. Numbering is
-         * updated when a deck is uploaded from a file.
-         *
-         * Assumes that the card is complete
-         */
-        private void saveNewCardToCreator() {
-            LOGGER.info("\n *** IN SAVE NEW CARD TO CREATOR *** \n");
-        
-            //if(checkContent(editorU, editorL) == 1) {
-            // Assign currentTest from combobox
-            GenericTestType gT = entryComboBox.getValue().getTestType();
-            // card at end of list, or ??
-            int cardNum = listIdx;
-            // Create a new FlashCardMM
-            currentCard.setAll(
-                    cardNum * 10,        // Not super important until later. cardNumbers end as a multiple of ten. Used to set a card in the Tree
-                    gT.getTestType(),           // BitSet TESTS
-                    gT.getCardLayout(),         // cardLayout
-                    editorU.getPlainText(),          // questionText
-                    editorU.getMediaType(),     // question Section Layout 'M', Also the media type
-                    editorU.getMediaFileNames(),    // String[] of media files
-                    editorL.getPlainText(),          // answerText
-                    cardNum,                    // Not super important until later. answerNumber is a cards index in FlashList
-                    editorL.getMediaType(),     // answer section layout
-                    editorL.getMediaFileNames(),    // String[] of media files
-                    new ArrayList<Integer>()    // Arraylist of other correct answers
-            );
-        
-            // create new card for next round.
-            currentCard = new FlashCardMM();
-            creatorList.add(currentCard);
-        
-            // Reset
-            editorU.resetSection();
-            editorL.resetSection();
-            gT.reset();
-        
-            LOGGER.info("added to creatorList, size is: " + creatorList.size());
-            LOGGER.info("\n\ncurrentCard {}", currentCard.toString() );
-            LOGGER.info("upper imageName: {}, lower imageName: {}", editorU.getMediaFileNames()[0], editorL.getMediaFileNames()[0]);
-        
-            FlashCardOps.getInstance().buildTree(creatorList);
-        
-            if (!FlashMonkeyMain.treeWindow.isShowing()) {
-                FlashMonkeyMain.buildTreeWindow();
+                  LOGGER.info("added to creatorList, size is: " + creatorList.size());
+                  LOGGER.debug("\n\n****currentCard ****\n{}\n\n ***************************", currentCard.toString());
+
+                  // create new card for next round.
+                  currentCard = new FlashCardMM();
+                  creatorList.add(currentCard);
+
+                  // Reset
+                  // resetSectionEditors();
+                  //editors.EDITOR_U.resetSection();
+                  //editors.EDITOR_L.resetSection();
+                  gT.reset();
+
+                  FlashCardOps.getInstance().buildTree(creatorList);
+                  if (!FlashMonkeyMain.treeWindow.isShowing()) {
+                        FlashMonkeyMain.buildTreeWindow();
+                  }
+                  FlashMonkeyMain.AVLT_PANE.displayTree();
             }
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-        }
-    
-    
-    
-        /* ------------------------------------------------------- **/
-    
-        
-        
-        /**
-         * Saves the current card to the creatorDeck/list
-         * - Used by AVLTreePane. If the authcrypt.user leaves editing a card
-         * to the AVLTree Navigator and clicks on another card,
-         * The edits would be lost. Thus we save
-         * the card being edited if the authcrypt.user clicks on another
-         * card.
-         */
-        //boolean saveEdtdCardInCreator() {
-        //    return saveEdtdCardInCreator(currentCard);
-        //}
-    
-        
-        
-        /* ------------------------------------------------------- **/
-    
-        
-        
-        /**
-         * Saves edits to the existing card in the creatorList and s3.
-         * @param currentCard
-         */
-        private void saveEdtdCardInCreator(FlashCardMM currentCard) {
-            LOGGER.debug(" *** CALLED SAVE EDITS IN CREATOR *** ");
-            // Assign currentTest from combobox
-            GenericTestType gA = entryComboBox.getValue().getTestType();
-            // do not change the card number here unless
-            // the user re-orders the deck.
-            // currentCard.setCNumber(idx);
-            // @TODO set to Q and A to getStyledText
-            currentCard.setQText(editorU.getPlainText());
-            currentCard.setAText(editorL.getPlainText());
-            currentCard.setQType(editorU.getMediaType());
-            currentCard.setAType(editorL.getMediaType());
-            // saves the double array as is
-            currentCard.setQFiles(editorU.getMediaFileNames());
-            // saves the double array as is
-            currentCard.setAFiles(editorL.getMediaFileNames());
-            currentCard.setTestType(gA.getTestType());
-            currentCard.setCardLayout(gA.getCardLayout());
-            // Save to s3
-            // and verify files were uploaded. Else
-            // display an error to the user.
-            // Runs on a seperate thread
-            sendAndCheck();
 
-        }
-    
-    
-    
-    
-        /**
-         * <p>Provides an int and response based on the int returned from
-         * checkContent().</p>
-         * <pre>
-         *
-         *     - A '0'  = Do nothing and continue.
-         *     - A '-1' = Send user back 'return' to previous method.
-         *     - A '1'  = Save and continue.
-         *     - If the param is LESS than 3, it retuns a '0' and provides no error message;
-         *     - Otherwise: If the param is even, it posts a 'MISSING_TESTTYPE' and returns a '-1'
-         *     or '1' based on the users response.
-         *     - If the testType is a singleSection card, and the param is equal to 3,
-         *     it returns a '0'.
-         *     - If the param is equal to 7, it is a complete double section card and it
-         *     returns a '0'.
-         *     - if the param is anything else it posts a MISSING_SAVE error message to
-         *     the user and returns true;
-         * </pre>
-         * @param result
-         * return Returns an int
-         */
-        private int statusResponse(int result) {
 
-            LOGGER.debug("statusResponse(...) param result: <{}>", result);
-            
-            // There is no content but test testType may be set.
-            if(result < 3) {
-                return 0;
+            /* ------------------------------------------------------- **/
+
+
+            /**
+             * Saves edits to the existing card in the creatorList and s3.
+             *
+             * @param currentCard
+             */
+            private void saveEdtdCardInCreator(FlashCardMM currentCard) {
+                  LOGGER.debug(" *** CALLED SAVE EDITS IN CREATOR *** ");
+                  // Assign currentTest from combobox
+                  GenericTestType gA = entryComboBox.getValue().getTestType();
+                  currentCard.setTestType( gA.getTestType() );
+                  currentCard.setCardLayout( gA.getCardLayout() );
+                  // do not change the card number here unless
+                  // the user re-orders the deck.
+                  // currentCard.setCNumber(idx);
+                  currentCard.setQText(editors.EDITOR_U.getText());
+                  currentCard.setAText(editors.EDITOR_L.getText());
+                  currentCard.setQType(editors.EDITOR_U.getMediaType());
+                  currentCard.setAType(editors.EDITOR_L.getMediaType());
+                  // saves the double array as is
+                  currentCard.setQFiles(editors.EDITOR_U.getMediaNameArray());
+                  // saves the double array as is
+                  currentCard.setAFiles(editors.EDITOR_L.getMediaNameArray());
+                  // Save to s3
+                  // and verify files were uploaded. Else
+                  // display an error to the user.
+                  // Runs on a seperate thread
+                  sendAndCheck();
             }
-            // if testType is not set and
-            // there is data in the card.
-            if(result % 2 != 1) {
-                FMAlerts alerts = new FMAlerts();
-                boolean stop = alerts.saveAlertAction(alerts.MISSING_TESTTYPE, "emojis/flash_mustache_75.png");
-                if(!stop) {
-                    return -1;
-                }
-                deleteQButtonAction(currentCard);
-                return 0;
+
+
+            /**
+             * <p>Provides an int and response based on the int returned from
+             * checkContent().</p>
+             * <pre>
+             *     - A '0'  = Do nothing and continue.
+             *     - A '-1' = Send user back 'return' to previous method.
+             *     - A '1'  = Save and continue.
+             *     - A '-2' = Delete this card and continue.
+             *     - If the param is LESS than 2, it retuns a '0' and provides no error message;
+             *     - If param is 3 gives user an error message for missing data.
+             *     - Otherwise: If the param is even, it posts a 'MISSING_TESTTYPE' and returns a '-1'
+             *     or '1' based on the users response.
+             *     - If the testType is a singleSection card, and the param is equal to 3,
+             *     it returns a '0'.
+             *     - If the param is equal to 7, it is a complete double section card and it
+             *     returns a '0'.
+             *     - if the param is anything else it posts a MISSING_SAVE error message to
+             *     the user and returns true;
+             *     - if DrwwTools is open save the shapes.
+             * </pre>
+             *
+             * @param result return Returns an int
+             */
+            private static int statusResponse(int result) {
+                  LOGGER.debug("statusResponse(...) param result: <{}>", result);
+
+                  // There is no content but  CardType may be set.
+                  if (result < 2) {
+                        return 0;
+                  }
+                  if (result == 3) {
+                        System.out.println("in CreateFlash.statusResponse and result == 3");
+                        // data is not completed in answer. Create Popup choice
+                        // and return the users response.
+                        return notComplete('a');
+                  }
+                  // if testType is not set and
+                  // there is data in the card.
+                  if (result % 2 != 1) {
+                        return noTestType();
+                  }
+                  // Is a single section card and card is complete.
+                  if (getTestType().toString().contains("NoteTaker") && result == 3) {
+                        return 1;
+                  }
+                  // Card is double section and complete
+                  if (result == 7) {
+                        return 1;
+                  }
+
+                  //Card is not-complete error. Notify user
+                  return notComplete('q');
             }
-            // Is a single section card and card is complete.
-            if(getTestType().toString().contains("NoteTaker") && result == 3) {
-                return 1;
+
+            /**
+             * Creates a popup with user response. Three options.
+             * Close the popup, - Signifys go back and edit. Return 0;
+             * Save button - return 1.
+             * Delete button - return -2;
+             *
+             * @param qOrA
+             * @return
+             */
+            private static  int notComplete(char qOrA) {
+                  FMAlerts alerts = new FMAlerts();
+                  return alerts.choiceOptionActionPopup("Delete or Save",
+                      qOrA == 'a' ? FMAlerts.MISSING_ANSWER : FMAlerts.MISSING_QUESTION,
+                      "emojis/flash_mustache_75.png",
+                      "",
+                      "SAVE",
+                      "DELETE"
+                  );
             }
-            // Card is double section and complete
-            if(result == 7) {
-                return 1;
+
+            /**
+             * Creates a popup with user response. Two options, delete or close
+             * and edit.
+             *
+             * @return
+             */
+            private static int noTestType() {
+                  FMAlerts alerts = new FMAlerts();
+                  boolean stop = alerts.saveAlertAction(FMAlerts.MISSING_TESTTYPE, "DELETE", "emojis/flash_mustache_75.png");
+                  if (stop) {
+                        // user requested to delete the card
+                        return -2;
+                  }
+                  // If user closes the box or chooses to make a change
+                  // send back to edit the card
+                  return -1;
             }
-            //Card is not-complete error. Notify user
-            FMAlerts alerts = new FMAlerts();
-            boolean stop = alerts.saveAlertAction(FMAlerts.MISSING_SAVE, "emojis/flash_mustache_75.png");
-            if(stop) {
-                return -1;
+
+            /* ------------------------------------------------------- **/
+
+            /**
+             * Sets bits based on if content exists.
+             * Checks if the upper editor, and the lower editor if exists,
+             * either contains data, has no data, or the card is
+             * incomplete. There are no error messages generated here.
+             *
+             * @return Returns 0 if the card contains no data. returns an even number
+             * if the testType comboBox is not set, returns a 2 or 3 if editorU has
+             * data and editorL does not, and 7 if everything has data and it is not a single card. and returns
+             * 4 or 5 if editorL has data but editorU does not.
+             */
+            private static final int checkContent() {
+                   //LOGGER.debug("checkContent: is text empty? editors.EDITOR_U: {}, editorL {} \nis there an image?: {} ", editors.EDITOR_U.getText().isEmpty(), editorL.getText().isEmpty(), (editorL.getMediaFileNames()[0] != null));
+
+                  int stat = 0;
+                  // check and save if there are shapes. Returns 2 if upper area has a drawing,
+                  // 4 if lower area has a drawing, 6 for both and 0 for none;
+                  // Is there a test type selected?
+                  if (getTestType() != null) {
+                        //stat set bit 1
+                        stat |= (1); // = 1
+                        LOGGER.debug("testType is set: stat bit 1 is set. stat: <{}>", stat);
+                  }
+                  // Upper section sets the 2nd bit "2".
+                  // Is there text in the upper editor?
+                  if (!editors.EDITOR_U.getText().isEmpty()) {
+                        //stat set bit 2
+                        stat |= (2);
+                        LOGGER.debug("text in Question: <{}>, Setting bit 2. stat: <{}>", editors.EDITOR_U.getText(), stat);
+                  } else if (editors.EDITOR_U.getMediaNameArray()[0] != null || editors.EDITOR_U.getArrayOfFMShapes().size() > 1) {
+                        //stat set bit 2
+                        stat |= (2);
+                        LOGGER.debug("There is media in the QuestionMM mediaArray, Setting bit 2. stat: <{}>", stat);
+                  }
+                  //Lower section sets 3rd bit "4".
+                  // Is there data in the lower editor? or if the CardLayout does not have a lower section
+                  boolean isSingleCardLayout = null != getTestType() && getTestType().getCardLayout() == 'S';
+                  if (!editors.EDITOR_L.getText().isEmpty() || isSingleCardLayout) {
+                        //stat set bit 3
+                        stat |= (4);
+                        LOGGER.debug("text in Answer: <{}>, Setting bit 4. stat: <{}>", editors.EDITOR_U.getText(), stat);
+                        } else if (editors.EDITOR_L.getMediaNameArray()[0] != null || editors.EDITOR_L.getArrayOfFMShapes().size() > 1) {
+                        //stat set bit 3
+                        stat |= (4);
+                        LOGGER.debug("There is media in the AnswerMM mediaArray, Setting bit 4. stat: <{}>", stat);
+                  }
+
+                  //  LOGGER.info("If stat is odd, then the testType has been set. If it is even then TestType has not been set. User should be sent back to set it\n" +
+                  //     "If the 2nd bit has been set, then there is data in the Question. This must always be true. and in the case of noteCard with only a question present is ok.\n" +
+                  //     "If the 3rd bit 4 is set and the result is 7, then the card is allowed to be saved. ");
+                  LOGGER.info("End checkContent. Returning stat: <{}>", stat);
+
+                  return stat;
             }
-            return 1;
-        }
-    
-    
-    
-        /* ------------------------------------------------------- **/
-    
-        /**
-         * Checks if the upper editor, and the lower editor if exists,
-         * either contains data, has no data, or the card is
-         * incomplete. There are no error messages generated here.
-         * Uses an integer and sets its bit based on the data that
-         * is set.
-         * @param editorU
-         * @param editorL
-         * @return Returns 0 if the card contains no data. returns an even number
-         * if the testType comboBox is not set, returns a 2 or 3 if editorU has
-         * data and editorL does not, and 7 if everything has data and it is not a single card. and returns
-         * 4 or 5 if editorL has data but editorU does not.
-         */
-        private int checkContent(SectionEditor editorU, SectionEditor editorL) {
-           // LOGGER.debug("checkContent: is text empty? editorU: {}, editorL {} \nis there an image?: {} ", editorU.getText().isEmpty(), editorL.getText().isEmpty(), (editorL.getMediaFileNames()[0] != null));
-        
-            int stat = 0;
-            // Is there a test type selected?
-            if (getTestType() != null) {
-                //stat set bit 1
-                stat |= (1); // = 1
+
+      } // **** END INNER CLASS *****
+
+      /**
+       * Called by checkContent. Checks if an instance of DrawTools is open.
+       * By default shapes are saved to file during close event. Adds 2,or 4 if
+       * an instance is open. May not be needed as this is checked later by each
+       * section editor's mediaFileNames.
+       * <p> Used by circleOnClick in AvlTreePane </p>
+       *
+       * @param editorU
+       * @param editorL
+       */
+      private static void closeDrawToolsOnTreeClick(SectionEditor editorU, SectionEditor editorL) {
+            if(DrawTools.instanceExists()) {
+                  DrawTools.getInstance().onClose();
             }
-            // Is there text in the upper editor?
-            if (! editorU.getPlainText().isEmpty()) {
-                //stat set bit 2
-                stat |= (2);
-            }
-            else if (editorU.getMediaFileNames()[0] != null || editorU.getMediaFileNames().length == 2) {
-                //stat set bit 2
-                stat |= (2);
-            }
-            // Is there data in the lower editor?
-            if ( ! editorL.getPlainText().isEmpty()) {
-                //stat set bit 3
-                stat |= (4);
-            }
-            else if (editorL.getMediaFileNames()[0] != null || editorL.getMediaFileNames().length == 2) {
-                //stat set bit 3
-                stat |= (4);
-            }
-        
-            LOGGER.info("checkContent() Returning: <{}>", stat);
-        
-            return stat;
-        }
-        
-    }
-    
+      }
 
 
-    /* ------------------------------------------------------- **/
 
-    /**
-     * If this is the first session and the blank display
-     * is not a card.
-     */
-    boolean isntStarted() {
-        return currentCard == null;
-    }
+      /* ------------------------------------------------------- **/
 
-
-    /* ------------------------------------------------------- **/
+      /**
+       * If this is the first session the currentCard
+       * is null.
+       */
+      boolean isntStarted() {
+            return currentCard == null;
+      }
 
 
-    /**
-     * Saves the creator list to local file.
-     * Used when the program exits.
-     * <p><b>NOTE: </b>Does not check if input fields
-     * have data. Only saves the creatorList as it is.
-     * Prevents the loss of the users additions to
-     * the deck on an exit event from the program. </p>
-     * <p>For normal saves during an edit/create session
-     * see {@code saveDeckAction()}</p>
-     * ! Clears the creatorList
-     */
-    protected void saveOnExit() throws Exception
-    {
-        LOGGER.info("*!*!* CreateFlashPane saveOnExit() *!*!*");
-        Timer.getClassInstance().createTestTimeStop();
-        eventSave();
-        creatorList.clear();
-    }
-    
 
-    /* ------------------------------------------------------- **/
-
-    /**
-     * Saves the creator list to local file.
-     * Used when there is a change of focus.
-     * <p><b>NOTE: </b>Does not check if input fields
-     * have data. Only saves the creatorList as it is.
-     * Prevents the loss of the users additions to
-     * the deck on an exit event from the program. </p>
-     * <p>For normal saves during an edit/create session
-     * see  {@code saveDeckAction()}</p>
-     * <p>! Does not clear the creatorList</p>
-     */
-    protected void eventSave() throws Exception {
-        LOGGER.debug("eventSave() called, is creatorList > 0 " + (creatorList.size() > 0) );
-
-        if(!flashListChanged) {
-            return;
-        }
- 
-        if(creatorList != null && creatorList.size() > 0) {
-
-            CardSaver cs = new CardSaver();
-            if (cs.checkContent(editorU, editorL) == 1) {
-                // If the current index is less than flashlist size
-                // then it is an edited card. Save the changes.
-                if(listIdx < creatorList.size() && flashListChanged) {
-
-                    FlashCardMM currentCard = creatorList.get(listIdx);
-                    cs.saveEdtdCardInCreator(currentCard);
-                    // Else it is a new card at the end of the list.
-                    // Save it before exiting.
-                } else {
-                    cs.saveNewCardToCreator();
-                }
-            }
-            // creatorList minus 1. Last card is empty. '-' indicates such
-            FlashCardOps.getInstance().saveFlashListToFile(creatorList, '-');
-            //creatorList.clear();
-        }
-    }
+      /* ------------------------------------------------------- **/
 
 
-    /* ------------------------------------------------------- **/
+      /**
+       * DESCRIPTION: Sets the creatorList from file. Meaning that an ArrayList is
+       * created from the binary file.
+       */
+
+      public void setCreatorList() {
+            FlashCardOps fcOps = FlashCardOps.getInstance();
+
+            creatorList = fcOps.cloneList(fcOps.getFlashList());
+            startSize = creatorList.size();
+
+            LOGGER.info("creatorList size: ", startSize);
+      }
+
+      /* ------------------------------------------------------- **/
 
 
-    /**
-     *  DESCRIPTION: Sets the creatorList from file. Meaning that an ArrayList is
-     *  created from the binary file.
-     */
-    
-    public void setCreatorList() {
-        FlashCardOps fcOps = FlashCardOps.getInstance();
-        
-        creatorList = fcOps.cloneList(fcOps.getFlashList());
-        startSize = creatorList.size();
-
-        LOGGER.info("creatorList size: ", startSize);
-    }
-
-    /* ------------------------------------------------------- **/
-
-
-    /**
-     * Exits to menu and Saves the flashcard arraylist to the
-     * binary file named/selected by the user at program start.
-     * Also saves media and file to cloud. Saves users edits in the
-     * shapesPane if open.
-     */
-    protected void saveDeckAction() {
-        LOGGER.info(" saveDeckAction ");
-        Timer.getClassInstance().createTestTimeStop();
+      /**
+       * <p>Should not be called if the intent is to close the scene. Call saveOnExit()
+       * instead.</p>
+       * <p>Top level method using support methods provide the following:</p>
+       * <p> 1. Saves the flashcard arraylist to the
+       * binary file named/selected by the user at program start.</p>
+       * <p> 2. Saves/synchronizes media and file to cloud. Saves users edits in the
+       * shapesPane if open.</p>
+       * <p> 3. Exits to study/create menu.</p>
+       */
+      private void saveDeckAction() {
+            LOGGER.info(" saveDeckAction ");
+            Timer.getClassInstance().createTestTimeStop();
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            CardSaver cs = new CardSaver();
-            boolean retrn = cs.saveCard(editorU, editorL);
+            boolean safeToContinue = cardOnExitActions();
             // If requested, then
-            // then return user to screen.
-            if(retrn) {
-                return;
+            // return user to screen.
+            if ( ! safeToContinue ) {
+                  return;
             }
-        //If there are changes. Save them.
-        if (flashListChanged || !retrn) {
-            
-            // update the deck info
-            this.updateDeckInfo(meta);
-            meta.updateDataMap();
+            // If there are changes. Save them.
+            if ( flashListChanged ) {
+                  // update the deck info
+                  this.updateDeckInfo(meta);
+                  meta.updateDataMap();
+                  // send metadata to database
+                  Report.getInstance().reportDeckMetadata(meta);
 
-            // send metadata to database
-            Report.getInstance().reportDeckMetadata(meta);
+                  // Save the current card or not
+                  FlashCardMM card = creatorList.get(creatorList.size() - 1);
+                  if (card.getQText().isEmpty() || card.getQFiles().length > 0) {
+                        LOGGER.debug("calling saveButtonActionHelper. last cardQtext is empty. minus: -");
+                        saveDeckActionHelper('-');
+                  } else {
+                        // Save deck metadata to DB.
+                        LOGGER.debug("calling saveButtonActionHelper. minus: +");
+                        saveDeckActionHelper('+');
+                  }
 
-            // Save the current card or not
-            FlashCardMM card = creatorList.get(creatorList.size() - 1);
-            if (card.getQText().isEmpty() || card.getQFiles().length > 0) {
-                LOGGER.debug("calling saveButtonActionHelper. last cardQtext is empty. minus: -");
-                saveDeckActionHelper('-');
+                  FlashMonkeyMain.setWindowToMenu();
+                  if (!FlashCardOps.getInstance().getMediaIsSynched()) {
+                        LOGGER.debug("Calling MediaSync from CreateFlash.saveDeckAction()");
+                        if (Utility.isConnected()) {
+                              // token related
+                              if (CloudOps.isInValid()) {
+
+                                    LOGGER.debug("token is expired, not renewing");
+                                    FMAlerts alerts = new FMAlerts();
+                                    // method may not be on the same thread. Cannot create an
+                                    // alert on another thread.
+                                    alerts.sessionRestartPopup();
+
+                              } else {
+                                    new Thread(() -> {
+                                          LOGGER.info("Calling syncMedia from CreateFlash");
+                                          MediaSync.syncMedia(creatorList);
+                                    }).start();
+                              }
+                        }
+                  }
+            }
+      }
+
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Inventories the decks media and inserts it into the
+       * DecksMetaData object.
+       *
+       * @param meta
+       */
+      public void updateDeckInfo(@NotNull DeckMetaData meta) {
+            LOGGER.debug("updateDeckInfo called");
+
+            // LOGGER.debug("before retrieveDEckMetaData(), meta array is: {}", meta.toString());
+            // ensure object is updated from file
+            //meta.setDataFmFile(); // may be causeing issues with deleting current data
+
+            //LOGGER.debug("After retrieveDeckMetaData() from file, and before update, meta array is: {}", meta.toString());
+            // reset deck meta to 0;
+            //meta.reset();
+            if (creatorList == null || creatorList.isEmpty()) {
+                  ArrayList<FlashCardMM> fc = FlashCardOps.getInstance().getFlashList();
+                  meta.setNumCard(fc.size());
+                  inventoryMeta(fc, meta);
             } else {
-                // Save deck metadata to DB.
-                LOGGER.debug("calling saveButtonActionHelper. minus: +");
-                saveDeckActionHelper('+');
+                  meta.setNumCard(creatorList.size() - 1);
+                  inventoryMeta(creatorList, meta);
             }
-            
-            FlashMonkeyMain.setWindowToNav();
-            if(! FlashCardOps.getInstance().getMediaIsSynched()) {
-                LOGGER.debug("Calling MediaSync from CreateFlash.saveDeckAction()");
-                if(Utility.isConnected()) {
-                    // token related
-                    if (CloudOps.isInValid()) {
 
-                        LOGGER.debug("token is expired, not renewing");
-                        FMAlerts alerts = new FMAlerts();
-                        // method may not be on the same thread. Cannot create an
-                        // alert on another thread.
-                        alerts.sessionRestartPopup();
+            // set metadata to array
+            //    meta.updateDataAry();
+            // save metadata to file
+            FlashCardOps.getInstance().setMetaInFile(meta, FlashCardOps.getInstance().getDeckFileName());
+            //LOGGER.debug("After meta.saveDeckMetaData() meta array is: {}", meta.toString());
+      }
 
-                    } else {
-                        new Thread(() -> {
-                            LOGGER.info("Calling syncMedia from CreateFlash");
-                            MediaSync.syncMedia(creatorList);
-                        }).start();
-                    }
-                }
+      /* ------------------------------------------------------- **/
+
+      /**
+       * Crawls and creates an inventory of the media
+       * in a deck.
+       * Helper method for updateDeckInfo
+       *
+       * @param creatorList
+       * @param meta
+       */
+      public static DeckMetaData inventoryMeta(ArrayList<FlashCardMM> creatorList, DeckMetaData meta) {
+
+            //LOGGER.info("creatorList size: ", (creatorList.size() - 1));
+            //LOGGER.info("Deck: BEFORE {}", meta.toString());
+
+            long time = System.currentTimeMillis();
+            // reset the media count.
+
+            meta.reset();
+            for (int i = 0; i < creatorList.size() - 1; i++) {
+                  meta.mediaCounter(creatorList.get(i).getAFiles()[0]);
+                  meta.mediaCounter(creatorList.get(i).getQFiles()[0]);
+                  meta.addTestType(creatorList.get(i).getTestType());
             }
-        } else {
-        	// There is no content in the upper and lower editors
-            // There is nothing to save, Give the authcrypt.user
-            // a message
-            String emojiPath = "image/Flash_hmm_75.png";
-            String message   = "There are no changes to save." +
-                            "\n If you're finished, click quit. ";
-            FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 5,
-                    emojiPath, FlashMonkeyMain.getWindow());
-        }
-    }
-    
-    /* ------------------------------------------------------- **/
-    
-    /**
-     * Inventories the decks media and inserts it into the
-     * DecksMetaData object.
-     * @param meta
-     */
-    public void updateDeckInfo(@NotNull DeckMetaData meta) {
-        LOGGER.debug("updateDeckInfo called");
-        
-        // LOGGER.debug("before retrieveDEckMetaData(), meta array is: {}", meta.toString());
-        // ensure object is updated from file
-        //meta.setDataFmFile(); // may be causeing issues with deleting current data
-        
-        //LOGGER.debug("After retrieveDeckMetaData() from file, and before update, meta array is: {}", meta.toString());
-        // reset deck meta to 0;
-        //meta.reset();
-        meta.setNumCard(creatorList.size() - 1);
-        inventoryMeta(creatorList, meta);
-        // set metadata to array
-    //    meta.updateDataAry();
-        // save metadata to file
-        FlashCardOps.getInstance().setMetaInFile(meta, FlashCardOps.getInstance().getDeckFileName());
-        //LOGGER.debug("After meta.saveDeckMetaData() meta array is: {}", meta.toString());
-    }
 
-    /* ------------------------------------------------------- **/
-    
-    /**
-     * Crawls and creates an inventory of the media
-     * in a deck.
-     * Helper method for updateDeckInfo
-     * @param creatorList
-     * @param meta
-     */
-    public static DeckMetaData inventoryMeta(ArrayList<FlashCardMM> creatorList, DeckMetaData meta) {
 
-        //LOGGER.info("creatorList size: ", (creatorList.size() - 1));
-        //LOGGER.info("Deck: BEFORE {}", meta.toString());
-        
-        long time = System.currentTimeMillis();
-        // reset the media count.
-        
-        meta.reset();
-        for(int i = 0; i < creatorList.size() - 1; i++) {
-            meta.mediaCounter(creatorList.get(i).getAFiles()[0]);
-            meta.mediaCounter(creatorList.get(i).getQFiles()[0]);
-            meta.addTestType(creatorList.get(i).getTestType());
-        }
-        
-        
-        // TODO parallelize META_DATA sync performance!!! with forall
+            // TODO parallelize META_DATA sync performance!!! with forall
         /*
         Stream.of(creatorList)
                 .peek(fc -> {
@@ -1731,212 +1931,213 @@ public final class CreateFlash<C extends GenericCard> {
                         meta.addTestType(creatorList.get(i).getTestType());
                     });
                 }).close();  */
-        
-        time = System.currentTimeMillis() - time;
-        LOGGER.info("inventoryMeta serial processing time was: <{}> milliseconds", time);
-        LOGGER.info("Deck: AFTER {}", meta.toString());
 
-        return meta;
-    }
+            time = System.currentTimeMillis() - time;
+            LOGGER.info("inventoryMeta serial processing time was: <{}> milliseconds", time);
+            LOGGER.info("Deck: AFTER {}", meta.toString());
 
-
-    /* ------------------------------------------------------- **/
+            return meta;
+      }
 
 
-    /**
-     * helper method to saveDeckAction
-     * Saves the creator list to file.
-     */
-    private void saveDeckActionHelper(char minus) {
+      /* ------------------------------------------------------- **/
 
-        LOGGER.info("saveButtonActionHelper char minus: <{}>, num cards <{}>", minus, creatorList.size());
 
-        // clear the flashList. creatorList is a deep copy of flashList with
-        // new cards added. !!! Important that the original file is maintained
-        // until the user commits.
-        try {
-            // creatorList minus 1. Last card is empty. '-' indicates this.
-            FlashCardOps.getInstance().saveFlashListToFile(creatorList, minus);
+      /**
+       * helper method to saveDeckAction
+       * Saves the creator list to file.
+       */
+      private void saveDeckActionHelper(char minus) {
 
-            if(Utility.isConnected()) {
-                //CloudOps co = new CloudOps();
-                CloudOps.putDeck(FlashCardOps.getInstance().getDeckFileName());
-                //co.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName());
+            LOGGER.info("saveButtonActionHelper char minus: <{}>, num cards <{}>", minus, creatorList.size());
+
+            // clear the flashList. creatorList is a deep copy of flashList with
+            // new cards added. !!! Important that the original file is maintained
+            // until the user commits.
+            try {
+                  // creatorList minus 1. Last card is empty. '-' indicates this.
+                  FlashCardOps.getInstance().saveFlashListToFile(creatorList, minus);
+
+                  if (Utility.isConnected()) {
+                        //CloudOps co = new CloudOps();
+                        CloudOps.putDeck(FlashCardOps.getInstance().getDeckFileName());
+                        //co.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName());
+                  }
+                  creatorList.clear();
+                  //   saveDeckButton.setDisable(true);
+            } catch (Exception h) {
+                  LOGGER.warn("ERROR: Exception thrown while saving"
+                      + "flash card Deck in CreateFlashPane.saveButtonActionHelper() " +
+                      "\n *** FILE NOT SAVED!!! *** \n line 258 CreateFlashPane \n Exiting ...");
+                  h.printStackTrace();
+                  System.exit(0);
+            } finally {
+                  //   this.creatorList.clear();
+                  FlashCardOps.getInstance().refreshFlashList();
             }
-            creatorList.clear();
-         //   saveDeckButton.setDisable(true);
-        } catch (Exception h) {
-            LOGGER.warn("ERROR: Exception thrown while saving"
-                    + "flash card Deck in CreateFlashPane.saveButtonActionHelper() " +
-                    "\n *** FILE NOT SAVED!!! *** \n line 258 CreateFlashPane \n Exiting ...");
-                    h.printStackTrace();
-            System.exit(0);
-        } finally {
-         //   this.creatorList.clear();
-            FlashCardOps.getInstance().refreshFlashList();
-        }
-    }
+      }
 
 
-    /* ------------------------------------------------------- **/
-    
-
-    /**
-     * Sets the prompt based upon the length of the creatorList
-     * @param cardNum
-     */
-    private String makeQPrompt(int cardNum) {
-
-        int creatorListLength = creatorList.size();
-
-        if(cardNotEnabledMsg != null) {
-            String msg = cardNotEnabledMsg;
-            cardNotEnabledMsg = null;
-            return msg;
-        }
-        
-        if(creatorListLength < 5)
-        {
-            return "Please create " + (-1 * (creatorListLength - 5)) + " more flash Cards ";
-        }
-        
-        LOGGER.info("makeQPrompt, listIdx: <{}>", listIdx);
-        return "Flash Card " + (listIdx + 1);
-        
-    }
+      /* ------------------------------------------------------- **/
 
 
-    /* ------------------------------------------------------- **/
+      /**
+       * Sets the prompt based upon the length of the creatorList
+       *
+       * @param cardNum
+       */
+      private String makeQPrompt(int cardNum) {
 
+            int creatorListLength = creatorList.size();
 
-
-    /*************************************************************
-                                INNER CLASS
-                        TestMapper for dropDown menu
-     *************************************************************/
-
-    /**
-     * This class provides the object
-     * with the Name of the test that
-     * appears in the dropDown button and the related
-     * TestType (aka AnswerType).
-     */
-    public static class TestMapper
-    {
-        private String name;
-        private GenericTestType testType;
-
-        TestMapper(String s, GenericTestType type)
-        {
-            this.name = s;
-            this.testType = type;
-        }
-
-        // **** GETTERS *****
-
-        public String getName()
-        {
-            return this.name;
-        }
-
-        public GenericTestType getTestType()
-        {
-            return this.testType;
-        }
-
-        @Override
-        public String toString()
-        {
-            return name;
-        }
-
-        static ArrayList<TestMapper> getTestList(GenericTestType[] tList) {
-            ArrayList<TestMapper> tm = new ArrayList<>(15);
-            for(int i = 0; i < tList.length; i++) {
-                tm.add(new TestMapper(tList[i].getName(), tList[i].getTest()));
+            if (cardNotEnabledMsg != null) {
+                  String msg = cardNotEnabledMsg;
+                  cardNotEnabledMsg = null;
+                  return msg;
             }
-            return tm;
-        }
-    }
 
-    // **************** METHODS USED FOR UI TESTING ******************
+            if (creatorListLength < 5) {
+                  return "Please create " + (-1 * (creatorListLength - 5)) + " more flash Cards ";
+            }
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getPrevBtnXY() {
-        Bounds bounds = prevQButton.getLayoutBounds();
-        return prevQButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-        
-    //    xxxxxx images are not working... we redid the media naming to use the new  cID / cHash.
-        
-    }
+            return "Flash Card " + (listIdx + 1);
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getNextBtnXY() {
-        Bounds bounds = nextQButton.getLayoutBounds();
-        return nextQButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-    }
+      }
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getNewCardBtnXY() {
-        Bounds bounds = newCardButton.getLayoutBounds();
-        return newCardButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-    }
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getInsertCardBtnXY() {
-        Bounds bounds = insertCardButton.getLayoutBounds();
-        return insertCardButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-    }
+      /* ------------------------------------------------------- **/
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getSaveDeckButtonXY() {
-        Bounds bounds = saveDeckButton.getLayoutBounds();
-        return saveDeckButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-    }
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getUpperTextXY() {
-        //@TODO CreateFlash.getUpperTextXY()
-//        Bounds bounds = editorU.textEditor.getTextArea().getLayoutBounds();
-//        return editorU.textEditor.getTextArea().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-        return new Point2D(200.0, 2000.0);
-    }
+      /*************************************************************
+       INNER CLASS
+       TestMapper for dropDown menu
+       *************************************************************/
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getLowerTextXY() {
-        // TODO CreateFlash.getUpperTextXY()
-//        Bounds bounds = editorL.textEditor.getTextArea().getLayoutBounds();
-//        return editorL.textEditor.getTextArea().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-        return new Point2D(200.0, 2000.0);
-    }
+      /**
+       * This class provides the object
+       * with the Name of the test that
+       * appears in the dropDown button and the related
+       * TestType (aka AnswerType).
+       */
+      public static class TestMapper {
+            private final String name;
+            private final GenericTestType testType;
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getSellButtonXY() {
-        Bounds bounds = metaButton.getLayoutBounds();
-        return metaButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-    }
+            TestMapper(String s, GenericTestType type) {
+                  this.name = s;
+                  this.testType = type;
+            }
 
-    @FMAnnotations.DoNotDeployMethod
-    public ArrayList<FlashCardMM> getCreatorList() {
-        return this.creatorList;
-    }
+            // **** GETTERS *****
 
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getComboBoxXY() {
-        Bounds bounds = entryComboBox.getLayoutBounds();
-        return entryComboBox.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-    }
-    
-    @FMAnnotations.DoNotDeployMethod
-    public DeckMetaModel getMetaModelObj() {
-        return metaPane.getModel();
-    }
-    
-    @FMAnnotations.DoNotDeployMethod
-    public Point2D getFormMinXY() {
-        Double x = metaWindow.getX();
-        Double y = metaWindow.getY();
-        Point2D d2 = new Point2D(x, y);
-        return d2;
-    }
+            public String getName() {
+                  return this.name;
+            }
+
+            public GenericTestType getTestType() {
+                  return this.testType;
+            }
+
+            @Override
+            public String toString() {
+                  return name;
+            }
+
+            static ArrayList<TestMapper> getTestList(GenericTestType[] tList) {
+                  ArrayList<TestMapper> tm = new ArrayList<>(15);
+                  for (int i = 0; i < tList.length; i++) {
+                        tm.add(new TestMapper(tList[i].getName(), tList[i].getTest()));
+                  }
+                  return tm;
+            }
+      }
+
+      // **************** METHODS USED FOR UI TESTING ******************
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getPrevBtnXY() {
+            Bounds bounds = prevQButton.getLayoutBounds();
+            return prevQButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getNextBtnXY() {
+            Bounds bounds = nextQButton.getLayoutBounds();
+            return nextQButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getNewCardBtnXY() {
+            Bounds bounds = newCardButton.getLayoutBounds();
+            return newCardButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getInsertCardBtnXY() {
+            Bounds bounds = insertCardButton.getLayoutBounds();
+            return insertCardButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getSaveDeckBtnXY() {
+            Bounds bounds = saveReturnButton.getLayoutBounds();
+            return saveReturnButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getUpperTextXY() {
+            Bounds bounds = editors.EDITOR_U.tCell.getTextCellVbox().getBoundsInParent();
+            return new Point2D(bounds.getMinX() + 20, bounds.getMinY() + 20);//editors.EDITOR_U.tCell.getTextArea().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getLowerTextXY() {
+            Bounds bounds = editors.EDITOR_L.tCell.getTextCellVbox().getLayoutBounds(); //getTextArea().getLayoutBounds();
+            return editors.EDITOR_L.tCell.getTextArea().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getSellButtonXY() {
+            Bounds bounds = metaButton.getLayoutBounds();
+            return metaButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public ArrayList<FlashCardMM> getCreatorList() {
+            return creatorList;
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getComboBoxXY() {
+            Bounds bounds = entryComboBox.getLayoutBounds();
+            return entryComboBox.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public DeckMetaModel getMetaModelObj() {
+            return metaPane.getModel();
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getFormMinXY() {
+            Double x = metaWindow.getX();
+            Double y = metaWindow.getY();
+            Point2D d2 = new Point2D(x, y);
+            return d2;
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public boolean entryComboBoxIsShowing() {
+            return this.entryComboBox.isShowing();
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public SectionEditor getEditor_U_ForTestingOnly() {
+            return editors.EDITOR_U;
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public SectionEditor getEditor_L_ForTestingOnly() {
+            return editors.EDITOR_L;
+      }
 }

@@ -128,14 +128,21 @@ public class ImageUtility {
         Robot awtRobot = new Robot();
         java.awt.Color awtPixColor = awtRobot.getPixelColor( x,  y);
 
+        awtRobot.mouseMove(x + 20, y + 20);
+        awtRobot.delay(1000);
+        awtRobot.mouseMove(x, y);
 
         int rPix = awtPixColor.getRed();
         int bPix = awtPixColor.getBlue();
         int gPix = awtPixColor.getGreen();
 
-        boolean rBool = (rCheck > rPix - 10 && rCheck < rPix + 10 );
-        boolean bBool = (bCheck > bPix - 10 && bCheck < bPix + 10 );
-        boolean gBool = (gCheck > gPix - 10 && gCheck < gPix + 10 );
+        System.out.println("rPix = " + rPix);
+        System.out.println("bPix = " + bPix);
+        System.out.println("gPix = " + gPix);
+
+        boolean rBool = (rCheck > rPix - 20 && rCheck < rPix + 20 );
+        boolean bBool = (bCheck > bPix - 20 && bCheck < bPix + 20 );
+        boolean gBool = (gCheck > gPix - 50 && gCheck < gPix + 50 );
         System.out.println("\npix colors < r: " + rPix + "  g: " + gPix + "  b: " + bPix + " >");
         System.out.println("expecting   < r: " + rCheck + "  g: " + gCheck + "  b: " + bCheck + " >");
 
@@ -152,9 +159,9 @@ public class ImageUtility {
      * provided at the location provided in the arguments
      * @throws Exception
      */
-    java.awt.Color getAWTPixColorFmScreen(double x, double y) throws Exception {
+   /* java.awt.Color getAWTPixColorFmScreen(double x, double y) throws Exception {
 
         Robot awtBot = new Robot();
-        return awtBot.getPixelColor(20, 20);
-    }
+        //return awtBot.getPixelColor(20, 20);
+    }*/
 }

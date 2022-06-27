@@ -14,65 +14,65 @@ import uicontrols.SceneCntl;
 
 
 public class PayPane {
-	
-	public PayPane() {
-	/* no args contstructor */
-	}
-	
-	public static StackPane getPayPane() {
-		Pane lowerPane = new Pane();
-		//BorderPane bp = new BorderPane();
-		//VBox v = comingSoonPane();
-		//v.setTranslateX(120);
-		//v.setTranslateY(200);
-		lowerPane.getChildren().add(getMainPane());
-		Pane anchor = new Pane();
-		//anchor.getChildren().add(v);
-		StackPane s = new StackPane(lowerPane);
 
-		return s;
-	}
+      public PayPane() {
+            /* no args contstructor */
+      }
 
-	private static GridPane getMainPane() {
-		GridPane gPane = new GridPane();
-		gPane.setPadding(new Insets(0, 0, 16, 0));
-		gPane.setPrefHeight(SceneCntl.getFormBox().getHt());
-		gPane.setPrefWidth(SceneCntl.getFormBox().getWd());
+      public static StackPane getPayPane() {
+            Pane lowerPane = new Pane();
+            //BorderPane bp = new BorderPane();
+            //VBox v = comingSoonPane();
+            //v.setTranslateX(120);
+            //v.setTranslateY(200);
+            lowerPane.getChildren().add(getMainPane());
+            Pane anchor = new Pane();
+            //anchor.getChildren().add(v);
+            StackPane s = new StackPane(lowerPane);
 
-		Image iGotPaid = new Image("image/i_got_paid.png");
-		ImageView iView = new ImageView(iGotPaid);
-		String str = "You just earned $42.89 from \"Test Card Deck 123\". " +
-				"The amount has been added to your FlashMonkey wallet." +
-				"Thank you for your contributions to your peers.";
-		String payDateStr = "Your next pay date is on Friday May 7, 2021";
-		Hyperlink seePayLink = new Hyperlink("How does pay work?");
-		seePayLink.setId("signInHyp");
-		Label label = new Label(str);
-		Label payDateLabel = new Label(payDateStr);
-		label.setId("label16Blue");
-		payDateLabel.setId("label16Blue");
+            return s;
+      }
 
-		Button shareBtn = ButtoniKon.getShareButton();
-		Button walletBtn = ButtoniKon.getWalletButton();
+      private static GridPane getMainPane() {
+            GridPane gPane = new GridPane();
+            gPane.setPadding(new Insets(0, 0, 16, 0));
+            gPane.setPrefHeight(SceneCntl.getFormBox().getHt());
+            gPane.setPrefWidth(SceneCntl.getFormBox().getWd());
 
-		HBox btnBox = new HBox(4);
-		btnBox.setPadding(new Insets(16, 0,0,0));
-		btnBox.getChildren().addAll(shareBtn, walletBtn);
-		btnBox.setAlignment(Pos.CENTER);
+            Image iGotPaid = new Image("image/i_got_paid.png");
+            ImageView iView = new ImageView(iGotPaid);
+            String str = "You just earned $42.89 from \"Test Card Deck 123\". " +
+                "The amount has been added to your FlashMonkey wallet." +
+                "Thank you for your contributions to your peers.";
+            String payDateStr = "Your next pay date is on Friday May 7, 2021";
+            Hyperlink seePayLink = new Hyperlink("How does pay work?");
+            seePayLink.setId("signInHyp");
+            Label label = new Label(str);
+            Label payDateLabel = new Label(payDateStr);
+            label.setId("label16Blue");
+            payDateLabel.setId("label16Blue");
 
-		gPane.setAlignment(Pos.CENTER);
-		gPane.addRow(0, iView);
-		GridPane.setHalignment(iView, HPos.CENTER);
-		gPane.addRow(1, label);
-		GridPane.setHalignment(label, HPos.CENTER);
-		gPane.addRow(2, payDateLabel);
-		GridPane.setHalignment(payDateLabel, HPos.CENTER);
-		gPane.addRow(3, seePayLink);
-		GridPane.setHalignment(seePayLink, HPos.CENTER);
-		gPane.addRow(4, btnBox);
-		GridPane.setHalignment(btnBox, HPos.CENTER);
-		return gPane;
-	}
+            Button shareBtn = ButtoniKon.getShareButton();
+            Button walletBtn = ButtoniKon.getWalletButton();
+
+            HBox btnBox = new HBox(4);
+            btnBox.setPadding(new Insets(16, 0, 0, 0));
+            btnBox.getChildren().addAll(shareBtn, walletBtn);
+            btnBox.setAlignment(Pos.CENTER);
+
+            gPane.setAlignment(Pos.CENTER);
+            gPane.addRow(0, iView);
+            GridPane.setHalignment(iView, HPos.CENTER);
+            gPane.addRow(1, label);
+            GridPane.setHalignment(label, HPos.CENTER);
+            gPane.addRow(2, payDateLabel);
+            GridPane.setHalignment(payDateLabel, HPos.CENTER);
+            gPane.addRow(3, seePayLink);
+            GridPane.setHalignment(seePayLink, HPos.CENTER);
+            gPane.addRow(4, btnBox);
+            GridPane.setHalignment(btnBox, HPos.CENTER);
+            return gPane;
+      }
 
 	/*private static VBox comingSoonPane() {
 		// Light source

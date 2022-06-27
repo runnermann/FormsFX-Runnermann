@@ -1,4 +1,3 @@
-
 package fmhashtablechain;
 
 import flashmonkey.*;
@@ -7,56 +6,53 @@ import search.Search;
 import java.util.ArrayList;
 
 /**
- * 
  * Tester: Tests the HashTableChain structure
- * Explanation: Uses a simple array and checks to see if the data entered is 
+ * Explanation: Uses a simple array and checks to see if the data entered is
  * stored in a Hash Table of chained ArrayLists. Uses The key value pair is
  * an array of integers. A single integer per pair is stored in both the key
  * and the value. This ensures that when a value is changed for a key, it is
  * easier to track. Particularly when the structure grows to over 2000 items.
- * 
+ * <p>
  * The tester checks if collisions are resolved correctly and if all keys are
  * original. No duplicates. This is observable as the array is twice the size
  * of the available numbers in the Random number generator. It also checks to
- * ensure that when a value is changed for a key. The program will return 
- * the new value instead of the old one. 
- * 
+ * ensure that when a value is changed for a key. The program will return
+ * the new value instead of the old one.
+ * <p>
  * The tester checks if a value is removed when a key is deleted. indicating t
  * hat the key has been deleted. WHen the program rehashes the data structure
- * it checks that the deleted values are not re created. This is observable. 
- * 
- * The data structure uses the iterator. The program will not work if the 
- * iterator is not functional. 
- * 
+ * it checks that the deleted values are not re created. This is observable.
+ * <p>
+ * The data structure uses the iterator. The program will not work if the
+ * iterator is not functional.
+ * <p>
  * Algorithm
- * 
- *  BEGIN
- *      Variables and Objects.
- *          
- *      set length of Array to be used to import ints 
- *      Create array of randomly generated numbers. 
- *          convert ints to Strings and insert into array
- *          Number is 1/4 the size of the array. 
- *      set int num to an inputArray element. num is used throughout the tester
+ * <p>
+ * BEGIN
+ * Variables and Objects.
+ * <p>
+ * set length of Array to be used to import ints
+ * Create array of randomly generated numbers.
+ * convert ints to Strings and insert into array
+ * Number is 1/4 the size of the array.
+ * set int num to an inputArray element. num is used throughout the tester
  *
- *      
  * @author Lowell Stadelman
  */
 
 // *** IMPORTS ***
 
 
-
 public class HashTableChainMain {
 
-    
-    public static final int LENGTH = 2150;
-    public static final String DOTS = "***************************************";
-    public static final String SPACE = "\n \n \n \n";
-    
-    /**
-     * @param args the command line arguments
-     */
+
+      public static final int LENGTH = 2150;
+      public static final String DOTS = "***************************************";
+      public static final String SPACE = "\n \n \n \n";
+
+      /**
+       * @param args the command line arguments
+       */
  /*
     public static void main(String[] args) {
       
@@ -158,5 +154,5 @@ public class HashTableChainMain {
 
         
     }
-*/  
+*/
 }

@@ -23,6 +23,7 @@ import flashmonkey.FlashMonkeyMain;
 import javafx.collections.ObservableList;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import type.celleditors.DrawTools;
@@ -41,383 +42,386 @@ import static uicontrols.UIColors.convertColor;
 /**
  * A serializable text. Holds the values minX, minY, Also holds the index in the shapeArray
  * Constructor builds a Rectagle with Text
+ *
  * @author Lowell Stadelman
  */
-public class FMLetter extends FontAttributes<FMLetter> implements Serializable
-{
-	private static final long serialVersionUID = FlashMonkeyMain.VERSION;
-	private static final Logger LOGGER = LoggerFactory.getLogger(FMLetter.class);
-	
-	private FontAttributes fontAttributes;
-	// This shapes x and y positions
-	private double x; // minX
-	private double y; // minY
-	private double wd;
-	private double ht;
+public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
+      private static final long serialVersionUID = FlashMonkeyMain.VERSION;
+      private static final Logger LOGGER = LoggerFactory.getLogger(FMLetter.class);
 
-	
-	// Stroke and fill
-	private double strokeWidth;
-	// The shape's stroke color
-	private String strokeColor;
-	// The shape's fill color
-	private String fillColor;
-	
-	// A shape knows its index in the
-	// shape array
-	private int shapeAryIdx;
-	
-	private String text;
-	
-	public FMLetter() {
-		super();
-	}
-	
-	/**
-	 * Builds a TextShape providing for stroke color/border color
-	 * and backGround color. Text uses the default font color and size.
-	 * To set font, color, and size use the setXXX(...) methods. By
-	 * default word wrap is true.
-	 * @param x1
-	 * @param y1
-	 * @param wd
-	 * @param ht
-	 * @param strokeW
-	 * @param stroke
-	 * @param fill
-	 * @param index
-	 * @param text
-	 */
-	public FMLetter(double x1, double y1, double wd, double ht,
-	                double strokeW, String stroke, String fill, int index, String text)
-	{
-		super();
-		this.text = text;
-		this.x = x1;
-		this.y = y1;
-		this.strokeWidth = strokeW;
-		this.strokeColor = stroke;
-		this.fillColor = fill;
-		this.shapeAryIdx = index;
-		this.wd = wd;
-		this.ht = ht;
+      private FontAttributes fontAttributes;
+      // This shapes x and y positions
+      private double x; // minX
+      private double y; // minY
+      private double wd;
+      private double ht;
 
-		super.fontStroke = stroke;
-	}
-	
-	@Override
-	public GenericShape clone() {
-		return null;
-	}
-	
-	/** ************************************************************************************************************ ***
-	 *                                                                                                                 *
-	                                                SETTERS
-	 *                                                                                                                 *
-	 ** ************************************************************************************************************ **/
-	
-	
-	public void setText(String text) {
-		this.text = text;
-	}
-	
-	@Override
-	public void setX(double x1) {
-		this.x = x1;
-	}
-	
-	@Override
-	public void setY(double y1) {
-		this.y = y1;
-	}
-	
-	@Override
-	public void setPoints(ObservableList<Double> pts) {
-		/* stub */
-	}
-	
-	@Override
-	public void setShapeAryIdx(int i) {
-		this.shapeAryIdx = i;
-	}
-	
-	@Override
-	public void setStrokeWidth(double strokeWd) {
-		this.strokeWidth = strokeWd;
-	}
 
-	/**
-	 * The shapes stroke/border color
-	 * @param strokeClr
-	 */
-	@Override
-	public void setStrokeColor(String strokeClr) {
-		this.strokeColor = strokeClr;
-	}
+      // Stroke and fill
+      private double strokeWidth;
+      // The shape's stroke color
+      private String strokeColor;
+      // The shape's fill color
+      private String fillColor;
 
-	/**
-	 * The shapes fill color
-	 * @param fillClr
-	 */
-	@Override
-	public void setFillColor(String fillClr) {
-		this.fillColor = fillClr;
-	}
+      // A shape knows its index in the
+      // shape array
+      private int shapeAryIdx;
 
-	/**
-	 * GETTERS
-	 **/
-	@Override
-	public double[] getDblPts() {
-		return new double[0];
-	}
+      private String text;
 
-	/** ************************************************************************************************************ ***
-	 *                                                                                                                 *
-	 *                                              GETTERS
-	 *                                                                                                                 *
-	 ** ************************************************************************************************************ **/
+      public FMLetter() {
+            super();
+      }
 
-	/**
-	 * @return Returns a user editable TextArea with the
-	 * text, if any and some attributes of the JavaFX Text
-	 * shape in getShape();
-	 */
-	public FMTextEditor getTextEditor() {
-		String prompt = "Enter text. To exit and save, press cmd or control and enter ";
-		FMTextEditor txtArea = new FMTextEditor(prompt, x, y, wd, ht);
-		txtArea.setText(text);
-		
-		return txtArea;
-	}
-	
-	/**
-	 *
-	 * @param shape A javaFX Text shape.
-	 * @return Returns a user editable TextArea with the
-	 * 	  text, if any, and the attributes of the JavaFX Text
-	 * 	  shape in the param;
-	 */
-	public FMTextEditor getTextEditor(Shape shape) {
-		// The javaFX text object
-		Text fxTextObj = (Text) shape;
-		String prompt = "Enter text. To exit and save, press cmd or control and enter ";
-		
-		FMTextEditor txtArea = new FMTextEditor(
-				prompt,
-				fxTextObj.getBoundsInLocal().getMinX(),
-				fxTextObj.getBoundsInLocal().getMinY(),
-				fxTextObj.getBoundsInLocal().getWidth(),
-				fxTextObj.getBoundsInLocal().getHeight() + 40);
-		
-		txtArea.setText(fxTextObj.getText());
-		
-		return txtArea;
-	}
+      /**
+       * Builds a TextShape providing for stroke color/border color
+       * and backGround color. Text uses the default font color and size.
+       * To set font, color, and size use the setXXX(...) methods. By
+       * default word wrap is true.
+       *
+       * @param x1
+       * @param y1
+       * @param wd
+       * @param ht
+       * @param strokeW
+       * @param stroke
+       * @param fill
+       * @param index
+       * @param text
+       */
+      public FMLetter(double x1, double y1, double wd, double ht,
+                      double strokeW, String stroke, String fill, int index, String text) {
+            super();
+            this.text = text;
+            this.x = x1;
+            this.y = y1;
+            this.strokeWidth = strokeW;
+            this.strokeColor = stroke.equals(Color.TRANSPARENT) ? "#00000050" : stroke;
+            this.fillColor = fill;
+            this.shapeAryIdx = index;
+            this.wd = wd;
+            this.ht = ht;
 
-	/**
-	 * A Text is a shape, and the Text contained within it,
-	 * is not editable.
-	 * @return Returns a JavaFX Text with the attributes provided
-	 * to the constructor or through setXXX(...).
-	 */
-	@Override
-	public Text getShape() {
-		
-		LOGGER.info("The text in FMLetter getShape now says: ", text);
-		// @TODO getShape is set to 100, 100 for x & y. change back!!
-		Text txt = new Text(x, y, this.text);
-		txt.setLineSpacing(lineSpacing);
-		txt.setTextAlignment(textAlign);
-		txt.setFont(font);
-		
-		txt.setWrappingWidth(wd);
-	//	txt.setFill(super.getFontFill());
-		txt.setStroke(super.getFontStroke());
-		return txt;
-	}
+            super.fontStroke = stroke;
+      }
 
-	/**
-	 * A Text is a shape, and the Text contained within it,
-	 * is not editable.
-	 * @return Returns a scaled JavaFX Text with the attributes provided
-	 * to the constructor or through setXXX(...).
-	 * @param scaleY The scale of the shape.
-	 */
-	@Override
-	public Shape getScaledShape(double scaleY) {
-		Text t = new Text(
-				(this.getX() * scaleY) - 100,
-				(this.getY() * scaleY) - 20,
-				this.text
-		);
-		t.setScaleY(scaleY);
-		t.setScaleX(scaleY);
-		
-		t.setLineSpacing(lineSpacing);
-		t.setTextAlignment(textAlign);
-		t.setFont(font);
-		t.setWrappingWidth(wd);
-		t.setStroke(super.getFontStroke());
-		
-		return t;
-	}
-	
-	
-	public String getText() {
-		return this.text;
-	}
-	
-	@Override
-	public double getX() {
-		return this.x;
-	}
-	
-	@Override
-	public double getY() {
-		return this.y;
-	}
-	
-	@Override
-	public int getShapeAryIdx() {
-		return this.shapeAryIdx;
-	}
-	
-	@Override
-	public double getStrokeWidth() {
-		return this.strokeWidth;
-	}
-	
-	@Override
-	public String getStrokeColor() {
-		return this.strokeColor;
-	}
+      @Override
+      public GenericShape clone() {
+            return null;
+      }
 
-	@Override
-	public String getFillColor() {
-		return this.fillColor;
-	}
-	
-	
-	@Override
-	public GenericBuilder getBuilder(SectionEditor editor, boolean scaled) {
-		DrawTools dt = DrawTools.getInstance();
-		return new LetterBuilder(
-				this,
-				dt.getCanvas(),
-				dt.getGrapContext(),
-				dt.getOverlayPane(),
-				editor
-		);
-	}
-	
-	
-	@Override
-	public GenericBuilder getBuilder(SectionEditor editor) {
-		DrawTools draw = DrawTools.getInstance();
-		return new LetterBuilder(
-				draw.getCanvas(),
-				draw.getGrapContext(),
-				draw.getOverlayPane(),
-				editor,
-				this.strokeColor,
-				this.fillColor
-		);
-	}
-	
-	
-	public double getWd() {
-		return wd;
-	}
+      /**
+       * *********************************************************************************************************** ***
+       * *
+       * SETTERS
+       * *
+       * * ************************************************************************************************************
+       **/
 
-	public double getHt() {
-		return ht;
-	}
-	
-	
-	/** ************************************************************************************************************ ***
-	 *                                                                                                                 *
-	 OTHER METHODS
-	 *                                                                                                                 *
-	 ** ************************************************************************************************************ **/
-	
-	/**
-	 * X, y, Compares text, fontFamily, strokeColor, and fontSize
-	 * @param other
-	 * @return
-	 */
-	@Override
-	public boolean equals(Object other) {
-		if(other.getClass() != FMLetter.class) {
-			return false;
-		}
-		FMLetter otherFMLet = (FMLetter) other;
-		if(this.x == otherFMLet.x &&
-				this.y == otherFMLet.y &&
-				this.text == otherFMLet.text &&
-				this.fontFamily == otherFMLet.fontFamily &&
-				this.strokeColor == otherFMLet.strokeColor &&
-				this.fontSize == otherFMLet.fontSize
-		) {
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public int hashCode() {
-		return this.getClass().getName().hashCode()
-				+ (int) this.x
-				+ (int) this.y
-				+ this.text.hashCode()
-				+ this.fontFamily.hashCode()
-				+ this.strokeColor.hashCode()
-				+ (int) this.fontSize;
-	}
-	
-	/**
-	 * Converts this object to a Grahics Context for use with Canvas
-	 * //@param gc The GraphicsContext that this object will draw on.
-	 * @return Returns this object as GraphicsContext
-	 * strokecircle of the canvas given in the parameter.
-	 */
-	@Override
-	public Canvas convertToCanvas(Canvas canvas) {
-		GraphicsContext gc = canvas.getGraphicsContext2D();
-		
-		gc.fillText(text, x, y, wd);
-		gc.setStroke(convertColor(this.getStrokeColor()));
-		gc.setFill(convertColor(this.getFillColor()));
-		gc.setLineWidth(this.getStrokeWidth());
-		
-		return canvas;
-	}
-	
-	//@Override
-	public GenericShape convertFmCanvas(Canvas letter) {
-		return new FMLetter(
-				letter.getLayoutX(),
-				letter.getLayoutY(),
-				letter.getWidth(),
-				letter.getHeight(),
-				letter.getGraphicsContext2D().getLineWidth(),
-				letter.getGraphicsContext2D().getStroke().toString(),
-				letter.getGraphicsContext2D().getFill().toString(),
-				0,
-				letter.getAccessibleText()
-		);
-	}
-	
-	@Override
-	public String toString() {
-		return " This is an FMLetter"
-				+ "\n rightPaneIndex = " + getShapeAryIdx()
-				+ "\n text = " + getText()
-				+ "\n x = " + getX()
-				+ "\n y = " + getY()
-				+ "\n wd = " + wd
-				+ "\n lineWd = " + getStrokeWidth()
-				+ "\n lineColor = " + getStrokeColor()
-				+ "\n fillColor = " + getFillColor();
-	}
+
+      public void setText(String text) {
+            this.text = text;
+      }
+
+      @Override
+      public void setX(double x1) {
+            this.x = x1;
+      }
+
+      @Override
+      public void setY(double y1) {
+            this.y = y1;
+      }
+
+      @Override
+      public void setPoints(ObservableList<Double> pts) {
+            /* stub */
+      }
+
+      @Override
+      public void setShapeAryIdx(int i) {
+            this.shapeAryIdx = i;
+      }
+
+      @Override
+      public void setStrokeWidth(double strokeWd) {
+            this.strokeWidth = strokeWd;
+      }
+
+      /**
+       * The shapes stroke/border color
+       *
+       * @param strokeClr
+       */
+      @Override
+      public void setStrokeColor(String strokeClr) {
+            this.strokeColor = strokeClr;
+      }
+
+      /**
+       * The shapes fill color
+       *
+       * @param fillClr
+       */
+      @Override
+      public void setFillColor(String fillClr) {
+            this.fillColor = fillClr;
+      }
+
+      /**
+       * GETTERS
+       **/
+      @Override
+      public double[] getDblPts() {
+            return new double[0];
+      }
+
+      /** ************************************************************************************************************ ***
+       *                                                                                                                 *
+       *                                              GETTERS
+       *                                                                                                                 *
+       ** ************************************************************************************************************ **/
+
+      /**
+       * @return Returns a user editable TextArea with the
+       * text, if any and some attributes of the JavaFX Text
+       * shape in getShape();
+       */
+      public FMTextEditor getTextEditor() {
+            String prompt = "Enter text. To exit and save, press cmd or control and enter ";
+            FMTextEditor txtArea = new FMTextEditor(prompt, x, y, wd, ht);
+            txtArea.setText(text);
+
+            return txtArea;
+      }
+
+      /**
+       * @param shape A javaFX Text shape.
+       * @return Returns a user editable TextArea with the
+       * text, if any, and the attributes of the JavaFX Text
+       * shape in the param;
+       */
+      public FMTextEditor getTextEditor(Shape shape) {
+            // The javaFX text object
+            Text fxTextObj = (Text) shape;
+            String prompt = "Enter text. To exit and save, press cmd or control and enter ";
+
+            FMTextEditor txtArea = new FMTextEditor(
+                prompt,
+                fxTextObj.getBoundsInLocal().getMinX(),
+                fxTextObj.getBoundsInLocal().getMinY(),
+                fxTextObj.getBoundsInLocal().getWidth(),
+                fxTextObj.getBoundsInLocal().getHeight() + 40);
+
+            txtArea.setText(fxTextObj.getText());
+
+            return txtArea;
+      }
+
+      /**
+       * A Text is a shape, and the Text contained within it,
+       * is not editable.
+       *
+       * @return Returns a JavaFX Text with the attributes provided
+       * to the constructor or through setXXX(...).
+       */
+      @Override
+      public Text getShape() {
+
+            LOGGER.info("The text in FMLetter getShape now says: ", text);
+            // @TODO getShape is set to 100, 100 for x & y. change back!!
+            Text txt = new Text(x, y, this.text);
+            txt.setLineSpacing(lineSpacing);
+            txt.setTextAlignment(textAlign);
+            txt.setFont(font);
+
+            txt.setWrappingWidth(wd);
+            //	txt.setFill(super.getFontFill());
+            txt.setStroke(super.getFontStroke());
+            return txt;
+      }
+
+      /**
+       * A Text is a shape, and the Text contained within it,
+       * is not editable.
+       *
+       * @param scaleY The scale of the shape.
+       * @return Returns a scaled JavaFX Text with the attributes provided
+       * to the constructor or through setXXX(...).
+       */
+      @Override
+      public Shape getScaledShape(double scaleY) {
+            Text t = new Text(
+                (this.getX() * scaleY) - 100,
+                (this.getY() * scaleY) - 20,
+                this.text
+            );
+            t.setScaleY(scaleY);
+            t.setScaleX(scaleY);
+
+            t.setLineSpacing(lineSpacing);
+            t.setTextAlignment(textAlign);
+            t.setFont(font);
+            t.setWrappingWidth(wd);
+            t.setStroke(super.getFontStroke());
+
+            return t;
+      }
+
+
+      public String getText() {
+            return this.text;
+      }
+
+      @Override
+      public double getX() {
+            return this.x;
+      }
+
+      @Override
+      public double getY() {
+            return this.y;
+      }
+
+      @Override
+      public int getShapeAryIdx() {
+            return this.shapeAryIdx;
+      }
+
+      @Override
+      public double getStrokeWidth() {
+            return this.strokeWidth;
+      }
+
+      @Override
+      public String getStrokeColor() {
+            return this.strokeColor;
+      }
+
+      @Override
+      public String getFillColor() {
+            return this.fillColor;
+      }
+
+
+      @Override
+      public GenericBuilder getBuilder(SectionEditor editor, boolean scaled) {
+            DrawTools dt = DrawTools.getInstance();
+            return new LetterBuilder(
+                this,
+                dt.getCanvas(),
+                dt.getGrapContext(),
+                dt.getOverlayPane(),
+                editor
+            );
+      }
+
+
+      @Override
+      public GenericBuilder getBuilder(SectionEditor editor) {
+            DrawTools draw = DrawTools.getInstance();
+            return new LetterBuilder(
+                draw.getCanvas(),
+                draw.getGrapContext(),
+                draw.getOverlayPane(),
+                editor,
+                this.strokeColor,
+                this.fillColor
+            );
+      }
+
+
+      public double getWd() {
+            return wd;
+      }
+
+      public double getHt() {
+            return ht;
+      }
+
+
+      /** ************************************************************************************************************ ***
+       *                                                                                                                 *
+       OTHER METHODS
+       *                                                                                                                 *
+       ** ************************************************************************************************************ **/
+
+      /**
+       * X, y, Compares text, fontFamily, strokeColor, and fontSize
+       *
+       * @param other
+       * @return
+       */
+      @Override
+      public boolean equals(Object other) {
+            if (other.getClass() != FMLetter.class) {
+                  return false;
+            }
+            FMLetter otherFMLet = (FMLetter) other;
+            return this.x == otherFMLet.x &&
+                this.y == otherFMLet.y &&
+                this.text == otherFMLet.text &&
+                this.fontFamily == otherFMLet.fontFamily &&
+                this.strokeColor == otherFMLet.strokeColor &&
+                this.fontSize == otherFMLet.fontSize;
+      }
+
+      @Override
+      public int hashCode() {
+            return this.getClass().getName().hashCode()
+                + (int) this.x
+                + (int) this.y
+                + this.text.hashCode()
+                + this.fontFamily.hashCode()
+                + this.strokeColor.hashCode()
+                + (int) this.fontSize;
+      }
+
+      /**
+       * Converts this object to a Grahics Context for use with Canvas
+       * //@param gc The GraphicsContext that this object will draw on.
+       *
+       * @return Returns this object as GraphicsContext
+       * strokecircle of the canvas given in the parameter.
+       */
+      @Override
+      public Canvas convertToCanvas(Canvas canvas) {
+            GraphicsContext gc = canvas.getGraphicsContext2D();
+
+            gc.fillText(text, x, y, wd);
+            gc.setStroke(convertColor(this.getStrokeColor()));
+            gc.setFill(convertColor(this.getFillColor()));
+            gc.setLineWidth(this.getStrokeWidth());
+
+            return canvas;
+      }
+
+      //@Override
+      public GenericShape convertFmCanvas(Canvas letter) {
+            return new FMLetter(
+                letter.getLayoutX(),
+                letter.getLayoutY(),
+                letter.getWidth(),
+                letter.getHeight(),
+                letter.getGraphicsContext2D().getLineWidth(),
+                letter.getGraphicsContext2D().getStroke().toString(),
+                letter.getGraphicsContext2D().getFill().toString(),
+                0,
+                letter.getAccessibleText()
+            );
+      }
+
+      @Override
+      public String toString() {
+            return " This is an FMLetter"
+                + "\n rightPaneIndex = " + getShapeAryIdx()
+                + "\n text = " + getText()
+                + "\n x = " + getX()
+                + "\n y = " + getY()
+                + "\n wd = " + wd
+                + "\n lineWd = " + getStrokeWidth()
+                + "\n lineColor = " + getStrokeColor()
+                + "\n fillColor = " + getFillColor();
+      }
 }

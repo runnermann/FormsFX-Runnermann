@@ -17,199 +17,199 @@ import java.util.PriorityQueue;
 
 /**
  * A binary tree implementation allowing to quickly lookup
- * 
+ * <p>
  * be aware that fuzzy trees currently are of one time use and are rendered
  * invalid as soon as one of the underlying hashes changes it's internal
  * state.!
- * 
+ * <p>
  * TODO for mutability add a list of uncertainties to each node and allow remove
  * operation by supplying the old and the new fuzzy hash state
- * 
+ *
  * @author Kilian
  * @since 3.0.0
  */
 public class FuzzyBinaryTree extends AbstractBinaryTree<FuzzyHash> {
 
-	private static final long serialVersionUID = -246416483525585695L;
-	// TODO debug
-	private int hashLengthDebug = -1;;
+      private static final long serialVersionUID = -246416483525585695L;
+      // TODO debug
+      private int hashLengthDebug = -1;
 
-	public FuzzyBinaryTree(boolean ensureHashConsistency) {
-		super(ensureHashConsistency);
-		root = new FuzzyNode();
-	}
-	
+      public FuzzyBinaryTree(boolean ensureHashConsistency) {
+            super(ensureHashConsistency);
+            root = new FuzzyNode();
+      }
 
-	public void addHash(FuzzyHash hash) {
-		addHash(hash, hash);
-	}
-	
-	public void addHashes(FuzzyHash...fuzzyHashs) {
-		for(FuzzyHash h: fuzzyHashs) {
-			this.addHash(h);
-		}
-	}
-	
-	public void addHashes(Collection<FuzzyHash> fuzzyHashs) {
-		for(FuzzyHash h: fuzzyHashs) {
-			this.addHash(h);
-		}
-	}
 
-	@SuppressWarnings("unchecked")
-	protected void addHash(Hash hash, FuzzyHash value) {
+      public void addHash(FuzzyHash hash) {
+            addHash(hash, hash);
+      }
 
-		// value and hash are the same
+      public void addHashes(FuzzyHash... fuzzyHashs) {
+            for (FuzzyHash h : fuzzyHashs) {
+                  this.addHash(h);
+            }
+      }
 
-		if (ensureHashConsistency) {
-			if (algoId == 0) {
-				algoId = hash.getAlgorithmId();
-			} else {
+      public void addHashes(Collection<FuzzyHash> fuzzyHashs) {
+            for (FuzzyHash h : fuzzyHashs) {
+                  this.addHash(h);
+            }
+      }
 
-				if (algoId != hash.getAlgorithmId())
-					throw new IllegalStateException("Tried to add an incompatible hash to the binary tree");
-			}
-		}
+      @SuppressWarnings("unchecked")
+      protected void addHash(Hash hash, FuzzyHash value) {
 
-		if (hashLengthDebug < 0) {
-			hashLengthDebug = hash.getBitResolution();
-		}
+            // value and hash are the same
 
-		FuzzyNode currentNode = (FuzzyNode) root;
-		for (int i = hash.getBitResolution() - 1; i > 0; i--) {
-			boolean bit = hash.getBitUnsafe(i);
-			FuzzyNode tempNode = (FuzzyNode) currentNode.getChild(bit);
-			if (tempNode == null) {
-				currentNode = (FuzzyNode) currentNode.createChild(bit);
-			} else {
-				currentNode = tempNode;
-			}
-			// update uncertainty with value [0-1] Since we sum up the distance on each node
-			// we are working with the unnormalized hamming distances
-			currentNode.setNodeBounds(value.getWeightedDistance(i, bit));
-		}
+            if (ensureHashConsistency) {
+                  if (algoId == 0) {
+                        algoId = hash.getAlgorithmId();
+                  } else {
 
-		// We reached the end
-		boolean bit = hash.getBit(0);
-		Node leafNode = currentNode.getChild(bit);
-		Leaf<FuzzyHash> leaf;
-		if (leafNode != null) {
-			leaf = (Leaf<FuzzyHash>) leafNode;
-		} else {
-			leaf = (Leaf<FuzzyHash>) currentNode.setChild(bit, new Leaf<FuzzyHash>());
-		}
-		leaf.addData(value);
-		hashCount++;
-	}
+                        if (algoId != hash.getAlgorithmId())
+                              throw new IllegalStateException("Tried to add an incompatible hash to the binary tree");
+                  }
+            }
 
-	// TODO check if distance is correct
+            if (hashLengthDebug < 0) {
+                  hashLengthDebug = hash.getBitResolution();
+            }
 
-	public List<Result<FuzzyHash>> getNearestNeighbour(Hash hash) {
+            FuzzyNode currentNode = (FuzzyNode) root;
+            for (int i = hash.getBitResolution() - 1; i > 0; i--) {
+                  boolean bit = hash.getBitUnsafe(i);
+                  FuzzyNode tempNode = (FuzzyNode) currentNode.getChild(bit);
+                  if (tempNode == null) {
+                        currentNode = (FuzzyNode) currentNode.createChild(bit);
+                  } else {
+                        currentNode = tempNode;
+                  }
+                  // update uncertainty with value [0-1] Since we sum up the distance on each node
+                  // we are working with the unnormalized hamming distances
+                  currentNode.setNodeBounds(value.getWeightedDistance(i, bit));
+            }
 
-		if (ensureHashConsistency && algoId != hash.getAlgorithmId()) {
-			throw new IllegalStateException("Tried to add an incompatible hash to the binary tree");
-		}
+            // We reached the end
+            boolean bit = hash.getBit(0);
+            Node leafNode = currentNode.getChild(bit);
+            Leaf<FuzzyHash> leaf;
+            if (leafNode != null) {
+                  leaf = (Leaf<FuzzyHash>) leafNode;
+            } else {
+                  leaf = (Leaf<FuzzyHash>) currentNode.setChild(bit, new Leaf<FuzzyHash>());
+            }
+            leaf.addData(value);
+            hashCount++;
+      }
 
-		int treeDepth = hash.getBitResolution();
+      // TODO check if distance is correct
 
-		if (hashLengthDebug != treeDepth) {
-			throw new IllegalStateException("Tried to get neareast neighbor an incompatible hash to the binary tree");
-		}
+      public List<Result<FuzzyHash>> getNearestNeighbour(Hash hash) {
 
-		PriorityQueue<NodeInfo<FuzzyHash>> queue = new PriorityQueue<>();
+            if (ensureHashConsistency && algoId != hash.getAlgorithmId()) {
+                  throw new IllegalStateException("Tried to add an incompatible hash to the binary tree");
+            }
 
-		// Potential results
-		List<Result<FuzzyHash>> resultCandidates = new ArrayList<>();
+            int treeDepth = hash.getBitResolution();
 
-		double curBestDistance = Double.MAX_VALUE;
+            if (hashLengthDebug != treeDepth) {
+                  throw new IllegalStateException("Tried to get neareast neighbor an incompatible hash to the binary tree");
+            }
 
-		// Depth first search with aggressive pruning
+            PriorityQueue<NodeInfo<FuzzyHash>> queue = new PriorityQueue<>();
 
-		// Begin search at the root
-		queue.add(new NodeInfo<FuzzyHash>(root, 0, treeDepth));
+            // Potential results
+            List<Result<FuzzyHash>> resultCandidates = new ArrayList<>();
 
-		while (!queue.isEmpty()) {
+            double curBestDistance = Double.MAX_VALUE;
 
-			NodeInfo<FuzzyHash> info = queue.poll();
+            // Depth first search with aggressive pruning
 
-			// If we found a better result ignore it.
+            // Begin search at the root
+            queue.add(new NodeInfo<FuzzyHash>(root, 0, treeDepth));
 
-			// This should scale down with distance
-			if (info.distance > curBestDistance) {
-				continue;
-			}
+            while (!queue.isEmpty()) {
 
-			// We reached a leaf
-			if (info.depth == 0) {
+                  NodeInfo<FuzzyHash> info = queue.poll();
 
-				@SuppressWarnings("unchecked")
-				Leaf<FuzzyHash> leaf = (Leaf<FuzzyHash>) info.node;
-				for (FuzzyHash o : leaf.getData()) {
+                  // If we found a better result ignore it.
 
-					double normalizedDistance = o.weightedDistance(hash);
-					double actualDistance = normalizedDistance * hash.getBitResolution();
+                  // This should scale down with distance
+                  if (info.distance > curBestDistance) {
+                        continue;
+                  }
 
-					if (curBestDistance > actualDistance) {
-						resultCandidates.clear();
-						curBestDistance = actualDistance;
-						// Compute the correct distance
-						resultCandidates.add(new Result<FuzzyHash>(o, actualDistance, normalizedDistance));
-					} else if (MathUtil.isDoubleEquals(curBestDistance, actualDistance, 1e-8)) {
-						resultCandidates.add(new Result<FuzzyHash>(o, actualDistance, normalizedDistance));
-					}
-				}
-				continue;
-			}
+                  // We reached a leaf
+                  if (info.depth == 0) {
 
-			// Next bit
+                        @SuppressWarnings("unchecked")
+                        Leaf<FuzzyHash> leaf = (Leaf<FuzzyHash>) info.node;
+                        for (FuzzyHash o : leaf.getData()) {
 
-			boolean bit = hash.getBitUnsafe(info.depth - 1);
+                              double normalizedDistance = o.weightedDistance(hash);
+                              double actualDistance = normalizedDistance * hash.getBitResolution();
 
-			// Children of the next level
-			for (int i = 0; i < 2; i++) {
-				boolean left = i == 0;
+                              if (curBestDistance > actualDistance) {
+                                    resultCandidates.clear();
+                                    curBestDistance = actualDistance;
+                                    // Compute the correct distance
+                                    resultCandidates.add(new Result<FuzzyHash>(o, actualDistance, normalizedDistance));
+                              } else if (MathUtil.isDoubleEquals(curBestDistance, actualDistance, 1e-8)) {
+                                    resultCandidates.add(new Result<FuzzyHash>(o, actualDistance, normalizedDistance));
+                              }
+                        }
+                        continue;
+                  }
 
-				if (info.depth != 1) {
-					FuzzyNode node = (FuzzyNode) info.node.getChild(left);
-					if (node != null) {
+                  // Next bit
 
-						double newDistance;
-						if (bit == left) {
-							newDistance = info.distance + node.lowerDistance;
-						} else {
-							newDistance = info.distance + (1 - node.uppderDistance);
-						}
-						if (newDistance <= curBestDistance) {
-							queue.add(new NodeInfo<>(node, newDistance, info.depth - 1));
-						}
-					}
-				} else {
-					try {
-						Leaf<?> node = (Leaf<?>) info.node.getChild(left);
-						if (node != null) {
-							// TODO add distance?
-							queue.add(new NodeInfo<>(node, info.distance, info.depth - 1));
-						}
-					} catch (ClassCastException e) {
-						e.printStackTrace();
-						printTree();
-						System.out.println(info);
-						System.out.println(hashLengthDebug + " " + treeDepth);
-						throw e;
-					}
+                  boolean bit = hash.getBitUnsafe(info.depth - 1);
 
-				}
+                  // Children of the next level
+                  for (int i = 0; i < 2; i++) {
+                        boolean left = i == 0;
 
-			}
+                        if (info.depth != 1) {
+                              FuzzyNode node = (FuzzyNode) info.node.getChild(left);
+                              if (node != null) {
 
-		}
-		return resultCandidates;
-	}
+                                    double newDistance;
+                                    if (bit == left) {
+                                          newDistance = info.distance + node.lowerDistance;
+                                    } else {
+                                          newDistance = info.distance + (1 - node.uppderDistance);
+                                    }
+                                    if (newDistance <= curBestDistance) {
+                                          queue.add(new NodeInfo<>(node, newDistance, info.depth - 1));
+                                    }
+                              }
+                        } else {
+                              try {
+                                    Leaf<?> node = (Leaf<?>) info.node.getChild(left);
+                                    if (node != null) {
+                                          // TODO add distance?
+                                          queue.add(new NodeInfo<>(node, info.distance, info.depth - 1));
+                                    }
+                              } catch (ClassCastException e) {
+                                    e.printStackTrace();
+                                    printTree();
+                                    System.out.println(info);
+                                    System.out.println(hashLengthDebug + " " + treeDepth);
+                                    throw e;
+                              }
 
-	@Override
-	public PriorityQueue<Result<FuzzyHash>> getElementsWithinHammingDistance(Hash hash, int maxDistance) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+                        }
+
+                  }
+
+            }
+            return resultCandidates;
+      }
+
+      @Override
+      public PriorityQueue<Result<FuzzyHash>> getElementsWithinHammingDistance(Hash hash, int maxDistance) {
+            // TODO Auto-generated method stub
+            return null;
+      }
 
 }

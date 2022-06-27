@@ -21,5 +21,5 @@ package gaugeLib.hansolo.medusa;
  */
 @FunctionalInterface
 public interface Command {
-    void execute();
+      void execute();
 }

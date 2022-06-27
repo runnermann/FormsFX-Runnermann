@@ -23,143 +23,147 @@ import java.util.HashMap;
 
 public class TeaserPane extends ToggleButton {
 
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TeaserPane.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(TeaserPane.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TeaserPane.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(TeaserPane.class);
 
 
-    public TeaserPane() {
-        //LOGGER.setLevel(Level.DEBUG);
-        initialize();
-    }
+      public TeaserPane() {
+            //LOGGER.setLevel(Level.DEBUG);
+            initialize();
+      }
 
-    public void initialize() {
-        //getStyleClass().setAll(DEFAULT_STYLE_CLASS);
-        setAccessibleRole(AccessibleRole.LIST_ITEM);
-        // alignment is styleable through css. Calling setAlignment
-        // makes it look to css like the user set the value and css will not
-        // override. Initializing alignment by calling set on the
-        // CssMetaData ensures that css will be able to override the value.
-        ((StyleableProperty<Pos>)(WritableValue<Pos>)alignmentProperty()).applyStyle(null, Pos.CENTER_LEFT);
-    }
+      public void initialize() {
+            //getStyleClass().setAll(DEFAULT_STYLE_CLASS);
+            setAccessibleRole(AccessibleRole.LIST_ITEM);
+            // alignment is styleable through css. Calling setAlignment
+            // makes it look to css like the user set the value and css will not
+            // override. Initializing alignment by calling set on the
+            // CssMetaData ensures that css will be able to override the value.
+            ((StyleableProperty<Pos>) alignmentProperty()).applyStyle(null, Pos.CENTER_LEFT);
+      }
 
 
-    private GridPane teaserGrid;
-    public HBox build(HashMap<String, String> map, int idx) {
-        LOGGER.debug("getPane() called");
+      private GridPane teaserGrid;
 
-        HBox rdoBox = new HBox(6);
-        teaserGrid = new GridPane();
-        teaserGrid.setId("teaserPane");
+      public HBox build(HashMap<String, String> map, int idx) {
+            LOGGER.debug("getPane() called");
 
-        teaserGrid = setColLayout(teaserGrid);
-        //teaserGrid.setHgap(3);
-        //teaserGrid.setVgap(3);
-        teaserGrid.setPadding(new Insets(4,10,4,20));
+            HBox rdoBox = new HBox(6);
+            teaserGrid = new GridPane();
+            teaserGrid.setId("teaserPane");
 
-        // column one
-        // deck_name
-        Label deckLbl = new Label(map.get("deck_name"));
-        deckLbl.setWrapText(true);
-        deckLbl.setId("deckLbl");
-        teaserGrid.add(deckLbl,0,0 );
-        // section descript
-        teaserGrid.add(new Label("section3"), 0, 1);
-        // media
-  //      if(hasMedia(map.get("num_imgs"), map.get("num_video"), map.get("num_audio"))) {
+            teaserGrid = setColLayout(teaserGrid);
+            //teaserGrid.setHgap(3);
+            //teaserGrid.setVgap(3);
+            teaserGrid.setPadding(new Insets(4, 10, 4, 20));
+
+            // column one
+            // deck_name
+            Label deckLbl = new Label(map.get("deck_name"));
+            deckLbl.setWrapText(true);
+            deckLbl.setId("deckLbl");
+            teaserGrid.add(deckLbl, 0, 0);
+            // section descript
+            teaserGrid.add(new Label("section3"), 0, 1);
+            // media
+            //      if(hasMedia(map.get("num_imgs"), map.get("num_video"), map.get("num_audio"))) {
             LOGGER.debug("teaserPane has media");
             teaserGrid.add(new Label("Media"), 0, 2);
-  //      }
+            //      }
 
-        // column two
-        Image image = new Image(getClass().getResourceAsStream("/image/profDemoMktImg.png"));
-        ImageView img = new ImageView(image); //new ImageView(DeckMarketPane.getInstance().getDeckImg(idx));
+            // column two
+            Image image = new Image(getClass().getResourceAsStream("/image/profDemoMktImg.png"));
+            ImageView img = new ImageView(image); //new ImageView(DeckMarketPane.getInstance().getDeckImg(idx));
 
-        img.setFitWidth(128);
-        img.setPreserveRatio(true);
-        img.setSmooth(true);
-        // columnNum, rowNum, num cols, num rows
-        teaserGrid.add(img, 1, 0, 1, 3);
+            img.setFitWidth(128);
+            img.setPreserveRatio(true);
+            img.setSmooth(true);
+            // columnNum, rowNum, num cols, num rows
+            teaserGrid.add(img, 1, 0, 1, 3);
 
-        // stars
-        // columnNum, rowNum, num cols, num rows
-        //gridP.add(DeckMarketPane.getInstance().getStars(map.get("deck_numstars"), 80), 0, 4, 2, 1);
-        teaserGrid.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("creator_email")), 0, 4, 2, 1);
-        //rdoBox.setId("#teaser" + idx);
-        rdoBox.getChildren().add(teaserGrid);
+            // stars
+            // columnNum, rowNum, num cols, num rows
+            //gridP.add(DeckMarketPane.getInstance().getStars(map.get("deck_numstars"), 80), 0, 4, 2, 1);
+            teaserGrid.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("creator_email")), 0, 4, 2, 1);
+            //rdoBox.setId("#teaser" + idx);
+            rdoBox.getChildren().add(teaserGrid);
 
-        teaserGrid.setOnMouseEntered(e -> {
-            //gridP.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.GRID_GREY), CornerRadii.EMPTY, Insets.EMPTY)));
-            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
-        });
+            teaserGrid.setOnMouseEntered(e -> {
+                  //gridP.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.GRID_GREY), CornerRadii.EMPTY, Insets.EMPTY)));
+                  FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
+            });
 
-        teaserGrid.setOnMouseExited(e -> {
-            //gridP.setBackground(Background.EMPTY);
-            FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
-        });
+            teaserGrid.setOnMouseExited(e -> {
+                  //gridP.setBackground(Background.EMPTY);
+                  FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
+            });
 
-        return rdoBox;
-    }
+            return rdoBox;
+      }
 
-    public GridPane setColLayout(GridPane gp) {
-        LOGGER.debug("setColLayout() called");
+      public GridPane setColLayout(GridPane gp) {
+            LOGGER.debug("setColLayout() called");
 
-        ColumnConstraints col1 = new ColumnConstraints(160); // column 0 = 160 wide
-        ColumnConstraints col2 = new ColumnConstraints(140); // column 1 = 140 wide
-        gp.getColumnConstraints().addAll(col1, col2);
-        return gp;
-    }
+            ColumnConstraints col1 = new ColumnConstraints(160); // column 0 = 160 wide
+            ColumnConstraints col2 = new ColumnConstraints(140); // column 1 = 140 wide
+            gp.getColumnConstraints().addAll(col1, col2);
+            return gp;
+      }
 
-    private Label getAuthors(String ... authors) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Created by: ");
-        for(int i = 0; i < authors.length - 1; i++) {
-            sb.append(Alphabet.decrypt(authors[i]) + ", ");
-        }
-        sb.append(Alphabet.decrypt(authors[authors.length - 1]));
-        return new Label(sb.toString());
-    }
+      private Label getAuthors(String... authors) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Created by: ");
+            for (int i = 0; i < authors.length - 1; i++) {
+                  sb.append(Alphabet.decrypt(authors[i]) + ", ");
+            }
+            sb.append(Alphabet.decrypt(authors[authors.length - 1]));
+            return new Label(sb.toString());
+      }
 
-    private HBox getStarPane(String numStars, String numUsers, String creator) {
-        HBox box = new HBox(4);
-        box.getChildren().addAll(DeckMarketPane.getInstance().getStars(numStars, 64), new Label("  " + numUsers + "  "),  getAuthors(creator));
-        return box;
-    }
-
-
-
-    // **** SETTERS ****
+      private HBox getStarPane(String numStars, String numUsers, String creator) {
+            HBox box = new HBox(4);
+            box.getChildren().addAll(DeckMarketPane.getInstance().getStars(numStars, 64), new Label("  " + numUsers + "  "), getAuthors(creator));
+            return box;
+      }
 
 
+      // **** SETTERS ****
 
-    public boolean hasMedia(String imgs, String video, String audio) {
-        return true;// (video != "" | imgs != "" | audio != "");
-    }
 
-    /**
-     * Toggles the state of the radio button if and only if the RadioButton
-     * has not already selected or is not part of a {@link ToggleGroup}.
-     */
-    @Override public void fire() {
-        // we don't toggle from selected to not selected if part of a group
-        if (getToggleGroup() == null || !isSelected()) {
-            super.fire();
-        }
-    }
+      public boolean hasMedia(String imgs, String video, String audio) {
+            return true;// (video != "" | imgs != "" | audio != "");
+      }
 
-    /***************************************************************************
-     *                                                                         *
-     * Accessibility handling                                                  *
-     *                                                                         *
-     **************************************************************************/
+      /**
+       * Toggles the state of the radio button if and only if the RadioButton
+       * has not already selected or is not part of a {@link ToggleGroup}.
+       */
+      @Override
+      public void fire() {
+            // we don't toggle from selected to not selected if part of a group
+            if (getToggleGroup() == null || !isSelected()) {
+                  super.fire();
+            }
+      }
 
-    /** {@inheritDoc} */
-    @Override
-    public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
-        switch (attribute) {
-            case SELECTED: return isSelected();
-            default: return super.queryAccessibleAttribute(attribute, parameters);
-        }
-    }
+      /***************************************************************************
+       *                                                                         *
+       * Accessibility handling                                                  *
+       *                                                                         *
+       **************************************************************************/
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+            switch (attribute) {
+                  case SELECTED:
+                        return isSelected();
+                  default:
+                        return super.queryAccessibleAttribute(attribute, parameters);
+            }
+      }
 
 
 }

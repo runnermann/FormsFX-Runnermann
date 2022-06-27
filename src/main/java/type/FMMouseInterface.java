@@ -33,61 +33,63 @@ import java.util.ArrayList;
 /**
  * @author Lowell Stadelman
  */
-public interface FMMouseInterface<T extends GenericShape<T>, B extends GenericBuilder<T,B>>
-{
-    void deleteButtonAction(Shape s, GenericShape gs);
+public interface FMMouseInterface<T extends GenericShape<T>, B extends GenericBuilder<T, B>> {
+      void deleteButtonAction(Shape s, GenericShape gs);
 
-    void mousePressed(MouseEvent mouse);
+      void mousePressed(MouseEvent mouse);
 
-    void mouseDragged(MouseEvent mouse);
+      void mouseDragged(MouseEvent mouse);
 
-    void mouseReleased(MouseEvent mouse);
+      void mouseReleased(MouseEvent mouse);
 
-    void shapePressed(MouseEvent mouse, GenericShape gs, Shape s);
+      void shapePressed(MouseEvent mouse, GenericShape gs, Shape s);
 
-    void shapeDragged(MouseEvent mouse, GenericShape gs, Shape s);
+      void shapeDragged(MouseEvent mouse, GenericShape gs, Shape s);
 
-    void shapeReleased(MouseEvent mouse, GenericShape gs, Shape shape);
+      void shapeReleased(MouseEvent mouse, GenericShape gs, Shape shape);
 
-    void verticyPressed(int idx, MouseEvent mouse, Shape s);
+      void verticyPressed(int idx, MouseEvent mouse, Shape s);
 
-    void verticyReleased(GenericShape gs);
+      void verticyReleased(GenericShape gs);
 
-    /**
-     * Use for shapes for moving the horizontal verticy
-     * @param mouse
-     * @param gs
-     * @param vertH A Circle for the verticy
-     * @param vertHOther A Circle for the verticy
-     * @param vertH1 A Circle for the verticy
-     * @param vertH2 A Circle for the verticy
-     * @param shape The shape being modified
-     */
-    void verticyHDragged(MouseEvent mouse, GenericShape gs, Shape vertH, Shape vertHOther, Shape vertH1, Shape vertH2, Shape shape);
+      /**
+       * Use for shapes for moving the horizontal verticy
+       *
+       * @param mouse
+       * @param gs
+       * @param vertH      A Circle for the verticy
+       * @param vertHOther A Circle for the verticy
+       * @param vertH1     A Circle for the verticy
+       * @param vertH2     A Circle for the verticy
+       * @param shape      The shape being modified
+       */
+      void verticyHDragged(MouseEvent mouse, GenericShape gs, Shape vertH, Shape vertHOther, Shape vertH1, Shape vertH2, Shape shape);
 
-    /**
-     * Use for shapes moving the verticle verticy.
-     * @param mouse
-     * @param gs
-     * @param vertV A Circle for the verticy
-     * @param vertVOther A Circle for the verticy
-     * @param vertV1 A Circle for the verticy
-     * @param vertV2 A Circle for the verticy
-     * @param shape The shape being modified
-     */
-    void verticyVDragged(MouseEvent mouse, GenericShape gs, Shape vertV, Shape vertVOther, Shape vertV1, Shape vertV2, Shape shape);
+      /**
+       * Use for shapes moving the verticle verticy.
+       *
+       * @param mouse
+       * @param gs
+       * @param vertV      A Circle for the verticy
+       * @param vertVOther A Circle for the verticy
+       * @param vertV1     A Circle for the verticy
+       * @param vertV2     A Circle for the verticy
+       * @param shape      The shape being modified
+       */
+      void verticyVDragged(MouseEvent mouse, GenericShape gs, Shape vertV, Shape vertVOther, Shape vertV1, Shape vertV2, Shape shape);
 
-    /**
-     * Use for shapes that are polygons or for lines
-     * @param mouse
-     * @param gs
-     * @param vertArry An array containing verticies
-     * @param shape The Shape or Polygon being moved.
-     */
-    void verticyXYDragged(MouseEvent mouse, GenericShape gs, ArrayList<Circle> vertArry, Shape shape);
+      /**
+       * Use for shapes that are polygons or for lines
+       *
+       * @param mouse
+       * @param gs
+       * @param vertArry An array containing verticies
+       * @param shape    The Shape or Polygon being moved.
+       */
+      void verticyXYDragged(MouseEvent mouse, GenericShape gs, ArrayList<Circle> vertArry, Shape shape);
 
-    /**
-     * Clears the listeners for shape fill and stroke color changes
-     */
-    void clearListeners();
+      /**
+       * Clears the listeners for shape fill and stroke color changes
+       */
+      void clearListeners();
 }

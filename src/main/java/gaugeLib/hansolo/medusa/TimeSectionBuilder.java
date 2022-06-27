@@ -34,87 +34,88 @@ import java.util.HashMap;
  * Created by hansolo on 31.01.16.
  */
 public class TimeSectionBuilder<B extends TimeSectionBuilder<B>> {
-    private HashMap<String, Property> properties = new HashMap<>();
+      private final HashMap<String, Property> properties = new HashMap<>();
 
 
-    // ******************** Constructors **************************************
-    protected TimeSectionBuilder() {}
+      // ******************** Constructors **************************************
+      protected TimeSectionBuilder() {
+      }
 
 
-    // ******************** Methods *******************************************
-    public static final TimeSectionBuilder create() {
-        return new TimeSectionBuilder();
-    }
+      // ******************** Methods *******************************************
+      public static final TimeSectionBuilder create() {
+            return new TimeSectionBuilder();
+      }
 
-    public final B start(final LocalTime VALUE) {
-        properties.put("start", new SimpleObjectProperty<>(VALUE));
-        return (B)this;
-    }
+      public final B start(final LocalTime VALUE) {
+            properties.put("start", new SimpleObjectProperty<>(VALUE));
+            return (B) this;
+      }
 
-    public final B stop(final LocalTime VALUE) {
-        properties.put("stop", new SimpleObjectProperty<>(VALUE));
-        return (B)this;
-    }
+      public final B stop(final LocalTime VALUE) {
+            properties.put("stop", new SimpleObjectProperty<>(VALUE));
+            return (B) this;
+      }
 
-    public final B text(final String TEXT) {
-        properties.put("text", new SimpleStringProperty(TEXT));
-        return (B)this;
-    }
+      public final B text(final String TEXT) {
+            properties.put("text", new SimpleStringProperty(TEXT));
+            return (B) this;
+      }
 
-    public final B icon(final Image IMAGE) {
-        properties.put("icon", new SimpleObjectProperty<>(IMAGE));
-        return (B)this;
-    }
+      public final B icon(final Image IMAGE) {
+            properties.put("icon", new SimpleObjectProperty<>(IMAGE));
+            return (B) this;
+      }
 
-    public final B color(final Color COLOR) {
-        properties.put("color", new SimpleObjectProperty<>(COLOR));
-        return (B)this;
-    }
+      public final B color(final Color COLOR) {
+            properties.put("color", new SimpleObjectProperty<>(COLOR));
+            return (B) this;
+      }
 
-    public final B highlightColor(final Color COLOR) {
-        properties.put("highlightColor", new SimpleObjectProperty<>(COLOR));
-        return (B)this;
-    }
+      public final B highlightColor(final Color COLOR) {
+            properties.put("highlightColor", new SimpleObjectProperty<>(COLOR));
+            return (B) this;
+      }
 
-    public final B textColor(final Color COLOR) {
-        properties.put("textColor", new SimpleObjectProperty<>(COLOR));
-        return (B)this;
-    }
+      public final B textColor(final Color COLOR) {
+            properties.put("textColor", new SimpleObjectProperty<>(COLOR));
+            return (B) this;
+      }
 
-    public final B onTimeSectionEntered(final EventHandler<TimeSectionEvent> HANDLER) {
-        properties.put("onTimeSectionEntered", new SimpleObjectProperty<>(HANDLER));
-        return (B)this;
-    }
+      public final B onTimeSectionEntered(final EventHandler<TimeSectionEvent> HANDLER) {
+            properties.put("onTimeSectionEntered", new SimpleObjectProperty<>(HANDLER));
+            return (B) this;
+      }
 
-    public final B onTimeSectionLeft(final EventHandler<TimeSectionEvent> HANDLER) {
-        properties.put("onTimeSectionLeft", new SimpleObjectProperty<>(HANDLER));
-        return (B)this;
-    }
+      public final B onTimeSectionLeft(final EventHandler<TimeSectionEvent> HANDLER) {
+            properties.put("onTimeSectionLeft", new SimpleObjectProperty<>(HANDLER));
+            return (B) this;
+      }
 
-    public final TimeSection build() {
-        final TimeSection SECTION = new TimeSection();
-        for (String key : properties.keySet()) {
-            if ("start".equals(key)) {
-                SECTION.setStart(((ObjectProperty<LocalTime>) properties.get(key)).get());
-            } else if("stop".equals(key)) {
-                SECTION.setStop(((ObjectProperty<LocalTime>) properties.get(key)).get());
-            } else if("text".equals(key)) {
-                SECTION.setText(((StringProperty) properties.get(key)).get());
-            } else if("icon".equals(key)) {
-                SECTION.setIcon(((ObjectProperty<Image>) properties.get(key)).get());
-            } else if ("color".equals(key)) {
-                SECTION.setColor(((ObjectProperty<Color>) properties.get(key)).get());
-            } else if ("highlightColor".equals(key)) {
-                SECTION.setHighlightColor(((ObjectProperty<Color>) properties.get(key)).get());
-            } else if ("textColor".equals(key)) {
-                SECTION.setTextColor(((ObjectProperty<Color>) properties.get(key)).get());
-            } else if ("onTimeSectionEntered".equals(key)) {
-                SECTION.setOnTimeSectionEntered(((ObjectProperty<EventHandler>) properties.get(key)).get());
-            } else if ("onTimeSectionLeft".equals(key)) {
-                SECTION.setOnTimeSectionLeft(((ObjectProperty<EventHandler>) properties.get(key)).get());
+      public final TimeSection build() {
+            final TimeSection SECTION = new TimeSection();
+            for (String key : properties.keySet()) {
+                  if ("start".equals(key)) {
+                        SECTION.setStart(((ObjectProperty<LocalTime>) properties.get(key)).get());
+                  } else if ("stop".equals(key)) {
+                        SECTION.setStop(((ObjectProperty<LocalTime>) properties.get(key)).get());
+                  } else if ("text".equals(key)) {
+                        SECTION.setText(((StringProperty) properties.get(key)).get());
+                  } else if ("icon".equals(key)) {
+                        SECTION.setIcon(((ObjectProperty<Image>) properties.get(key)).get());
+                  } else if ("color".equals(key)) {
+                        SECTION.setColor(((ObjectProperty<Color>) properties.get(key)).get());
+                  } else if ("highlightColor".equals(key)) {
+                        SECTION.setHighlightColor(((ObjectProperty<Color>) properties.get(key)).get());
+                  } else if ("textColor".equals(key)) {
+                        SECTION.setTextColor(((ObjectProperty<Color>) properties.get(key)).get());
+                  } else if ("onTimeSectionEntered".equals(key)) {
+                        SECTION.setOnTimeSectionEntered(((ObjectProperty<EventHandler>) properties.get(key)).get());
+                  } else if ("onTimeSectionLeft".equals(key)) {
+                        SECTION.setOnTimeSectionLeft(((ObjectProperty<EventHandler>) properties.get(key)).get());
+                  }
             }
-        }
-        return SECTION;
-    }
+            return SECTION;
+      }
 }
 

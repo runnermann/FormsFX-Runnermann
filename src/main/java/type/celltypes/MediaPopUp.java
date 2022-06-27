@@ -19,6 +19,7 @@
 
 package type.celltypes;
 
+import flashmonkey.FlashMonkeyMain;
 import javafx.scene.layout.Region;
 import uicontrols.SceneCntl;
 import fmannotations.FMAnnotations;
@@ -34,126 +35,122 @@ import javafx.stage.Stage;
  */
 public class MediaPopUp {
 
-    private static MediaPopUp CLASS_INSTANCE;
-    private Stage window = new Stage();
-    private int screenWt = SceneCntl.getScreenWd();
-    private int screenHt = SceneCntl.getScreenHt();
+      private static MediaPopUp CLASS_INSTANCE;
+      private final int screenWt = SceneCntl.getScreenWd();
+      private final int screenHt = SceneCntl.getScreenHt();
 
-    private MediaPopUp() { /* no args constructor */}
+      private MediaPopUp() { /* no args constructor */}
 
-    /**
-     * Returns an instance of this singleton class.
-     * Synchronized, not thread safe. Expect only
-     * one to exist within a JVM.
-     * @return
-     */
-    public static synchronized MediaPopUp getInstance() {
-        if(CLASS_INSTANCE == null) {
-            CLASS_INSTANCE = new MediaPopUp();
-        }
-        return CLASS_INSTANCE;
-    }
+      /**
+       * Returns an instance of this singleton class.
+       * Synchronized, not thread safe. Expect only
+       * one to exist within a JVM.
+       *
+       * @return
+       */
+      public static synchronized MediaPopUp getInstance() {
+            if (CLASS_INSTANCE == null) {
+                  CLASS_INSTANCE = new MediaPopUp();
+            }
+            return CLASS_INSTANCE;
+      }
 
-    /**
-     * Popup with Image and Shapes:
-     * <p>Creates a popUp Scene with the image and shapes
-     * provided in the parameter</p>
-     *
-     * @param imgPath   The image path.
-     * @param shapePane The unscaled image pane.
-     */
-    public void popUpScene(String imgPath, Pane shapePane) {
+      /**
+       * Popup with Image and Shapes:
+       * <p>Creates a popUp Scene with the image and shapes
+       * provided in the parameter</p>
+       *
+       * @param imgPath   The image path.
+       * @param shapePane The unscaled image pane.
+       */
+      public void popUpScene(String imgPath, Pane shapePane) {
 
-        Image img = new Image("File:" + imgPath);
-        ImageView view = new ImageView(img);
-       //System.out.println("called popUp using (ImageView view, Pane shapePane)");
-        double wd = img.getWidth() + 4;
-        wd = wd < screenWt ? wd : screenWt;
-        double ht = img.getHeight() + 4;
-        ht = ht < screenHt ? ht : screenHt;
+            Image img = new Image("File:" + imgPath);
+            ImageView view = new ImageView(img);
+            //System.out.println("called popUp using (ImageView view, Pane shapePane)");
+            double wd = img.getWidth() + 4;
+            wd = wd < screenWt ? wd : screenWt;
+            double ht = img.getHeight() + 4;
+            ht = ht < screenHt ? ht : screenHt;
 
-        StackPane pane = new StackPane();
-        pane.setMaxWidth(screenWt - 50);
-        pane.setMaxHeight(screenHt - 100);
-        pane.setPrefSize(wd, ht);
-        pane.getChildren().add(view);
+            StackPane pane = new StackPane();
+            pane.setMaxWidth(screenWt - 50);
+            pane.setMaxHeight(screenHt - 100);
+            pane.setPrefSize(wd, ht);
+            pane.getChildren().add(view);
 
-        shapePane.setStyle("-fx-background-color: TRANSPARENT");
-        pane.getChildren().add(shapePane);
+            shapePane.setStyle("-fx-background-color: TRANSPARENT");
+            testingShapesPane = new Pane(shapePane);
 
-        Scene scene = new Scene(pane, wd, ht);
-        getInstance();
-        window.setScene(scene);
-        window.setResizable(false);
-        window.show();
-    }
+            pane.getChildren().add(shapePane);
 
-    /**
-     * Popup with shapes only:
-     * <p>Creates a popUp Scene with the shapes provided in the parameter</p>
-     *
-     * @param shapePane
-     */
-    public void popUpScene(Pane shapePane) {
-        shapePane.setMaxWidth(screenWt);
-        shapePane.setMaxHeight(screenHt);
-        Scene scene = new Scene(shapePane);
+            Scene scene = new Scene(pane, wd, ht);
 
-        getInstance();
-        window.setResizable(false);
-        window.setScene(scene);
-        window.show();
-    }
+            getInstance();
+            FlashMonkeyMain.setActionWindow(scene);
+      }
 
-    /**
-     * Popup with image only:
-     * <p>Creates a popUp Scene with an image from the
-     * path provided in the parameter</p>
-     *
-     * @param imgPath The image to be displayed
-     */
-    public void popUpScene(String imgPath) {
-        Image img = new Image("File:" + imgPath);
-        ImageView view = new ImageView(img);
-        view.setPreserveRatio(true);
+      /**
+       * Popup with shapes only:
+       * <p>Creates a popUp Scene with the shapes provided in the parameter</p>
+       *
+       * @param shapePane
+       */
+      public void popUpScene(Pane shapePane) {
+            shapePane.setMaxWidth(screenWt);
+            shapePane.setMaxHeight(screenHt);
+            Scene scene = new Scene(shapePane);
 
-        double wd = sizeWidth(img.getWidth() + 4);
-        double ht = sizeHeight(img.getHeight() + 4);
+            FlashMonkeyMain.setActionWindow(scene);
+      }
 
-        if(wd > ht) {
-            view.setFitHeight(ht);
-        } else {
-            view.setFitWidth(wd);
-        }
+      /**
+       * Popup with image only:
+       * <p>Creates a popUp Scene with an image from the
+       * path provided in the parameter</p>
+       *
+       * @param imgPath The image to be displayed
+       */
+      public void popUpScene(String imgPath) {
+            Image img = new Image("File:" + imgPath);
+            ImageView view = new ImageView(img);
+            view.setPreserveRatio(true);
 
-        StackPane stack = new StackPane(view);
-        Scene scene = new Scene(stack);
-        getInstance();
-        window.setResizable(true);
-        window.setScene(scene);
-        window.show();
-    }
+            double wd = sizeWidth(img.getWidth() + 4);
+            double ht = sizeHeight(img.getHeight() + 4);
 
-    private double sizeWidth(double imgWidth) {
-        double wd = imgWidth < screenWt ? imgWidth : screenWt;
-        return wd < 1024 ? wd : 1024;
-    }
+            if (wd > ht) {
+                  view.setFitHeight(ht);
+            } else {
+                  view.setFitWidth(wd);
+            }
 
-    private double sizeHeight(double imgHeight) {
-        double ht = imgHeight < screenHt ? imgHeight : screenHt;
-        return ht < 1024 ? ht : 1024;
-    }
+            StackPane stack = new StackPane(view);
+            Scene scene = new Scene(stack);
+            getInstance();
+            FlashMonkeyMain.setActionWindow(scene);
+      }
 
-    // ******  Media MediaPopUp ******
+      private double sizeWidth(double imgWidth) {
+            double wd = imgWidth < screenWt ? imgWidth : screenWt;
+            return wd < 1024 ? wd : 1024;
+      }
+
+      private double sizeHeight(double imgHeight) {
+            double ht = imgHeight < screenHt ? imgHeight : screenHt;
+            return ht < 1024 ? ht : 1024;
+      }
+
+      // ******  Media MediaPopUp ******
 
 
+      // *** FOR TESTING ***
+      @FMAnnotations.DoNotDeployField
+      Pane testingShapesPane;
 
-
-    // *** FOR TESTING ***
-
-    @FMAnnotations.DoNotDeployMethod
-    public Stage testingGetWindow() {
-        return window;
-    }
+      @FMAnnotations.DoNotDeployMethod
+      public Pane testingGetShapePane() {
+            return testingShapesPane;
+      }
 
 }

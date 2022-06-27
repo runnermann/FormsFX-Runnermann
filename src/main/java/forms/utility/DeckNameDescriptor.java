@@ -5,19 +5,21 @@ import javafx.beans.property.StringProperty;
 
 public class DeckNameDescriptor {
 
-    private static StringProperty nameProperty = new SimpleStringProperty("");
+      private static final StringProperty nameProperty = new SimpleStringProperty("");
 
-    public DeckNameDescriptor() {
-        /* EMPTY */
-    }
+      public DeckNameDescriptor() {
+            /* EMPTY */
+      }
 
-    public String getName() {
-        return nameProperty.get();
-    }
+      public String getName() {
+            return nameProperty.get();
+      }
 
-    public StringProperty nameProperty() { return nameProperty; };
+      public StringProperty nameProperty() {
+            return nameProperty;
+      }
 
-    public void clear() {
-        nameProperty().set("");
-    }
+      public void clear() {
+            nameProperty().set("");
+      }
 }

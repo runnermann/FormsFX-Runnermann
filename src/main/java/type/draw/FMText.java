@@ -37,62 +37,70 @@ import java.io.Serializable;
  */
 public class FMText //implements Serializable
 {
-    //private static final long serialVersionUID = FlashMonkeyMain.VERSION;
+      //private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
-    /** Variables **/
-    protected String promptTxt;
+      /**
+       * Variables
+       **/
+      protected String promptTxt;
 
-    /** OBJECTS FROM JAVA LIBRARIES **/
-    protected StackPane stackPane;
-    protected TextArea textArea;
+      /**
+       * OBJECTS FROM JAVA LIBRARIES
+       **/
+      protected StackPane stackPane;
+      protected TextArea textArea;
 
-    
 
+      /**
+       * Default constructor
+       */
+      protected FMText() {
+            /* empty */
+      }
 
-    /**
-     * Default constructor
-     */
-    protected FMText() {
-        /* empty */
-    }
+      /**
+       * Full constructor
+       *
+       * @param prompt
+       */
+      protected FMText(String prompt, double x, double y, double wd, double ht) {
+            this.promptTxt = prompt;
+            stackPane = new StackPane();
+            stackPane.setLayoutX(x);
+            stackPane.setLayoutY(y);
+            stackPane.setPrefSize(wd, ht);
+            stackPane.setMaxSize(wd, ht);
+            stackPane.setMinSize(wd, ht);
+            textArea = new TextArea();
+            stackPane.setPadding(new Insets(6, 4, 6, 4));
+            stackPane.setStyle("-fx-background-color: white");
+            stackPane.setAlignment(Pos.BOTTOM_LEFT);
+            textArea.setWrapText(true);
+            textArea.setPromptText(promptTxt);
 
-    /**
-     * Full constructor
-     * @param prompt
-     */
-    protected FMText(String prompt, double x, double y, double wd, double ht) {
-        this.promptTxt = prompt;
-        stackPane = new StackPane();
-        stackPane.setLayoutX(x);
-        stackPane.setLayoutY(y);
-        stackPane.setPrefSize(wd, ht);
-        stackPane.setMaxSize(wd, ht);
-        stackPane.setMinSize(wd, ht);
-        textArea = new TextArea();
-        stackPane.setPadding(new Insets(6, 4, 6, 4));
-        stackPane.setStyle("-fx-background-color: white");
-        stackPane.setAlignment(Pos.BOTTOM_LEFT);
-        textArea.setWrapText(true);
-        textArea.setPromptText(promptTxt);
+            stackPane.getChildren().add(textArea);
+      }
 
-        stackPane.getChildren().add(textArea);
-    }
+      /**
+       * SETTERS
+       **/
+      protected void setPromptText(String prompt) {
+            this.promptTxt = prompt;
+      }
 
-    /** SETTERS **/
-    protected void setPromptText(String prompt) {
-        this.promptTxt = prompt;
-    }
+      /**
+       * GETTERS
+       **/
+      protected String getPromptText() {
+            return promptTxt;
+      }
 
-    /** GETTERS **/
-    protected String getPromptText() {
-        return promptTxt;
-    }
-
-    /**
-     * Returns the VBox object
-     * @return returns the VBox that contains the TextArea of this class
-     */
-    protected StackPane getStackPane() {
-        return stackPane;
-    }
+      /**
+       * Returns the VBox object
+       *
+       * @return returns the VBox that contains the TextArea of this class
+       */
+      protected StackPane getStackPane() {
+            return stackPane;
+      }
 }

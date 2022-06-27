@@ -11,9 +11,11 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.testfx.api.FxRobot;
 import org.testfx.api.FxToolkit;
+import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.awt.image.BufferedImage;
@@ -57,6 +59,7 @@ import java.util.concurrent.TimeoutException;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag("mediaTransferTester")
+//@ExtendWith(ApplicationExtension.class)
 public class MediaTransferTester extends ApplicationTest {
 
     //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaTransferTester.class);
@@ -115,7 +118,7 @@ public class MediaTransferTester extends ApplicationTest {
         stage.toFront();
 
         // logs the test in
-        bobTheBot.robotSetup();
+        bobTheBot.robotSetup("idk@idk.com","bangBang#01");
     }
 
 

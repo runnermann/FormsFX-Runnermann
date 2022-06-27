@@ -1,6 +1,7 @@
 package flashmonkey;
 
 //import javafx.geometry.Insets;
+
 import javafx.scene.canvas.Canvas;
 //import javafx.scene.canvas.GraphicsContext;
 
@@ -15,6 +16,7 @@ import java.awt.*;
  * Used by math-cards. Experimental in nature.
  * Provides spcial characters and symbols for m
  * math functions.
+ *
  * @author Lowell Stadelman
  */
 public class FMLaTeXControl {
@@ -152,18 +154,15 @@ public class FMLaTeXControl {
         g2.restore();
     }
     */
-    /**
-    @Override
-    protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
-        if (invalid) {
-            updateCanvas();
-            invalid = false;
-        }
-        layoutInArea(canvas, contentX, contentY, contentWidth, contentHeight, -1, HPos.CENTER, VPos.CENTER);
-    }
-    **/
-
-
+      /**
+       @Override protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
+       if (invalid) {
+       updateCanvas();
+       invalid = false;
+       }
+       layoutInArea(canvas, contentX, contentY, contentWidth, contentHeight, -1, HPos.CENTER, VPos.CENTER);
+       }
+       **/
 
 
 }

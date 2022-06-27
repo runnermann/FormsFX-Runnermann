@@ -8,15 +8,17 @@ import fmexception.EmptyTokenException;
  */
 public enum TokenStore {
 
-    INSTANCE;
+      INSTANCE;
 
-    // Common fields and methods
-    private static String token;
+      // Common fields and methods
+      private static String token;
 
-    public static String get() {
-        return token;
-    }
-    public static void set(String tkn) throws EmptyTokenException {
-        token = tkn;
-    };
+      public static String get() {
+            return token;
+      }
+
+      public static void set(String tkn) throws EmptyTokenException {
+            token = tkn;
+      }
+
 }

@@ -7,51 +7,51 @@ package habanero.edu.rice.pcdp.runtime;
  * @author Max Grossman (jmg3@rice.edu)
  */
 public final class ActorMessageWrapper {
-    /**
-     * The transmitted object.
-     */
-    private final Object msg;
+      /**
+       * The transmitted object.
+       */
+      private final Object msg;
 
-    /**
-     * The next message transmitted to the same target actor. null if no next
-     * message.
-     */
-    private habanero.edu.rice.pcdp.runtime.ActorMessageWrapper next;
+      /**
+       * The next message transmitted to the same target actor. null if no next
+       * message.
+       */
+      private habanero.edu.rice.pcdp.runtime.ActorMessageWrapper next;
 
-    /**
-     * Constructor.
-     *
-     * @param setMsg The object sent
-     */
-    public ActorMessageWrapper(final Object setMsg) {
-        this.msg = setMsg;
-        this.next = null;
-    }
+      /**
+       * Constructor.
+       *
+       * @param setMsg The object sent
+       */
+      public ActorMessageWrapper(final Object setMsg) {
+            this.msg = setMsg;
+            this.next = null;
+      }
 
-    /**
-     * Set the next message sent to the same actor.
-     *
-     * @param setNext New next message.
-     */
-    public void setNext(final habanero.edu.rice.pcdp.runtime.ActorMessageWrapper setNext) {
-        this.next = setNext;
-    }
+      /**
+       * Set the next message sent to the same actor.
+       *
+       * @param setNext New next message.
+       */
+      public void setNext(final habanero.edu.rice.pcdp.runtime.ActorMessageWrapper setNext) {
+            this.next = setNext;
+      }
 
-    /**
-     * Getter for next message in the queue.
-     *
-     * @return The next message sent to the same actor
-     */
-    public habanero.edu.rice.pcdp.runtime.ActorMessageWrapper getNext() {
-        return next;
-    }
+      /**
+       * Getter for next message in the queue.
+       *
+       * @return The next message sent to the same actor
+       */
+      public habanero.edu.rice.pcdp.runtime.ActorMessageWrapper getNext() {
+            return next;
+      }
 
-    /**
-     * The body of this message.
-     *
-     * @return The value sent by the user code.
-     */
-    public Object getMessage() {
-        return msg;
-    }
+      /**
+       * The body of this message.
+       *
+       * @return The value sent by the user code.
+       */
+      public Object getMessage() {
+            return msg;
+      }
 }

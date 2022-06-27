@@ -1,12 +1,12 @@
- package fmtree;
- 
- /**
-  * AVLTree GUI is specific to the use of integers in an AVLTree. To adopt to
-  * a different type change the target type. Other adoptions may be necessary.
-  * Displays a GUI of an AVLTree with nodes containing node data and the balance.
-  * Balance and node data rely on the toString method of the AVLTree.
-  *  Extends <E Comparable<E>> and Application
-  */
+package fmtree;
+
+/**
+ * AVLTree GUI is specific to the use of integers in an AVLTree. To adopt to
+ * a different type change the target type. Other adoptions may be necessary.
+ * Displays a GUI of an AVLTree with nodes containing node data and the balance.
+ * Balance and node data rely on the toString method of the AVLTree.
+ * Extends <E Comparable<E>> and Application
+ */
 
 import javafx.application.Application;
 import javafx.geometry.Pos;

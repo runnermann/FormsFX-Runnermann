@@ -27,252 +27,255 @@ import java.util.stream.Stream;
  */
 public class Graph {
 
-    // For number of grid lines
-    private static int countX;
-    private static int countY;
-    // For X & Y axis lines
-    private static double centerX;
-    private static double centerY;
-    private static double startXPt;
-    private static double endXPt;
+      // For number of grid lines
+      private static int countX;
+      private static int countY;
+      // For X & Y axis lines
+      private static double centerX;
+      private static double centerY;
+      private static double startXPt;
+      private static double endXPt;
 
 
-    //private DijkstraParser djParser;
-    // Invalid flag is set when DijkstraParser has been given
-    // invalid input. When this flag is true, show a
-    // message to the EncryptedUser.
-    //private boolean invalidFlag;
-    //private String message;
+      //private DijkstraParser djParser;
+      // Invalid flag is set when DijkstraParser has been given
+      // invalid input. When this flag is true, show a
+      // message to the EncryptedUser.
+      //private boolean invalidFlag;
+      //private String message;
 
-    /**
-     * Full constructor. Sets the center of the pane
-     * @param centX ..
-     * @param centY ..
-     */
-    public Graph(double centX, double centY) {
+      /**
+       * Full constructor. Sets the center of the pane
+       *
+       * @param centX ..
+       * @param centY ..
+       */
+      public Graph(double centX, double centY) {
 
-        centerX = centX;
-        centerY = centY;
-        //this.djParser = new DijkstraParser();
-    }
+            centerX = centX;
+            centerY = centY;
+            //this.djParser = new DijkstraParser();
+      }
 
-    /**
-     * Sets the centerX of the pane
-     * @param centX ..
-     */
-    public void setCenterX(double centX) {
-        centerX = centX;
-    }
+      /**
+       * Sets the centerX of the pane
+       *
+       * @param centX ..
+       */
+      public void setCenterX(double centX) {
+            centerX = centX;
+      }
 
-    /**
-     * Sets the center Y of the pane.
-     * @param centY ..
-     */
-    public void setCenterY(double centY) {
-        centerY = centY;
-    }
+      /**
+       * Sets the center Y of the pane.
+       *
+       * @param centY ..
+       */
+      public void setCenterY(double centY) {
+            centerY = centY;
+      }
 
 
+      /*******************************************************************************************************************
+       *                                                                                                                 *
+       *                                                  GRID AND AXIS                                                  *
+       *                                                                                                                 *
+       ******************************************************************************************************************/
 
-    /*******************************************************************************************************************
-     *                                                                                                                 *
-     *                                                  GRID AND AXIS                                                  *
-     *                                                                                                                 *
-     ******************************************************************************************************************/
+      public static Pane createGraphPane(Pane parentPane, DoubleProperty wdProperty, DoubleProperty htProperty) {
 
-    public static Pane createGraphPane(Pane parentPane, DoubleProperty wdProperty, DoubleProperty htProperty) {
+            FMGraphPane graphPane = new FMGraphPane();
+            //FunctionPane fPane = new FunctionPane();
+            graphPane.setStyle("-fx-background-color:" + UIColors.FM_GREY);
+            parentPane.widthProperty().addListener((obs, oldval, newVal) -> {
+                  graphPane.getChildren().clear();
+                  wdProperty.setValue(newVal.doubleValue());
+                  graphPane.createGrid(wdProperty, htProperty);
+                  graphPane.createXYAxis(wdProperty, htProperty);
+                  graphPane.axisNums(wdProperty, htProperty);
+            });
+            parentPane.heightProperty().addListener((obs, oldval, newVal) -> {
+                  graphPane.getChildren().clear();
+                  // subtract height for user adjustment box
+                  htProperty.setValue(newVal.doubleValue() - 30);
+                  graphPane.createGrid(wdProperty, htProperty);
+                  graphPane.createXYAxis(wdProperty, htProperty);
+                  graphPane.axisNums(wdProperty, htProperty);
+            });
 
-        FMGraphPane graphPane = new FMGraphPane();
-        //FunctionPane fPane = new FunctionPane();
-        graphPane.setStyle("-fx-background-color:" + UIColors.FM_GREY);
-        parentPane.widthProperty().addListener((obs, oldval, newVal) -> {
-            graphPane.getChildren().clear();
-            wdProperty.setValue(newVal.doubleValue());
+            htProperty.setValue(htProperty.getValue() - 30);
             graphPane.createGrid(wdProperty, htProperty);
             graphPane.createXYAxis(wdProperty, htProperty);
             graphPane.axisNums(wdProperty, htProperty);
-        });
-        parentPane.heightProperty().addListener((obs, oldval, newVal) -> {
-            graphPane.getChildren().clear();
-            // subtract height for user adjustment box
-            htProperty.setValue(newVal.doubleValue() - 30);
-            graphPane.createGrid(wdProperty, htProperty);
-            graphPane.createXYAxis(wdProperty, htProperty);
-            graphPane.axisNums(wdProperty, htProperty);
-        });
 
-        htProperty.setValue(htProperty.getValue() - 30);
-        graphPane.createGrid(wdProperty, htProperty);
-        graphPane.createXYAxis(wdProperty, htProperty);
-        graphPane.axisNums(wdProperty, htProperty);
+            return graphPane;
+      }
 
-        return graphPane;
-    }
+      public static Point2D getOriginXY() {
+            return FMGraphPane.originXY;
+      }
 
-    public static Point2D getOriginXY() {
-        return FMGraphPane.originXY;
-    }
+      /**
+       * The graphs high X and high Y.
+       *
+       * @return getX() returns the highX for the graph. Same for Y.
+       */
+      public static Point2D getXHighLow() {
+            return FMGraphPane.xHighLow;
+      }
 
-    /**
-     * The graphs high X and high Y.
-     * @return getX() returns the highX for the graph. Same for Y.
-     */
-    public static Point2D getXHighLow() {
-        return FMGraphPane.xHighLow;
-    }
+      /**
+       * The graphs low x and low y
+       *
+       * @return getX() returns the low x for the graph, same for y
+       */
+      public static Point2D getYHighLow() {
+            return FMGraphPane.yHighLow;
+      }
 
-    /**
-     * The graphs low x and low y
-     * @return getX() returns the low x for the graph, same for y
-     */
-    public static Point2D getYHighLow() {
-        return FMGraphPane.yHighLow;
-    }
-
-    public static Point2D getFunctionXStartEnd() {
-        return FMGraphPane.funcXStartEnd;
-    }
+      public static Point2D getFunctionXStartEnd() {
+            return FMGraphPane.funcXStartEnd;
+      }
 
 
+      /**
+       * Calculates the Origin, the graph lines, and the x & y axis.
+       * Extends Pane.
+       */
+      private static class FMGraphPane extends Pane {
+            Color axisColor = Color.BLACK;
+            Color graphLines = Color.web(UIColors.GRAPH_BGND);
+            // The origin of the graph
+            static Point2D originXY;// = new Point2D(0,0);
+            // getX() returns high, getY() returns low
+            static Point2D xHighLow;
+            // getX() returns high, getY() returns low
+            static Point2D yHighLow;
+            // getX() returns high, getY() returns low
+            static Point2D funcXStartEnd;
 
+            /**
+             * Call to Create the graphPane and the x and y axis
+             *
+             * @param wdProperty
+             * @param htProperty
+             */
+            private void createXYAxis(DoubleProperty wdProperty, DoubleProperty htProperty) {
 
-    /**
-     * Calculates the Origin, the graph lines, and the x & y axis.
-     * Extends Pane.
-     */
-    private static class FMGraphPane extends Pane {
-                Color axisColor = Color.BLACK;
-                Color graphLines = Color.web(UIColors.GRAPH_BGND);
-                // The origin of the graph
-                static Point2D originXY;// = new Point2D(0,0);
-                // getX() returns high, getY() returns low
-                static Point2D xHighLow;
-                // getX() returns high, getY() returns low
-                static Point2D yHighLow;
-                // getX() returns high, getY() returns low
-                static Point2D funcXStartEnd;
+                  double ht = htProperty.getValue();
+                  double wd = wdProperty.getValue();
 
-                /**
-                 * Call to Create the graphPane and the x and y axis
-                 * @param wdProperty
-                 * @param htProperty
-                 */
-                private void createXYAxis( DoubleProperty wdProperty, DoubleProperty htProperty) {
+                  // if user has set centerY and centerX
+                  double originY = centerY <= 0.0 ? ht / 2 : centerY;
+                  double originX = centerX <= 0.0 ? wd / 2 : centerX;
+                  originXY = new Point2D(originX, originY);
 
-                    double ht = htProperty.getValue();
-                    double wd = wdProperty.getValue();
+                  Line xAxis = new Line(0, originY, wd, originY);
+                  xAxis.setStroke(axisColor);
+                  Line yAxis = new Line(originX, 0, originX, ht);
+                  yAxis.setStroke(axisColor);
 
-                    // if user has set centerY and centerX
-                    double originY = centerY <= 0.0 ? ht / 2 : centerY;
-                    double originX = centerX <= 0.0 ? wd / 2 : centerX;
-                    this.originXY = new Point2D(originX, originY);
+                  this.getChildren().addAll(xAxis, yAxis);
+            }
 
-                    Line xAxis = new Line(0, originY, wd, originY);
-                    xAxis.setStroke(axisColor);
-                    Line yAxis = new Line(originX, 0, originX, ht);
-                    yAxis.setStroke(axisColor);
+            /**
+             * Creates the grid lines parallel to x and y axis
+             *
+             * @param htProperty height
+             * @param wdProperty wd
+             * @return A pane contianing the grid
+             */
+            private void createGrid(DoubleProperty wdProperty, DoubleProperty htProperty) {
 
-                    this.getChildren().addAll(xAxis, yAxis);
-                }
+                  double ht = htProperty.getValue();
+                  //ht = ht <= 0.0 ? startHt : ht;
+                  double wd = wdProperty.getValue();
+                  //wd = wd <= 0.0 ? startHt : wd;
 
-                /**
-                 * Creates the grid lines parallel to x and y axis
-                 *
-                 * @param htProperty height
-                 * @param wdProperty wd
-                 * @return A pane contianing the grid
-                 */
-                private void createGrid( DoubleProperty wdProperty, DoubleProperty htProperty) {
+                  //System.err.println("*!*!*!* called createGrid() *!*!*!*");
 
-                    double ht = htProperty.getValue();
-                    //ht = ht <= 0.0 ? startHt : ht;
-                    double wd = wdProperty.getValue();
-                    //wd = wd <= 0.0 ? startHt : wd;
+                  countX = 0;
+                  countY = 0;
+                  // Zero is 1/2 of remainder for x and y
+                  int zeroWd = (int) (wd % 40) / 2;
+                  int zeroHt = (int) (ht % 40) / 2;
 
-                    //System.err.println("*!*!*!* called createGrid() *!*!*!*");
-
-                    countX = 0;
-                    countY = 0;
-                    // Zero is 1/2 of remainder for x and y
-                    int zeroWd = (int) (wd % 40) / 2;
-                    int zeroHt = (int) (ht % 40) / 2;
-
-                    // vertical grid lines
-                    for (int i = zeroWd; i < wd + 1; i += 20) {
+                  // vertical grid lines
+                  for (int i = zeroWd; i < wd + 1; i += 20) {
                         Line vertL = new Line(i, 0, i, ht);
                         vertL.setStrokeWidth(.25);
                         vertL.setStroke(graphLines);
                         this.getChildren().add(vertL);
                         countX++;
-                    }
-                    // horizontal grid lines
-                    for (int i = zeroHt; i < ht + 1; i += 20) {
+                  }
+                  // horizontal grid lines
+                  for (int i = zeroHt; i < ht + 1; i += 20) {
                         Line horzL = new Line(0, i, wd, i);
                         horzL.setStrokeWidth(.25);
                         horzL.setStroke(graphLines);
                         this.getChildren().add(horzL);
                         countY++;
-                    }
-                }
+                  }
+            }
 
-                /**
-                 * rovides the pane with nums
-                 *
-                 * @param wdProperty wd
-                 * @param htProperty ht
-                 */
-                private void axisNums(DoubleProperty wdProperty, DoubleProperty htProperty) {
+            /**
+             * rovides the pane with nums
+             *
+             * @param wdProperty wd
+             * @param htProperty ht
+             */
+            private void axisNums(DoubleProperty wdProperty, DoubleProperty htProperty) {
 
-                    double ht = htProperty.getValue();
-                    double wd = wdProperty.getValue();
+                  double ht = htProperty.getValue();
+                  double wd = wdProperty.getValue();
 
-                    double zeroY = originXY.getY();
-                    double zeroX = originXY.getX();
+                  double zeroY = originXY.getY();
+                  double zeroX = originXY.getX();
 
-                    double yPixel, yPixStart;
-                    double xPixel, xPixStart;
-                    yPixel = yPixStart = (int) (ht % 40) / 2;
-                    xPixel = xPixStart = (int) (wd % 40) / 2;
-                    yPixel += 9.5;
-                    //xPixel += ;
+                  double yPixel, yPixStart;
+                  double xPixel, xPixStart;
+                  yPixel = yPixStart = (int) (ht % 40) / 2;
+                  xPixel = xPixStart = (int) (wd % 40) / 2;
+                  yPixel += 9.5;
+                  //xPixel += ;
 
-                    /*   Y Axis Count  **/
-                    // Count down from ( countY - 1/2 ), a positive number,
-                    // to ( 0 - 1/2 of countY ) a negitive number.
-                    int iStart = countY / 2; // upper Y or 0
-                    int iEnd = 0 - iStart; // lower Y
-                    // provides the x low and high. This is correct!
-    //                xHighLow = new Point2D(iStart, iEnd);
-                    // Provides nums along y axis
-                    for (int i = iStart; i >= iEnd; i--) {
+                  /*   Y Axis Count  **/
+                  // Count down from ( countY - 1/2 ), a positive number,
+                  // to ( 0 - 1/2 of countY ) a negitive number.
+                  int iStart = countY / 2; // upper Y or 0
+                  int iEnd = 0 - iStart; // lower Y
+                  // provides the x low and high. This is correct!
+                  //                xHighLow = new Point2D(iStart, iEnd);
+                  // Provides nums along y axis
+                  for (int i = iStart; i >= iEnd; i--) {
                         Text number = new Text(zeroX + 3, yPixel, Integer.toString(i));
                         number.setId("graphNumber");
                         //number.setFont(Font.loadFont("File:font/Raleway-Medium.ttf", 16));
                         this.getChildren().add(number);
                         yPixel += 20;
-                    }
+                  }
 
-                    /* X Axis Count **/
-                    // Count from the left to right for X numbers
-                    // from 0 - countX / 2 (a negative number, to countX / 2 (A positive number)
-                    iStart = 0 - countX / 2;
-                    iEnd = countX / 2;
-                    funcXStartEnd = new Point2D(iStart, iEnd);
+                  /* X Axis Count **/
+                  // Count from the left to right for X numbers
+                  // from 0 - countX / 2 (a negative number, to countX / 2 (A positive number)
+                  iStart = 0 - countX / 2;
+                  iEnd = countX / 2;
+                  funcXStartEnd = new Point2D(iStart, iEnd);
 
 
-                    // Provides nums along X axis
-                    for (int i = iStart; i < iEnd + 1; i++) {
+                  // Provides nums along X axis
+                  for (int i = iStart; i < iEnd + 1; i++) {
                         if (i != 0) {
-                            Text number = new Text(xPixel, zeroY + 10, Integer.toString(i));
-                            number.setId("graphNumber");
-                            this.getChildren().add(number);
+                              Text number = new Text(xPixel, zeroY + 10, Integer.toString(i));
+                              number.setId("graphNumber");
+                              this.getChildren().add(number);
                         }
                         xPixel += 20;
-                    }
-                    yHighLow = new Point2D(yPixel, yPixStart);
-                    xHighLow = new Point2D(xPixel, xPixStart);
-                }
-    }
+                  }
+                  yHighLow = new Point2D(yPixel, yPixStart);
+                  xHighLow = new Point2D(xPixel, xPixStart);
+            }
+      }
 
 //    private static class FunctionPane extends Pane {
 //

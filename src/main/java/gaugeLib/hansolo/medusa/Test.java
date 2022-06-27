@@ -20,14 +20,17 @@ import gaugeLib.hansolo.medusa.Clock.ClockSkinType;
 import gaugeLib.hansolo.medusa.Gauge.SkinType;
 import gaugeLib.hansolo.medusa.events.UpdateEvent;
 import gaugeLib.hansolo.medusa.events.UpdateEvent.EventType;
+
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Random;
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -48,14 +51,14 @@ import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 
 
-
 /**
  * EncryptedUser: hansolo
  * Date: 04.01.16
  * Time: 06:31
  */
-public class Test extends Application {
-    private static final Random          RND       = new Random();
+public class Test {
+//public class Test extends Application {
+/*    private static final Random          RND       = new Random();
     private static       int             noOfNodes = 0;
     private              Gauge           gauge1;
     private              Gauge           gauge2;
@@ -116,7 +119,8 @@ public class Test extends Application {
     }
 
     @Override public void stop() {
-        System.exit(0);
+        //System.exit(0);
+        Platform.exit();
     }
 
 
@@ -130,10 +134,8 @@ public class Test extends Application {
                 for (Node n : tempChildren) { calcNoOfNodes(n); }
             }
         }
-    }
-/*
-    public static void main(String[] args) {
+    }*/
+    /*  public static void main(String[] args) {
         launch(args);
-    }
-*/
+    }*/
 }

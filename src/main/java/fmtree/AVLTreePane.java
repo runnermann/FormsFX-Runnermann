@@ -82,13 +82,13 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
     }
     
  */
-    
-    /** 
-     * Sets the color of the line according to past history of the card.
-     * Compares numRight with numSeen or in some cases with score. 
-     * @param currentCard
-     * @return 
-     */
+
+      /**
+       * Sets the color of the line according to past history of the card.
+       * Compares numRight with numSeen or in some cases with score.
+       * @param currentCard
+       * @return
+       */
 /*
     private Color lineColor(FMTWalker.Node node) {
         
@@ -124,12 +124,12 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
     }
     
  */
-    
-    /**
-     * Sets the color of the fill according to this sessions status
-     * @param currentCard
-     * @return Returns White if not seen, red if incorrect, and green if correct.
-     */
+
+      /**
+       * Sets the color of the fill according to this sessions status
+       * @param currentCard
+       * @return Returns White if not seen, red if incorrect, and green if correct.
+       */
   /*
     private Color fillColor(FMTWalker.Node node)
     //private Color fillColor(FlashCard currentCard)
@@ -160,5 +160,5 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
     }
     
    */
-    
+
 }

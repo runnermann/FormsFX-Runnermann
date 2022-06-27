@@ -19,6 +19,7 @@
 
 package type.testtypes;
 
+import flashmonkey.ReadFlash;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -35,105 +36,105 @@ import java.util.BitSet;
  * Multi-ANswer, True or False, and Write in answer. AI based on EncryptedUser.EncryptedUser history and
  * algorithms determines the users next test type of question. More details are in
  * notes.
- *
+ * <p>
  * Creation type is:
- *  - double-horizontal cardlayout or double vertical
- *  - Sections may be single or double cell
+ * - double-horizontal cardlayout or double vertical
+ * - Sections may be single or double cell
  *
- *  @author Lowell Stadelman
+ * @author Lowell Stadelman
  */
-public class AIMode implements GenericTestType<AIMode>
-{
+public class AIMode extends TestTypeBase implements GenericTestType<AIMode> {
 
 
-    public AIMode()
-    {
-        // no args constructor
-    }
-    // @todo complete AIMode class
-    
-    
-    @Override
-    public boolean isDisabled() {
-        return true;
-    }
-    
-    @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
-    {
-        // Instantiate vBox and "set spacing" !important!!!
-        VBox vBox = new VBox(2);
-        vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
+      public AIMode() {
+            // no args constructor
+      }
+      // @todo complete AIMode class
 
-        return vBox;
-    }
 
-    /**
-     * Sets bits 0 - 4 to Multi-Choice, Multi-Answer, True or False, Write it in, and AI to true
-     * All other bits set to 0
-     * @return bitSet
-     */
-    @Override
-    public int getTestType()
-    {
-        // could use 31 but this is more visual
-        return 0b0000000000011111;
-    }
+      @Override
+      public boolean isDisabled() {
+            return true;
+      }
 
-    @Override
-    public char getCardLayout()
-    {
-        return 'D'; // double horizontal
-    }
+      @Override
+      public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane) {
+            // Instantiate vBox and "set spacing" !important!!!
+            VBox vBox = new VBox(2);
+            vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
 
-    @Override
-    public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane)
-    {
-        return new Pane();
-    }
+            return vBox;
+      }
 
-    @Override
-    public GenericTestType getTest() {
+      /**
+       * Sets bits 0 - 4 to Multi-Choice, Multi-Answer, True or False, Write it in, and AI to true
+       * All other bits set to 0
+       *
+       * @return bitSet
+       */
+      @Override
+      public int getTestType() {
+            // could use 31 but this is more visual
+            return 0b0000000000011111;
+      }
 
-        return new AIMode();
-    }
+      @Override
+      public char getCardLayout() {
+            return 'D'; // double horizontal
+      }
 
-    @Override
-    public Button[] getAnsButtons() {
-        return null;
-    }
+      @Override
+      public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
+            return new Pane();
+      }
 
-    @Override
-    public Button getAnsButton() {
-        return null;
-    }
+      @Override
+      public GenericTestType getTest() {
 
-    @Override
-    public String getName() {
-        return "AI Mode";
-    }
+            return new AIMode();
+      }
 
-    @Override
-    public void ansButtonAction() {
-        // stub
-    }
+      @Override
+      public Button[] getAnsButtons() {
+            return null;
+      }
 
-    @Override
-    public void nextAnsButtAction()
-    {
-        // stub
-    }
 
-    @Override
-    public void prevAnsButtAction()
-    {
-        // stub
-    }
+      @Override
+      public Button getAnsButton() {
+            return null;
+      }
 
-    @Override
-    public void reset() {
-        // stub
-    }
+      @Override
+      public String getName() {
+            return "AI Mode";
+      }
+
+      @Override
+      public void changed() {
+            ReadFlash.getInstance().isChanged();
+      }
+
+      @Override
+      public void ansButtonAction() {
+            changed();
+            // stub
+      }
+
+      @Override
+      public void nextAnsButtAction() {
+            // stub
+      }
+
+      @Override
+      public void prevAnsButtAction() {
+            // stub
+      }
+
+      @Override
+      public void reset() {
+            // stub
+      }
 
 
     /*

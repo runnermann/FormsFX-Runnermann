@@ -8,11 +8,11 @@ package habanero.edu.rice.pcdp;
  */
 public interface ProcedureInt2D {
 
-    /**
-     * Apply the body of this function to two integer arguments.
-     *
-     * @param arg1 The first argument to the procedure.
-     * @param arg2 The second argument to the procedure
-     */
-    void apply(int arg1, int arg2);
+      /**
+       * Apply the body of this function to two integer arguments.
+       *
+       * @param arg1 The first argument to the procedure.
+       * @param arg2 The second argument to the procedure
+       */
+      void apply(int arg1, int arg2);
 }

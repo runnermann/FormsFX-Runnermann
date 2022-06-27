@@ -20,5 +20,5 @@ package gaugeLib.hansolo.medusa;
  * Created by hansolo on 28.01.16.
  */
 public enum LcdFont {
-    STANDARD, LCD, DIGITAL, DIGITAL_BOLD, ELEKTRA
+      STANDARD, LCD, DIGITAL, DIGITAL_BOLD, ELEKTRA
 }

@@ -29,7 +29,7 @@ public class RobotUtility extends ApplicationTest {
 	
 	
 	/* ROBOT SETUP */
-	public void robotSetup() throws Exception {
+	public void robotSetup(String userName, String pw) throws Exception {
 
 		bob = new FxRobot();
 		
@@ -42,15 +42,15 @@ public class RobotUtility extends ApplicationTest {
 		delta_Y = (int) window.getY() -10;
 		create = new CreateCards(delta_X, delta_Y);
 		loginUtility = new LoginTesterUtility(delta_X, delta_Y);
-		loginUtility.logIn("idk@idk.com", "bangBang#01", bob);
-		sleep(200);
+		loginUtility.logIn(userName, pw, bob);
+		//sleep(200);
 		// Hey Bob, this deck has a lot of stuff, don't delete it please.
 		// create.removePrevFile(strPath);
-		System.out.println("MetaDataTEster: robotSetup() before create.getExistingDeck()");
-		create.getExistingDeck();
-		sleep(5000);
+		//System.out.println("MetaDataTEster: robotSetup() before create.getExistingDeck()");
+		//create.getExistingDeck();
+		//sleep(5000);
 		
-		System.out.println("MetaDataTester: robotSetup() complete");
+		System.out.println(" robotSetup() complete");
 	}
 	
 	public FxRobot getBob() {

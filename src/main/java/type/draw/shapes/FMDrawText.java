@@ -19,6 +19,5 @@
 
 package type.draw.shapes;
 
-public class FMDrawText
-{
+public class FMDrawText {
 }

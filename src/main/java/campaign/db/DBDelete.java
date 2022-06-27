@@ -9,58 +9,55 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public enum DBDelete {
-    PERSON_BY_ID() {
+      PERSON_BY_ID() {
+            @Override
+            public boolean query(String... args) {
+                  String strQuery = "DELETE FROM Person WHERE person_id =" + args[0];
+                  return doDelete(strQuery);
+            }
+      };
 
-        @Override
-        public boolean query(String ...args) {
-            String strQuery = "DELETE FROM Person WHERE person_id =" + args[0];
-            return doDelete(strQuery);
-        }
-    };
+      // --------------------------------- --------------------------------- //
+      // Common fields
+      // --------------------------------- --------------------------------- //
 
-    // --------------------------------- --------------------------------- //
-    // Common fields
-    // --------------------------------- --------------------------------- //
+      // LOGGING
+      private static final Logger LOGGER = LoggerFactory.getLogger(DBDelete.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBDelete.class);
 
-    // LOGGING
-    private static final Logger LOGGER = LoggerFactory.getLogger(DBDelete.class);
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DBDelete.class);
+      DBDelete() { /* NO ARGS CONSTRUCTOR */ }
 
-    DBDelete() { /* NO ARGS CONSTRUCTOR */ }
+      /**
+       * The query
+       *
+       * @param args The args for the query.
+       * @return
+       */
+      public abstract boolean query(String... args);
 
-    /**
-     * The query
-     * @param args The args for the query.
-     * @return
-     */
-    public abstract boolean query(String ... args);
+      public static boolean doDelete(String strQuery) {
 
-    public static boolean doDelete(String strQuery) {
+            //LOGGER.setLevel(Level.DEBUG);
+            LOGGER.debug("strQuery: {}", strQuery);
 
-        //LOGGER.setLevel(Level.DEBUG);
-        LOGGER.debug("strQuery: {}", strQuery );
+            DBConnect db = DBConnect.getInstance();
+            String[] columnData = {"EMPTY"};
 
-        DBConnect db = DBConnect.getInstance();
-        String[] columnData = {"EMPTY"};
+            try {
+                  CompletableFuture<QueryResult> future = db.getConnection()
+                      .sendPreparedStatement(strQuery);
+                  QueryResult queryResult = future.get();
+                  LOGGER.debug("returned: {}", queryResult.getStatusMessage());
 
-        try {
-            CompletableFuture<QueryResult> future = db.getConnection()
-                    .sendPreparedStatement(strQuery);
-            QueryResult queryResult = future.get();
-            LOGGER.debug("returned: {}", queryResult.getStatusMessage());
+                  return queryResult.getStatusMessage().equals("200");
 
-            if(queryResult.getStatusMessage().equals("200")) {
-                return true;
+            } catch (NullPointerException e) {
+                  LOGGER.warn("WARNING: Null pointer exception at DBFetch.fetchUniqueResult: Deck may not exist. ");
+            } catch (ExecutionException e) {
+                  LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
+            } catch (InterruptedException e) {
+                  LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
             }
             return false;
-
-        } catch (NullPointerException e) {
-            LOGGER.warn("WARNING: Null pointer exception at DBFetch.fetchUniqueResult: Deck may not exist. ");
-        } catch (ExecutionException e) {
-            LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
-        } catch (InterruptedException e) {
-            LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
-        }
-        return false;
-    }
+      }
 }

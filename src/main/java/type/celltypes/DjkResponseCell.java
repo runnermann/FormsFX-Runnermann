@@ -19,21 +19,20 @@ import java.io.Serializable;
  * <p>DjkResponseCell relates to math. It contains the UI response from
  * the Dijkstra's shunting algorithm. It is independent from operations
  * of the class. This class makes use of Operator, an Enum.</p>
- *
  */
 public class DjkResponseCell extends GenericCell implements Serializable {
-    private static final long serialVersionUID = FlashMonkeyMain.VERSION;
-    private static final Logger LOGGER = LoggerFactory.getLogger(CanvasCell.class);
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CanvasCell.class);
+      private static final long serialVersionUID = FlashMonkeyMain.VERSION;
+      private static final Logger LOGGER = LoggerFactory.getLogger(CanvasCell.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CanvasCell.class);
 
-    public DjkResponseCell() {
-        /* no args constructor */
-    }
+      public DjkResponseCell() {
+            /* no args constructor */
+      }
 
 
-    public final ScrollPane buildCell(String response, double paneWd, double paneHt, int numSections) {
-        VBox vBox = new VBox(2);
-        ScrollPane scrollPane = new ScrollPane();
+      public final ScrollPane buildCell(String response, double paneWd, double paneHt, int numSections) {
+            VBox vBox = new VBox(2);
+            ScrollPane scrollPane = new ScrollPane();
 
 //        while( ! Operator.hasOperators()) {
 //            // expression node
@@ -51,13 +50,11 @@ public class DjkResponseCell extends GenericCell implements Serializable {
 //            vBox.getChildren().add(tf);
 //            vBox.setMaxWidth(400);
 //        }
-        scrollPane.setContent(vBox);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setFitToWidth(true);
-        return scrollPane;
-    }
-
-
+            scrollPane.setContent(vBox);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scrollPane.setFitToWidth(true);
+            return scrollPane;
+      }
 
 
 }

@@ -8,10 +8,10 @@ package habanero.edu.rice.pcdp;
  */
 public interface ProcedureInt1D {
 
-    /**
-     * Apply the body of this function to the int argument.
-     *
-     * @param arg1 The first argument to the procedure.
-     */
-    void apply(int arg1);
+      /**
+       * Apply the body of this function to the int argument.
+       *
+       * @param arg1 The first argument to the procedure.
+       */
+      void apply(int arg1);
 }

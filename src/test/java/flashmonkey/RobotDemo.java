@@ -116,8 +116,8 @@ public class RobotDemo extends ApplicationTest {
 
         // create the scene
      //   scene = cfp.createFlashScene();
-      //  cfp.getEditorU().setText("this is a card");
-     //   cfp.getEditorU().snapShotBtnAction();
+      //  cfp.getEditor_U_ForTestingOnly().setText("this is a card");
+     //   cfp.getEditor_U_ForTestingOnly().snapShotBtnAction();
     /*
         robot.moveTo(50,50);
         robot.clickOn(MouseButton.PRIMARY);
@@ -127,7 +127,7 @@ public class RobotDemo extends ApplicationTest {
 
      */
 
-        //cfp.getEditorU().snapShotBtnAction();
+        //cfp.getEditor_U_ForTestingOnly().snapShotBtnAction();
 
      //   rightPane.getChildren().add(iView1);
      //   rightPane.setStyle("-fx-background-color: #32CD32");
@@ -320,7 +320,7 @@ public class RobotDemo extends ApplicationTest {
 
 
         // Type on the screen
-        Point2D xyUType = cfp.getEditorU().getTextAreaXY();
+        Point2D xyUType = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
         robot.clickOn(xyUType);
         robot.write("Hello, I’m Flash.");
 
@@ -344,7 +344,7 @@ public class RobotDemo extends ApplicationTest {
                 "... Watch me take notes. ");
 
         // Clear the question text
-        Point2D xy = cfp.getEditorU().getClearTextBtnXY();
+        Point2D xy = cfp.getEditor_U_ForTestingOnly().getClearTextBtnXY();
         robot.clickOn(xy);
         sleep(2000);
 
@@ -364,7 +364,7 @@ public class RobotDemo extends ApplicationTest {
 
 
         // get snapshotbuton minxy
-        xy = cfp.getEditorL().getSnapShotBtnXY();
+        xy = cfp.getEditor_L_ForTestingOnly().getSnapShotBtnXY();
 
         robot.clickOn(xy);
         sleep(500);
@@ -427,7 +427,7 @@ public class RobotDemo extends ApplicationTest {
 
 
         // SHOW THE SHAPES IN THE RIGHT PANE
-        xy = cfp.getEditorL().getRightPaneXY();
+        xy = cfp.getEditor_L_ForTestingOnly().getRightPaneXY();
         robot.moveTo(xy);
         sleep(2000);
         robot.clickOn(xy);
@@ -439,9 +439,9 @@ public class RobotDemo extends ApplicationTest {
     //    sleep(250);
 
         // now exit shapes and draw
-        xy = dt.getExitBtnXY();
-        robot.clickOn(xy);
-        sleep(300);
+//        xy = dt.getExitBtnXY();
+//        robot.clickOn(xy);
+//        sleep(300);
 
 
 

@@ -24,5 +24,5 @@ import java.util.EventListener;
  */
 @FunctionalInterface
 public interface UpdateEventListener extends EventListener {
-    void onUpdateEvent(final UpdateEvent EVENT);
+      void onUpdateEvent(final UpdateEvent EVENT);
 }

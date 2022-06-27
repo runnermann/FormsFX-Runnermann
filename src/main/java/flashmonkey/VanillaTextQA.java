@@ -14,7 +14,7 @@ import java.util.Scanner;
  * This is an experimental class. It is not available direcly in FlashMonkey. It uses it's own main method.
  * The VanillaTextQA class parses a .txt file.
  * The questions are contained in {@code <Q> </Q>} and the answers are contained in {@code <A> </A>}
- *<pre>
+ * <pre>
  * Requirements
  *  - Get the name of the deck from the EncryptedUser.EncryptedUser and create the file
  *  - Get the name of the file that is being parsed
@@ -35,171 +35,171 @@ import java.util.Scanner;
  *  *              - When the {@code </I>} ,is found, add the following and add it to the String buffer until:
  *      - After the {@code </A>} is found, save the Question and Answer to a new card using the default
  *      data for the rest of the card.
- *</pre>
+ * </pre>
+ *
  * @author Lowell Stadelman
  */
 // @todo add video and audio, add in additional info needed for saving the Multi-Media files
-public class VanillaTextQA  {
+public class VanillaTextQA {
 
-    private ArrayList<FlashCardMM> creatorList;// = new ArrayList<>(10);
-    private FlashCardOps ops;// = new FlashCardOps();
-    //protected FileOperations innerObj;// = ops.new FileOperations();
+      private final ArrayList<FlashCardMM> creatorList;// = new ArrayList<>(10);
+      private final FlashCardOps ops;// = new FlashCardOps();
+      //protected FileOperations innerObj;// = ops.new FileOperations();
 
-    StringBuilder stringBuilder;
+      StringBuilder stringBuilder;
 
-    private String deckName;
-    private String textFileName;
-    private String mediaFile;
+      private final String deckName;
+      private final String textFileName;
+      private final String mediaFile;
 
-    private int counter;
-    private String aText;
-    private String qText;
+      private int counter;
+      private String aText;
+      private String qText;
 
-    /**
-     * no args constructor
-     */
-    public VanillaTextQA() {
+      /**
+       * no args constructor
+       */
+      public VanillaTextQA() {
 
-        creatorList = new ArrayList<>(10);
-        ops = FlashCardOps.getInstance();
-        //innerObj = ops.new FileOperations();
+            creatorList = new ArrayList<>(10);
+            ops = FlashCardOps.getInstance();
+            //innerObj = ops.new FileOperations();
 
-        stringBuilder = new StringBuilder();
-        deckName = "";
-        textFileName = "";
-        counter = 0;
-        aText = "";
-        qText = "";
-        mediaFile = "";
-    }
-
-
-    /**
-     * Constructor: Reads in a file, Parses the file. If words are contained between {@code <Q>} and {@code </Q>}
-     * the are inserted into the qText for the card. If words are contained between {@code <A>} and {@code </A>}
-     * they are inserted into the aText for the card. Everything outside of the angle braces
-     * is ignored.
-     *
-     * ! Note: This method is not thread safe.
-     *
-     * For now we are not parsing images or video files.
-     * @param deckName
-     * @param textFile
-     */
-    public VanillaTextQA( File deckName, File textFile) {
-
-        this();
-        // parse the file
-        parseFile(textFile);
-        // Save the creatorList to file, keep the last element
-        // innerObj.setListinFile(creatorList, '+');
-        //CloudOps co = new CloudOps();
-        CloudOps.putDeck(FlashCardOps.getInstance().getDeckFileName());
-        //innerObj.
-    }
+            stringBuilder = new StringBuilder();
+            deckName = "";
+            textFileName = "";
+            counter = 0;
+            aText = "";
+            qText = "";
+            mediaFile = "";
+      }
 
 
-    private void parseFile( File textFile) {
-        // Get the text from the stream.
-        try (Scanner scan = new Scanner(new FileInputStream(textFile))) {
+      /**
+       * Constructor: Reads in a file, Parses the file. If words are contained between {@code <Q>} and {@code </Q>}
+       * the are inserted into the qText for the card. If words are contained between {@code <A>} and {@code </A>}
+       * they are inserted into the aText for the card. Everything outside of the angle braces
+       * is ignored.
+       * <p>
+       * ! Note: This method is not thread safe.
+       * <p>
+       * For now we are not parsing images or video files.
+       *
+       * @param deckName
+       * @param textFile
+       */
+      public VanillaTextQA(File deckName, File textFile) {
 
-            // Read data from a file
-            while (scan.hasNext()) {
-                // get the next item and check for opening and closing angle braces
-                String read = scan.next();
-                // get question
-                if (read.equals("<q>")) {
+            this();
+            // parse the file
+            parseFile(textFile);
+            // Save the creatorList to file, keep the last element
+            // innerObj.setListinFile(creatorList, '+');
+            //CloudOps co = new CloudOps();
+            CloudOps.putDeck(FlashCardOps.getInstance().getDeckFileName());
+            //innerObj.
+      }
 
-                    counter++;
 
-                    while (scan.hasNext()) {
-                        read = scan.nextLine();
-                        if (read.equals("</q>")) {
+      private void parseFile(File textFile) {
+            // Get the text from the stream.
+            try (Scanner scan = new Scanner(new FileInputStream(textFile))) {
 
-                            // set the text in string builder to qText
-                            qText = stringBuilder.toString();
-                            // clear stringBuilder
-                            stringBuilder.setLength(0);
-                            // start next
-                            break;
-                        } else {
-                            // add the text to the string builder
-                            stringBuilder.append(read);
+                  // Read data from a file
+                  while (scan.hasNext()) {
+                        // get the next item and check for opening and closing angle braces
+                        String read = scan.next();
+                        // get question
+                        if (read.equals("<q>")) {
 
+                              counter++;
+
+                              while (scan.hasNext()) {
+                                    read = scan.nextLine();
+                                    if (read.equals("</q>")) {
+
+                                          // set the text in string builder to qText
+                                          qText = stringBuilder.toString();
+                                          // clear stringBuilder
+                                          stringBuilder.setLength(0);
+                                          // start next
+                                          break;
+                                    } else {
+                                          // add the text to the string builder
+                                          stringBuilder.append(read);
+
+                                    }
+                              }
+                        } else if (read.equals("<a>")) {
+
+                              while (scan.hasNext()) {
+                                    read = scan.nextLine();
+                                    if (read.equals("</a>")) {
+
+                                          aText = stringBuilder.toString();
+                                          if (!saveCard()) {
+                                                //System.out.println("Card not saved");
+                                                //System.exit(0);
+                                          }
+                                          stringBuilder.setLength(0);
+                                          break;
+
+                                    } else {
+                                          stringBuilder.append(read + "\n");
+
+                                    }
+                              }
                         }
-                    }
-                } else if (read.equals("<a>")) {
+                  }
+            } catch (FileNotFoundException e) {
 
-                    while (scan.hasNext()) {
-                        read = scan.nextLine();
-                        if (read.equals("</a>")) {
-
-                            aText = stringBuilder.toString();
-                            if(! saveCard()) {
-                                //System.out.println("Card not saved");
-                                //System.exit(0);
-                            };
-                            stringBuilder.setLength(0);
-                            break;
-
-                        } else {
-                            stringBuilder.append(read + "\n");
-
-                        }
-                    }
-                }
+                  System.err.println("ERROR retrieving file: Could not find the file: " + textFile);
             }
-        } catch (FileNotFoundException e) {
 
-            System.err.println("ERROR retrieving file: Could not find the file: " + textFile);
-        }
-
-    }
+      }
 
 
-    /**
-     * Helper method to parseFile
-     * Creates the card and saves it to the creatorList ArrayList
-     */
-    private boolean saveCard()
-    {
-        MultiChoice multiChoice = MultiChoice.getInstance();
-        int cardNum = counter;
-        FileNaming naming = new FileNaming();
+      /**
+       * Helper method to parseFile
+       * Creates the card and saves it to the creatorList ArrayList
+       */
+      private boolean saveCard() {
+            MultiChoice multiChoice = MultiChoice.getInstance();
+            int cardNum = counter;
+            FileNaming naming = new FileNaming();
             // Create the new card
             FlashCardMM newCard = new FlashCardMM(
-                    naming.getCardHash(FlashCardOps.getInstance().getDeckLabelName(), "SHA"),                    // cardId
-                    cardNum,                    // cardNumber
-                    multiChoice.getTestType(),// BitSet testTypes
-                    multiChoice.getCardLayout(),// cardLayout
-                    qText,                      // questionText
-                    't',                 // question Section Layout 'M'
-                    getMediaFiles(),            // String[] of media files
-                    aText,                      // answerText
-                    cardNum,                    // answerNumber
-                    't',                 // answer section layout
-                    getMediaFiles(),            // String[] of media files
-                    new ArrayList<Integer>()    //Arraylist of other correct answers
+                naming.getCardHash(FlashCardOps.getInstance().getDeckLabelName(), "SHA"),                    // cardId
+                cardNum,                    // cardNumber
+                multiChoice.getTestType(),// BitSet testTypes
+                multiChoice.getCardLayout(),// cardLayout
+                qText,                      // questionText
+                't',                 // question Section Layout 'M'
+                getMediaFiles(),            // String[] of media files
+                aText,                      // answerText
+                cardNum,                    // answerNumber
+                't',                 // answer section layout
+                getMediaFiles(),            // String[] of media files
+                new ArrayList<Integer>()    //Arraylist of other correct answers
             );
 
-        // add the new card to the creatorList
-        return (creatorList.add(newCard));
-    }
+            // add the new card to the creatorList
+            return (creatorList.add(newCard));
+      }
 
-    private String[] getMediaFiles()
-    {
-        String[] s = {mediaFile, ""};
-        return s;
-    }
+      private String[] getMediaFiles() {
+            String[] s = {mediaFile, ""};
+            return s;
+      }
 
-    protected void printCards(File deckName) {
+      protected void printCards(File deckName) {
 
 
-    }
+      }
 
-    /**
-     * Tester
-     */
+      /**
+       * Tester
+       */
 /*
     public static void main(String[] args) {
 
@@ -217,7 +217,6 @@ public class VanillaTextQA  {
 
     }
 */
-
 
 
 }

@@ -1,10 +1,12 @@
 package flashmonkey;
 
 import fileops.DirectoryMgr;
+import fmannotations.FMAnnotations;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -30,6 +32,7 @@ import type.testtypes.TestList;
 import uicontrols.UIColors;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import static flashmonkey.ReadFlash.GEN_CARD;
 
@@ -46,452 +49,472 @@ import static flashmonkey.ReadFlash.GEN_CARD;
  * platform. When the EncryptedUser.EncryptedUser has not performed well, the node/circle uses a red highlight, if the EncryptedUser.EncryptedUser did well, the node/
  * circle is represented in green. If the EncryptedUser.EncryptedUser has not engaged with the data it is represented in dark silver.
  *
- *     @author Lowell Stadelman
+ * @author Lowell Stadelman
  */
 public class AVLTreePane<E extends Comparable<E>> extends Pane {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
-    
-    
-    private static final double UNSELECTED = 20; // size of circle
-    private static final double SELECTED = 29;
-    private double vGap = 50;
-    protected String message = " ... ";
-    private int highlighted = Integer.MAX_VALUE;
-    // Flag, if true, the added node fades into screen when added to the tree.
-    private boolean transition = false;
-    // array of ints used to compare if a node
-    // uses the fade transition/SequentialTransition
-    int[] newNums = new int[3];
-    // Animation object
-    SequentialTransition seq;
+
+      private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
 
 
-    /**
-     * default constructor
-     */
-    public AVLTreePane()
-    {
-        // blank
-    }
-
-    /**
-     * sets the message used to display in the AVL-TreePane
-     * @param msg
-     */
-    protected void setMessage(String msg)
-    {
-        getChildren().add(new Text(20, 20, msg));
-    }
-
-    public void setHighlighted(FlashCardMM fc) {
-
-        this.highlighted = fc.getANumber();
-    }
-
-    public void clearHighlighted() {
-        this.highlighted = Integer.MAX_VALUE;
-    }
+      private static final double UNSELECTED = 20; // size of circle
+      private static final double SELECTED = 29;
+      private final double vGap = 50;
+      protected String message = " ... ";
+      private int highlighted = Integer.MAX_VALUE;
+      // Flag, if true, the added node fades into screen when added to the tree.
+      private boolean transition = false;
+      // array of ints used to compare if a node
+      // uses the fade transition/SequentialTransition
+      private int[] newNums = new int[3];
+      // Animation object
+      private SequentialTransition seq;
+      private static final ArrayList<Circle> circleArray = new ArrayList<>();
 
 
-    /**
-     * Call this method if the Fade Transition is needed for this build iteration of the tree.
-     *  Call setTransition(boolean transition) to set it to true before calling this method.
-     * @param newNums The wrong nums for this iteration
-     */
-    protected void displayTree( int[] newNums)
-    {
+      /**
+       * default constructor
+       */
+      public AVLTreePane() {
+            // blank
+      }
 
-        int log2 = (int) Math.ceil( Math.log(16) * 2 );
-        int wd = log2 * 100;
-        this.transition = true;
+      /**
+       * sets the message used to display in the AVL-TreePane
+       *
+       * @param msg
+       */
+      protected void setMessage(String msg) {
+            getChildren().add(new Text(20, 20, msg));
+      }
 
-        this.newNums = newNums;
-        seq = new SequentialTransition();
+      public void setHighlighted(FlashCardMM fc) {
 
-        FlashMonkeyMain.sceneTree.getWindow().setWidth(wd + 100);
-        FlashMonkeyMain.sceneTree.getWindow().setHeight(wd / 2);
-        this.setHeight(wd + 200);
-        this.getChildren().clear();
-        
-        
-        if (FMTWalker.getInstance().getData() != null)
-        {
-            displayTree( FMTWalker.getInstance().getRoot(), wd / 2, vGap, wd / 4);
-            seq.play();
-        }
-    }
+            this.highlighted = fc.getANumber();
+      }
+
+      public void clearHighlighted() {
+            this.highlighted = Integer.MAX_VALUE;
+      }
 
 
-    /**
-     * Call this method if transition is not needed for this build of the tree.
-     */
-    public void displayTree() {
-        int log2 = (int) Math.ceil( Math.log(FMTWalker.getCount()) * 2 );
-        this.transition = false;
+      /**
+       * Call this method if the Fade Transition is needed for this build iteration of the tree.
+       * Call setTransition(boolean transition) to set it to true before calling this method.
+       *
+       * @param newNums The wrong nums for this iteration
+       */
+      protected void displayTree(int[] newNums) {
 
-        int wd = (log2 * 100) + 200;
+            int log2 = (int) Math.ceil(Math.log(16) * 2);
+            int wd = log2 * 100;
+            this.transition = true;
 
-        FlashMonkeyMain.sceneTree.getWindow().setWidth(wd);
-        FlashMonkeyMain.sceneTree.getWindow().setHeight(wd / 2.5 + 50);
-        this.setHeight(wd);
-        this.getChildren().clear();
+            this.newNums = newNums;
+            seq = new SequentialTransition();
 
-        if (FMTWalker.getInstance().getData() != null) {
-            displayTree( FMTWalker.getInstance().getRoot(), wd / 2, vGap, wd / 4);
-        }
-    }
+            FlashMonkeyMain.sceneTree.getWindow().setWidth(wd + 100);
+            FlashMonkeyMain.sceneTree.getWindow().setHeight(wd / 2);
+            this.setHeight(wd + 200);
+            this.getChildren().clear();
 
 
-    private Circle circle;
-    private double prevX = 0;
-    private double prevY = 0;
-    /**
-     * Adds the node in the parameter to the display tree.
-     * @param node
-     * @param x
-     * @param y
-     * @param hGap
-     */
-    private void displayTree(FMTWalker.Node node, double x, double y, double hGap) {
-        /**   attempting to create a single entity for the line and the circle. **/
-        // Draw line from parent to left node
-        if (node.left != null) {
-            int currentNum = ((FlashCardMM) node.left.getData()).getCNumber();
-
-            // If transition is true and currentNum matches one of newWrongNums[i]
-            if (transition && (currentNum == newNums[0] || currentNum == newNums[1] || currentNum == newNums[2]))
-            {
-                // do nothing
-            } else {
-                Line l = new Line(x - hGap, y + vGap, x, y);
-                l.setStroke(Color.web("#818181"));
-                getChildren().add(l);
+            if (FMTWalker.getInstance().getData() != null) {
+                  displayTree(FMTWalker.getInstance().getRoot(), wd / 2, vGap, wd / 4);
+                  seq.play();
             }
+      }
 
-            prevX = x;
-            prevY = y;
-            displayTree(node.left, x - hGap, y + vGap, hGap / 2);
-        }
-        // Draw line from parent to right node
-        if (node.right != null) {
-            int currentNum = ((FlashCardMM) node.right.getData()).getCNumber();
-            // If transition is true and currentNum matches one of newWrongNums[i]
-            if (transition && (currentNum == newNums[0] || currentNum == newNums[1] || currentNum == newNums[2]))
-            {
-                // do nothing
-            } else {
 
-                Line r = new Line(x + hGap, y + vGap, x, y);
-                r.setStroke(Color.web("#818181"));
-                getChildren().add(r);
+      /**
+       * Call this method if transition is not needed for this build of the tree.
+       */
+      public void displayTree() {
+            int log2 = (int) Math.ceil(Math.log(FMTWalker.getCount()) * 2);
+            this.transition = false;
+
+            int wd = (log2 * 100) + 200;
+
+            FlashMonkeyMain.sceneTree.getWindow().setWidth(wd);
+            FlashMonkeyMain.sceneTree.getWindow().setHeight(wd / 2.5 + 50);
+            this.setHeight(wd);
+            this.getChildren().clear();
+
+            if (FMTWalker.getInstance().getData() != null) {
+                  displayTree(FMTWalker.getInstance().getRoot(), wd / 2, vGap, wd / 4);
             }
+      }
 
-            prevX = x;
-            prevY = y;
-            displayTree(node.right, x + hGap, y + vGap, hGap / 2);
-        }
-        // If node is selected make it larger and set
-        // a larger stroke width
-        if( node == FMTWalker.getCurrentNode()) {
-            circle = new Circle(x, y, SELECTED);
-            circle.setStrokeWidth(2);
-        }
-        else if(((FlashCardMM) node.getData()).getANumber() == highlighted) {
-            circle = new Circle(x, y, UNSELECTED);
-            circle.setStrokeWidth(2);
-            circle.setStroke(Color.web("#9276AC"));
-            //circle.setFill(Color.web("#8146B6"));
 
-            ScaleTransition st = new ScaleTransition(Duration.millis(1000), circle);
-            st.setByX(.5);
-            st.setByY(.5);
-            st.setCycleCount(Animation.INDEFINITE);
-            st.setAutoReverse(true);
+      private Circle circle;
+      private double prevX = 0;
+      private double prevY = 0;
 
-            st.play();
-        }
-        // If node is not selected make it normal size
-        else {
-            circle = new Circle(x, y, UNSELECTED);
-            circle.setStrokeWidth(2);
-        }
+      /**
+       * Adds the node in the parameter to the display tree.
+       *
+       * @param node
+       * @param x
+       * @param y
+       * @param hGap
+       */
+      private void displayTree(final FMTWalker.Node node, double x, double y, double hGap) {
+            /**   attempting to create a single entity for the line and the circle. **/
+            // Draw line from parent to left node
+            final FMTree.Node root = node;
 
-        circle = createCircle(circle, node);
-    
-        String str = "";
-        Text text1;
-        if (((FlashCardMM)node.getData()).getQType() == 't' && ((FlashCardMM)node.getData()).getQText().isEmpty()) {
-            str = " ! \n" + Integer.toString(((FlashCardMM)node.getData()).getANumber() + 1);
-            
-            text1 = new Text(x - (str.length() ), y - 4, str);
-            //text1.setStyle("-fx-text-fill: ");
-            ScaleTransition st = new ScaleTransition(Duration.millis(1500), circle);
-            st.setByX(.25);
-            st.setByY(.25);
-            st.setCycleCount(Animation.INDEFINITE);
-            st.setAutoReverse(true);
-    
-            st.play();
-        } else {
-            str = Integer.toString(((FlashCardMM)node.getData()).getANumber() + 1);
-            text1 = new Text(x - (str.length() * 7.5 / 2), y + 4, str);
-        }
-        
+            if (root.left != null) {
+                  int currentNum = ((FlashCardMM) root.left.getData()).getCNumber();
 
-        // Fade in nodes. The nodes that are added to the tree after the EncryptedUser.EncryptedUser
-        // has answered a question incorrectly.
-        if( transition ) {
-            int currentNum = ((FlashCardMM) node.getData()).getCNumber();
+                  // If transition is true and currentNum matches one of newWrongNums[i]
+                  if (transition && (currentNum == newNums[0] || currentNum == newNums[1] || currentNum == newNums[2])) {
+                        // do nothing
+                  } else {
+                        Line l = new Line(x - hGap, y + vGap, x, y);
+                        l.setStroke(Color.web("#818181"));
+                        getChildren().add(l);
+                  }
 
-            if (currentNum % 10 != 0) {
-                // If this node is one of the two/three wrong nodes from this iteration
-                if (currentNum == newNums[0] || currentNum == newNums[1] || currentNum == newNums[2]) {
-                    Shape s = circleLine(x, y, prevX, prevY, node);
-                    FadeTransition ft = new FadeTransition(new Duration(250), s);
-                    ft.setDelay(new Duration(100));
-                    ft.setFromValue(0.0);
-                    ft.setToValue(1.0);
-                    ft.setCycleCount(1);
-                    ft.setAutoReverse(false);
-                    // Add text last and separately
-                    Text text = new Text(x - 4, y + 4, str);
-                    getChildren().addAll(s, text);
-
-                    seq.getChildren().add(ft);
-                }
-                else {
-                    getChildren().addAll(circle, text1);
-                }
+                  prevX = x;
+                  prevY = y;
+                  displayTree(root.left, x - hGap, y + vGap, hGap / 2);
             }
+            // Draw line from parent to right node
+            if (root.right != null) {
+                  int currentNum = ((FlashCardMM) root.right.getData()).getCNumber();
+                  // If transition is true and currentNum matches one of newWrongNums[i]
+                  if (transition && (currentNum == newNums[0] || currentNum == newNums[1] || currentNum == newNums[2])) {
+                        // do nothing
+                  } else {
+
+                        Line r = new Line(x + hGap, y + vGap, x, y);
+                        r.setStroke(Color.web("#818181"));
+                        getChildren().add(r);
+                  }
+
+                  prevX = x;
+                  prevY = y;
+                  displayTree(root.right, x + hGap, y + vGap, hGap / 2);
+            }
+            // If node is selected make it larger and set
+            // a larger stroke width
+            if (root == FMTWalker.getCurrentNode()) {
+                  circle = new Circle(x, y, SELECTED);
+                  circle.setStrokeWidth(2);
+            } else if (((FlashCardMM) root.getData()).getANumber() == highlighted) {
+                  circle = new Circle(x, y, UNSELECTED);
+                  //circleArray.add(circle);
+                  circle.setStrokeWidth(2);
+                  circle.setStroke(Color.web("#9276AC"));
+                  //circle.setFill(Color.web("#8146B6"));
+
+                  ScaleTransition st = new ScaleTransition(Duration.millis(1000), circle);
+                  st.setByX(.5);
+                  st.setByY(.5);
+                  st.setCycleCount(Animation.INDEFINITE);
+                  st.setAutoReverse(true);
+
+                  st.play();
+            }
+            // If node is not selected make it normal size
             else {
-                 getChildren().addAll(circle, text1);
+                  circle = new Circle(x, y, UNSELECTED);
+                  circle.setStrokeWidth(2);
+                  //circleArray.add(circle);
             }
-        }
-        else {
-            getChildren().addAll(circle, text1);
-        }
-    }
+
+            circle = createCircle(circle, root);
+
+            String str = "";
+            Text text1;
+            if (((FlashCardMM) root.getData()).getQType() == 't' && ((FlashCardMM) root.getData()).getQText().isEmpty()) {
+                  str = " ! \n" + (((FlashCardMM) root.getData()).getANumber() + 1);
+
+                  text1 = new Text(x - (str.length()), y - 4, str);
+                  //text1.setStyle("-fx-text-fill: ");
+                  ScaleTransition st = new ScaleTransition(Duration.millis(1500), circle);
+                  st.setByX(.25);
+                  st.setByY(.25);
+                  st.setCycleCount(Animation.INDEFINITE);
+                  st.setAutoReverse(true);
+
+                  st.play();
+            } else {
+                  str = Integer.toString(((FlashCardMM) root.getData()).getANumber() + 1);
+                  text1 = new Text(x - (str.length() * 7.5 / 2), y + 4, str);
+            }
 
 
-    /**
-     * Creates interactive circles displayed in the AVLTreePane.
-     * @param node
-     * @return
-     */
-    private Circle createCircle(Circle circle, FMTree.Node node)
-    {
-        
-        LOGGER.debug("CreateCircle Called");
-        
-        circle.setOnMouseEntered((MouseEvent event) ->
-        {
+            // Fade in nodes. The nodes that are added to the tree after the EncryptedUser.EncryptedUser
+            // has answered a question incorrectly.
+            if (transition) {
+                  int currentNum = ((FlashCardMM) root.getData()).getCNumber();
+
+                  if (currentNum % 10 != 0) {
+                        // If this node is one of the two/three wrong nodes from this iteration
+                        if (currentNum == newNums[0] || currentNum == newNums[1] || currentNum == newNums[2]) {
+                              Shape s = circleLine(x, y, prevX, prevY, root);
+                              FadeTransition ft = new FadeTransition(new Duration(250), s);
+                              ft.setDelay(new Duration(100));
+                              ft.setFromValue(0.0);
+                              ft.setToValue(1.0);
+                              ft.setCycleCount(1);
+                              ft.setAutoReverse(false);
+                              // Add text last and separately
+                              Text text = new Text(x - 4, y + 4, str);
+                              getChildren().addAll(s, text);
+
+                              seq.getChildren().add(ft);
+                        } else {
+                              getChildren().addAll(circle, text1);
+                        }
+                  } else {
+                        getChildren().addAll(circle, text1);
+                  }
+            } else {
+                  getChildren().addAll(circle, text1);
+            }
+      }
+
+
+      /**
+       * Creates interactive circles displayed in the AVLTreePane.
+       *
+       * @param node
+       * @return
+       */
+      private Circle createCircle(Circle circle, FMTree.Node node) {
+            LOGGER.debug("CreateCircle Called");
+            circleArray.add(circle);
+
+            circle.setOnMouseEntered((MouseEvent event) ->
+            {
+                  FlashCardMM currentCard = (FlashCardMM) node.getData();
+
+                  String text = currentCard.getQText();
+                  Tooltip qTip = new Tooltip();
+                  qTip.setPrefSize(200, 45);
+                  qTip.setContentDisplay(ContentDisplay.RIGHT);
+
+                  String[] imagePaths = currentCard.getQFiles();
+                  char c = currentCard.getQType();
+
+                  Image image = null;
+                  if (c == 'c' || c == 'C') {
+                        image = new Image("File:" + DirectoryMgr.getMediaPath('C') + imagePaths[0]);
+                        ImageView iView = new ImageView(image);
+                        iView.setPreserveRatio(true);
+                        iView.setFitHeight(40);
+                        iView.setSmooth(true);
+                        qTip.setGraphic(iView);
+                        // Video or Audio
+                  } else if (c == 'm' || c == 'M') {
+                        Image playImg = new Image("File:src/image/vidCamera.png");
+                        ImageView iView = new ImageView(playImg);
+                        iView.setSmooth(true);
+                        iView.setFitHeight(40);
+                        iView.setPreserveRatio(true);
+                        String mediaPathStr = DirectoryMgr.getMediaPath('M') + imagePaths[0];
+                        File file = new File(mediaPathStr);
+                        if (file.exists()) {
+                              Media media = new Media(file.toURI().toString());
+                              MediaPlayer mediaP = new MediaPlayer(media);
+                              MediaView mView = new MediaView(mediaP);
+                              mView.setFitHeight(40);
+                              mView.setPreserveRatio(true);
+                              mView.setSmooth(true);
+                              StackPane pane = new StackPane(mView, iView);
+                              pane.setAlignment(Pos.CENTER);
+
+                              qTip.setGraphic(pane);
+                        } else {
+                              LOGGER.warn("No media File on click! I did nothing.");
+                        }
+                  }
+
+                  if (!text.isEmpty()) {
+                        qTip.setText(text);
+                  } else {
+                        qTip.setText("This flashcard has no content");
+                  }
+                  qTip.setWrapText(true);
+                  qTip.setTextOverrun(OverrunStyle.ELLIPSIS);
+                  Tooltip.install(circle, qTip);
+            });
+            // Actions on mouse click
+            circle.setOnMouseClicked((MouseEvent event) -> {
+                  if ( FlashMonkeyMain.isInEditorMode() ) {
+                        this.creatorFlashTreeOnClick(node);
+                  } else {
+                        this.readFlashTreeOnClick( node);
+                  }
+            }); //   *** END SET ON MOUSE CLICK ***
+
+            circle.setFill(fillColor(node));
+            circle.setStroke(lineColor(node));
+
+            return circle;
+      }
+
+      /**
+       * Action for AVLTreePane on click when in CreateFlash mode
+       * @param node
+       */
+      private void creatorFlashTreeOnClick( FMTree.Node node) {
+            CreateFlash cfp = CreateFlash.getInstance();
+            LOGGER.debug("currentCard: \n{}",   (FlashCardMM) node.getData());
+
+            boolean moveOK = cfp.cardOnExitActions();
+            if ( moveOK ) {
+                  FMTWalker.setCurrentNode(node);
+                  // Display the tree
+                  displayTree();
+
+                  FlashCardMM currentCard = (FlashCardMM) node.getData();
+
+                  // RESET THE SECTIONS
+                  //CreateFlash.getInstance().resetSectionEditors();
+                  //CreateFlash.getInstance().getEditorU().resetSection();
+
+                  // SET THE SECTIONS TO THE CURRENT CARDS DATA
+                  CreateFlash.getInstance().setListIdx(currentCard.getANumber());
+                  CreateFlash.getInstance().setSectionEditors(currentCard);
+            }
+            // do nothing. Should be handled by popup
+      }
+
+
+      /**
+       * Action for AVLTreePane on  click when in ReadFlash mode.
+       * @param node
+       */
+      private void readFlashTreeOnClick( FMTree.Node node) {
+            ReadFlash rf = ReadFlash.getInstance();
+            FlashCardMM oldCC = (FlashCardMM) FMTWalker.getInstance().getData();
+            int oldNum = oldCC.getCNumber();
+            FMTWalker.setCurrentNode(node);
+            // Display the tree
+            displayTree();
+            FlashCardMM currentCard = (FlashCardMM) node.getData();
+            GenericTestType test = TestList.selectTest(currentCard.getTestType());
+            ReadFlash.ansQButtonSet(currentCard.getIsRight(), test);
+            rf.buttonDisplay(FMTWalker.getCurrentNode());
+            ReadFlash.rpCenter.getChildren().clear();
+            if (rf.getMode() == 't') {
+                  ReadFlash.rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
+            } else {
+                  ReadFlash.rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
+            }
+            /// create transitions based on greater or less than
+            /// previous card.
+            if (oldNum < currentCard.getCNumber()) {
+                  FMTransition.getQRight().play();
+            } else {
+                  FMTransition.getQLeft().play();
+            }
+            if (FMTransition.getAWaitTop() != null) {
+                  FMTransition.getAWaitTop().play();
+            }
+      }
+
+
+
+      /**
+       * Sets the color of the line according to past history of the card.
+       * Compares numRight with numSeen or in some cases with score.
+       *
+       * @param node
+       * @return
+       */
+      private Color lineColor(FMTWalker.Node node) {
+            FlashCardMM currentCard = (FlashCardMM) node.getData();
+            int numSeen = currentCard.getNumSeen();
+            int numRt = currentCard.getNumRight();
+
+            // node is empty
+            if (currentCard.getQType() == 't' && currentCard.getQText().isEmpty()) {
+                  return Color.web(UIColors.HIGHLIGHT_YELLOW);
+            }
+            if (node == FMTWalker.getInstance().getCurrentNode()) // node currently viewed.
+            {
+                  return Color.web("#039ED3"); // blue
+            }
+            if (numSeen == 0) {
+                  return Color.web(UIColors.FM_WHITE);
+            }
+            if (numRt == numSeen) // answers are correct more than not
+            {
+                  return Color.web("#3AFF66"); // FM green  #188A07
+            }
+            if (numRt < numSeen)  // rarely answers correctly
+            {
+                  return Color.web("#D80519"); // FM dark red #8D060A
+            } else  // question is neither good nore bad.
+            {
+                  return Color.web("#747474"); // grey
+            }
+      }
+
+      /**
+       * Sets the color of the fill according to this sessions status
+       *
+       * @param node
+       * @return Returns White if not seen, red if incorrect, and green if correct.
+       */
+      private Color fillColor(FMTWalker.Node node) {
             FlashCardMM currentCard = (FlashCardMM) node.getData();
 
-            String text = currentCard.getQText();
-            Tooltip qTip = new Tooltip();
-            qTip.setPrefSize(200, 45);
-            qTip.setContentDisplay(ContentDisplay.RIGHT);
+            LOGGER.debug("fillColor: is isRight() negitive for card/node <{}>, <{}> ", currentCard.getCNumber(), currentCard.getIsRight() < 0);
 
-            String[] imagePaths = currentCard.getQFiles();
-            char c = currentCard.getQType();
-
-            Image image = null;
-            if (c == 'c' || c == 'C') {
-                image = new Image("File:" + DirectoryMgr.getMediaPath('C') + imagePaths[0]);
-                ImageView iView = new ImageView(image);
-                iView.setPreserveRatio(true);
-                iView.setFitHeight(40);
-                iView.setSmooth(true);
-                qTip.setGraphic(iView);
-            // Video or Audio
-            }
-            else if (c == 'm' || c == 'M') {
-                Image playImg = new Image("File:src/image/vidCamera.png");
-                ImageView iView = new ImageView(playImg);
-                iView.setSmooth(true);
-                iView.setFitHeight(40);
-                iView.setPreserveRatio(true);
-                String mediaPathStr = DirectoryMgr.getMediaPath('M') + imagePaths[0];
-                File file = new File(mediaPathStr);
-                if(file.exists()) {
-                    Media media = new Media(file.toURI().toString());
-                    MediaPlayer mediaP = new MediaPlayer(media);
-                    MediaView mView = new MediaView(mediaP);
-                    mView.setFitHeight(40);
-                    mView.setPreserveRatio(true);
-                    mView.setSmooth(true);
-                    StackPane pane = new StackPane(mView, iView);
-                    pane.setAlignment(Pos.CENTER);
-    
-                    qTip.setGraphic(pane);
-                } else {
-                    LOGGER.warn("No media File on click! I did nothing.");
-                }
-            }
-
-            if( ! text.isEmpty()) {
-                qTip.setText(text);
-            } else {
-                qTip.setText("This flashcard has no content");
-            }
-            qTip.setWrapText(true);
-            qTip.setTextOverrun(OverrunStyle.ELLIPSIS);
-            Tooltip.install(circle, qTip);
-        });
-
-        circle.setOnMouseClicked( (MouseEvent event) -> {
-            CreateFlash cfp = CreateFlash.getInstance();
-            boolean ret = cfp.saveCurrentCardExt();
-            if(cfp.isntStarted() || !ret)
+            if (Float.floatToIntBits(currentCard.getIsRight()) >>> 32 == 1) // Optimized to check the MSB, if it is 1 it is negitive
             {
-                ReadFlash rf = ReadFlash.getInstance();
-                FlashCardMM oldCC = (FlashCardMM) FMTWalker.getInstance().getData();
-                int oldNum = oldCC.getCNumber();
-                FMTWalker.setCurrentNode(node);
-    
-                // Display the tree
-                displayTree();
-                FlashCardMM currentCard = (FlashCardMM) node.getData();
-                int newNum = currentCard.getCNumber();
-
-                GenericTestType test = TestList.selectTest(currentCard.getTestType());
-                // If UI is in editor mode sets the card clicked on in the editor
-                if (FlashMonkeyMain.isInEditorMode()) {
-                    CreateFlash.getInstance().getEditorL().resetSection();
-                    CreateFlash.getInstance().getEditorU().resetSection();
-                    CreateFlash.getInstance().setListIdx(currentCard.getANumber());
-                    CreateFlash.getInstance().setUIFields(currentCard);
-                // Else set the UI to the study mode
-                }
-                else {
-                    rf.ansQButtonSet(currentCard.getIsRight(), test);
-                    rf.buttonTreeDisplay(FMTWalker.getCurrentNode());
-                    ReadFlash.rpCenter.getChildren().clear();
-                    if(rf.getMode() == 't') {
-                        ReadFlash.rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
-                    } else {
-                        ReadFlash.rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
-                    }
-                    /// create transitions based on greater or less than
-                    /// previous card.
-                    if(oldNum < currentCard.getCNumber()) {
-                        FMTransition.getQRight().play();
-                        if(FMTransition.getAWaitTop() != null) {
-                            FMTransition.getAWaitTop().play();
-                        }
-                    } else {
-                        FMTransition.getQLeft().play();
-                        if(FMTransition.getAWaitTop() != null) {
-                            FMTransition.getAWaitTop().play();
-                        }
-                    }
-                }
+                  return Color.web("#c0392b"); // FM red #D80519
+            } else if (currentCard.getIsRight() == 1) {
+                  return Color.web("#05D835"); // FM green 188A07
+            } else if (currentCard.getIsRight() == 3) {
+                  return Color.web("#E8E8E8"); // grey RGB 232 232 232
+            } else if (Integer.lowestOneBit(currentCard.getCNumber()) == 1)  // check the least significant bit for 1. It's less than 10
+            {
+                  return Color.web("#D88F05"); // FM Orange #D88F05
+            } else {
+                  return Color.web("#FEFFFE");  // non selected unvisited -FM off white #F6EB79
             }
-            // else
-                // ???? an error is displayed to the user.
+      }
 
-        }); //   *** END SET ON MOUSE CLICK ***
+      /**
+       * Creates a line and circle union. The line starts at the parent circle's XY location
+       * and ends at this node circles center xy. The circle contains the node as a clickable
+       * node.
+       *
+       * @param centerX The location of the circle X position
+       * @param centerY The location of the circle Y position
+       * @param parentX The parent x pos
+       * @param parentY the parent Y pos
+       * @param node    the node for this circle
+       * @return Returns the circle as a Shape
+       */
+      private Shape circleLine(double centerX, double centerY, double parentX, double parentY, FMTree.Node node) {
 
-        circle.setFill(fillColor(node));
-        circle.setStroke(lineColor(node));
+            Line line = new Line(parentX, parentY, centerX, centerY);
 
-        return circle;
-    }
-    
-    /** 
-     * Sets the color of the line according to past history of the card.
-     * Compares numRight with numSeen or in some cases with score. 
-     * @param node
-     * @return 
-     */
-    private Color lineColor(FMTWalker.Node node)
-    {
-        FlashCardMM currentCard = (FlashCardMM) node.getData();
-        int numSeen = currentCard.getNumSeen();
-        int numRt = currentCard.getNumRight();
-    
-        // node is empty
-        if (currentCard.getQType() == 't' && currentCard.getQText().isEmpty()) {
-            return Color.web(UIColors.HIGHLIGHT_YELLOW);
-        }
-        if (node == FMTWalker.getInstance().getCurrentNode()) // node currently viewed.
-        {
-            return Color.web("#039ED3"); // blue
-        }
-        if (numSeen == 0)
-        {
-            return Color.web(UIColors.FM_WHITE);
-        }
-        if (numRt == numSeen ) // answers are correct more than not
-        {
-            return Color.web("#3AFF66"); // FM green  #188A07
-        }
-        if (numRt < numSeen )  // rarely answers correctly
-        {
-            return Color.web("#D80519"); // FM dark red #8D060A
-        }
-        else  // question is neither good nore bad. 
-        {
-            return Color.web("#747474"); // grey
-        }
-    }
-    
-    /**
-     * Sets the color of the fill according to this sessions status
-     * @param node
-     * @return Returns White if not seen, red if incorrect, and green if correct.
-     */
-    private Color fillColor(FMTWalker.Node node)
-    {
-        FlashCardMM currentCard = (FlashCardMM) node.getData();
-    
-        LOGGER.debug("fillColor: is isRight() negitive for card/node <{}>, <{}> ", currentCard.getCNumber(), currentCard.getIsRight() < 0);
-        
-        if( Float.floatToIntBits(currentCard.getIsRight()) >>> 32 == 1) // Optimized to check the MSB, if it is 1 it is negitive
-        {
-            return Color.web("#c0392b"); // FM red #D80519
-        }
-        else if(currentCard.getIsRight() == 1)
-        {
-            return Color.web("#05D835"); // FM green 188A07
-        }
-        else if(currentCard.getIsRight() == 3)
-        {
-            return Color.web("#E8E8E8"); // grey RGB 232 232 232
-        }
-        else if (Integer.lowestOneBit(currentCard.getCNumber()) == 1)  // check the least significant bit for 1. It's less than 10
-        {
-            return Color.web("#D88F05"); // FM Orange #D88F05
-        }
-        else
-        {
-            return Color.web("#FEFFFE");  // non selected unvisited -FM off white #F6EB79
-        }
-    }
+            Circle c = new Circle(centerX, centerY, UNSELECTED);
 
-    /**
-     * Creates a line and circle union. The line starts at the parent circle's XY location
-     * and ends at this node circles center xy. The circle contains the node as a clickable
-     * node.
-     * @param centerX The location of the circle X position
-     * @param centerY The location of the circle Y position
-     * @param parentX The parent x pos
-     * @param parentY the parent Y pos
-     * @param node the node for this circle
-     * @return Returns the circle as a Shape
-     */
-    private Shape circleLine(double centerX, double centerY, double parentX, double parentY, FMTree.Node node) {
+            Shape s = Shape.union(line, c);
 
-        Line line = new Line(parentX, parentY, centerX, centerY);
+            s.setFill(fillColor(node));
+            s.setStroke(lineColor(node));
+            return s;
+      }
 
-        Circle c = new Circle(centerX, centerY, UNSELECTED);
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getCircleXY(int nodeIdx) {
+            //LOGGER.setLevel(Level.DEBUG);
+            LOGGER.debug("circleArray.size: {}, Idx: {}", circleArray.size(), nodeIdx);
+            if (nodeIdx < circleArray.size()) {
+                  Circle c = circleArray.get(nodeIdx);
+                  return new Point2D(c.getCenterX() + 8, c.getCenterY() + 16);
+            }
+            return null;
+      }
 
-        Shape s = Shape.union(line, c);
-
-        s.setFill(fillColor(node));
-        s.setStroke(lineColor(node));
-        return s;
-    }
 }

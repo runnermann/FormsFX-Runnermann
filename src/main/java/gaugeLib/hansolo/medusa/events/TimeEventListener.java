@@ -24,5 +24,5 @@ import java.util.EventListener;
  */
 @FunctionalInterface
 public interface TimeEventListener extends EventListener {
-    void onTimeEvent(final TimeEvent EVENT);
+      void onTimeEvent(final TimeEvent EVENT);
 }

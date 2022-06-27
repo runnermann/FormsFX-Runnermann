@@ -50,7 +50,7 @@ public class SelectDeckTester extends ApplicationTest {
 	@Order(9)
 	public void readingCorrectDeck() throws Exception {
 		
-		bobTheBot.robotSetup();
+		bobTheBot.robotSetup("idk@idk.com","bangBang#01");
 		
 		// click on create button
 		Point2D xy = FlashMonkeyMain.getCreateButtonXY();

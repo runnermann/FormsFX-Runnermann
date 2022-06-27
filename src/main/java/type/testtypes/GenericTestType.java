@@ -20,6 +20,7 @@
 package type.testtypes;
 
 //import flashmonkey.ReadFlash;
+
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import flashmonkey.FlashCardMM;
@@ -42,97 +43,122 @@ import java.util.BitSet;
  * 3. Implement all of the neccessary methods from this interface.
  * You can use a previously finished TestType as a guide.
  *
- *
- *@author Lowell Stadelman
+ * @author Lowell Stadelman
  */
-public interface GenericTestType<A extends GenericTestType>
-{
-    // @todo finish GenericTestType
+public interface GenericTestType<A extends GenericTestType> {
 
-    
-    /**
-     * If this card/test type is disabled
-     */
-    public abstract boolean isDisabled();
-    
-    /**
-     * Returns the Test creator Pane for each test type.
-     * @param flashList
-     * @param q
-     * @param a
-     * @return
-     */
-    public abstract Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane);
+      /**
+       * Call the isChanged() in ReadFlash if the answerButton
+       * has been clicked. Or where appropriate.
+       */
+      void changed();
 
-    /**
-     * Returns the readPane that contains the testType.
-     * @param cc
-     * @param genCard
-     * @param pane The parent pane
-     * @return
-     */
-    public abstract Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane pane);
+      /**
+       * If this card/test type is disabled
+       */
+      boolean isDisabled();
 
-    /**
-     * Each testTypes save action
-     * - Save BitSet testType array
-     * - Save CardLayout
-     * - Section Layouts
-     */
-    public abstract int getTestType();
+      /**
+       * Returns the Test creator Pane for each test type.
+       *
+       * @param flashList
+       * @param q
+       * @param a
+       * @return
+       */
+      Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane);
 
+      /**
+       * Returns the readPane that contains the testType.
+       *
+       * @param cc
+       * @param genCard
+       * @param pane    The parent pane
+       * @return
+       */
+      Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane pane);
 
-    /**
-     * Provides the card layout in a char.
-     * layout: 'S' = single card layout,
-     * 'D' = double horizontal card, and
-     * 'd' = double vertical card
-     * @return
-     */
-    public abstract char getCardLayout();
-
-    public abstract GenericTestType getTest();
-
-    /**
-     * Returns the array of ansButtons, An array
-     * should include the prevAnsButton and nextAnsButton (if they are needed)
-     * and always should include the answerButton. Used
-     * in placement in the south/bottom pane
-     * @return
-     */
-    public abstract Button[] getAnsButtons();
-
-    /**
-     * The ReadFlash class expects this method to return the implementation
-     * from the TestType for its answerButton. An answerButton should provide
-     * the testTypes expected behavior, format changes, when the EncryptedUser
-     * clicks on the AnswerButton. Include correct and incorrect behavior as
-     * a minimum.
-     */
-    public abstract Button getAnsButton();
-
-    public abstract String getName();
-
-    public abstract void ansButtonAction();
-
-    public abstract void prevAnsButtAction();
-
-    public abstract void nextAnsButtAction();
-
-    /**
-     * Called when a new card is created. IE when
-     * a flashCard is added to the flashList. Prepares
-     * or clears the UI as well as any data structures
-     * that should be cleared.
-     */
-    public abstract void reset();
+      /**
+       * Each testTypes save action
+       * - Save BitSet testType array
+       * - Save CardLayout
+       * - Section Layouts
+       */
+      int getTestType();
 
 
+      /**
+       * Provides the card layout in a char.
+       * layout: 'S' = single card layout,
+       * 'D' = double horizontal card, and
+       * 'd' = double vertical card
+       *
+       * @return
+       */
+      char getCardLayout();
 
-    //public abstract void nextQButtonAction();  THESE ARE IN READFLASH not in tests
+      GenericTestType getTest();
 
-    //public abstract char getQLayout();
+      /**
+       * Returns the array of ansButtons, An array
+       * should include the prevAnsButton and nextAnsButton (if they are needed)
+       * and always should include the answerButton. Used
+       * in placement in the south/bottom pane
+       *
+       * @return
+       */
+      Button[] getAnsButtons();
 
-    //public abstract char getALayout();
+      /**
+       * Returns a score. E.G. a note card
+       * does not have an ability to be answered. It is just
+       * viewed. Therefore it wouldn't be scored.
+       */
+      double score();
+
+      /**
+       * Sets the value of score for the implementing class.
+       * Classes that implement this interface shall have a
+       * score. If the class is a scoreless type, then its
+       * score should be set to 0. Operationally set to 2. It is
+       * intended that score is added or subtracted. IE in the
+       * case of a wrong answer, the card is inserted back
+       * into the deck with a different score.
+       *
+       * @param num
+       */
+      void setScore(double num);
+
+      /**
+       * The ReadFlash class expects this method to return the implementation
+       * from the TestType for its answerButton. An answerButton should provide
+       * the testTypes expected behavior, format changes, when the EncryptedUser
+       * clicks on the AnswerButton. Include correct and incorrect behavior as
+       * a minimum.
+       */
+      Button getAnsButton();
+
+      String getName();
+
+      void ansButtonAction();
+
+      void prevAnsButtAction();
+
+      void nextAnsButtAction();
+
+      /**
+       * Called when a new card is created. IE when
+       * a flashCard is added to the flashList. Prepares
+       * or clears the UI as well as any data structures
+       * that should be cleared.
+       */
+      void reset();
+
+
+      //public abstract void nextQButtonAction();  THESE ARE IN READFLASH not in tests
+
+      //public abstract char getQLayout();
+
+      //public abstract char getALayout();
 
 }

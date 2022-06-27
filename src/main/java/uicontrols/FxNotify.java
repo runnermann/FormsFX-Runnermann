@@ -1,5 +1,6 @@
 package uicontrols;
 
+import fmannotations.FMAnnotations;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
@@ -10,7 +11,7 @@ import javafx.scene.Node;
 import javafx.stage.Stage;
 
 /**
- * Popup message.
+ * <p>Provides a pop-up message without a button.</p>
  * <pre>
  *     Usage:
  *     String msg = "That didn't work.... Try resetting your password.";
@@ -20,54 +21,70 @@ import javafx.stage.Stage;
  * </pre>
  */
 public class FxNotify {
-	
-	public FxNotify() {
-		/* no args constructor */
-	}
-	
-	public static synchronized void notificationPurple(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
 
-		Node graphic = new ImageView(iconPath);
-		
-		FMNotifications notificationBuilder = FMNotifications.create()
-				.title(title)
-				.text(msg)
-				.graphic(graphic)
-				.hideAfter(Duration.seconds(duration))
-				.position(pos);
-		
-			notificationBuilder.owner(owner);
-			notificationBuilder.purpleStyle();
-			notificationBuilder.show();
-	}
+      public FxNotify() {
+            /* no args constructor */
+      }
 
-	public static synchronized void notificationBlue(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
-		Image img = new Image(iconPath);
-		Node graphic = new ImageView(img);
-		FMNotifications notificationBuilder = FMNotifications.create()
-				.title(title)
-				.text(msg)
-				.graphic(graphic)
-				.hideAfter(Duration.seconds(duration))
-				.position(pos);
+      private static FMNotifications notificationBuilder;
 
-		notificationBuilder.owner(owner);
-		notificationBuilder.blueStyle();
-		notificationBuilder.show();
-	}
+      public static synchronized void notificationWarning(String title, String msg, Pos pos, int duration, String iconPath, Stage owner, int padding) {
+            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
+                  Node graphic = new ImageView(iconPath);
+                  notificationBuilder = FMNotifications.create()
+                      .title(title)
+                      .text(msg)
+                      .graphic(graphic)
+                      .hideAfter(Duration.seconds(duration))
+                      .padding(padding)
+                      .position(pos);
 
-	public static synchronized void notificationDark(String title, String msg, Pos pos, int durationSeconds, String iconPath, Stage owner) {
+                  notificationBuilder.owner(owner);
+                  notificationBuilder.warningStyle();
+                  notificationBuilder.show();
+            }
+      }
 
-		Node graphic = new ImageView(iconPath);
-		FMNotifications notificationBuilder = FMNotifications.create()
-				.title(title)
-				.text(msg)
-				.graphic(graphic)
-				.hideAfter(Duration.seconds(durationSeconds))
-				.position(pos);
+      public static synchronized void notificationBlue(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
+            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
+                  Image img = new Image(iconPath);
+                  Node graphic = new ImageView(img);
+                  notificationBuilder = FMNotifications.create()
+                      .title(title)
+                      .text(msg)
+                      .graphic(graphic)
+                      .hideAfter(Duration.seconds(duration))
+                      .position(pos);
 
-		notificationBuilder.owner(owner);
-		notificationBuilder.darkStyle();
-		notificationBuilder.show();
-	}
+                  notificationBuilder.owner(owner);
+                  notificationBuilder.blueStyle();
+                  notificationBuilder.show();
+            }
+      }
+
+      public static synchronized void notificationDark(String title, String msg, Pos pos, int durationSeconds, String iconPath, Stage owner) {
+            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
+                  Node graphic = new ImageView(iconPath);
+                  notificationBuilder = FMNotifications.create()
+                      .title(title)
+                      .text(msg)
+                      .graphic(graphic)
+                      .hideAfter(Duration.seconds(durationSeconds))
+                      .position(pos);
+
+                  notificationBuilder.owner(owner);
+                  notificationBuilder.darkStyle();
+                  notificationBuilder.show();
+            }
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public static boolean notificationIsShowing() {
+            return notificationBuilder != null && notificationBuilder.isShowing();
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public static boolean builderIsNull() {
+            return null == notificationBuilder;
+      }
 }

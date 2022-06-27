@@ -29,14 +29,15 @@ public class LoginTesterUtility {
 	}
 	
 	public static void logIn(String name, String password, FxRobot robot) {
-		
+
 		robot.clickOn(delta_X + nameX, delta_Y + nameY);
+		//robot.clickOn(delta_X + nameX, delta_Y + nameY);
 		robot.write(name);
-		robot.sleep(200);
+		robot.sleep(20);
 		
 		robot.clickOn(delta_X + pwX, delta_Y + pwY);
 		robot.write(password);
-		robot.sleep(200);
+		robot.sleep(20);
 		
 		robot.clickOn(delta_X + submitBtnX, delta_Y + submitBntY);
 		

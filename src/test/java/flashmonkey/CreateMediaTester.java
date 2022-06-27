@@ -1,12 +1,12 @@
 package flashmonkey;
 
-import authcrypt.UserData;
 import core.ImageUtility;
+import core.RobotUtility;
 import core.ShapeUtility;
+import fileops.utility.Utility;
 import type.draw.shapes.FMRectangle;
 import type.draw.shapes.GenericShape;
 import fileops.DirectoryMgr;
-import fileops.FileNaming;
 import fileops.FileOpsUtil;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -32,21 +32,20 @@ import javafx.stage.StageStyle;
 import org.junit.Ignore;
 import org.junit.jupiter.api.*;
 import org.slf4j.LoggerFactory;
-import org.testfx.api.FxRobot;
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationTest;
-import org.testfx.robot.impl.SleepRobotImpl;
 import type.celleditors.DrawTools;
 import type.celleditors.SnapShot;
-import type.celltypes.CanvasCell;
 import type.celltypes.MediaPopUp;
 import type.testtypes.QandA;
 import type.tools.imagery.Fit;
+import uicontrols.UIColors;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -106,45 +105,26 @@ public class CreateMediaTester extends ApplicationTest {
     private int delta_X = 0;
     private int delta_Y = 10;
     private Canvas originalCanvas;
-
-    FxRobot robot;// = new FxRobot();
-    SleepRobotImpl sleep = new SleepRobotImpl();
-
-    String strPath = "../flashMonkeyFile/TestingDeck.dec";
-    // image paths
-    String imgPath = "src/resources/testing/TestImage.png";
-    Path filePath = Paths.get(strPath);
+    // The FXRobot
+    RobotUtility robot = new RobotUtility();
     // for the background stage
     private Toolkit tk = Toolkit.getDefaultToolkit();
     private Dimension d = tk.getScreenSize();
     private int screenWt = 0;//d.width;
     private int screenHt = 0;//d.height;
-
-    //Image originalImage;
-    //Image image2;
-    Pane returnPane;
-    Pane rightPane;
-    CanvasCell cCell;
-    Scene scene;
-    Stage stage;
- //   CreateFlashPane cfp;
-    CreateCards create;
+    private CreateCards create;
 
     // The image from the snapshot in original form.
     BufferedImage buIm;
     Point2D paneXY;
-    boolean bool;// = false;
-    //boolean isTrue;
+    boolean bool;
     protected static SnapshotParameters snapParams = new SnapshotParameters();
     // used to check shapes on the screen.
     //java.awt.Color awtColor;
 
-
-
     /* *** Create cards with shapes *** */
     // create an array of shapes that will exist in each
     // position.
-
     // question shapes
     Rectangle rect1 = new Rectangle(20 , 50,40 + 5, 60 - 5);
     Rectangle rect2 = new Rectangle(300 , 50 ,40, 60);
@@ -171,74 +151,13 @@ public class CreateMediaTester extends ApplicationTest {
 
     // The Question or Upper shapes array
     Shape[][] shapesDblAry = {{rect1,circle1}, {rect2, circle2}, {rect3, circle3}, {rect4, circle4}};
-        //this.shapesDblAry = shapesDblAry;
 
     // The Answer or lower shapes array
     public Shape[][] revShapesDblAry = {{rect13, circle13}, {rect14, circle14}, {rect15, circle15}, {rect16, circle16}};
-        //this.revShapesDblAry = revShapesDblAry;
 
 
     @Override
     public void start(Stage backgroundStage) {
-
-
-        /** first we create shapes */
-
-
-
-        /** we check that shapes are saved in the correct shapesArray **/
-
-        /** we check that when shapes change in BuildTool, they change in the right pane.
-         *  At the same time **/
-
-        /** Then we check editing.. **/
-
-            // add an image for the rightPaneœ
-
-            // click on the right pane
-
-            // check the popUp for the correct image
-
-            // @test every time... That shapeArray is correct
-
-        /** Testing shapes in RightPane **/
-
-        // add shapes to shapes array
-
-        // check right pane
-
-
-        /** Testing shapes in popUp **/
-
-        // click rightPane
-
-        // check for shapes in popUp
-
-        // check there are still shapes in rPane and they are related. ie
-        // when they are moved in the PopUp pane, they are moved in the
-        // rightPane.
-
-        /** Testing shapes in popUp are Editable **/
-
-            /** change image size **/
-            // click on shape
-
-            // change size of shape
-
-            // save shape
-
-            // check shape is correct size
-            /** change image location **/
-
-
-            /** Delete image **/
-
-
-            /** add a new image **/
-
-
-            /** When **/
-
 
         StackPane pane = new StackPane();
         pane.setStyle("-fx-background-color: TRANSPARENT");
@@ -266,9 +185,7 @@ public class CreateMediaTester extends ApplicationTest {
     //@BeforeAll
     public void setup() throws Exception {
 
-        robot = new FxRobot();
-
-        String strPath = "../flashMonkeyFile/TestingDeck.dat";
+        String strPath = "../flashMonkeyFile/Testing_DO_NOT_DELETE.dec";
         //File file = new File(strPath);
         Path filePath = Paths.get(strPath);
 
@@ -277,23 +194,38 @@ public class CreateMediaTester extends ApplicationTest {
             System.out.println("It does not exist or, IDK where that file is: " + filePath);
         //    System.exit(1);
         }
+
+        // Allow to connect to the internet?
+        Utility.allowConnection(false);
+        removePreviousFile();
+
+        // Log in
+        robot.robotSetup("idk@idk.com","bangBang#01");
         LOGGER.info("file deleted: " + fileBool);
         // Sleep Moved up here for windows
         sleep(100);
         // used to confirm if images are the same.
         bool = false;
 
-        FxToolkit.registerPrimaryStage();
-        FxToolkit.setupApplication(FlashMonkeyMain.class);
-
-        //sleep(100);
         final Stage window = FlashMonkeyMain.getWindow();
-        delta_X = (int) window.getX();// getScegetY();
+        delta_X = (int) window.getX();
         delta_Y = (int) window.getY();
         create = new CreateCards(delta_X, delta_Y);
-        create.removePrevFile(strPath);
 
-        //CreateFlashPane cfp = CreateFlashPane.getInstance();
+    }
+
+    public boolean removePreviousFile() throws IOException {
+        // File name specific to IDK@IDK.com
+        File dir = new File(DirectoryMgr.getWorkingDirectory() + "/FlashMonkeyData/906b1830bb8c5bcbe8a90541d5a8c30d/decks" );
+        File file = new File(dir + "/906b1830bb8c5bcbe8a90541d5a8c30d_906b1830bb8c5bcbe8a90541d5a8c30d$TestingDeck.dec");
+        LOGGER.debug("deleting directory: {}", dir);
+        if(file.exists())  {
+            LOGGER.debug("directory exists? {} ... deleting", true );
+            file.delete();
+            dir.delete();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -302,7 +234,7 @@ public class CreateMediaTester extends ApplicationTest {
      * @throws Exception
      */
     public void setUpFileExists() throws Exception {
-        robot = new FxRobot();
+        //robot = new FxRobot();
         String strPath = "../flashMonkeyFile/TestingDeck.dat";
         File file = new File(strPath);
         //Path filePath = Paths.get(strPath);
@@ -358,48 +290,37 @@ public class CreateMediaTester extends ApplicationTest {
         //how do we test if we have the correct image?+
 
         CreateFlash cfp = CreateFlash.getInstance();
+        //cfp.createFlashScene();
         setup();
-        sleep(1000);
+        sleep(200);
         create.writeDeckNameHelper();
-        sleep(500);
+        //sleep(1000);
 
+        // Set CARD TYPE to Multi-Choice. Multi-choice is the top
+        // choice in the CardType drpdown button. The DropDown
+        // button should be opened.
+        sleep(500);
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(500);
 
 
         // Type on the screen
-        Point2D xyUType = cfp.getEditorU().getTextAreaXY();
+        Point2D xyUType = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
         robot.clickOn(xyUType);
         robot.write("Hello, I’m Flash.");
+        sleep(100);
 
-        // Drag and drop image of FlashMonkey
-        // bring finder on top of bg pane
-        // click on image on desktop
-    /*
-        robot.moveTo(370, 800);
-        sleep(500);
-        robot.drag(MouseButton.PRIMARY);
-        //    robot.drag(200,300);
-        robot.moveTo(xyUType);
-        sleep(500);
-        robot.release(MouseButton.PRIMARY);
-        sleep(1000);
-    */
-    /*    robot.clickOn(xyUType);
-        robot.write("\n" +
-                "... Watch me take notes. ");
-    */
-        // Clear the question text
-        Point2D xy = cfp.getEditorU().getClearTextBtnXY();
-        robot.clickOn(xy);
-        sleep(500);
+        xyUType = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(xyUType);
+        robot.write("Taking a snapshot and creating two shapes");
+        sleep(50);
 
         //  *** Create snapshot ***
 
-
         double diff_x = 200;
         double diff_y = 200;
-
-        // get snapshotbutton minxy
-        xy = cfp.getEditorL().getSnapShotBtnXY();
+        Point2D xy = cfp.getEditor_L_ForTestingOnly().getSnapShotBtnXY();
         robot.clickOn(xy);
         sleep(500);
 
@@ -411,12 +332,12 @@ public class CreateMediaTester extends ApplicationTest {
         robot.release(MouseButton.PRIMARY);
         sleep(500);
 
-        /** At this point, should test the image in the right pane **/
-
-
-
-        // create 1st shape, a triangle
+        // Register the stage so we can
+        // test when the DrawTools window
+        // is closed.
         DrawTools dt = DrawTools.getInstance();
+        FxToolkit.toolkitContext().setRegisteredStage(dt.getDrawToolWindow());
+
         // set the originalCanvas
         this.originalCanvas = dt.getCanvas();
         // get triangle button xy location
@@ -432,16 +353,15 @@ public class CreateMediaTester extends ApplicationTest {
         robot.release(MouseButton.PRIMARY);
         sleep(200);
 
-        /** At this point, should test the image in the right pane **/
+        // At this point, should test the image in the right pane
         buIm = SnapShot.getInstance().getImgBuffer();
         Image imageL = SwingFXUtils.toFXImage(buIm, null);
-        ImageView rPaneiView = (ImageView) cfp.getEditorL().getRightPane().getChildren().get(0);
+        ImageView rPaneiView = (ImageView) cfp.getEditor_L_ForTestingOnly().getRightPane().getChildren().get(0);
 
         assertEquals("Image in the right pane does not look correct. ", true, ImageUtility.imagesLookTheSame(" lower pane ", imageL, rPaneiView.getImage()) );
 
         // create a rectangle & check it is there
         // click on rectangleButton
-
         xy = dt.getRectBtnXY();
         robot.clickOn(xy);
 
@@ -451,15 +371,13 @@ public class CreateMediaTester extends ApplicationTest {
         robot.moveTo(150 + diff_x, 150 + diff_y);
         // Make sure rectangle is showing while it is built
 
-            // Print the refernce for the canvas
+        // Print the refernce for the canvas
         dt.getOverlayTestCanvas();
 
         System.out.println("Printing classes to visually verify canvas reference");
         for(int i = 0; i < dt.getOverlayPane().getChildren().size(); i++) {
             System.out.println(dt.getOverlayPane().getChildren().get(i).getClass().getName() + " " + dt.getOverlayPane().getChildren().get(i) );
         }
-
-
 
         for(Node p : dt.getOverlayPane().getChildren()) {
             System.out.println("panes in overlayPane " + p.getClass().getName());
@@ -499,28 +417,29 @@ public class CreateMediaTester extends ApplicationTest {
         sleep(300);
 
         // Save the shapes
-    //    xy = dt.getSaveBtnXY();
-    //    robot.clickOn(xy);
-    //    sleep(250);
+//        xy = dt.getSaveBtnXY();
+//        robot.clickOn(xy);
+//        sleep(250);
 
-        // now exit shapes
-        xy = dt.getExitBtnXY();
-        robot.clickOn(xy);
-        sleep(300);
+        // now exit shapes. Shapes should
+        // save on exit
+        //dt.getDrawToolWindow();
+        FxToolkit.hideStage();
+
 
         /**
          * Check Right Pane for image, editing shapes,
          * adding new shapes, and removing shapes.
          */
 
-        // CLICK ON RIGHT PANE
+        // CLICK ON MAIN STAGE/WINDOW RIGHT PANE
         // popUp should be created with editable
         // shapes and popUp DrawTools
-        xy = cfp.getEditorL().getRightPaneXY();
+        xy = cfp.getEditor_L_ForTestingOnly().getRightPaneXY();
         robot.moveTo(xy);
         //sleep(2000);
         robot.clickOn(xy);
-        sleep(750);
+        sleep(500);
 
 
         /**  Check if popUp pane contains the correct image **/
@@ -539,30 +458,32 @@ public class CreateMediaTester extends ApplicationTest {
 
 
         //Click on shape in popUpPane and move the top of the rect upwards then check
-        ArrayList<GenericShape> shapeAry = cfp.getEditorL().getArrayOfFMShapes();
+        ArrayList<GenericShape> shapeAry = cfp.getEditor_L_ForTestingOnly().getArrayOfFMShapes();
 
         FMRectangle fmRect = new FMRectangle();
         int num = 0;
         for(GenericShape gs : shapeAry) {
 
-            if(num > 0 && gs.getClass().getName() == "FMRectangle") {
+            if(num > 0 && gs.getClass().getName().endsWith("FMRectangle")) {
                 fmRect = (FMRectangle) gs;
                 System.out.println("found it" + fmRect.toString());
                 break;
             }
-            System.out.println("ShapeAry element class: " + gs.getClass().getName());
+            System.out.println("idx: " + num + ") ShapeAry element class: " + gs.getClass().getName());
             num++;
         }
 
-        if(fmRect.getX() >= 1) {
+        if(fmRect.getWd() >= 10) {
 
             //need to add the panes x & y location to the xy position
             paneXY = dt.getOverlayPaneXY();
 
             xy = new Point2D(fmRect.getX() + paneXY.getX(), fmRect.getY() + paneXY.getY());
             robot.moveTo(xy);
+            sleep(200);
             // should see verticies of rectangle in popUpPane
             robot.clickOn(MouseButton.SECONDARY);
+            sleep(200);
 
             ht1 = fmRect.getHt();
             double x1 = xy.getX() + 15;
@@ -581,14 +502,14 @@ public class CreateMediaTester extends ApplicationTest {
             sleep(1000);
 
             // check if shape is in the right pane and is the right size
-            ArrayList arrayList = cfp.getEditorL().getNodesFmRPane();
+            ArrayList arrayList = cfp.getEditor_L_ForTestingOnly().getNodesFmRPane();
             Rectangle fxRect = new Rectangle();
 
             for(num = 0; num < arrayList.size(); num++) {
 
                 System.out.println("arrayList class name: " + arrayList.get(num).getClass().getName());
 
-                if(num > 1 && arrayList.get(num).getClass().getName() == "javafx.scene.shape.Rectangle") {
+                if(num > 0 && arrayList.get(num).getClass().getName().equals("javafx.scene.shape.Rectangle")) {
                     fxRect = (Rectangle) arrayList.get(num);
                     System.out.println("found it again");
 
@@ -616,10 +537,15 @@ public class CreateMediaTester extends ApplicationTest {
         }
 
 
-        sleep(1000);
+        //sleep(1000);
 
 
         // Add a new rectangle and check right pane
+        // change to a highlight color
+        xy = dt.getHighlightBtnXY();
+        //robot.moveTo(xy);
+        robot.clickOn(xy);
+        sleep(100);
 
         // move to the rectangle button and click on it.
         xy = dt.getRectBtnXY();
@@ -631,26 +557,30 @@ public class CreateMediaTester extends ApplicationTest {
         robot.moveTo(paneXY.getX() + 50, paneXY.getY() + 50);
         robot.drag(MouseButton.PRIMARY);
         robot.moveTo(paneXY.getX() + 150, paneXY.getY() + 150);
+        robot.release(MouseButton.PRIMARY);
+
 
         // Check if new rectangle is showing while being drawn
   //      assertTrue("line 520, overlayCanvas is not the original reference", (originalCanvas == dt.getCanvas()));
         // May fail if background of first pixel is not white
         String msg = "New rectangle does not appear to be being drawn on the canvas";
 //        checkPixColor((int) paneXY.getX() + 50, (int) paneXY.getY() + 50, msg, 221, 0 ,223);
-        ImageUtility.checkPixColor((int) paneXY.getX() + 50, (int) paneXY.getY() + 50, msg, 206, 26 ,207);
+        // Compare with UICOlors.HIGHLIGHT_PINK
 
-        robot.release(MouseButton.PRIMARY);
+        robot.moveTo(paneXY.getX() + 53, (int) paneXY.getY() + 53);
+
+        sleep(3000);
+        ImageUtility.checkPixColor((int) paneXY.getX() + 85, (int) paneXY.getY() + 85, msg, 255, 13 ,255);
 
 
 
         // check right pane for new rectangle
-        Pane rPane = cfp.getEditorL().getRightPane();
+        Pane rPane = cfp.getEditor_L_ForTestingOnly().getRightPane();
         int rPaneSize = rPane.getChildren().size();
 
         //Rectangle fxRect = new Rectangle();
 
         for(num = 0; num < rPaneSize; num++) {
-
             System.out.println("arrayList class name: " + rPane.getChildren().get(num).getClass().getName());
 
             if(num > 3 && rPane.getChildren().get(num).getClass().getName() == "javafx.scene.shape.Rectangle") {
@@ -663,30 +593,28 @@ public class CreateMediaTester extends ApplicationTest {
             //num++;
         }
 
-        Shape s = (Shape) rPane.getChildren().get(num);
-
+        /*Shape s = (Shape) rPane.getChildren().get(num - 1);
 
         System.out.println("New rectangle height: " + ((Rectangle) s).getHeight() );
 
-
         assertTrue("Width in new Rectangle is not correct", 29 >= (int) ((Rectangle) s).getWidth() - 2 );
         assertTrue("Height in new Rectangle is not correct",29 >= (int) ((Rectangle) s).getHeight() - 2 );
-        assertTrue("RightPane does not contain the new Rectangle", rPane.getChildren().get(rPaneSize - 1).getClass().getName().contains("Rectangle"));
-        sleep(1000);
-
+        assertTrue("RightPane does not contain the new Rectangle", rPane.getChildren().get(rPaneSize - 1).getClass().getName().contains("Rectangle"));*/
+        //sleep(1000);
 
         // CLOSE AND RE-OPEN AND CHECK FOR CORRECT SHAPES
 
         // save and close popup and tools.
-    //    xy = dt.getSaveBtnXY();
-    //    robot.clickOn(xy);
-        xy = dt.getExitBtnXY();
-        robot.moveTo(xy);
-        robot.clickOn(xy);
-        sleep(200);
+        dt.getDrawToolWindow();
+//        xy = dt.getSaveBtnXY();
+//        robot.clickOn(xy);
+//        xy = dt.getExitBtnXY();
+//        robot.moveTo(xy);
+//        robot.clickOn(xy);
+//        sleep(200);
 
         // re-open
-        xy = cfp.getEditorL().getRightPaneXY();
+        xy = cfp.getEditor_L_ForTestingOnly().getRightPaneXY();
         robot.moveTo(xy);
         //sleep(2000);
         robot.clickOn(xy);
@@ -738,7 +666,7 @@ public class CreateMediaTester extends ApplicationTest {
         images = create.createNewCardsAndShapesHelper( numCards, shapesDblAry, revShapesDblAry);
 
         CreateFlash cfp = CreateFlash.getInstance();
-        Point2D xy = cfp.getSaveDeckButtonXY();
+        Point2D xy = cfp.getSaveDeckBtnXY();
         robot.clickOn(xy);
 
         /* *** CHECK DECK FOR SHAPES, IMAGES, and TEXT *** */
@@ -906,9 +834,7 @@ public class CreateMediaTester extends ApplicationTest {
 
             // Get the shapes from the popUp canvas
             // and make sure they are there
-            Stage popWin = MediaPopUp.getInstance().testingGetWindow();
-            Scene popScene = popWin.getScene();
-            Pane rootAns = (Pane) popScene.getRoot();
+            Pane rootAns = MediaPopUp.getInstance().testingGetShapePane();;
             foundNode = find.findNodeInPaneGraphStarter( new Pane(), rootAns);
             System.out.println("foundNode is a Pane: " + foundNode.getClass().getName().endsWith("Pane"));
             // Check the popUp for correct question shapes
@@ -966,9 +892,8 @@ public class CreateMediaTester extends ApplicationTest {
 
             // Get the shapes from the popUp canvas
             // and make sure they are there
-            popWin = MediaPopUp.getInstance().testingGetWindow();
-            popScene = popWin.getScene();
-            rootAns = (Pane) popScene.getRoot();
+
+            rootAns = MediaPopUp.getInstance().testingGetShapePane();
             foundNode = find.findNodeInPaneGraphStarter( new Pane(), rootAns);
             System.out.println("foundNode is now a: " + foundNode.getClass().getName().endsWith("Pane"));
             // Checks the popUp for correct answer shapes

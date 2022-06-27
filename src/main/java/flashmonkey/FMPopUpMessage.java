@@ -17,49 +17,51 @@ import java.io.FileInputStream;
 
 /**
  * Singleton popup message class. Only one should run at a time.
- *
+ * <p>
  * Example usage
  * FMPopUpMessage.setPopup(editorU.sectionHBox.getScene().getWindow().getX(),
- *                             editorU.sectionHBox.getScene().getWindow().getY(),
- *                             (int) editorU.tCell.getTextCellVbox().getWidth(),
- *                             (int) editorU.tCell.getTextCellVbox().getHeight(),
- *                             "  Ooops! \n  Please select a test type  ",
- *                             "FlashMonkeyMMedia/src/resources/emojis/flashFaces_sunglasses_60.png",
- *                                     FlashMonkeyMain.getWindow()
- *                         );
+ * editorU.sectionHBox.getScene().getWindow().getY(),
+ * (int) editorU.tCell.getTextCellVbox().getWidth(),
+ * (int) editorU.tCell.getTextCellVbox().getHeight(),
+ * "  Ooops! \n  Please select a test type  ",
+ * "FlashMonkeyMMedia/src/resources/emojis/flashFaces_sunglasses_60.png",
+ * FlashMonkeyMain.getWindow()
+ * );
+ *
  * @author Lowell Stadelman
  */
 public class FMPopUpMessage {
-    
-    private FMPopUpMessage classInstance;
-    
-    private FMPopUpMessage() { /* empty private constructor */}
-    
-    public synchronized FMPopUpMessage getInstance() {
-        if(classInstance == null) {
-            this.classInstance = new FMPopUpMessage();
-        }
-        return classInstance;
-    }
 
-    int millis = 2750;
-    /**
-     * Private constructor
-     * Note that the MediaPopUp class uses the Screen X and Y locations requiring to get the Windows X and Y.
-     * Placement of the Message MediaPopUp is in relation to the Parent Window. Not the Parent Scene or Pane.
-     * @param x The screen X location of the message top left corner, Note not scene or pane but screen.
-     * @param y The screen Y location of the message top left corner
-     * @param w Width of the Pane or Scene message will appear in
-     * @param message The message to be displayed
-     * @param pathString The relitive image/emoji filePath string. Usual height of emoji or image is 60px
-     * @param parentWindow The parent or owner Window. Usually FlashMonkeyMain.getWindow();
-     */
-    private FMPopUpMessage(double x, double y, int w, String message, String pathString, Window parentWindow,int millis)
-    {
-        this.millis = millis;
-        final Label label;
-        final Popup popup;
-        //try {
+      private FMPopUpMessage classInstance;
+
+      private FMPopUpMessage() { /* empty private constructor */}
+
+      public synchronized FMPopUpMessage getInstance() {
+            if (classInstance == null) {
+                  this.classInstance = new FMPopUpMessage();
+            }
+            return classInstance;
+      }
+
+      int millis = 2750;
+
+      /**
+       * Private constructor
+       * Note that the MediaPopUp class uses the Screen X and Y locations requiring to get the Windows X and Y.
+       * Placement of the Message MediaPopUp is in relation to the Parent Window. Not the Parent Scene or Pane.
+       *
+       * @param x            The screen X location of the message top left corner, Note not scene or pane but screen.
+       * @param y            The screen Y location of the message top left corner
+       * @param w            Width of the Pane or Scene message will appear in
+       * @param message      The message to be displayed
+       * @param pathString   The relitive image/emoji filePath string. Usual height of emoji or image is 60px
+       * @param parentWindow The parent or owner Window. Usually FlashMonkeyMain.getWindow();
+       */
+      private FMPopUpMessage(double x, double y, int w, String message, String pathString, Window parentWindow, int millis) {
+            this.millis = millis;
+            final Label label;
+            final Popup popup;
+            //try {
             FileInputStream input;
 
             CornerRadii corners = new CornerRadii(5);
@@ -103,22 +105,23 @@ public class FMPopUpMessage {
             }).start();
             */
 
-    }
+      }
 
-    /**
-     * Setter for Singleton Class
-     * Note that the MediaPopUp class uses the Screen X and Y locations requiring to get the Windows X and Y.
-     * Placement of the Message MediaPopUp is in relation to the Parent Window. Not the Parent Scene or Pane.
-     * @param x The screen X location of the message top left corner, Note not scene or pane but screen.
-     * @param y The screen Y location of the message top left corner
-     * @param w Width of the Pane or Scene message will appear in
-     * @param message The message to be displayed
-     * @param pathString The relitive image/emoji filePath string. Usual height of emoji or image is 60px
-     * @param parentWindow The parent or owner Window. Usually FlashMonkeyMain.getWindow();
-     */
-    public static void setPopup(double x, double y, int w, String message, String pathString, Window parentWindow, int millis) {
+      /**
+       * Setter for Singleton Class
+       * Note that the MediaPopUp class uses the Screen X and Y locations requiring to get the Windows X and Y.
+       * Placement of the Message MediaPopUp is in relation to the Parent Window. Not the Parent Scene or Pane.
+       *
+       * @param x            The screen X location of the message top left corner, Note not scene or pane but screen.
+       * @param y            The screen Y location of the message top left corner
+       * @param w            Width of the Pane or Scene message will appear in
+       * @param message      The message to be displayed
+       * @param pathString   The relitive image/emoji filePath string. Usual height of emoji or image is 60px
+       * @param parentWindow The parent or owner Window. Usually FlashMonkeyMain.getWindow();
+       */
+      public static void setPopup(double x, double y, int w, String message, String pathString, Window parentWindow, int millis) {
 
-        new FMPopUpMessage(x, y, w, message, pathString, parentWindow, millis);
-    }
+            new FMPopUpMessage(x, y, w, message, pathString, parentWindow, millis);
+      }
 
 }

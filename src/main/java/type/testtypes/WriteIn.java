@@ -1,5 +1,6 @@
 package type.testtypes;
 
+import flashmonkey.ReadFlash;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -10,53 +11,48 @@ import type.celleditors.SectionEditor;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-public class WriteIn implements GenericTestType<WriteIn>
-{
+public class WriteIn extends TestTypeBase implements GenericTestType<WriteIn> {
 
 
-    public WriteIn()
-    {
-        // no args constructor
-    }
-    
-    @Override
-    public boolean isDisabled() {
-        return true;
-    }
+      public WriteIn() {
+            // no args constructor
+      }
+
+      @Override
+      public boolean isDisabled() {
+            return true;
+      }
 
 
-    @Override
-    public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
-    {
-        // Instantiate vBox and "set spacing" !important!!!
-        VBox vBox = new VBox(2);
-        vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
+      @Override
+      public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane) {
+            // Instantiate vBox and "set spacing" !important!!!
+            VBox vBox = new VBox(2);
+            vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
 
-        return vBox;
-    }
+            return vBox;
+      }
 
-    /**
-     * Sets BitSet 8 (= 256) (Write in) to true
-     * All other bits set to 0
-     * Not compatible ith Multi-Choice
-     * @return bitSet
-     */
-    @Override
-    public int getTestType()
-    {
-        // 256
-        return 0b0000000100000000;
-    }
+      /**
+       * Sets BitSet 8 (= 256) (Write in) to true
+       * All other bits set to 0
+       * Not compatible ith Multi-Choice
+       *
+       * @return bitSet
+       */
+      @Override
+      public int getTestType() {
+            // 256
+            return 0b0000000100000000;
+      }
 
-    @Override
-    public char getCardLayout()
-    {
-        return 'D'; // double horizontal
-    }
+      @Override
+      public char getCardLayout() {
+            return 'D'; // double horizontal
+      }
 
-    @Override
-    public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane)
-    {
+      @Override
+      public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
 
 
         /*
@@ -99,50 +95,56 @@ public class WriteIn implements GenericTestType<WriteIn>
         */
 
 
-        return new Pane();
-    }
+            return new Pane();
+      }
 
-    @Override
-    public GenericTestType getTest() { return new AIMode(); }
+      @Override
+      public GenericTestType getTest() {
+            return new AIMode();
+      }
 
-    @Override
-    public Button[] getAnsButtons() {
-        return null;
-    }
+      @Override
+      public Button[] getAnsButtons() {
+            return null;
+      }
 
-    @Override
-    public Button getAnsButton() {
-        return null;
-    }
+      @Override
+      public Button getAnsButton() {
+            return null;
+      }
 
-    @Override
-    public String getName() {
-        return "Writen response";
-    }
+      @Override
+      public String getName() {
+            return "Writen response";
+      }
 
-    @Override
-    public void ansButtonAction() {
-        // stub
-    }
+      @Override
+      public void changed() {
+            ReadFlash.getInstance().isChanged();
+      }
 
-    @Override
-    public void nextAnsButtAction()
-    {
-        // stub
-    }
+      @Override
+      public void ansButtonAction() {
+            changed();
+            // stub
+      }
 
-    @Override
-    public void prevAnsButtAction()
-    {
-        // stub
-    }
+      @Override
+      public void nextAnsButtAction() {
+            // stub
+      }
 
-    @Override
-    public void reset() {
-        // stub
-    }
+      @Override
+      public void prevAnsButtAction() {
+            // stub
+      }
 
-    //public abstract char getQLayout();
+      @Override
+      public void reset() {
+            // stub
+      }
 
-    //public abstract char getALayout();
+      //public abstract char getQLayout();
+
+      //public abstract char getALayout();
 }

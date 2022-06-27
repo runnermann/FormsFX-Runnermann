@@ -1,5 +1,6 @@
 package type.testtypes;
 
+import flashmonkey.ReadFlash;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -10,96 +11,95 @@ import type.celleditors.SectionEditor;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-public class DrawOnImage implements GenericTestType<DrawOnImage>
-{
+public class DrawOnImage extends TestTypeBase implements GenericTestType<DrawOnImage> {
 
-    //SectionEditor editorU, editorL;
-    //GenericCard gCard;
+      //SectionEditor editorU, editorL;
+      //GenericCard gCard;
 
-    public DrawOnImage()
-    {
-        // no args constructor
-    }
-    
-    
-    @Override
-    public boolean isDisabled() {
-        return true;
-    }
+      public DrawOnImage() {
+            // no args constructor
+      }
 
-    @Override
-    public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane)
-    {
-        // Instantiate vBox and "set spacing" !important!!!
-        VBox vBox = new VBox(2);
-        vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
 
-        return vBox;
-    }
+      @Override
+      public boolean isDisabled() {
+            return true;
+      }
 
-    /**
-     * Sets Bit 10 or 1024 (Turn-in-Video) to true
-     * All other bits set to 0
-     * @return bitSet
-     */
-    public int getTestType()
-    {
-        // 1024
-        return 0b0000010000000000;
-    }
+      @Override
+      public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane) {
+            // Instantiate vBox and "set spacing" !important!!!
+            VBox vBox = new VBox(2);
+            vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);
 
-    @Override
-    public char getCardLayout()
-    {
-        return 'D'; // double horizontal
-    }
+            return vBox;
+      }
 
-    @Override
-    public GenericTestType getTest() {
+      /**
+       * Sets Bit 10 or 1024 (Turn-in-Video) to true
+       * All other bits set to 0
+       *
+       * @return bitSet
+       */
+      public int getTestType() {
+            // 1024
+            return 0b0000010000000000;
+      }
 
-        return new DrawOnImage();
-    }
+      @Override
+      public char getCardLayout() {
+            return 'D'; // double horizontal
+      }
 
-    @Override
-    public Button[] getAnsButtons() {
-        return null;
-    }
+      @Override
+      public GenericTestType getTest() {
 
-    @Override
-    public Button getAnsButton() {
-        return null;
-    }
+            return new DrawOnImage();
+      }
 
-    @Override
-    public String getName() {
-        return "Draw On Image";
-    }
+      @Override
+      public Button[] getAnsButtons() {
+            return null;
+      }
 
-    @Override
-    public void ansButtonAction() {
-        // stub
-    }
+      @Override
+      public Button getAnsButton() {
+            return null;
+      }
 
-    @Override
-    public void nextAnsButtAction()
-    {
-        // stub
-    }
+      @Override
+      public String getName() {
+            return "Draw On Image";
+      }
 
-    @Override
-    public void prevAnsButtAction()
-    {
-        // stub
-    }
+      @Override
+      public void changed() {
+            ReadFlash.getInstance().isChanged();
+      }
 
-    @Override
-    public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane)
-    {
-        return new Pane();
-    }
+      @Override
+      public void ansButtonAction() {
+            changed();
+            // stub
+      }
 
-    @Override
-    public void reset() {
-        // stub
-    }
+      @Override
+      public void nextAnsButtAction() {
+            // stub
+      }
+
+      @Override
+      public void prevAnsButtAction() {
+            // stub
+      }
+
+      @Override
+      public Pane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
+            return new Pane();
+      }
+
+      @Override
+      public void reset() {
+            // stub
+      }
 }

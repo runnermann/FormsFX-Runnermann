@@ -10,17 +10,17 @@ import java.util.Date;
 public class FMToken {
 
 
-    private static final String ISSUER = "flashmonkey2022";
-    private static SecretKey SECKEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+      private static final String ISSUER = "flashmonkey2022";
+      private static final SecretKey SECKEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
-    /**
-     * @param audience user orig_email
-     * @param refreshLength number of 15 minute blocks
-     * @return token
-     */
-    public static String createUserToken(String audience, int refreshLength) {
-        long expires = System.currentTimeMillis() + (1000l * 60 * 10); // 10 minutes in the future
-        return Jwts.builder()
+      /**
+       * @param audience      user orig_email
+       * @param refreshLength number of 15 minute blocks
+       * @return token
+       */
+      public static String createUserToken(String audience, int refreshLength) {
+            long expires = System.currentTimeMillis() + (1000l * 60 * 10); // 10 minutes in the future
+            return Jwts.builder()
                 .setHeaderParam("kid", "thisIsNotEncryptedStuff")
                 .setIssuer(ISSUER)
                 .setAudience(audience)
@@ -32,5 +32,5 @@ public class FMToken {
                 //.claim("rl", refreshLength)
                 .signWith(SECKEY)
                 .compact();
-    }
+      }
 }

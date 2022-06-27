@@ -48,542 +48,548 @@ import java.util.stream.Stream;
  */
 public class PolygonBuilder extends GenericBuilder<FMPolygon, PolygonBuilder> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(PolygonBuilder.class);
-	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(PolygonBuilder.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(PolygonBuilder.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(PolygonBuilder.class);
 
 
+      // The mouse start point
+      private double anchorX = 0.0;
+      private double anchorY = 0.0;
+
+      private double prevMouseX = 0.0;
+      private double prevMouseY = 0.0;
+
+      private String fillColor;
+      private String strokeColor;
+
+      private final StringProperty fillProperty = new SimpleStringProperty();
+      private final StringProperty strokeProperty = new SimpleStringProperty();
+
+      private Polygon fxPolygon = new Polygon();
+      // line used to show the polygon section as being drawn
+      private Polyline fxLine;
+      private FMPolygon fmPolygon;
+
+      protected int verticyIdx;
 
 
-	// The mouse start point
-	private double anchorX = 0.0;
-	private double anchorY = 0.0;
-
-	private double prevMouseX = 0.0;
-	private double prevMouseY = 0.0;
-
-	private String fillColor;
-    private String strokeColor;
-
-	private StringProperty fillProperty = new SimpleStringProperty();
-	private StringProperty strokeProperty = new SimpleStringProperty();
-
-	private Polygon fxPolygon = new Polygon();
-	// line used to show the polygon section as being drawn
-	private Polyline fxLine;
-	private FMPolygon fmPolygon;
-
-    protected int verticyIdx;
+      /**
+       * No args constructor
+       */
+      public PolygonBuilder() { /* no args constructor */}
 
 
-	/**
-	 * No args constructor
-	 */
-	public PolygonBuilder() { /* no args constructor */}
+      /**
+       * Full Constructor: Includes stroke color and fill color,
+       * * Sets this shape in the parent GenericBuilder
+       *
+       * @param c
+       * @param graphC
+       * @param overlayPane
+       * @param editor
+       * @param strokeClr
+       * @param fillClr
+       */
+      public PolygonBuilder(Canvas c, GraphicsContext graphC, Pane overlayPane, SectionEditor editor, String strokeClr, String fillClr) {
+            super(c, graphC, overlayPane, editor);
+            fxPolygon = new Polygon();
+            this.strokeColor = strokeClr;
+            this.fillColor = fillClr;
+            strokeProperty.setValue(strokeClr);
+            fillProperty.setValue(fillClr);
+            LOGGER.debug("PolygonBuilder full constructor called. ");
+
+      }
+
+      /**
+       * /**
+       * * Basic constructor: Sets this shape in the parent GenericBuilder,
+       * * creates a builder object using an already existing FMPolygon.
+       * * Called by getBuilder(...) in FMTriangle.
+       *
+       * @param fmPoly
+       * @param c
+       * @param graphC
+       * @param pane
+       * @param editor
+       */
+      public PolygonBuilder(FMPolygon fmPoly, Canvas c, GraphicsContext graphC, Pane pane, SectionEditor editor) {
+            super(c, graphC, pane, editor);
+            fxPolygon = fmPoly.getShape();
+
+            this.anchorX = fmPoly.getX();
+            this.anchorY = fmPoly.getY();
 
 
-	/**
-	 * Full Constructor: Includes stroke color and fill color,
-	 *      * Sets this shape in the parent GenericBuilder
-	 * @param c
-	 * @param graphC
-	 * @param overlayPane
-	 * @param editor
-	 * @param strokeClr
-	 * @param fillClr
-	 */
-	public PolygonBuilder(Canvas c, GraphicsContext graphC, Pane overlayPane, SectionEditor editor, String strokeClr, String fillClr) {
-		super(c, graphC, overlayPane, editor);
-		fxPolygon = new Polygon();
-		this.strokeColor = strokeClr;
-		this.fillColor = fillClr;
-		strokeProperty.setValue(strokeClr);
-		fillProperty.setValue(fillClr);
-		LOGGER.debug("PolygonBuilder full constructor called. ");
+            // add mouse actions to the shape when constuctor is called
+            // to edit existing shapes
+            fxPolygon.setOnMousePressed(f -> shapePressed(f, fmPoly, fxPolygon));
+            fxPolygon.setOnMouseDragged(f -> shapeDragged(f, fmPoly, fxPolygon));
+            fxPolygon.setOnMouseReleased(f -> shapeReleased(f, fmPoly, fxPolygon));
 
-	}
-	
-	/**
-	 * /**
-	 *      * Basic constructor: Sets this shape in the parent GenericBuilder,
-	 *      * creates a builder object using an already existing FMPolygon.
-	 *      * Called by getBuilder(...) in FMTriangle.
-	 * @param fmPoly
-	 * @param c
-	 * @param graphC
-	 * @param pane
-	 * @param editor
-	 */
-	public PolygonBuilder(FMPolygon fmPoly, Canvas c, GraphicsContext graphC, Pane pane, SectionEditor editor) {
-		super(c, graphC, pane, editor);
-        fxPolygon = fmPoly.getShape();
+            strokeProperty.setValue(fmPoly.getStrokeColor());
+            fillProperty.setValue(fmPoly.getFillColor());
 
-		this.anchorX = fmPoly.getX();
-		this.anchorY = fmPoly.getY();
-		
+            getOverlayPane().getChildren().add(fxPolygon);
 
-		// add mouse actions to the shape when constuctor is called
-		// to edit existing shapes
-		fxPolygon.setOnMousePressed( f -> shapePressed(f, fmPoly, fxPolygon));
-		fxPolygon.setOnMouseDragged( f -> shapeDragged(f, fmPoly, fxPolygon));
-		fxPolygon.setOnMouseReleased( f -> shapeReleased(f, fmPoly, fxPolygon));
+            LOGGER.debug("PolygonBUilder called");
 
-		strokeProperty.setValue(fmPoly.getStrokeColor());
-		fillProperty.setValue(fmPoly.getFillColor());
-
-		getOverlayPane().getChildren().add( fxPolygon);
-
-		LOGGER.debug("PolygonBUilder called");
-
-	}
+      }
 
 
-	@Override
-	public void zeroDeltas() {
-		/* not used */
-	}
+      @Override
+      public void zeroDeltas() {
+            /* not used */
+      }
 
-	@Override
-    public void setAnchors(MouseEvent mouse) {
-		anchorX = mouse.getSceneX();
-		anchorY = mouse.getSceneY();
-	}
-
-
-
-	/**
-	 * When the mouse is pressed in the overlayArea. If (copy=true), create a shape, else
-	 * create a new Polygon.
-	 * If alt is NOT down, start a new shape. Clear zero's
-	 * else, set zero's to last point.
-	 * @param mouse
-	 */
-	public void mousePressed(MouseEvent mouse) {
-		LOGGER.debug("mousePressed called in polygonBuilder");
-		DrawTools draw = DrawTools.getInstance();
-		GraphicsContext gC = getGc();
-		gC.setStroke(Color.web(strokeColor));
-		gC.setFill(Color.web(fillColor));
-
-		if (paste) {
-			// Paste the copy
-			pasteAction(mouse);
-			draw.getOverlayScene().setCursor(Cursor.DEFAULT);
-			paste = false;
-        } else if (draw.getShapeNotSelected()) { // Avoids conflict between new shape, shape dragged, and shape resized
-			// Clear the resize nodes if they are present
-			draw.clearNodes();
-			setNewShape(true);
-
-            // Set the shape start point x and y
-			if( anchorX+anchorY == 0.0) {
-				fxLine = new Polyline();
-				fxPolygon = new Polygon();
-				fxPolygon.setFill(Color.web(fillProperty.getValue()));
-				fxPolygon.setStroke(Color.web(strokeProperty.getValue()));
-				fxPolygon.setStrokeWidth(3);
-				setAnchors(mouse);
-				fxLine.getPoints().addAll(anchorX, anchorY);
-			}
-			setAnchors(mouse);
-
-			LOGGER.debug("mousePressed, numPOitns: {}", fxLine.getPoints().size());
-			mouse.consume();
-		}
-	}
+      @Override
+      public void setAnchors(MouseEvent mouse) {
+            anchorX = mouse.getSceneX();
+            anchorY = mouse.getSceneY();
+      }
 
 
-	
-	/**
-	 * Create new polygon segment
-	 * As the mouse is dragged, create the shape of the
-	 * line.
-	 * DeltaX and DeltaY for a shape, are different than for a line or polygon
-	 * @param e
-	 */
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		LOGGER.debug("mouseDragged in polygonBuilder");
-		Canvas can = getCanvas();
-		GraphicsContext gC = getGc();
+      /**
+       * When the mouse is pressed in the overlayArea. If (copy=true), create a shape, else
+       * create a new Polygon.
+       * If alt is NOT down, start a new shape. Clear zero's
+       * else, set zero's to last point.
+       *
+       * @param mouse
+       */
+      public void mousePressed(MouseEvent mouse) {
+            LOGGER.debug("mousePressed called in polygonBuilder");
+            DrawTools draw = DrawTools.getInstance();
+            GraphicsContext gC = getGc();
+            gC.setStroke(Color.web(strokeColor));
+            gC.setFill(Color.web(fillColor));
 
-		DrawTools draw = DrawTools.getInstance();
-		if (draw.getShapeNotSelected() ) {
-				//setNewShape(true);
+            if (paste) {
+                  // Paste the copy
+                  pasteAction(mouse);
+                  draw.getOverlayScene().setCursor(Cursor.DEFAULT);
+                  paste = false;
+            } else if (draw.getShapeNotSelected()) { // Avoids conflict between new shape, shape dragged, and shape resized
+                  // Clear the resize nodes if they are present
+                  draw.clearNodes();
+                  setNewShape(true);
 
-				getGc().clearRect(can.getBoundsInLocal().getMinX(), can.getBoundsInLocal().getMinY(),
-						can.getBoundsInLocal().getWidth(), can.getBoundsInLocal().getHeight());
+                  // Set the shape start point x and y
+                  if (anchorX + anchorY == 0.0) {
+                        fxLine = new Polyline();
+                        fxPolygon = new Polygon();
+                        fxPolygon.setFill(Color.web(fillProperty.getValue()));
+                        fxPolygon.setStroke(Color.web(strokeProperty.getValue()));
+                        fxPolygon.setStrokeWidth(3);
+                        setAnchors(mouse);
+                        fxLine.getPoints().addAll(anchorX, anchorY);
+                  }
+                  setAnchors(mouse);
 
-				double[] xList = {anchorX, e.getSceneX()};
-				double[] yList = {anchorY, e.getSceneY()};
-				gC.strokePolyline(xList, yList, 2);
-		}
-		e.consume();
-	}
-	
-    /**
-     * When the mouse is released, set the data in FMShape, store the fmShape in the gbcopyArrayOfFMShapes, display
-     * the shape in the right pane.
-     * @param mouse
-     */
-	@Override
-	public void mouseReleased(MouseEvent mouse) {
-		DrawTools draw = DrawTools.getInstance();
-		LOGGER.debug("mouseReleased called in PolygonBuilder");
-		if(draw.getShapeNotSelected() ) {
-			Canvas can = getCanvas();
-			GraphicsContext gC = getGc();
+                  LOGGER.debug("mousePressed, numPOitns: {}", fxLine.getPoints().size());
+                  mouse.consume();
+            }
+      }
 
-			gC.clearRect(can.getBoundsInLocal().getMinX(), can.getBoundsInLocal().getMinY(),
-					can.getBoundsInLocal().getWidth(), can.getBoundsInLocal().getHeight());
 
-			if(isNewShape()) {
-				// if alt is down we create a line
-				// while the user is still creating the polygon
-				fxLine.getPoints().addAll(mouse.getX(), mouse.getY());
+      /**
+       * Create new polygon segment
+       * As the mouse is dragged, create the shape of the
+       * line.
+       * DeltaX and DeltaY for a shape, are different than for a line or polygon
+       *
+       * @param e
+       */
+      @Override
+      public void mouseDragged(MouseEvent e) {
+            LOGGER.debug("mouseDragged in polygonBuilder");
+            Canvas can = getCanvas();
+            GraphicsContext gC = getGc();
 
-				if ( ! mouse.isAltDown()) {
-					double[] pts = Stream.of(fxLine.getPoints().toArray()).mapToDouble(o -> Double.parseDouble(o.toString())).toArray();
+            DrawTools draw = DrawTools.getInstance();
+            if (draw.getShapeNotSelected()) {
+                  //setNewShape(true);
 
-					if (fxLine.getPoints().size() > 4) {
-						//anchorX = 0.0;
-						//anchorY = 0.0;
-						setNewShape(false);
-						fxPolygon.getPoints().addAll(fxLine.getPoints());
-						fxPolygon.setStrokeWidth(3);
-						fmPolygon = new FMPolygon(
-								pts,
-								3,
-								this.strokeProperty.getValue(),
-								this.fillProperty.getValue(),
-								gbcopyArrayOfFMShapes.size());
-						gbcopyArrayOfFMShapes.add(fmPolygon);
+                  getGc().clearRect(can.getBoundsInLocal().getMinX(), can.getBoundsInLocal().getMinY(),
+                      can.getBoundsInLocal().getWidth(), can.getBoundsInLocal().getHeight());
 
-						Polygon fxPolygon = fmPolygon.getShape();
+                  double[] xList = {anchorX, e.getSceneX()};
+                  double[] yList = {anchorY, e.getSceneY()};
+                  gC.strokePolyline(xList, yList, 2);
+            }
+            e.consume();
+      }
 
-						fxPolygon.setOnMousePressed( f -> shapePressed( f, fmPolygon, fxPolygon));
-						fxPolygon.setOnMouseDragged( f -> shapeDragged( f, fmPolygon, fxPolygon));
-						fxPolygon.setOnMouseReleased(f -> shapeReleased(f, fmPolygon, fxPolygon));
-						getOverlayPane().getChildren().remove(fxLine);
-						getOverlayPane().getChildren().add(fxPolygon);
+      /**
+       * When the mouse is released, set the data in FMShape, store the fmShape in the gbcopyArrayOfFMShapes, display
+       * the shape in the right pane.
+       *
+       * @param mouse
+       */
+      @Override
+      public void mouseReleased(MouseEvent mouse) {
+            DrawTools draw = DrawTools.getInstance();
+            LOGGER.debug("mouseReleased called in PolygonBuilder");
+            if (draw.getShapeNotSelected()) {
+                  Canvas can = getCanvas();
+                  GraphicsContext gC = getGc();
 
-						// Add the scaled version of the shape in the right pane
-						int wd = (int) getOverlayPane().getWidth();
-						int ht = (int) getOverlayPane().getHeight();
+                  gC.clearRect(can.getBoundsInLocal().getMinX(), can.getBoundsInLocal().getMinY(),
+                      can.getBoundsInLocal().getWidth(), can.getBoundsInLocal().getHeight());
 
-						editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, wd, ht );
-						setNewShape(false);
-						draw.setShapeNotSelected(true);
-						anchorX = 0.0;
-						anchorY = 0.0;
+                  if (isNewShape()) {
+                        // if alt is down we create a line
+                        // while the user is still creating the polygon
+                        fxLine.getPoints().addAll(mouse.getX(), mouse.getY());
 
-						LOGGER.debug("num points in fxLine: {}", fxLine.getPoints().size());
-						LOGGER.debug("num points in fxPolygon: {}", fxPolygon.getPoints().size());
-						LOGGER.debug("num points in fmPolygon: {}", fmPolygon.points.length);
-					}
-				}
-				else if( ! getOverlayPane().getChildren().contains(fxLine)) {
-					getOverlayPane().getChildren().add(fxLine);
-				}
-			}
-		}
-		LOGGER.debug("mouseReleased numPOints: {}", fxPolygon.getPoints().size());
-		mouse.consume();
-	}
+                        if (!mouse.isAltDown()) {
+                              double[] pts = Stream.of(fxLine.getPoints().toArray()).mapToDouble(o -> Double.parseDouble(o.toString())).toArray();
 
-    /** ************************************************************************************************************ ***
-     *                                                                                                                 *
-     *                                          CUT & PASTE ACTIONS
-     *                                                                                                                 *
-     ** ************************************************************************************************************ ***/
+                              if (fxLine.getPoints().size() > 4) {
+                                    //anchorX = 0.0;
+                                    //anchorY = 0.0;
+                                    setNewShape(false);
+                                    fxPolygon.getPoints().addAll(fxLine.getPoints());
+                                    fxPolygon.setStrokeWidth(3);
+                                    fmPolygon = new FMPolygon(
+                                        pts,
+                                        3,
+                                        this.strokeProperty.getValue(),
+                                        this.fillProperty.getValue(),
+                                        gbcopyArrayOfFMShapes.size());
+                                    gbcopyArrayOfFMShapes.add(fmPolygon);
 
-	/**
-	 * The capability to change a shapes demensions.
-	 *
-	 * @param shape
-	 * @param gs
-	 * @return
-	 */
-	@Override
-	protected Shape editableShapeAction(Shape shape, GenericShape gs) {
-		fxPolygon.setOnMousePressed(f -> shapePressed( f, gs, fxPolygon));
-		fxPolygon.setOnMouseDragged(f -> shapeDragged( f, gs, fxPolygon));
-		fxPolygon.setOnMouseReleased(f -> shapeReleased(f, gs, fxPolygon));
+                                    Polygon fxPolygon = fmPolygon.getShape();
 
-		return fxPolygon;
-	}
+                                    fxPolygon.setOnMousePressed(f -> shapePressed(f, fmPolygon, fxPolygon));
+                                    fxPolygon.setOnMouseDragged(f -> shapeDragged(f, fmPolygon, fxPolygon));
+                                    fxPolygon.setOnMouseReleased(f -> shapeReleased(f, fmPolygon, fxPolygon));
+                                    getOverlayPane().getChildren().remove(fxLine);
+                                    getOverlayPane().getChildren().add(fxPolygon);
 
-	/**
-	 * @param mouse
-	 * @param gs
-	 */
-	@Override
-    public void copyAction(MouseEvent mouse, GenericShape gs) {
-        FMPolygon fmPolygon;
+                                    // Add the scaled version of the shape in the right pane
+                                    int wd = (int) getOverlayPane().getWidth();
+                                    int ht = (int) getOverlayPane().getHeight();
 
-		fmPolygon = new FMPolygon(
+                                    editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, wd, ht);
+                                    setNewShape(false);
+                                    draw.setShapeNotSelected(true);
+                                    anchorX = 0.0;
+                                    anchorY = 0.0;
+
+                                    LOGGER.debug("num points in fxLine: {}", fxLine.getPoints().size());
+                                    LOGGER.debug("num points in fxPolygon: {}", fxPolygon.getPoints().size());
+                                    LOGGER.debug("num points in fmPolygon: {}", fmPolygon.points.length);
+                              }
+                        } else if (!getOverlayPane().getChildren().contains(fxLine)) {
+                              getOverlayPane().getChildren().add(fxLine);
+                        }
+                  }
+            }
+            LOGGER.debug("mouseReleased numPOints: {}", fxPolygon.getPoints().size());
+            mouse.consume();
+      }
+
+      /** ************************************************************************************************************ ***
+       *                                                                                                                 *
+       *                                          CUT & PASTE ACTIONS
+       *                                                                                                                 *
+       ** ************************************************************************************************************ ***/
+
+      /**
+       * The capability to change a shapes demensions.
+       *
+       * @param shape
+       * @param gs
+       * @return
+       */
+      @Override
+      protected Shape editableShapeAction(Shape shape, GenericShape gs) {
+            fxPolygon.setOnMousePressed(f -> shapePressed(f, gs, fxPolygon));
+            fxPolygon.setOnMouseDragged(f -> shapeDragged(f, gs, fxPolygon));
+            fxPolygon.setOnMouseReleased(f -> shapeReleased(f, gs, fxPolygon));
+
+            return fxPolygon;
+      }
+
+      /**
+       * @param mouse
+       * @param gs
+       */
+      @Override
+      public void copyAction(MouseEvent mouse, GenericShape gs) {
+            FMPolygon fmPolygon;
+
+            fmPolygon = new FMPolygon(
                 gs.getDblPts(), gs.getStrokeWidth(),
-                gs.getStrokeColor(), gs.getFillColor(), gbcopyArrayOfFMShapes.size() );
+                gs.getStrokeColor(), gs.getFillColor(), gbcopyArrayOfFMShapes.size());
 
-        gbcopyArrayOfFMShapes.add(fmPolygon);
-        setPaste(true);
-        DrawTools draw = DrawTools.getInstance();
-        draw.clearNodes();
-        mouse.consume();
-	}
-
-
-    /** ************************************************************************************************************ **
-    *                                                                                                                  *
-    *                                                 PANNING the shape
-    *                                               and other mouse actions
-    *                                                                                                                  *
-    ** ************************************************************************************************************ ***/
+            gbcopyArrayOfFMShapes.add(fmPolygon);
+            setPaste(true);
+            DrawTools draw = DrawTools.getInstance();
+            draw.clearNodes();
+            mouse.consume();
+      }
 
 
-	private ObservableList obsvPts;
-    /**
-     * Gets the x and y locations of the mouse in the Shape and the pane.
-     * or, if right mouse button is selected goes to shapeRightPress.
-     * @param mouse The mouse MouseEvent
-     */
-	@Override
-	public void shapePressed(MouseEvent mouse, GenericShape gs, Shape fxShape) {
-
-		LOGGER.debug("shapePressed called");
-		// if not adding to the existing line
-		if(!mouse.isAltDown()) {
-			fxShape.setStrokeWidth(fxShape.getStrokeWidth() + 2);
-			Polygon fxPolygon1 = (Polygon) fxShape;
-			fxP = fxPolygon1;
-			fmP = (FMPolygon) gs;
-			obsvPts = fxPolygon1.getPoints();
-			DrawTools draw = DrawTools.getInstance();
-			draw.setShapeNotSelected(false);
-			// Clear the resize nodes if they are present
-			draw.clearNodes();
-			// Clear all listeners unless
-			if( ! mouse.isShiftDown()) {
-				draw.clearListeners();
-			}
-
-			draw.getFillProperty().addListener(this::fillChanged);
-			draw.getStrokeProperty().addListener(this::strokeChanged);
-
-			/* If fxShape right mouse click create resize nodes **/
-			if (mouse.isSecondaryButtonDown()) {
-				shapeRightPress(mouse, gs, fxShape);
-			} else {
-
-				prevMouseX = mouse.getSceneX();
-				prevMouseY = mouse.getSceneY();
-			}
-
-			mouse.consume();
-		}
-	}
-
-	// ***************** LISTENERS ********************
-
-	private Polygon fxP = new Polygon();
-	private FMPolygon fmP = new FMPolygon();
-	public  void strokeChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
-		fxP.setStroke(Color.web(newVal));
-        fmP.setStrokeColor(newVal);
-        strokeColor = newVal;
-	}
-
-	public void fillChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
-		fxP.setFill(Color.web(newVal));
-        fmP.setFillColor(newVal);
-        fillColor = newVal;
-	}
-
-	@Override
-	public void clearListeners() {
-		DrawTools draw = DrawTools.getInstance();
-		draw.getFillProperty().removeListener(this::strokeChanged);
-		draw.getStrokeProperty().removeListener(this::fillChanged);
-	}
-
-	@Override
-	public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape fxShape) {
-		if(!mouse.isAltDown()) {
-			if (mouse.isPrimaryButtonDown()) ;
-			{
-				// uses the observable list/reference
-				// to move shape. :)
-				Polygon fxPolygon = (Polygon) fxShape;
-				obsvPts = fxPolygon.getPoints();
-				for (int i = 0; i < obsvPts.size() / 2; i++) {
-					double x = (double) obsvPts.get(i * 2);
-					double y = (double) obsvPts.get(i * 2 + 1);
-					obsvPts.set(i * 2, x + (mouse.getSceneX() - prevMouseX));
-					obsvPts.set(i * 2 + 1, y + (mouse.getSceneY() - prevMouseY));
-				}
-				prevMouseX = mouse.getSceneX();
-				prevMouseY = mouse.getSceneY();
-			}
-			mouse.consume();
-		}
-	}
-	
-    /**
-     * On mouse released, Sets the new location in
-     * the gbcopyArrayOfFMShapes
-     * @param gs
-     * @param shape
-     */
-	@Override
-	public void shapeReleased(MouseEvent mouse, GenericShape gs, Shape shape) {
-		// if not adding to the existing line
-		if(!mouse.isAltDown()) {
-			LOGGER.debug("ShapeReleased called in Polygon");
-			SectionEditor editor = editorRef;
-			shape.setStrokeWidth(shape.getStrokeWidth() - 2);
-
-			editor.getRightPane().getChildren().clear();
-			if (editor.getImageView() != null) {
-				editor.getRightPane().getChildren().add(editor.getImageView());
-			}
-			// Update this fmShape/fmLine
-			gs.setPoints(obsvPts);
-			// The first shape in the gbcopyArrayOfFMShapes is an FMRectangle
-			// with the demensions of the original SnapShot rectangle.
-			double origWd = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getWd();
-			double origHt = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getHt();
-			editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, origWd, origHt);
-			//obsvPts.clear();
-		}
-	}
-	
-    /** ************************************************************************************************************ ***
-     *                                                                                                                 *
-     *                                    RESIZING the Line ... Moving verticies                                       *
-     *                                                                                                                 *
-     ** ************************************************************************************************************ **/
-
-    /**
-     * Helper method. Places the points at the lines end-points.
-     * - Returns an array of Point2D x and y coordinates.
-     * @return
-     */
-    //@Override
-    private Point2D[] get2DPoints(Shape shape) {
-        ObservableList<Double> rawPoints = ((Polygon) shape).getPoints();
-        LOGGER.debug("get2DPoints, numPoints: {}", rawPoints.size() );
-        int size = rawPoints.size();
-        double[] points = new double[size];
-        Point2D[] result = new Point2D[size/2];
-
-        for(int i = 0; i < size; i++) {
-            points[i] = rawPoints.get(i);
-        }
-        for(int n = 0; n < size/2; n++) {
-            result[n] = new Point2D(points[n * 2], points[n * 2 + 1]);
-        }
-
-        return result;
-    }
-
-    private Point2D[] getTranslatedPoints(Shape s, Point2D[] points) {
-        Point2D[] result = new Point2D[points.length];
-        for(int i = 0; i < points.length; i++) {
-            result[i] = s.localToParent(points[i]);
-        }
-        return result;
-    }
+      /**
+       * *********************************************************************************************************** **
+       * *
+       * PANNING the shape
+       * and other mouse actions
+       * *
+       * * ************************************************************************************************************
+       ***/
 
 
-    /**
-     * Gets the nodes/resize handles for a shape. Resize handles start point and end point
-     * @param thisShape This shape
-     * @return  Returns an arraylist of handles located left, right and top, bottom.
-     */
-    public ArrayList<Circle> getHandles(GenericShape gs, Shape thisShape ) {
-        Point2D[] pts2D = get2DPoints(thisShape);
-		LOGGER.debug("getHandles called, num pts: {}", pts2D.length);
-        ArrayList<Circle> verticies = new ArrayList<>(pts2D.length);
-        Circle c;
+      private ObservableList obsvPts;
 
-        for(int i = 0; i < pts2D.length; i++ ) {
-            c = new Circle(pts2D[i].getX(), pts2D[i].getY(), 4, Color.web(UIColors.HIGHLIGHT_ORANGE));
-            int finalI = i;
-            c.setOnMousePressed(e -> verticyPressed(finalI, e, thisShape));
-            c.setOnMouseReleased(e -> verticyReleased(gs));
-            c.setOnMouseDragged(e -> verticyXYDragged(e, gs, verticies, thisShape));
-            verticies.add(c);
-        }
-        return verticies;
-    }
+      /**
+       * Gets the x and y locations of the mouse in the Shape and the pane.
+       * or, if right mouse button is selected goes to shapeRightPress.
+       *
+       * @param mouse The mouse MouseEvent
+       */
+      @Override
+      public void shapePressed(MouseEvent mouse, GenericShape gs, Shape fxShape) {
 
-	@Override
-	public void verticyPressed(int idx, MouseEvent mouse, Shape s) {
-		this.verticyIdx = idx;
-		DrawTools draw = DrawTools.getInstance();
-		draw.setShapeNotSelected(false);
-		mouse.consume();
-	}
+            LOGGER.debug("shapePressed called");
+            // if not adding to the existing line
+            if (!mouse.isAltDown()) {
+                  fxShape.setStrokeWidth(fxShape.getStrokeWidth() + 2);
+                  Polygon fxPolygon1 = (Polygon) fxShape;
+                  fxP = fxPolygon1;
+                  fmP = (FMPolygon) gs;
+                  obsvPts = fxPolygon1.getPoints();
+                  DrawTools draw = DrawTools.getInstance();
+                  draw.setShapeNotSelected(false);
+                  // Clear the resize nodes if they are present
+                  draw.clearNodes();
+                  // Clear all listeners unless
+                  if (!mouse.isShiftDown()) {
+                        draw.clearListeners();
+                  }
+
+                  draw.getFillProperty().addListener(this::fillChanged);
+                  draw.getStrokeProperty().addListener(this::strokeChanged);
+
+                  /* If fxShape right mouse click create resize nodes **/
+                  if (mouse.isSecondaryButtonDown()) {
+                        shapeRightPress(mouse, gs, fxShape);
+                  } else {
+
+                        prevMouseX = mouse.getSceneX();
+                        prevMouseY = mouse.getSceneY();
+                  }
+
+                  mouse.consume();
+            }
+      }
+
+      // ***************** LISTENERS ********************
+
+      private Polygon fxP = new Polygon();
+      private FMPolygon fmP = new FMPolygon();
+
+      public void strokeChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
+            fxP.setStroke(Color.web(newVal));
+            fmP.setStrokeColor(newVal);
+            strokeColor = newVal;
+      }
+
+      public void fillChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
+            fxP.setFill(Color.web(newVal));
+            fmP.setFillColor(newVal);
+            fillColor = newVal;
+      }
+
+      @Override
+      public void clearListeners() {
+            DrawTools draw = DrawTools.getInstance();
+            draw.getFillProperty().removeListener(this::strokeChanged);
+            draw.getStrokeProperty().removeListener(this::fillChanged);
+      }
+
+      @Override
+      public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape fxShape) {
+            if (!mouse.isAltDown()) {
+                  if (mouse.isPrimaryButtonDown()) ;
+                  {
+                        // uses the observable list/reference
+                        // to move shape. :)
+                        Polygon fxPolygon = (Polygon) fxShape;
+                        obsvPts = fxPolygon.getPoints();
+                        for (int i = 0; i < obsvPts.size() / 2; i++) {
+                              double x = (double) obsvPts.get(i * 2);
+                              double y = (double) obsvPts.get(i * 2 + 1);
+                              obsvPts.set(i * 2, x + (mouse.getSceneX() - prevMouseX));
+                              obsvPts.set(i * 2 + 1, y + (mouse.getSceneY() - prevMouseY));
+                        }
+                        prevMouseX = mouse.getSceneX();
+                        prevMouseY = mouse.getSceneY();
+                  }
+                  mouse.consume();
+            }
+      }
+
+      /**
+       * On mouse released, Sets the new location in
+       * the gbcopyArrayOfFMShapes
+       *
+       * @param gs
+       * @param shape
+       */
+      @Override
+      public void shapeReleased(MouseEvent mouse, GenericShape gs, Shape shape) {
+            // if not adding to the existing line
+            if (!mouse.isAltDown()) {
+                  LOGGER.debug("ShapeReleased called in Polygon");
+                  SectionEditor editor = editorRef;
+                  shape.setStrokeWidth(shape.getStrokeWidth() - 2);
+
+                  editor.getRightPane().getChildren().clear();
+                  if (editor.getImageView() != null) {
+                        editor.getRightPane().getChildren().add(editor.getImageView());
+                  }
+                  // Update this fmShape/fmLine
+                  gs.setPoints(obsvPts);
+                  // The first shape in the gbcopyArrayOfFMShapes is an FMRectangle
+                  // with the demensions of the original SnapShot rectangle.
+                  double origWd = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getWd();
+                  double origHt = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getHt();
+                  editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, origWd, origHt);
+                  //obsvPts.clear();
+            }
+      }
+
+      /** ************************************************************************************************************ ***
+       *                                                                                                                 *
+       *                                    RESIZING the Line ... Moving verticies                                       *
+       *                                                                                                                 *
+       ** ************************************************************************************************************ **/
+
+      /**
+       * Helper method. Places the points at the lines end-points.
+       * - Returns an array of Point2D x and y coordinates.
+       *
+       * @return
+       */
+      //@Override
+      private Point2D[] get2DPoints(Shape shape) {
+            ObservableList<Double> rawPoints = ((Polygon) shape).getPoints();
+            LOGGER.debug("get2DPoints, numPoints: {}", rawPoints.size());
+            int size = rawPoints.size();
+            double[] points = new double[size];
+            Point2D[] result = new Point2D[size / 2];
+
+            for (int i = 0; i < size; i++) {
+                  points[i] = rawPoints.get(i);
+            }
+            for (int n = 0; n < size / 2; n++) {
+                  result[n] = new Point2D(points[n * 2], points[n * 2 + 1]);
+            }
+
+            return result;
+      }
+
+      private Point2D[] getTranslatedPoints(Shape s, Point2D[] points) {
+            Point2D[] result = new Point2D[points.length];
+            for (int i = 0; i < points.length; i++) {
+                  result[i] = s.localToParent(points[i]);
+            }
+            return result;
+      }
 
 
+      /**
+       * Gets the nodes/resize handles for a shape. Resize handles start point and end point
+       *
+       * @param thisShape This shape
+       * @return Returns an arraylist of handles located left, right and top, bottom.
+       */
+      public ArrayList<Circle> getHandles(GenericShape gs, Shape thisShape) {
+            Point2D[] pts2D = get2DPoints(thisShape);
+            LOGGER.debug("getHandles called, num pts: {}", pts2D.length);
+            ArrayList<Circle> verticies = new ArrayList<>(pts2D.length);
+            Circle c;
 
-	/**
-     * Used for the moving verticy. The verticy that is moving is index 0. The static verticy
-     * is index 1.
-	 * @param mouse
-	 * @param gs
-	 * @param vertArry An array containing verticies
-	 * @param shape    The Shape or Polygon being moved.
-	 */
-	@Override
-	public void verticyXYDragged(MouseEvent mouse, GenericShape gs, ArrayList<Circle> vertArry, Shape shape) {
-		if(! mouse.isSecondaryButtonDown() && ! mouse.isAltDown()) {
-			Circle c = vertArry.get(verticyIdx);
-			c.setCenterX(mouse.getSceneX());
-			c.setCenterY(mouse.getSceneY());
-			// set line endings to new position
-			((Polygon) shape).getPoints().set(verticyIdx*2, mouse.getSceneX());
-			((Polygon) shape).getPoints().set(verticyIdx*2+1, mouse.getSceneY());
-		}
-		mouse.consume();
-	}
+            for (int i = 0; i < pts2D.length; i++) {
+                  c = new Circle(pts2D[i].getX(), pts2D[i].getY(), 4, Color.web(UIColors.HIGHLIGHT_ORANGE));
+                  int finalI = i;
+                  c.setOnMousePressed(e -> verticyPressed(finalI, e, thisShape));
+                  c.setOnMouseReleased(e -> verticyReleased(gs));
+                  c.setOnMouseDragged(e -> verticyXYDragged(e, gs, verticies, thisShape));
+                  verticies.add(c);
+            }
+            return verticies;
+      }
 
-	@Override
-	public void verticyReleased(GenericShape gs)
-	{
-		SectionEditor editor = editorRef;
-		//shape.setStrokeWidth(shape.getStrokeWidth() - 2);
-
-		editor.getRightPane().getChildren().clear();
-		if (editor.getImageView() != null) {
-			editor.getRightPane().getChildren().add(editor.getImageView());
-		}
-		// Update this fmShape/fmLine
-		gs.setPoints(obsvPts);
-		// The first shape in the gbcopyArrayOfFMShapes is an FMRectangle
-		// with the demensions of the original SnapShot rectangle.
-		double origWd = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getWd();
-		double origHt = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getHt();
-		editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, origWd, origHt);
-		//obsvPts.clear();
-	}
+      @Override
+      public void verticyPressed(int idx, MouseEvent mouse, Shape s) {
+            this.verticyIdx = idx;
+            DrawTools draw = DrawTools.getInstance();
+            draw.setShapeNotSelected(false);
+            mouse.consume();
+      }
 
 
+      /**
+       * Used for the moving verticy. The verticy that is moving is index 0. The static verticy
+       * is index 1.
+       *
+       * @param mouse
+       * @param gs
+       * @param vertArry An array containing verticies
+       * @param shape    The Shape or Polygon being moved.
+       */
+      @Override
+      public void verticyXYDragged(MouseEvent mouse, GenericShape gs, ArrayList<Circle> vertArry, Shape shape) {
+            if (!mouse.isSecondaryButtonDown() && !mouse.isAltDown()) {
+                  Circle c = vertArry.get(verticyIdx);
+                  c.setCenterX(mouse.getSceneX());
+                  c.setCenterY(mouse.getSceneY());
+                  // set line endings to new position
+                  ((Polygon) shape).getPoints().set(verticyIdx * 2, mouse.getSceneX());
+                  ((Polygon) shape).getPoints().set(verticyIdx * 2 + 1, mouse.getSceneY());
+            }
+            mouse.consume();
+      }
 
-    /**
-     * Not used
-     */
-	@Override
-    public void verticyVDragged(MouseEvent mouse, GenericShape gs, Shape vertV, Shape vertVOther, Shape vertH1, Shape vertH2, Shape line) {
-        // not used
+      @Override
+      public void verticyReleased(GenericShape gs) {
+            SectionEditor editor = editorRef;
+            //shape.setStrokeWidth(shape.getStrokeWidth() - 2);
 
-	}
+            editor.getRightPane().getChildren().clear();
+            if (editor.getImageView() != null) {
+                  editor.getRightPane().getChildren().add(editor.getImageView());
+            }
+            // Update this fmShape/fmLine
+            gs.setPoints(obsvPts);
+            // The first shape in the gbcopyArrayOfFMShapes is an FMRectangle
+            // with the demensions of the original SnapShot rectangle.
+            double origWd = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getWd();
+            double origHt = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getHt();
+            editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, origWd, origHt);
+            //obsvPts.clear();
+      }
 
-    /**
-     * Not used
-     */
-	@Override
-    public void verticyHDragged(MouseEvent mouse, GenericShape gs, Shape vertH, Shape vertHOther, Shape vertH1, Shape vertH2, Shape line) {
-        // not used
-    }
+
+      /**
+       * Not used
+       */
+      @Override
+      public void verticyVDragged(MouseEvent mouse, GenericShape gs, Shape vertV, Shape vertVOther, Shape vertH1, Shape vertH2, Shape line) {
+            // not used
+
+      }
+
+      /**
+       * Not used
+       */
+      @Override
+      public void verticyHDragged(MouseEvent mouse, GenericShape gs, Shape vertH, Shape vertHOther, Shape vertH1, Shape vertH2, Shape line) {
+            // not used
+      }
 
 }

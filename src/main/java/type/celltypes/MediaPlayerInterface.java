@@ -2,5 +2,5 @@ package type.celltypes;
 
 public interface MediaPlayerInterface {
 
-    void onClose();
+      void onClose();
 }

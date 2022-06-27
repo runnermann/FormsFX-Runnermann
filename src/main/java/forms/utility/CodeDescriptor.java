@@ -5,19 +5,19 @@ import javafx.beans.property.StringProperty;
 
 public class CodeDescriptor {
 
-    private StringProperty codeProperty = new SimpleStringProperty("");
+      private StringProperty codeProperty = new SimpleStringProperty("");
 
-    public CodeDescriptor() { /* do nothing */}
+      public CodeDescriptor() { /* do nothing */}
 
-    public String getCode() {
-        return codeProperty.get();
-    }
+      public String getCode() {
+            return codeProperty.get();
+      }
 
-    public StringProperty getCodeProperty() {
-        return codeProperty;
-    }
+      public StringProperty getCodeProperty() {
+            return codeProperty;
+      }
 
-    public void clear() {
-        codeProperty = new SimpleStringProperty("");
-    }
+      public void clear() {
+            codeProperty = new SimpleStringProperty("");
+      }
 }

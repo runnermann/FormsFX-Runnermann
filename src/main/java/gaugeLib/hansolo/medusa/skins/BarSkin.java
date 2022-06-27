@@ -44,250 +44,263 @@ import static gaugeLib.hansolo.medusa.tools.Helper.formatNumber;
  * Created by hansolo on 11.04.16.
  */
 public class BarSkin extends GaugeSkinBase {
-    private static final double               ANGLE_RANGE      = 360;
-    private              double               size;
-    private              Text                 titleText;
-    private              Text                 valueText;
-    private              Text                 unitText;
-    private              Circle               dot;
-    private              Circle               fakeDot;
-    private              Arc                  arc;
-    private              Circle               circle;
-    private              Pane                 pane;
-    private              DropShadow           shadow;
-    private              ConicalGradient      gradient;
-    private              double               center;
-    private              double               range;
-    private              double               angleStep;
-    private              InvalidationListener currentValueListener;
-    private              InvalidationListener barColorListener;
-    private              InvalidationListener titleListener;
-    private              InvalidationListener unitListener;
+      private static final double ANGLE_RANGE = 360;
+      private double size;
+      private Text titleText;
+      private Text valueText;
+      private Text unitText;
+      private Circle dot;
+      private Circle fakeDot;
+      private Arc arc;
+      private Circle circle;
+      private Pane pane;
+      private DropShadow shadow;
+      private ConicalGradient gradient;
+      private double center;
+      private double range;
+      private double angleStep;
+      private final InvalidationListener currentValueListener;
+      private final InvalidationListener barColorListener;
+      private final InvalidationListener titleListener;
+      private final InvalidationListener unitListener;
 
 
-    // ******************** Constructors **************************************
-    public BarSkin(Gauge gauge) {
-        super(gauge);
-        if (gauge.isAutoScale()) gauge.calcAutoScale();
-        range                = gauge.getRange();
-        angleStep            = -ANGLE_RANGE / range;
-        currentValueListener = o -> redraw();
-        barColorListener     = o -> {
+      // ******************** Constructors **************************************
+      public BarSkin(Gauge gauge) {
+            super(gauge);
+            if (gauge.isAutoScale()) gauge.calcAutoScale();
+            range = gauge.getRange();
+            angleStep = -ANGLE_RANGE / range;
+            currentValueListener = o -> redraw();
+            barColorListener = o -> {
+                  Color barColor = gauge.getBarColor();
+                  gauge.setGradientBarStops(new Stop(0.0, barColor),
+                      new Stop(0.01, barColor),
+                      new Stop(0.75, barColor.deriveColor(-10, 1, 1, 1)),
+                      new Stop(1.0, barColor.deriveColor(-20, 1, 1, 1)));
+                  resize();
+            };
+            titleListener = o -> {
+                  titleText.setText(gauge.getTitle());
+                  resizeTitleText();
+            };
+            unitListener = o -> {
+                  unitText.setText(gauge.getUnit());
+                  resizeUnitText();
+            };
+
+            initGraphics();
+            registerListeners();
+      }
+
+
+      // ******************** Initialization ************************************
+      private void initGraphics() {
+            // Set initial size
+            if (Double.compare(gauge.getPrefWidth(), 0.0) <= 0 || Double.compare(gauge.getPrefHeight(), 0.0) <= 0 ||
+                Double.compare(gauge.getWidth(), 0.0) <= 0 || Double.compare(gauge.getHeight(), 0.0) <= 0) {
+                  if (gauge.getPrefWidth() > 0 && gauge.getPrefHeight() > 0) {
+                        gauge.setPrefSize(gauge.getPrefWidth(), gauge.getPrefHeight());
+                  } else {
+                        gauge.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
+                  }
+            }
+
             Color barColor = gauge.getBarColor();
             gauge.setGradientBarStops(new Stop(0.0, barColor),
-                                      new Stop(0.01, barColor),
-                                      new Stop(0.75, barColor.deriveColor(-10, 1, 1, 1)),
-                                      new Stop(1.0, barColor.deriveColor(-20, 1, 1, 1)));
-            resize();
-        };
-        titleListener = o -> {
-            titleText.setText(gauge.getTitle());
-            resizeTitleText();
-        };
-        unitListener = o -> {
-            unitText.setText(gauge.getUnit());
-            resizeUnitText();
-        };
+                new Stop(0.01, barColor),
+                new Stop(0.75, barColor.deriveColor(-10, 1, 1, 1)),
+                new Stop(1.0, barColor.deriveColor(-20, 1, 1, 1)));
 
-        initGraphics();
-        registerListeners();
-    }
+            shadow = new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.45), 0.01 * PREFERRED_WIDTH, 0, 0.01 * PREFERRED_WIDTH, 0);
 
+            circle = new Circle();
+            circle.setFill(null);
 
-    // ******************** Initialization ************************************
-    private void initGraphics() {
-        // Set initial size
-        if (Double.compare(gauge.getPrefWidth(), 0.0) <= 0 || Double.compare(gauge.getPrefHeight(), 0.0) <= 0 ||
-            Double.compare(gauge.getWidth(), 0.0) <= 0 || Double.compare(gauge.getHeight(), 0.0) <= 0) {
-            if (gauge.getPrefWidth() > 0 && gauge.getPrefHeight() > 0) {
-                gauge.setPrefSize(gauge.getPrefWidth(), gauge.getPrefHeight());
-            } else {
-                gauge.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
-            }
-        }
+            arc = new Arc(PREFERRED_WIDTH * 0.5, PREFERRED_HEIGHT * 0.5, PREFERRED_WIDTH * 0.96, PREFERRED_WIDTH * 0.48, 90, 0);
+            arc.setStrokeWidth(PREFERRED_WIDTH * 0.008);
+            arc.setStrokeType(StrokeType.CENTERED);
+            arc.setStrokeLineCap(StrokeLineCap.ROUND);
+            arc.setFill(null);
 
-        Color barColor = gauge.getBarColor();
-        gauge.setGradientBarStops(new Stop(0.0, barColor),
-                                           new Stop(0.01, barColor),
-                                           new Stop(0.75, barColor.deriveColor(-10, 1, 1, 1)),
-                                           new Stop(1.0, barColor.deriveColor(-20, 1, 1, 1)));
+            fakeDot = new Circle();
+            fakeDot.setStroke(null);
 
-        shadow = new DropShadow(BlurType.TWO_PASS_BOX, Color.rgb(0, 0, 0, 0.45), 0.01 * PREFERRED_WIDTH, 0, 0.01 * PREFERRED_WIDTH, 0);
+            dot = new Circle();
+            dot.setStroke(null);
+            dot.setVisible(false);
+            dot.setEffect(shadow);
 
-        circle = new Circle();
-        circle.setFill(null);
-
-        arc = new Arc(PREFERRED_WIDTH * 0.5, PREFERRED_HEIGHT * 0.5, PREFERRED_WIDTH * 0.96, PREFERRED_WIDTH * 0.48, 90, 0);
-        arc.setStrokeWidth(PREFERRED_WIDTH * 0.008);
-        arc.setStrokeType(StrokeType.CENTERED);
-        arc.setStrokeLineCap(StrokeLineCap.ROUND);
-        arc.setFill(null);
-
-        fakeDot = new Circle();
-        fakeDot.setStroke(null);
-
-        dot = new Circle();
-        dot.setStroke(null);
-        dot.setVisible(false);
-        dot.setEffect(shadow);
-
-        titleText = new Text(gauge.getTitle());
-        titleText.setFont(Fonts.robotoLight(PREFERRED_WIDTH * 0.5));
-        titleText.setFill(gauge.getTitleColor());
-        Helper.enableNode(titleText, !gauge.getTitle().isEmpty());
-
-        valueText = new Text(formatNumber(gauge.getLocale(), gauge.getFormatString(), gauge.getDecimals(), gauge.getCurrentValue()));
-        valueText.setFont(Fonts.robotoRegular(PREFERRED_WIDTH * 0.27333));
-        valueText.setFill(gauge.getValueColor());
-        Helper.enableNode(valueText, gauge.isValueVisible());
-
-        unitText = new Text(gauge.getUnit());
-        unitText.setFont(Fonts.robotoLight(PREFERRED_WIDTH * 0.08));
-        unitText.setFill(gauge.getUnitColor());
-        Helper.enableNode(unitText, !gauge.getUnit().isEmpty());
-
-        pane = new Pane(circle, arc, fakeDot, dot, titleText, valueText, unitText);
-
-        getChildren().setAll(pane);
-    }
-
-    @Override protected void registerListeners() {
-        super.registerListeners();
-        gauge.currentValueProperty().addListener(currentValueListener);
-        gauge.barColorProperty().addListener(barColorListener);
-        gauge.titleProperty().addListener(titleListener);
-        gauge.unitProperty().addListener(unitListener);
-    }
-
-
-    // ******************** Methods *******************************************
-    @Override protected void handleEvents(final String EVENT_TYPE) {
-        super.handleEvents(EVENT_TYPE);
-        if ("RECALC".equals(EVENT_TYPE)) {
-            range     = gauge.getRange();
-            angleStep = -ANGLE_RANGE / range;
-            redraw();
-        } else if ("VISIBILITY".equals(EVENT_TYPE)) {
+            titleText = new Text(gauge.getTitle());
+            titleText.setFont(Fonts.robotoLight(PREFERRED_WIDTH * 0.5));
+            titleText.setFill(gauge.getTitleColor());
             Helper.enableNode(titleText, !gauge.getTitle().isEmpty());
-        }
-    }
 
-    @Override public void dispose() {
-        gauge.currentValueProperty().removeListener(currentValueListener);
-        gauge.barColorProperty().removeListener(barColorListener);
-        gauge.titleProperty().removeListener(titleListener);
-        gauge.unitProperty().removeListener(unitListener);
-        super.dispose();
-    }
+            valueText = new Text(formatNumber(gauge.getLocale(), gauge.getFormatString(), gauge.getDecimals(), gauge.getCurrentValue()));
+            valueText.setFont(Fonts.robotoRegular(PREFERRED_WIDTH * 0.27333));
+            valueText.setFill(gauge.getValueColor());
+            Helper.enableNode(valueText, gauge.isValueVisible());
+
+            unitText = new Text(gauge.getUnit());
+            unitText.setFont(Fonts.robotoLight(PREFERRED_WIDTH * 0.08));
+            unitText.setFill(gauge.getUnitColor());
+            Helper.enableNode(unitText, !gauge.getUnit().isEmpty());
+
+            pane = new Pane(circle, arc, fakeDot, dot, titleText, valueText, unitText);
+
+            getChildren().setAll(pane);
+      }
+
+      @Override
+      protected void registerListeners() {
+            super.registerListeners();
+            gauge.currentValueProperty().addListener(currentValueListener);
+            gauge.barColorProperty().addListener(barColorListener);
+            gauge.titleProperty().addListener(titleListener);
+            gauge.unitProperty().addListener(unitListener);
+      }
 
 
-    // ******************** Resizing ******************************************
-    private void resizeTitleText() {
-        double maxWidth = 0.48 * size;
-        double fontSize = 0.08 * size;
-        titleText.setFont(Fonts.robotoLight(fontSize));
-        if (titleText.getLayoutBounds().getWidth() > maxWidth) { Helper.adjustTextSize(titleText, maxWidth, fontSize); }
-        titleText.relocate((size - titleText.getLayoutBounds().getWidth()) * 0.5, size * 0.25);
-    }
-    private void resizeValueText() {
-        double maxWidth = 0.5 * size;
-        double fontSize = 0.3 * size;
-        valueText.setFont(Fonts.robotoRegular(fontSize));
-        if (valueText.getLayoutBounds().getWidth() > maxWidth) { Helper.adjustTextSize(valueText, maxWidth, fontSize); }
-        valueText.relocate((size - valueText.getLayoutBounds().getWidth()) * 0.5, (size - valueText.getLayoutBounds().getHeight()) * 0.5);
-    }
-    private void resizeUnitText() {
-        double maxWidth = 0.56667 * size;
-        double fontSize = 0.08 * size;
-        unitText.setFont(Fonts.robotoLight(fontSize));
-        if (unitText.getLayoutBounds().getWidth() > maxWidth) { Helper.adjustTextSize(unitText, maxWidth, fontSize); }
-        unitText.relocate((size - unitText.getLayoutBounds().getWidth()) * 0.5, size * 0.68);
-    }
+      // ******************** Methods *******************************************
+      @Override
+      protected void handleEvents(final String EVENT_TYPE) {
+            super.handleEvents(EVENT_TYPE);
+            if ("RECALC".equals(EVENT_TYPE)) {
+                  range = gauge.getRange();
+                  angleStep = -ANGLE_RANGE / range;
+                  redraw();
+            } else if ("VISIBILITY".equals(EVENT_TYPE)) {
+                  Helper.enableNode(titleText, !gauge.getTitle().isEmpty());
+            }
+      }
 
-    @Override protected void resize() {
-        double width  = gauge.getWidth() - gauge.getInsets().getLeft() - gauge.getInsets().getRight();
-        double height = gauge.getHeight() - gauge.getInsets().getTop() - gauge.getInsets().getBottom();
-        size          = width < height ? width : height;
+      @Override
+      public void dispose() {
+            gauge.currentValueProperty().removeListener(currentValueListener);
+            gauge.barColorProperty().removeListener(barColorListener);
+            gauge.titleProperty().removeListener(titleListener);
+            gauge.unitProperty().removeListener(unitListener);
+            super.dispose();
+      }
 
-        if (width > 0 && height > 0) {
-            pane.setMaxSize(size, size);
-            pane.setPrefSize(size, size);
-            pane.relocate((width - size) * 0.5, (height - size) * 0.5);
 
-            center = size * 0.5;
+      // ******************** Resizing ******************************************
+      private void resizeTitleText() {
+            double maxWidth = 0.48 * size;
+            double fontSize = 0.08 * size;
+            titleText.setFont(Fonts.robotoLight(fontSize));
+            if (titleText.getLayoutBounds().getWidth() > maxWidth) {
+                  Helper.adjustTextSize(titleText, maxWidth, fontSize);
+            }
+            titleText.relocate((size - titleText.getLayoutBounds().getWidth()) * 0.5, size * 0.25);
+      }
 
-            circle.setCenterX(center);
-            circle.setCenterY(center);
-            circle.setRadius(size * 0.44);
-            circle.setStrokeWidth(size * 0.11);
+      private void resizeValueText() {
+            double maxWidth = 0.5 * size;
+            double fontSize = 0.3 * size;
+            valueText.setFont(Fonts.robotoRegular(fontSize));
+            if (valueText.getLayoutBounds().getWidth() > maxWidth) {
+                  Helper.adjustTextSize(valueText, maxWidth, fontSize);
+            }
+            valueText.relocate((size - valueText.getLayoutBounds().getWidth()) * 0.5, (size - valueText.getLayoutBounds().getHeight()) * 0.5);
+      }
 
-            arc.setCenterX(center);
-            arc.setCenterY(center);
-            arc.setRadiusX(size * 0.44);
-            arc.setRadiusY(size * 0.44);
-            arc.setStrokeWidth(size * 0.11);
+      private void resizeUnitText() {
+            double maxWidth = 0.56667 * size;
+            double fontSize = 0.08 * size;
+            unitText.setFont(Fonts.robotoLight(fontSize));
+            if (unitText.getLayoutBounds().getWidth() > maxWidth) {
+                  Helper.adjustTextSize(unitText, maxWidth, fontSize);
+            }
+            unitText.relocate((size - unitText.getLayoutBounds().getWidth()) * 0.5, size * 0.68);
+      }
 
-            shadow.setRadius(0.03 * size);
-            shadow.setOffsetX(0.03 * size);
+      @Override
+      protected void resize() {
+            double width = gauge.getWidth() - gauge.getInsets().getLeft() - gauge.getInsets().getRight();
+            double height = gauge.getHeight() - gauge.getInsets().getTop() - gauge.getInsets().getBottom();
+            size = width < height ? width : height;
 
-            Color      barColor         = gauge.getBarColor();
-            double     currentValue     = gauge.getCurrentValue();
-            List<Stop> gradientBarStops = gauge.getGradientBarStops();
+            if (width > 0 && height > 0) {
+                  pane.setMaxSize(size, size);
+                  pane.setPrefSize(size, size);
+                  pane.relocate((width - size) * 0.5, (height - size) * 0.5);
 
-            circle.setStroke(Color.color(barColor.getRed(), barColor.getGreen(), barColor.getBlue(), 0.13));
+                  center = size * 0.5;
 
-            Rectangle bounds = new Rectangle(0, 0, size, size);
+                  circle.setCenterX(center);
+                  circle.setCenterY(center);
+                  circle.setRadius(size * 0.44);
+                  circle.setStrokeWidth(size * 0.11);
 
-            gradient = new ConicalGradient(center, center, ScaleDirection.CLOCKWISE, gradientBarStops);
-            arc.setStroke(gradient.getImagePattern(bounds));
-            arc.setLength(currentValue * angleStep);
+                  arc.setCenterX(center);
+                  arc.setCenterY(center);
+                  arc.setRadiusX(size * 0.44);
+                  arc.setRadiusY(size * 0.44);
+                  arc.setStrokeWidth(size * 0.11);
 
-            fakeDot.setRadius(size * 0.055);
-            fakeDot.setFill(gradientBarStops.get(0).getColor());
+                  shadow.setRadius(0.03 * size);
+                  shadow.setOffsetX(0.03 * size);
 
-            dot.setRadius(size * 0.055);
-            dot.setFill(gradientBarStops.get(3).getColor());
+                  Color barColor = gauge.getBarColor();
+                  double currentValue = gauge.getCurrentValue();
+                  List<Stop> gradientBarStops = gauge.getGradientBarStops();
 
-            dot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180 - currentValue * angleStep)));
-            dot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180 - currentValue * angleStep)));
+                  circle.setStroke(Color.color(barColor.getRed(), barColor.getGreen(), barColor.getBlue(), 0.13));
 
-            titleText.setFill(barColor);
+                  Rectangle bounds = new Rectangle(0, 0, size, size);
 
-            resizeTitleText();
+                  gradient = new ConicalGradient(center, center, ScaleDirection.CLOCKWISE, gradientBarStops);
+                  arc.setStroke(gradient.getImagePattern(bounds));
+                  arc.setLength(currentValue * angleStep);
+
+                  fakeDot.setRadius(size * 0.055);
+                  fakeDot.setFill(gradientBarStops.get(0).getColor());
+
+                  dot.setRadius(size * 0.055);
+                  dot.setFill(gradientBarStops.get(3).getColor());
+
+                  dot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180 - currentValue * angleStep)));
+                  dot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180 - currentValue * angleStep)));
+
+                  titleText.setFill(barColor);
+
+                  resizeTitleText();
+                  resizeValueText();
+                  resizeUnitText();
+
+                  redraw();
+            }
+      }
+
+      @Override
+      protected void redraw() {
+            double currentValue = gauge.getCurrentValue();
+            double angle = currentValue * angleStep;
+            double rotate = angle < -360 ? angle + 360 : 0;
+
+            arc.setRotate(-rotate);
+            arc.setLength(Helper.clamp(-360.0, 0.0, angle));
+
+            dot.setRotate(-angle);
+            dot.setVisible(angle < -345);
+
+            if (angle < -360) {
+                  fakeDot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180 + angle)));
+                  fakeDot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180 + angle)));
+            } else {
+                  fakeDot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180)));
+                  fakeDot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180)));
+            }
+
+            dot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180 + angle)));
+            dot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180 + angle)));
+
+            titleText.setFill(gauge.getTitleColor());
+            valueText.setFill(gauge.getValueColor());
+            unitText.setFill(gauge.getUnitColor());
+
+            valueText.setText(formatNumber(gauge.getLocale(), gauge.getFormatString(), gauge.getDecimals(), gauge.getCurrentValue()));
             resizeValueText();
-            resizeUnitText();
-
-            redraw();
-        }
-    }
-
-    @Override protected void redraw() {
-        double currentValue = gauge.getCurrentValue();
-        double angle        = currentValue * angleStep;
-        double rotate       = angle  < -360 ? angle  + 360 : 0;
-
-        arc.setRotate(-rotate);
-        arc.setLength(Helper.clamp(-360.0, 0.0, angle));
-
-        dot.setRotate(-angle);
-        dot.setVisible(angle < -345);
-
-        if (angle < -360) {
-            fakeDot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180 + angle)));
-            fakeDot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180 + angle)));
-        } else {
-            fakeDot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180)));
-            fakeDot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180)));
-        }
-
-        dot.setCenterX(center + arc.getRadiusX() * Math.sin(Math.toRadians(180 + angle)));
-        dot.setCenterY(center + arc.getRadiusY() * Math.cos(Math.toRadians(180 + angle)));
-
-        titleText.setFill(gauge.getTitleColor());
-        valueText.setFill(gauge.getValueColor());
-        unitText.setFill(gauge.getUnitColor());
-
-        valueText.setText(formatNumber(gauge.getLocale(), gauge.getFormatString(), gauge.getDecimals(), gauge.getCurrentValue()));
-        resizeValueText();
-    }
+      }
 }

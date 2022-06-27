@@ -33,71 +33,69 @@ import javafx.scene.layout.StackPane;
  */
 public class FMTextEditor extends FMText //implements Serializable
 {
-    /**
-     * VARIABLES
-     **/
-    private Button clearButton;
-    private HBox buttonBox;
-    
+      /**
+       * VARIABLES
+       **/
+      private Button clearButton;
+      private final HBox buttonBox;
 
-    /**
-     * Full constructor
-     * @param prompt The prompt that will exist before the EncryptedUser.EncryptedUser begins typing
-     */
-    public FMTextEditor(String prompt, Double x, double y, double wd, double ht)
-    {
-        super(prompt, x, y, wd, ht);
 
-        textArea.setEditable(true);
-        textArea.requestFocus();
-        buttonBox = new HBox(2);
-        //buttonBox.setPadding(new Insets(2, 2, 2, 2));
-        buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
-        
-        stackPane.getChildren().add(buttonBox);
-    }
+      /**
+       * Full constructor
+       *
+       * @param prompt The prompt that will exist before the EncryptedUser.EncryptedUser begins typing
+       */
+      public FMTextEditor(String prompt, Double x, double y, double wd, double ht) {
+            super(prompt, x, y, wd, ht);
 
-    
-    public StackPane getTextEditor() {
-        return this.stackPane;
-    }
-    
-    /**
-     * Returns the input text from the text area. Uses
-     * getText from TextArea class.
-     *
-     * @return returns the String input from the text area
-     */
-    public String getText()
-    {
-        return textArea.getText();
-    }
-    
-    
-    public void setText(String text) {
-        textArea.setText(text);
-    }
-    
-    /**
-     * Adds a button at index 0 to the buttonBox
-     * in the bottom right corner.
-     */
-    public void addButtons(Button ... buttons) {
-        this.buttonBox.getChildren().addAll(buttons);
-    }
+            textArea.setEditable(true);
+            textArea.requestFocus();
+            buttonBox = new HBox(2);
+            //buttonBox.setPadding(new Insets(2, 2, 2, 2));
+            buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
 
-    /**
-     * clearTextArea() method clears the Question Pane
-     * Void method.
-     */
-    protected void clearTextArea()
-    {
-        textArea.setText("");
-        textArea.requestFocus();
-    }
-    
-    public void requestFocus() {
-        textArea.requestFocus();
-    }
+            stackPane.getChildren().add(buttonBox);
+      }
+
+
+      public StackPane getTextEditor() {
+            return this.stackPane;
+      }
+
+      /**
+       * Returns the input text from the text area. Uses
+       * getText from TextArea class.
+       *
+       * @return returns the String input from the text area
+       */
+      public String getText() {
+            return textArea.getText();
+      }
+
+
+      public void setText(String text) {
+            textArea.setText(text);
+      }
+
+      /**
+       * Adds a button at index 0 to the buttonBox
+       * in the bottom right corner.
+       */
+      public void addButtons(Button... buttons) {
+            this.buttonBox.getChildren().addAll(buttons);
+      }
+
+      /**
+       * clearTextArea() method clears the Question Pane
+       * Void method.
+       */
+      protected void clearTextArea() {
+            textArea.setText("");
+            textArea.requestFocus();
+      }
+
+      public void requestFocus() {
+            textArea.requestFocus();
+      }
 
 }

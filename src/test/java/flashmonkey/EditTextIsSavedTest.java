@@ -190,12 +190,12 @@ public class EditTextIsSavedTest extends ApplicationTest {
             robot.clickOn(xy);
             sleep(200);
             // set xy to delete question text to clear the field
-            xy = cfp.getEditorU().getClearTextBtnXY();
+            xy = cfp.getEditor_L_ForTestingOnly().getClearTextBtnXY();
             robot.clickOn(xy);
             // check text area is clear
-            assertTrue("Question area did not clear on textDel button click", cfp.getEditorU().getPlainText().equals(""));
+            assertTrue("Question area did not clear on textDel button click", cfp.getEditor_U_ForTestingOnly().getText().equals(""));
             // edit text in upper text area
-            xy = cfp.getEditorU().getTextAreaXY();
+            xy = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
             robot.clickOn(xy);
             write(editedQMsg + i + ".........");
             // take snapshot of text
@@ -210,8 +210,7 @@ public class EditTextIsSavedTest extends ApplicationTest {
             File aFile = new File(ansFileStr);
 
             Platform.runLater(() -> {
-                // @TODO EditTextIsSavedTest textImages line 213
-//                textImages[i][0] = CreateFlash.getInstance().getEditorU().textEditor.getTextArea().snapshot(snapParams, null);
+                textImages[i][0] = CreateFlash.getInstance().getEditor_U_ForTestingOnly().tCell.getTextArea().snapshot(snapParams, null);
 
                 try {
 
@@ -225,19 +224,18 @@ public class EditTextIsSavedTest extends ApplicationTest {
 
 
             // set xy to delete answer text to clear the field
-            xy = cfp.getEditorL().getClearTextBtnXY();
+            xy = cfp.getEditor_L_ForTestingOnly().getClearTextBtnXY();
             robot.clickOn(xy);
             // check text area is clear
-            assertTrue("Question area did not clear on textDel button click", cfp.getEditorL().getPlainText().equals(""));
+            assertTrue("Question area did not clear on textDel button click", cfp.getEditor_L_ForTestingOnly().getText().equals(""));
 
             // edit text in lower text area
-            xy = cfp.getEditorL().getTextAreaXY();
+            xy = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
             robot.clickOn(xy);
             write(editedAnsMsg + i + ".........");
 
             Platform.runLater(() -> {
-                // @TODO EditTextIsSavedTest textImages line 213
-//                textImages[i][1] = CreateFlash.getInstance().getEditorL().textEditor.getTextArea().snapshot(snapParams, null);
+                textImages[i][1] = CreateFlash.getInstance().getEditor_L_ForTestingOnly().tCell.getTextArea().snapshot(snapParams, null);
                 try {
                     ImageIO.write(SwingFXUtils.fromFXImage(textImages[i][1], null), "png", aFile);
                 } catch (Exception e) {
@@ -254,9 +252,9 @@ public class EditTextIsSavedTest extends ApplicationTest {
         for(int idx = 0; idx < 4; idx++) {
 
             // check text in upper text area
-            assertEquals("\nText did not match in upper text area on card [" + idx + "]", cfp.getEditorU().getPlainText(), editedQMsg + idx + ".........");
+            assertEquals("\nText did not match in upper text area on card [" + idx + "]", cfp.getEditor_U_ForTestingOnly().getText(), editedQMsg + idx + ".........");
             // check text in lower text area
-            assertEquals("Text did not match in lower text area on card [" + idx + "]", cfp.getEditorL().getPlainText(), editedAnsMsg + idx + ".........");
+            assertEquals("Text did not match in lower text area on card [" + idx + "]", cfp.getEditor_L_ForTestingOnly().getText(), editedAnsMsg + idx + ".........");
             //set xy to next button
             if(idx < 3) {
                 robot.clickOn(xy);
@@ -270,7 +268,7 @@ public class EditTextIsSavedTest extends ApplicationTest {
         // system for any errors.
 
         // Save deck changes
-        xy = cfp.getSaveDeckButtonXY();
+        // xy = cfp.getSaveDeckButtonXY();
         robot.clickOn(xy);
         sleep(500);
 

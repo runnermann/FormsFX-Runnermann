@@ -23,43 +23,42 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class ReportError extends AppenderBase<ILoggingEvent> {
-	// Haaaa Haaaa!!! cannot use logger here. Causes an initialization error.
-	//private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ReportError.class);
-	
-	private static Connection connect;
-	static int DEFAULT_LIMIT = 10;
-	int counter = 0;
-	int limit = DEFAULT_LIMIT;
+      // Haaaa Haaaa!!! cannot use logger here. Causes an initialization error.
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ReportError.class);
 
-	boolean connectedAlready;
-	long connectedTime;
-	
-	private void init() {
-		if(! isConnected()) {
-			return;
-		}
-		
-		DBConnect db = DBConnect.getInstance();
-		connect = null;
-		try {
-			//System.out.println("ReportError.init() attempting connection");
-			connect = db.getConnection();
-		}
-		catch (Exception e) {
-			//System.out.println("ReportError.init() EXCEPTION: @init() did not connect to DB");
-			connect = null;
-			e.printStackTrace();
-		}
-	}
-	
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-	
-	
-	@Override
-	public void append(ILoggingEvent event) {
-		/* Send event to database error log */
+      private static Connection connect;
+      static int DEFAULT_LIMIT = 10;
+      int counter = 0;
+      int limit = DEFAULT_LIMIT;
+
+      boolean connectedAlready;
+      long connectedTime;
+
+      private void init() {
+            if (!isConnected()) {
+                  return;
+            }
+
+            DBConnect db = DBConnect.getInstance();
+            connect = null;
+            try {
+                  //System.out.println("ReportError.init() attempting connection");
+                  connect = db.getConnection();
+            } catch (Exception e) {
+                  //System.out.println("ReportError.init() EXCEPTION: @init() did not connect to DB");
+                  connect = null;
+                  e.printStackTrace();
+            }
+      }
+
+      public void setLimit(int limit) {
+            this.limit = limit;
+      }
+
+
+      @Override
+      public void append(ILoggingEvent event) {
+            /* Send event to database error log */
 		/*init();
 		
 		if (counter >= limit) {
@@ -112,38 +111,38 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
 			} finally {
 				//connect.disconnect();
 			}*/
-		
-		//System.out.println("callerData.getMethodName() " + callerData.getMethodName());
-		//System.out.println("callerData.getLineNumber() " + callerData.getLineNumber());
-		
-	}
-	
-	private boolean isConnected() {
-		long now = System.currentTimeMillis();
-		long result = now - connectedTime;
-		if(connectedAlready && result < 5000) {
-			return true;
-		} else {
-			connectedAlready = false;
-			try {
-				String url = "https://www.flashmonkey.xyz";
-				HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-				connection.setRequestMethod("HEAD");
-				int responseCode = connection.getResponseCode();
 
-				if (responseCode != 200) {
-					return false;
-				}
-				connectedAlready = true;
-				connectedTime = System.currentTimeMillis();
-				return true;
+            //System.out.println("callerData.getMethodName() " + callerData.getMethodName());
+            //System.out.println("callerData.getLineNumber() " + callerData.getLineNumber());
 
-			} catch (ProtocolException e) {
-				//LOGGER.warn(e.getMessage());
-			} catch (IOException e) {
-				//LOGGER.warn(e.getMessage());
-			}
-			return false;
-		}
-	}
+      }
+
+      private boolean isConnected() {
+            long now = System.currentTimeMillis();
+            long result = now - connectedTime;
+            if (connectedAlready && result < 5000) {
+                  return true;
+            } else {
+                  connectedAlready = false;
+                  try {
+                        String url = "https://www.flashmonkey.xyz";
+                        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                        connection.setRequestMethod("HEAD");
+                        int responseCode = connection.getResponseCode();
+
+                        if (responseCode != 200) {
+                              return false;
+                        }
+                        connectedAlready = true;
+                        connectedTime = System.currentTimeMillis();
+                        return true;
+
+                  } catch (ProtocolException e) {
+                        //LOGGER.warn(e.getMessage());
+                  } catch (IOException e) {
+                        //LOGGER.warn(e.getMessage());
+                  }
+                  return false;
+            }
+      }
 }
