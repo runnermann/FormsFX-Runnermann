@@ -172,10 +172,10 @@ public class CreateCards extends ApplicationTest {
         {
             System.out.println("in loop");
             // Click question area
-            robot.clickOn(createFlash.getUpperTextXY());
+            robot.clickOn(createFlash.getEditor_U_ForTestingOnly().getTextAreaXY());
             write("Question" + i);
             // click answer area
-            robot.clickOn(createFlash.getLowerTextXY());
+            robot.clickOn(createFlash.getEditor_L_ForTestingOnly().getTextAreaXY());
             write("answer" + i);
             // click next card button
             robot.clickOn(createFlash.getNewCardBtnXY());
@@ -249,7 +249,7 @@ public class CreateCards extends ApplicationTest {
                 strBuilder.append(" \u2b1b");
             }
             String qStr = "-q " + i + strBuilder + " --------------";
-            robot.clickOn(createFlash.getUpperTextXY());
+            robot.clickOn(createFlash.getEditor_U_ForTestingOnly().getTextAreaXY());
             write(qStr);
 
 
@@ -287,7 +287,7 @@ public class CreateCards extends ApplicationTest {
        //     sleep(500);
 
             // click answer area
-            robot.clickOn(createFlash.getLowerTextXY());
+            robot.clickOn(createFlash.getEditor_L_ForTestingOnly().getTextAreaXY());
             String aStr = "-a " + i + strBuilder + " --------------";
             write(aStr);
 

@@ -2041,12 +2041,12 @@ public class SectionEditor {
 
       @FMAnnotations.DoNotDeployMethod
       public Point2D getTextAreaXY() {
-            return tCell.getTextArea().localToScreen(stackL.getLayoutX() + 40, stackL.getLayoutY() + 40);
+            Bounds bounds = stackL.getLayoutBounds();
+            return tCell.getTextArea().localToScreen(bounds.getMinX() + 50, stackL.getLayoutY() + 40);
       }
 
       @FMAnnotations.DoNotDeployMethod
       public Point2D getClearTextBtnXY() {
-
             Bounds bounds = clearBtn.getLayoutBounds();
             return clearBtn.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
       }

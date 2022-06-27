@@ -322,7 +322,7 @@ public class FMAlerts {
 
       @FMAnnotations.DoNotDeployMethod
       public static Point2D getOKBtnXY() {
-            return new Point2D(alert.getX() + 380, alert.getY() + 140);
+            return new Point2D(alert.getX() + 200, alert.getY() + 134);
       }
 
       @FMAnnotations.DoNotDeployMethod

@@ -117,7 +117,6 @@ public class TextCell {
        * @param textStyle Expects style as a String.
        */
       public final void setTextAreaStyle(String textStyle) {
-
             this.textArea.setStyle(textStyle);
       }
 }

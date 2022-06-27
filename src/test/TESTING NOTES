@@ -1,0 +1,3 @@
+Notes for Testing on mac: OS > Mohave:
+
+You must give permission for the robot to click on the screen by going to Security ->  Accessibility and allow the IDE or IntelliJ IDEA by clicking on the box adjacent to it.

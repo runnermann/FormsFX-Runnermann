@@ -2084,16 +2084,21 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             return saveReturnButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
       }
 
-      @FMAnnotations.DoNotDeployMethod
-      public Point2D getUpperTextXY() {
-            Bounds bounds = editors.EDITOR_U.tCell.getTextCellVbox().getBoundsInParent();
-            return new Point2D(bounds.getMinX() + 20, bounds.getMinY() + 20);//editors.EDITOR_U.tCell.getTextArea().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-      }
+//      @FMAnnotations.DoNotDeployMethod
+//      public Point2D getUpperTextXY() {
+//
+//            return new Point2D(bounds.getMinX() + 30, bounds.getMinY() + 30);//editors.EDITOR_U.tCell.getTextArea().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+//      }
+//
+//      @FMAnnotations.DoNotDeployMethod
+//      public Point2D getLowerTextXY() {
+//            Bounds bounds = editors.EDITOR_L.tCell.getTextCellVbox().getLayoutBounds(); //getTextArea().getLayoutBounds();
+//            return editors.EDITOR_L.tCell.getTextArea().localToScreen(bounds.getMinX() + 20, bounds.getMinY() + 20);
+//      }
 
       @FMAnnotations.DoNotDeployMethod
-      public Point2D getLowerTextXY() {
-            Bounds bounds = editors.EDITOR_L.tCell.getTextCellVbox().getLayoutBounds(); //getTextArea().getLayoutBounds();
-            return editors.EDITOR_L.tCell.getTextArea().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      public Point2D getLowerTextClearBtnXY() {
+            return  editors.EDITOR_L.getClearTextBtnXY();
       }
 
       @FMAnnotations.DoNotDeployMethod
