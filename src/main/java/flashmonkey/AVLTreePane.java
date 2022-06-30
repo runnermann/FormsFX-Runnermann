@@ -197,6 +197,9 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             }
             // If node is selected make it larger and set
             // a larger stroke width
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // NOTE!!! USING REFERENCE NOT .equals(...)
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if (root == FMTWalker.getCurrentNode()) {
                   circle = new Circle(x, y, SELECTED);
                   circle.setStrokeWidth(2);
@@ -288,8 +291,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
       private Circle createCircle(Circle circle, FMTree.Node node) {
             LOGGER.debug("CreateCircle Called");
 
-            circle.setOnMouseEntered((MouseEvent event) ->
-            {
+            circle.setOnMouseEntered((MouseEvent event) -> {
                   FlashCardMM currentCard = (FlashCardMM) node.getData();
 
                   String text = currentCard.getQText();
@@ -333,7 +335,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                         }
                   }
 
-                  if (!text.isEmpty()) {
+                  if ( ! text.isEmpty()) {
                         qTip.setText(text);
                   } else {
                         qTip.setText("This flashcard has no content");
@@ -362,22 +364,30 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        * @param node
        */
       private void creatorFlashTreeOnClick( FMTree.Node node) {
+
             CreateFlash cfp = CreateFlash.getInstance();
-            LOGGER.debug("currentCard: \n{}",   (FlashCardMM) node.getData());
+            //LOGGER.debug("currentCard: \n{}",   (FlashCardMM) node.getData());
+            FlashCardMM selectedCard = (FlashCardMM) node.getData();
+            // because we reset the tree on delete, and buildTree uses references
+            // when comparing two nodes, we must set the current node to the
+            // new list. hahahahahahaaaaaa!
+            int idx = selectedCard.getANumber();
 
             boolean moveOK = cfp.cardOnExitActions(true );
             if ( moveOK ) {
-                  FMTWalker.setCurrentNode(node);
-                  // Display the tree
-                  displayTree();
+                  // Set the treeWalker current node to the new reference for
+                  // the selected node.
+                  selectedCard = (FlashCardMM) CreateFlash.getInstance().getCreatorList().get(idx);
 
-                  FlashCardMM currentCard = (FlashCardMM) node.getData();
-
-
+                  FlashCardOps fco = FlashCardOps.getInstance();
+                  fco.getTreeWalker().setCurrentNode(selectedCard);
 
                   // SET THE SECTIONS TO THE CURRENT CARDS DATA
-                  CreateFlash.getInstance().setListIdx(currentCard.getANumber());
-                  CreateFlash.getInstance().setSectionEditors(currentCard);
+                  CreateFlash.getInstance().setListIdx(idx);
+                  CreateFlash.getInstance().setSectionEditors(selectedCard);
+
+                  // Display the tree
+                  displayTree();
             }
             // do nothing. Should be handled by popup
       }
@@ -391,7 +401,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             ReadFlash rf = ReadFlash.getInstance();
             FlashCardMM oldCC = (FlashCardMM) FMTWalker.getInstance().getData();
             int oldNum = oldCC.getCNumber();
-            FMTWalker.setCurrentNode(node);
+            FMTWalker.getInstance().setCurrentNode(node);
             // Display the tree
             displayTree();
             FlashCardMM currentCard = (FlashCardMM) node.getData();

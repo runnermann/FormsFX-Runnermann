@@ -254,7 +254,6 @@ public class FMAlerts {
             alert.setHeaderText(null);
             alert.setContentText(alertMsg);
             // okButton Name
-
             alert.getButtonTypes().clear();
 
 		ButtonType bt1 = new ButtonType(confirmName);

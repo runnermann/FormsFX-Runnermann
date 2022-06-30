@@ -392,7 +392,6 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
         assertTrue("Adding a perfect card to the deck", length + 2 == cfp.getCreatorList().size());
 
-
     }
 
 
@@ -409,10 +408,8 @@ public class CreateFlashCloseTester extends ApplicationTest {
         setUpFileExists();
         sleep(60);
 
-
         Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
         robot.clickOn(xy);
-
 
         // Click on 1st element:: From last to 1
         xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(1);
@@ -567,14 +564,9 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
         // confirm node is deleted
         int changedLength = cfp.getCreatorList().size();
-        sleep(3000);
+        sleep(60000);
         assertTrue("When a card is deleted from the \" error dialogue\" it should be deleted",  changedLength < length);
         assertTrue("Card showing should be the 4th node.",  cfp.getEditor_U_ForTestingOnly().getText().equalsIgnoreCase("q4"));
-
-
-
-
-
     }
 
 
