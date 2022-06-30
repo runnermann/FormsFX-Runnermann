@@ -89,7 +89,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
       }
 
       public void setHighlighted(FlashCardMM fc) {
-
             this.highlighted = fc.getANumber();
       }
 
@@ -201,8 +200,10 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             if (root == FMTWalker.getCurrentNode()) {
                   circle = new Circle(x, y, SELECTED);
                   circle.setStrokeWidth(2);
+                  circleArray.add(circle);
             } else if (((FlashCardMM) root.getData()).getANumber() == highlighted) {
                   circle = new Circle(x, y, UNSELECTED);
+                  circleArray.add(circle);
                   //circleArray.add(circle);
                   circle.setStrokeWidth(2);
                   circle.setStroke(Color.web("#9276AC"));
@@ -219,6 +220,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             // If node is not selected make it normal size
             else {
                   circle = new Circle(x, y, UNSELECTED);
+                  circleArray.add(circle);
                   circle.setStrokeWidth(2);
                   //circleArray.add(circle);
             }
@@ -285,7 +287,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        */
       private Circle createCircle(Circle circle, FMTree.Node node) {
             LOGGER.debug("CreateCircle Called");
-            circleArray.add(circle);
 
             circle.setOnMouseEntered((MouseEvent event) ->
             {
@@ -364,7 +365,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             CreateFlash cfp = CreateFlash.getInstance();
             LOGGER.debug("currentCard: \n{}",   (FlashCardMM) node.getData());
 
-            boolean moveOK = cfp.cardOnExitActions();
+            boolean moveOK = cfp.cardOnExitActions(true );
             if ( moveOK ) {
                   FMTWalker.setCurrentNode(node);
                   // Display the tree
@@ -372,9 +373,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
                   FlashCardMM currentCard = (FlashCardMM) node.getData();
 
-                  // RESET THE SECTIONS
-                  //CreateFlash.getInstance().resetSectionEditors();
-                  //CreateFlash.getInstance().getEditorU().resetSection();
+
 
                   // SET THE SECTIONS TO THE CURRENT CARDS DATA
                   CreateFlash.getInstance().setListIdx(currentCard.getANumber());
@@ -446,7 +445,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             {
                   return Color.web("#3AFF66"); // FM green  #188A07
             }
-            if (numRt < numSeen)  // rarely answers correctly
+            if ( numRt < numSeen )  // rarely answers correctly
             {
                   return Color.web("#D80519"); // FM dark red #8D060A
             } else  // question is neither good nore bad.

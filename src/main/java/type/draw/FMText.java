@@ -19,6 +19,7 @@
 
 package type.draw;
 
+import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.Insets;
 //import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
@@ -35,9 +36,9 @@ import java.io.Serializable;
  *
  * @author Lowell Stadelman
  */
-public class FMText //implements Serializable
+public class FMText implements Serializable
 {
-      //private static final long serialVersionUID = FlashMonkeyMain.VERSION;
+     private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
       /**
        * Variables
@@ -73,10 +74,10 @@ public class FMText //implements Serializable
             stackPane.setMinSize(wd, ht);
             textArea = new TextArea();
             stackPane.setPadding(new Insets(6, 4, 6, 4));
-            stackPane.setStyle("-fx-background-color: white");
             stackPane.setAlignment(Pos.BOTTOM_LEFT);
             textArea.setWrapText(true);
             textArea.setPromptText(promptTxt);
+            textArea.setStyle("-fx-background-color: TRANSPARENT;");
 
             stackPane.getChildren().add(textArea);
       }

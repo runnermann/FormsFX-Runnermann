@@ -50,6 +50,7 @@ public class FMTextEditor extends FMText //implements Serializable
 
             textArea.setEditable(true);
             textArea.requestFocus();
+            textArea.setStyle("-fx-background-color: TRANSPARENT");
             buttonBox = new HBox(2);
             //buttonBox.setPadding(new Insets(2, 2, 2, 2));
             buttonBox.setAlignment(Pos.BOTTOM_RIGHT);

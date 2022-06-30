@@ -513,7 +513,9 @@ public class FMNotifications {
                               if ((text == null || text.isEmpty()) && (graphic != null)) {
                                     return graphic.minHeight(width);
                               }
-                              return 100;
+                              int num = text.split("\n").length -1;
+                              double ht = 40 + (num * 20);
+                              return ht;
                         }
 
                         @Override

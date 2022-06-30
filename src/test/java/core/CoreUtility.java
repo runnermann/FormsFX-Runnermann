@@ -1,11 +1,20 @@
 package core;
 
+import authcrypt.UserData;
+import fileops.DirectoryMgr;
+import fileops.utility.Utility;
 import javafx.application.Platform;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class CoreUtility {
 
@@ -54,6 +63,27 @@ public class CoreUtility {
             String home = System.getProperty("user.home");
             return home + "/Library/Application Support";
         }
+    }
+
+    public static boolean deleteTestFile(String fileName, String userName) {
+
+        String SYSTEM_DIR = DirectoryMgr.getWorkingDirectory();
+        String userNameHash = Utility.getMd5Hex(userName.toLowerCase());
+
+        String dirStr = SYSTEM_DIR + "/FlashMonkeyData/" + userNameHash + "/decks/";
+        String deckStr = dirStr + fileName;
+
+        File dir = new File(dirStr);
+
+        File file = new File(deckStr);
+        LOGGER.debug("deleting directory: {}", dir);
+        if(file.exists())  {
+            LOGGER.debug("directory exists? {} ... deleting", true );
+            file.delete();
+            dir.delete();
+            return true;
+        }
+        return false;
     }
     
 }

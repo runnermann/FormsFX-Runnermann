@@ -76,11 +76,8 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
     private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlashCloseTester.class);
 
-    // Create 4 cards with shapes and images
-//    CreateFlash cf = CreateFlash.getInstance();
-//    String deckName = "Testing_DO_NOT_DELETE.dec";
-//    int testType = MultiChoice.getInstance().getTestType();
-//    char cardType = MultiChoice.getInstance().getCardLayout();
+    String userName = "idk@idk.com";
+    String deckName = "906b1830bb8c5bcbe8a90541d5a8c30d_906b1830bb8c5bcbe8a90541d5a8c30d$TestingDeck.dec";
 
     private Canvas originalCanvas;
     // The FXRobot
@@ -144,7 +141,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
         // Allow to connect to the internet?
         Utility.allowConnection(false);
-        removePreviousFile();
+        //removePreviousFile();
 
         // Log in
         robot.robotSetup(userName, pw);
@@ -159,20 +156,6 @@ public class CreateFlashCloseTester extends ApplicationTest {
         delta_Y = (int) window.getY();
         create = new CreateCards(delta_X, delta_Y);
 
-    }
-
-    public boolean removePreviousFile() throws IOException {
-        // File name specific to IDK@IDK.com
-        File dir = new File(DirectoryMgr.getWorkingDirectory() + "/FlashMonkeyData/906b1830bb8c5bcbe8a90541d5a8c30d/decks" );
-        File file = new File(dir + "/906b1830bb8c5bcbe8a90541d5a8c30d_906b1830bb8c5bcbe8a90541d5a8c30d$TestingDeck.dec");
-        LOGGER.debug("deleting directory: {}", dir);
-        if(file.exists())  {
-            LOGGER.debug("directory exists? {} ... deleting", true );
-            file.delete();
-            dir.delete();
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -256,11 +239,22 @@ public class CreateFlashCloseTester extends ApplicationTest {
     /////////////////////////////////////////////////////////////////////////////
 
 
+    /**
+     * Expects FlashCardData for this user to be empty.
+     * Checks if the combo box creates a popup error message if
+     * the user does not set the test type first.
+     * @throws Exception
+     */
     @Test
     @Order(1)
-    void testComboBoxIgnoredCausesPopup() throws Exception {
+    void test_ComboBox_Ignored_Causes_Popup() throws Exception {
         CreateFlash cfp = CreateFlash.getInstance();
-        //cfp.createFlashScene();
+
+        boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
+        assertTrue("Test deck file was not deleted", deleted);
+
+
+
         setup("idk@idk.com","bangBang#01");
         sleep(100);
         CoreUtility cu = new CoreUtility();
@@ -281,27 +275,27 @@ public class CreateFlashCloseTester extends ApplicationTest {
         Point2D xyUType = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
         robot.clickOn(xyUType.getX() + 100, xyUType.getY());
 
-        sleep(50);
+        sleep(5000);
         assertTrue(FxNotify.notificationIsShowing());
     }
 
     // **** DATA TESTING: CREATE ERROR MESSAGE POPUP ****
     @Test
     @Order(2)
-    void test_TEXT_InEditorUOnlyCausesPopup() throws Exception {
-        //how do we test if we have the correct image?+
+    void test_TEXT_In_Editor_U_Only_Causes_Popup_on_newCardButton() throws Exception {
 
         CreateFlash cfp = CreateFlash.getInstance();
+        boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
+        assertTrue("Test deck file was not deleted", deleted);
         //cfp.createFlashScene();
         setup("idk@idk.com","bangBang#01");
-        sleep(200);
+        sleep(60);
         create.writeDeckNameHelper();
-        //sleep(1000);
-
+        sleep(60);
         // Set CARD TYPE to Multi-Choice. Multi-choice is the top
         // choice in the CardType drpdown button. The DropDown
         // button should start opened.
-        sleep(200);
+
         // The EntryCombobox should start in the open position.
         // assertTrue(CreateFlash.getInstance().entryComboBoxIsShowing());
         //System.out.println("EntryComboBox is showing? : " + CreateFlash.getInstance().entryComboBoxIsShowing());
@@ -319,7 +313,84 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
         Point2D xy = CreateFlash.getInstance().getNewCardBtnXY();
         robot.clickOn(xy);
+        assertTrue("moving from an non-perfect card should cause an error message.", FMAlerts.notificationIsShowing());
         sleep(6000);
+
+    }
+
+    /**
+     * Test that adding an incomplete card at the end of the deck, on error
+     * message, if user selects to save, the deck adds a new card and the
+     * new card is displayed in the section editors.
+     * @throws Exception
+     */
+    @Test
+    @Order(3)
+    void test_add_card_and_non_perfect_card_at_end_of_deck() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
+        assertTrue("Test deck file was not deleted", deleted);
+        //cfp.createFlashScene();
+        setup("idk@idk.com","bangBang#01");
+        sleep(200);
+        create.writeDeckNameHelper();
+        // The EntryCombobox should start in the open position.
+        // assertTrue(CreateFlash.getInstance().entryComboBoxIsShowing());
+        //System.out.println("EntryComboBox is showing? : " + CreateFlash.getInstance().entryComboBoxIsShowing());
+        // Select multiChoice card type
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(200);
+
+        int length = cfp.getCreatorList().size();
+
+        // Write in the upper text area and attempt to add a new card.
+        // Should create a popup message.
+        Point2D xyLType = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(xyLType);
+        sleep(100);
+
+        robot.write(" - Text only in lower area. Should  cause a msg.");
+        sleep(50);
+
+        // find the add card button and click on it.
+        Point2D xy = CreateFlash.getInstance().getNewCardBtnXY();
+        robot.clickOn(xy);
+        sleep(50);
+
+        // check that the error message is displayed then click on the
+        // save button.
+        assertTrue("moving from an non-perfect card should cause an error message.", FMAlerts.notificationIsShowing());
+
+        // click on save
+        xy = FMAlerts.getCancelBtnXY();
+        robot.moveTo(xy.getX() + 80, xy.getY() +80);
+        sleep(3000);
+        robot.clickOn(xy.getX() + 80, xy.getY() + 80);
+
+        // check deck length is + 1
+        assertTrue("Adding a non-perfect card to the deck", length + 1 == cfp.getCreatorList().size());
+
+        // add a perfect card
+        Point2D xyUType = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(xyUType);
+        sleep(100);
+
+        robot.write(" - Text in upper area.");
+        sleep(50);
+
+        // write in  lower area
+        robot.clickOn(xyLType);
+        sleep(100);
+        robot.write(" - Text in lower area.");
+        sleep(50);
+
+        // find the add card button and click on it.
+        xy = CreateFlash.getInstance().getNewCardBtnXY();
+        robot.clickOn(xy);
+        sleep(50);
+
+        assertTrue("Adding a perfect card to the deck", length + 2 == cfp.getCreatorList().size());
 
 
     }
@@ -328,8 +399,8 @@ public class CreateFlashCloseTester extends ApplicationTest {
     ////////   CHECK TREE   ////////
 
     @Test
-    @Order(3)
-    void test_changes_onTreeClick_error_dialoge() throws Exception {
+    @Order(4)
+    void test_edit_save_deleteFirstCard_onTreeClick_error_dialoge() throws Exception {
         CreateFlash cfp = CreateFlash.getInstance();
       //  ReadFlash rf = ReadFlash.getInstance();
         setup("testeroffline@flashmonkey.xyz", "bangBang#01");
@@ -341,11 +412,9 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
         Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
         robot.clickOn(xy);
-        sleep(50);
 
-        // NOT a perfect solution. There are 30 elements in array created by AVLTreePane that is used
-        // for this tester.
-        // Click on 4th element:: From 5 to 4
+
+        // Click on 1st element:: From last to 1
         xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(1);
         robot.clickOn(xy);
         sleep(60);
@@ -376,13 +445,15 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
         // clear text and move to another card
         // should cause an error message.
-        // Click on last element:: From 3 to 5
+        // save the card and should move to next
+        // node/card
         LOGGER.debug("deleting text in lower editor, then clicking on another node in tree\n" +
             "should cause an error message popup.");
         xy = cfp.getLowerTextClearBtnXY(); //.getClearTextBtnXY();
         robot.clickOn(xy);
         sleep(60);
-
+        // move to 3
+        // should cause an error message
         xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
         robot.clickOn(xy);
         sleep(100);
@@ -394,70 +465,121 @@ public class CreateFlashCloseTester extends ApplicationTest {
         robot.moveTo(xy);
         robot.clickOn(xy);
         sleep(60);
+        // should move to node three
+
+        // on error message, cancel
+        // edit and continue.
+        // Click on zero, should be non-perfect.
         xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(0);
         robot.clickOn(xy);
+        sleep(60);
 
-        assertTrue("Lower text area should be clear of text. Save on \"error dialogue\" did not save change. ", cfp.getEditor_L_ForTestingOnly().getText().isEmpty());
-        bumpMouse(xy);
-        bumpMouse(xy);
-        sleep(6000);
-        sleep(2000);
+        // should cause an error popup
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(4);
+        robot.clickOn(xy);
+        sleep(60);
 
+        // click on cancel and edit check if we can edit.
+        xy = FMAlerts.getXBtnXY();
+        robot.clickOn(xy);
+        sleep(60);
+
+        assertTrue("Should be able to edit same card, if user cancels from Error dialogue.",  cfp.getEditor_U_ForTestingOnly().getText().equalsIgnoreCase("q1"));
+
+        // Should be on the first element already.
         // On error message delete card
         int length = cfp.getCreatorList().size();
         xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
         robot.clickOn(xy);
-        sleep(1000);
-
-        // clear the text
-        xy = cfp.getEditor_L_ForTestingOnly().getClearTextBtnXY();
-        robot.moveTo(xy);
         sleep(100);
-        robot.moveTo(xy.getX() + 200, xy.getY() + 200);
-        sleep(100);
-        robot.moveTo(xy);
 
-        sleep(6000);
-        robot.clickOn(xy);
-
-        // click on another  node creates error message
-        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(5);
-        robot.clickOn(xy);
-        assertTrue("moving from an non-perfect card should cause an error message.", FMAlerts.notificationIsShowing());
-
-        System.out.println("FINAL TEST ... ");
-        // clcik on delete
+        // click on delete
         xy = FMAlerts.getOKBtnXY();
-        robot.moveTo(xy.getX() - 80, xy.getY());
+        robot.moveTo(xy.getX() + 80, xy.getY());
+        sleep(30);
+        robot.clickOn(xy.getX() + 80, xy.getY());
+
         sleep(3000);
-        robot.clickOn(xy.getX() - 80, xy.getY());
 
+        // a confrim delete dialogue should be showing
+        assertTrue("When delete is clicked, an \" delete dialogue\" should request confirmation to be deleted. ",  FMAlerts.notificationIsShowing());
 
-        // confirm text is deleted
+        xy = FMAlerts.getOKBtnXY();
+        robot.moveTo(xy.getX() + 200,  xy.getY() - 40);
+        sleep(30);
+        robot.clickOn(xy.getX() + 200,  xy.getY() - 20);
+
+        // confirm node is deleted
         int changedLength = cfp.getCreatorList().size();
+        sleep(30);
         assertTrue("When a card is deleted from the \" error dialogue\" it should be deleted",  changedLength < length);
-        sleep(10000);
-
-        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
-        sleep(60);
-        robot.clickOn(xy);
 
         System.out.println("ENDING ...");
+    }
+
+    @Test
+    @Order(5)
+    void test_delete_last_card_onTreeClick_from_dialoge() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        //  ReadFlash rf = ReadFlash.getInstance();
+        setup("testeroffline@flashmonkey.xyz", "bangBang#01");
+        sleep(200);
+        // uses a pre created deck.
+        setUpFileExists();
+        sleep(1000);
+        Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
+        robot.clickOn(xy);
+        sleep(1000);
+
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(200);
+
+        int length = cfp.getCreatorList().size();
+
+        // delete last element
+
+        // first make card non-complete
+        Point2D textArea_U_XY = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(textArea_U_XY);
+        sleep(60);
+        robot.write("upper area only. then deleting on error dialogue");
+
+        // click on another node.
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
+        robot.clickOn(xy);
+        sleep(60);
+
+        // click on delete
+        xy = FMAlerts.getOKBtnXY();
+       // robot.moveTo(xy.getX() + 80, xy.getY());
+        sleep(30);
+        robot.clickOn(xy.getX() + 80, xy.getY());
+        sleep(300);
+
+        // a confrim delete dialogue should be showing
+        assertTrue("When delete is clicked, an \" delete dialogue\" should request confirmation to be deleted. ",  FMAlerts.notificationIsShowing());
+        // click on new error message ok button
+        xy = FMAlerts.getOKBtnXY();
+        robot.moveTo(xy.getX() + 200,  xy.getY() - 40);
+        sleep(30);
+        robot.clickOn(xy.getX() + 200,  xy.getY() - 20);
+
+        // confirm node is deleted
+        int changedLength = cfp.getCreatorList().size();
+        sleep(3000);
+        assertTrue("When a card is deleted from the \" error dialogue\" it should be deleted",  changedLength < length);
+        assertTrue("Card showing should be the 4th node.",  cfp.getEditor_U_ForTestingOnly().getText().equalsIgnoreCase("q4"));
 
 
-
-
-
-
-
-
-
-
-        // now check error message button clicks.
 
 
 
     }
+
+
+
+
 
     /**
      * Example tester from before ,...

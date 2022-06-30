@@ -9,9 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.ProtocolException;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,9 +22,14 @@ public class Utility {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Utility.class);
       private static final Logger LOGGER = LoggerFactory.getLogger(Utility.class);
       private static boolean allowed = true;
+      private static final String VERTX = "https://www.flashmonkey.xyz";
 
       public static boolean isConnected() {
-            return isConnected("https://www.flashmonkey.xyz");
+            return isConnected(VERTX);
+      }
+
+      public static void wakeUpVertx() throws IOException {
+            URLConnection con = new URL(VERTX).openConnection();
       }
 
       public static boolean isConnected(String url) {
@@ -40,6 +43,7 @@ public class Utility {
                               LOGGER.warn("internet is not connected: responseCode: {}", responseCode);
                               return false;
                         }
+                        wakeUpVertx();
                         LOGGER.info("we are connected to the internet");
                         return true;
                   } catch (ProtocolException e) {

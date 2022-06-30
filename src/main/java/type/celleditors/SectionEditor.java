@@ -548,7 +548,7 @@ public class SectionEditor {
        * Clears the text area, removes the clear button
        * and removes stackR.
        */
-/*      public void resetSection() {
+      public void resetSection() {
             image = null;
             iView = null;
             aviFileName = null;
@@ -558,9 +558,10 @@ public class SectionEditor {
             shapesFileName = null;
             tCell.getTextArea().setText("");
             setTextCellWidthFull();
+            arrayOfFMShapes = new ArrayList<>();
 
             deleteMMcellAction();
-      }*/
+      }
 
 
       /****************************************************************************

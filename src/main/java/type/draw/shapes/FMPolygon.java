@@ -19,6 +19,7 @@
 
 package type.draw.shapes;
 
+import flashmonkey.FlashMonkeyMain;
 import javafx.collections.ObservableList;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -34,6 +35,8 @@ import java.util.ArrayList;
 import static uicontrols.UIColors.convertColor;
 
 public class FMPolygon extends GenericShape<FMPolygon> implements Serializable {
+
+      private static final long serialVersionUID = FlashMonkeyMain.VERSION;
       private static final Logger LOGGER = LoggerFactory.getLogger(FMPolygon.class);
 
       double[] points;

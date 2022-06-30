@@ -673,6 +673,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   int idx = 1;
                   for (String s : colors) {
                         shape[idx] = new Rectangle(btnSize - 2, btnSize - 2);
+                        System.out.println("stroke color: " + s);
                         shape[idx].setStroke(Color.web(s));
                         shape[idx].setStrokeWidth(2);
                         shape[idx].setFill(Color.web(UIColors.TRANSPARENT));
@@ -974,9 +975,9 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       @Override
       public void onClose() {
             // save arrayOfBuilderShapes to file.
-            if ( DrawTools.instanceExists() ) {
+            //if ( DrawTools.instanceExists() ) {
                   classEditorRef.setDrawPadClosed();
-            }
+           // }
 
             clearListeners();
             LOGGER.info("onCLose called");

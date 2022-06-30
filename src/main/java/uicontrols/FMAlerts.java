@@ -263,9 +263,9 @@ public class FMAlerts {
 
             alert.getButtonTypes().addAll(bt1, bt2, escBtn);
 
-            Node closeBtn = alert.getDialogPane().lookupButton(ButtonType.CANCEL);
-            closeBtn.managedProperty().bind(closeBtn.visibleProperty());
-            closeBtn.setVisible(false);
+            Node cancelNode = alert.getDialogPane().lookupButton(ButtonType.CANCEL);
+            cancelNode.managedProperty().bind(cancelNode.visibleProperty());
+            cancelNode.setVisible(false);
 
             // set alert to trigger an escape on the escape key press.
             alert.getDialogPane().setOnKeyPressed(e -> {
@@ -328,6 +328,11 @@ public class FMAlerts {
       @FMAnnotations.DoNotDeployMethod
       public static Point2D getCancelBtnXY() {
             return new Point2D(alert.getX() + 120, alert.getY() + 60);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public static Point2D getXBtnXY() {
+            return new Point2D(alert.getX() + 16, alert.getY() + 16);
       }
 
 

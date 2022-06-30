@@ -856,11 +856,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
       @Override
       public void saveOnExit() {
-//        if(readFlash != null) {
-//            readFlash.leaveAction();
-//        } else if (createFlash != null) {
-//            createFlash.saveOnExit();
-//        }
+            throw new UnsupportedOperationException("Called saveOnExit and saveOnExit in FlashMonkeyMain is not supported.");
       }
 
       @Override
@@ -886,38 +882,36 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
        * by closing the main window.
        * Saves the current flashDeck to file.
        */
+      private boolean notStopped = true;
       @Override
       public void stop() {
+            if(notStopped ) {
+                  notStopped = true;
+                  LOGGER.debug("Called STOP in FlashMonkeyMain");
 
-            LOGGER.debug("Called STOP in FlashMonkeyMain");
-
-            if (isLoggedinProperty.get()) {
-                  if (readFlash != null) {
-                        readFlash.leaveAction();
-                  } else if (createFlash != null) {
-                        createFlash.saveReturnAction();
+                  if (isLoggedinProperty.get()) {
+                        if (readFlash != null) {
+                              readFlash.leaveAction();
+                        } else if (createFlash != null) {
+                              createFlash.saveReturnAction();
+                        }
+                        SceneCntl.onStop();
+                        Report.getInstance().endSessionTime();
+                        if (createFlash != null) {
+                              createFlash.onClose();
+                        }
+                        if (actionWindow != null && actionWindow.isShowing()) {
+                              actionWindow.close();
+                        }
+                        // checks if deck is compatible before saving
+                        //FlashCardOps.getInstance().safeSaveFlashList();
                   }
-                  SceneCntl.onStop();
-                  Report.getInstance().endSessionTime();
-                  if (createFlash != null) {
-                        createFlash.onClose();
-                  }
-                  if (actionWindow != null && actionWindow.isShowing()) {
-                        actionWindow.close();
-                  }
-                  // checks if deck is compatible before saving
-                  //FlashCardOps.getInstance().safeSaveFlashList();
             }
 
             //onClose();
             System.exit(0);
       }
 
-/*    public static void onStop() {
-        LOGGER.debug("stop called");
-
-        LOGGER.debug("stop() called");
-    }*/
 
 
       public static void main(String[] args) {

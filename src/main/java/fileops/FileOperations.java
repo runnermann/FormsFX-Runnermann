@@ -1,5 +1,6 @@
 package fileops;
 
+import ch.qos.logback.classic.Level;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
@@ -27,8 +28,8 @@ public abstract class FileOperations implements Serializable {
 
       private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
-      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FileOperations.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FileOperations.class);
       private static String fileName = "default.dec";
       private static File deckFolder;
 
@@ -224,15 +225,23 @@ public abstract class FileOperations implements Serializable {
        *                  when there is an empty element at the end of the list.
        */
       public void setListinFile(ArrayList arrayList, char minus) {
-
+            LOGGER.setLevel(Level.DEBUG);
             File folder = new File(DirectoryMgr.getMediaPath(minus));
             folder.mkdirs();
-            //Thread.dumpStack();
 
+            Thread.dumpStack();
+
+            //Thread.dumpStack();
+            System.out.println(" output dir fileName: " + folder + "/" +fileName);
+
+            ObjectOutputStream output = null;
             // action
-            try (ObjectOutputStream output = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(folder + "/" + fileName), 512))) {
+            try {
+
+                  output = new ObjectOutputStream(new FileOutputStream(folder + "/" + fileName));
+
                   if (minus == '-') {
-                        for (int i = 0; i < arrayList.size() - 1; i++) {
+                        for (int i = 0; i < arrayList.size() - 1;  i++) {
                               output.writeObject(arrayList.get(i));
                         }
                   } else {
@@ -240,6 +249,8 @@ public abstract class FileOperations implements Serializable {
                               output.writeObject(arrayList.get(i));
                         }
                   }
+                  output.flush();
+                  output.close();
             } catch (EOFException e) {
                   /* do nothing */
             } catch (FileNotFoundException e) {

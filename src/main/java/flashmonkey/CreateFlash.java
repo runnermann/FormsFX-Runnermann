@@ -571,27 +571,25 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             GenericTestType ga = TestList.selectTest(currentCard.getTestType());
             entryComboBox.setValue(new TestMapper(ga.getName(), ga));
 
+            // Set up for TestTypes that use FlashCardMM.
+            // If it's a non-standard test, resetSection may cause errors.
+            editors.EDITOR_U.resetSection();
+            editors.EDITOR_L.resetSection();
+
             if ( editors.EDITOR_U.hasTextCell(currentCard.getQType())) {
                   editors.EDITOR_U.setText(currentCard.getQText());
+                  editors.EDITOR_U.setSectionType( currentCard.getQType() );
             }
             if ( editors.EDITOR_L.hasTextCell(currentCard.getAType())) {
                   editors.EDITOR_L.setText(currentCard.getAText());
+                  editors.EDITOR_L.setSectionType( currentCard.getAType() );
             }
 
-            if (currentCard.getQType() != 't') {
-                  editors.EDITOR_U.setSectionMedia(currentCard.getQFiles(), currentCard.getQType(), 'U', currentCard.getCID() );
-                  editors.EDITOR_U.setSectionType(currentCard.getQType());
-            } else {
-                  editors.EDITOR_U.getArrayOfFMShapes().clear();
-                  editors.EDITOR_U.setTextCellWidthFull();
+            if ( currentCard.getQType() != 't' ) {
+                  editors.EDITOR_U.setSectionMedia( currentCard.getQFiles(), currentCard.getQType(), 'U', currentCard.getCID() );
             }
-
-            if (currentCard.getAType() != 't') {
-                  editors.EDITOR_L.setSectionMedia(currentCard.getAFiles(), currentCard.getAType(), 'L', currentCard.getCID());
-                  editors.EDITOR_L.setSectionType(currentCard.getAType());
-            } else {
-                  editors.EDITOR_L.getArrayOfFMShapes().clear();
-                  editors.EDITOR_L.setTextCellWidthFull();
+            if ( currentCard.getAType() != 't' ) {
+                  editors.EDITOR_L.setSectionMedia( currentCard.getAFiles(), currentCard.getAType(), 'L', currentCard.getCID() );
             }
       }
 
@@ -744,8 +742,12 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
             deleteQButton = ButtoniKon.getDeleteCardButton();
             deleteQButton.setMaxWidth(Double.MAX_VALUE);
-            deleteQButton.setOnAction(e -> deleteCardAction(currentCard));
-
+            deleteQButton.setOnAction(e -> {
+                 boolean b =  deleteQButtonAction(currentCard);
+                 if ( ! b ) {
+                       return;
+                 }
+            });
             resetDeckButton = ButtoniKon.getResetOrderButton();
             resetDeckButton.setOnAction(e -> FlashCardOps.getInstance().resetPerformance());
 
@@ -845,8 +847,9 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        */
       @Override
       public void onClose() {
-
-            DrawTools.getInstance().onClose();
+            if( DrawTools.instanceExists() ) {
+                  DrawTools.getInstance().onClose();
+            }
             if (metaWindow.isShowing()) {
                   closeMetaWindow();
             }
@@ -879,21 +882,81 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
       /* ------------------------------------------------------- **/
 
-      private void deleteCardAction(FlashCardMM cc) {
+      /**
+       * Deletes the card if called by a navigation button, or by the
+       * choiceActionPopup for non-complete data
+       * created by a navigation button non-complete data error.
+       * Creates a popuup action pane and asks the user if they
+       * indended to delete the card.
+       * @param cc The current card.
+       */
+      private boolean deleteQButtonAction(FlashCardMM cc) {
+            // send message to user and check that they
+            //intend to delete the card
+            boolean b = deletePopup();
+            if (b) {
+                  deleteCardAction(cc);
+                  // buildTree and re-order deck
+                  FlashCardOps fcOps = FlashCardOps.getInstance();
+                  fcOps.buildTree(creatorList);
+                  // set currentCard to the current listIdx, handle delete
+                  // last card problem.
+                  if(creatorList.size() - 1 == listIdx ) { listIdx--; }
+                  currentCard = creatorList.get(listIdx);
+                  fcOps.refreshTreeWalker(creatorList);
+                  if (!FlashMonkeyMain.treeWindow.isShowing()) {
+                        FlashMonkeyMain.buildTreeWindow();
+                  }
+                  FlashMonkeyMain.AVLT_PANE.displayTree();
+                  // set sectionEditors to the currentCard
+                  setSectionEditors(currentCard);
+                  return true;
+            } else {
+                  // Send User back
+                  return false;
+            }
+      }
+
+      /* ------------------------------------------------------- **/
+
+
+      private boolean deleteQOptionAction() {
+            // send message to user and check that they
+            //intend to delete the card
+            boolean b = deletePopup();
+            if (b) {
+                  // delete the card
+                  deleteCardAction(currentCard);
+                  // build the tree and re-order the deck
+                  FlashCardOps fcOps = FlashCardOps.getInstance();
+                  fcOps.buildTree(creatorList);
+                  //set current card to the index of the clickd on  node
+                  //currentCard = creatorList.get(clickedIdx);
+                  fcOps.refreshTreeWalker(creatorList);
+//                  if (!FlashMonkeyMain.treeWindow.isShowing()) {
+ //                       FlashMonkeyMain.buildTreeWindow();
+ //                 }
+//                  FlashMonkeyMain.AVLT_PANE.displayTree();
+                  // set sectionEditors to the currentCard
+                  //setSectionEditors(currentCard);
+            }
+            return b;
+      }
+
+
+      /* ------------------------------------------------------- **/
+
+
+      private boolean deletePopup() {
             FMAlerts alert = new FMAlerts();
             String msg = "Delete this card\n\nAre you sure?";
-            boolean b = alert.choiceOnlyActionPopup(
+
+           return alert.choiceOnlyActionPopup(
                 "DELETE THIS CARD", msg,
                 "emojis/flashFaces_sunglasses_60.png",
                 UIColors.ICON_ELEC_BLUE);
-            if (b) {
-                  deleteQButtonAction(cc);
-            } else {
-                  // Send User back
-                  return;
-            }
-            return;
       }
+
 
       /* ------------------------------------------------------- **/
 
@@ -901,7 +964,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean ret = cardOnExitActions();
+            boolean ret = cardOnExitActions(false);
             if (ret) {
                   return;
             }
@@ -956,7 +1019,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean ret = cardOnExitActions();
+            boolean ret = cardOnExitActions(false);
             if (ret) {
                   return;
             }
@@ -1009,7 +1072,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean ret = cardOnExitActions();
+            boolean ret = cardOnExitActions(false);
             if (ret) {
                   return;
             }
@@ -1085,7 +1148,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                               // Check content and save, or give user
                               // an error message. Respond based on user
                               // choice.
-                              boolean ret = cardOnExitActions();
+                              boolean ret = cardOnExitActions(false);
                               if (ret) {
                                     return;
                               }
@@ -1099,7 +1162,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                               // Check content and save, or give user
                               // an error message. Respond based on user
                               // choice.
-                              boolean ret = cardOnExitActions();
+                              boolean ret = cardOnExitActions(false);
                               if (ret) {
                                     return;
                               }
@@ -1170,7 +1233,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             LOGGER.info("\n *** insertCardAction() *** \n");
             LOGGER.debug("\t creatorList size: {}", creatorList.size() + 1);
 
-            boolean ret = cardOnExitActions();
+            boolean ret = cardOnExitActions(false);
             if (ret) {
                   return;
             }
@@ -1201,14 +1264,21 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       /* ------------------------------------------------------- **/
 
       /**
+       * Deletes the card provided in the parameter.
        * Deleting and adding cards from the center of the list creates numbering issues.
        * To solve this issue, we begin with the listIdx which may not be accurate.
-       * Then search using the binary search method and perform an equals on a cards CID
-       * with the desired delete CID.
+       * A search is conducted to find the cID if it is not the first card. Search uses
+       * the binary search method to find the correct index. Once found it then checks
+       * the found cards CID. Does no change the currentCard. Does not re-order the
+       * deck. Just deletes the card from the creatorList.
        *
-       * @param currentCard
+       * @param currentCard Card to be deleted.
        */
-      private void deleteQButtonAction(FlashCardMM currentCard) {
+      private void deleteCardAction(FlashCardMM currentCard) {
+            if(creatorList.size() < 1) {
+                  return;
+            }
+
             // The closest reliable number to this cards
             // location in the current deck.
             String delCID = currentCard.getCID();
@@ -1216,44 +1286,40 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             int revIdx = listIdx - 1;
 
             LOGGER.info("called");
+            // niche case of delete first card
+            if(fwdIdx == 0 && creatorList.get(fwdIdx).getCID().equals(delCID)) {
+                  ListIterator<FlashCardMM> iterator = creatorList.listIterator(fwdIdx);
+                  iterator.next();
+                  iterator.remove();
+                  //listIdx = fwdIdx - 1;
+                  //currentCard = creatorList.get(moveToIdx);
+                  //setSectionEditors(currentCard);
+            }
 
             while (fwdIdx < creatorList.size() && revIdx > -1) {
 
-                  //    FlashCard is not deleted when using treePane, Although the list length shows that
-                  //            the card has been removed. Apparently the card is still in the list that
-                  //            the tree is using to build from. ??? IDK!!!
-
+                  // if the forwardIndex finds the delete cardID then :
                   if (fwdIdx < creatorList.size() && creatorList.get(fwdIdx).getCID().equals(delCID)) {
-
                         ListIterator<FlashCardMM> iterator = creatorList.listIterator(fwdIdx);
                         iterator.next();
                         iterator.remove();
-                        listIdx = fwdIdx - 1;
-                        currentCard = creatorList.get(listIdx);
-                        setSectionEditors(currentCard);
+                        //listIdx = fwdIdx - 1;
+                        //currentCard = creatorList.get(listIdx);
+                        //setSectionEditors(currentCard);
 
                         break;
                   } else if (revIdx > -1 && creatorList.get(revIdx).getCID().equals(delCID)) {
-
                         ListIterator iterator = creatorList.listIterator(revIdx);
                         iterator.previous();
                         iterator.remove();
-                        listIdx = revIdx - 1;
-                        currentCard = creatorList.get(listIdx);
-                        setSectionEditors(currentCard);
+                        //listIdx = revIdx - 1;
+                        //currentCard = creatorList.get(listIdx);
+                        //setSectionEditors(currentCard);
 
                         break;
                   }
-            }
-
-            if (creatorList.size() > 0) {
-                  FlashCardOps fcOps = FlashCardOps.getInstance();
-                  fcOps.buildTree(creatorList);
-                  fcOps.refreshTreeWalker(creatorList);
-                  if (!FlashMonkeyMain.treeWindow.isShowing()) {
-                        FlashMonkeyMain.buildTreeWindow();
-                  }
-                  FlashMonkeyMain.AVLT_PANE.displayTree();
+                  fwdIdx++;
+                  revIdx--;
             }
       }
 
@@ -1330,7 +1396,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * false if the upstream navigation method should not move to the
        * next card.
        */
-      public boolean cardOnExitActions() {
+      public boolean cardOnExitActions(boolean fromTree) {
             // verify data completeness
             closeDrawToolsOnTreeClick( editors.EDITOR_U, editors.EDITOR_L);
             CardSaver cs = new CardSaver();
@@ -1342,8 +1408,12 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             switch (status) {
                   // user requests delete
                   case -2: {
-                        deleteCardAction(currentCard);
-                        bool = true;
+                        if(fromTree) {
+                              bool = deleteQOptionAction();
+                        } else {
+                              bool = deleteQButtonAction(currentCard);
+                        }
+
                         break;
                   }
                   // user requests to edit the card
@@ -1549,7 +1619,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   creatorList.add(currentCard);
 
                   // Reset
-                  // resetSectionEditors();
+                  setSectionEditors(currentCard);
                   //editors.EDITOR_U.resetSection();
                   //editors.EDITOR_L.resetSection();
                   gT.reset();
@@ -1804,15 +1874,21 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * binary file named/selected by the user at program start.</p>
        * <p> 2. Saves/synchronizes media and file to cloud. Saves users edits in the
        * shapesPane if open.</p>
-       * <p> 3. Exits to study/create menu.</p>
+       * <p> 3. Return to previous.</p>
        */
+      private long lastSaveTime = 0l;
       private void saveDeckAction() {
+            // if this has been called in the last 30 seconds, just ignore
+            // the call.
+            if(System.currentTimeMillis() < lastSaveTime + 30000l) {
+                  return;
+            }
             LOGGER.info(" saveDeckAction ");
             Timer.getClassInstance().createTestTimeStop();
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean safeToContinue = cardOnExitActions();
+            boolean safeToContinue = cardOnExitActions(false);
             // If requested, then
             // return user to screen.
             if ( ! safeToContinue ) {
