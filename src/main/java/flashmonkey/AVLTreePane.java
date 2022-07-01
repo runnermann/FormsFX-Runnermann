@@ -1,11 +1,13 @@
 package flashmonkey;
 
+import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import fmannotations.FMAnnotations;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -53,8 +55,8 @@ import static flashmonkey.ReadFlash.GEN_CARD;
  */
 public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
-      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
 
 
       private static final double UNSELECTED = 20; // size of circle
@@ -69,7 +71,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
       private int[] newNums = new int[3];
       // Animation object
       private SequentialTransition seq;
-      private static final ArrayList<Circle> circleArray = new ArrayList<>();
+      private static ArrayList<Circle> circleArray;// = new ArrayList<>();
 
 
       /**
@@ -129,6 +131,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        * Call this method if transition is not needed for this build of the tree.
        */
       public void displayTree() {
+            circleArray = new ArrayList<>();
             int log2 = (int) Math.ceil(Math.log(FMTWalker.getCount()) * 2);
             this.transition = false;
 
@@ -203,11 +206,11 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             if (root == FMTWalker.getCurrentNode()) {
                   circle = new Circle(x, y, SELECTED);
                   circle.setStrokeWidth(2);
-                  circleArray.add(circle);
+           //       circleArray.add(circle);
             } else if (((FlashCardMM) root.getData()).getANumber() == highlighted) {
                   circle = new Circle(x, y, UNSELECTED);
-                  circleArray.add(circle);
-                  //circleArray.add(circle);
+            //      circleArray.add(circle);
+
                   circle.setStrokeWidth(2);
                   circle.setStroke(Color.web("#9276AC"));
                   //circle.setFill(Color.web("#8146B6"));
@@ -223,9 +226,8 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             // If node is not selected make it normal size
             else {
                   circle = new Circle(x, y, UNSELECTED);
-                  circleArray.add(circle);
+           //       circleArray.add(circle);
                   circle.setStrokeWidth(2);
-                  //circleArray.add(circle);
             }
 
             circle = createCircle(circle, root);
@@ -290,11 +292,12 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        */
       private Circle createCircle(Circle circle, FMTree.Node node) {
             LOGGER.debug("CreateCircle Called");
+            circleArray.add(circle);
 
             circle.setOnMouseEntered((MouseEvent event) -> {
                   FlashCardMM currentCard = (FlashCardMM) node.getData();
-
-                  String text = currentCard.getQText();
+                  String num = String.valueOf(circleArray.size());
+                  String text = currentCard.getQText() + " idx: " + num;
                   Tooltip qTip = new Tooltip();
                   qTip.setPrefSize(200, 45);
                   qTip.setContentDisplay(ContentDisplay.RIGHT);
@@ -380,7 +383,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                   selectedCard = (FlashCardMM) CreateFlash.getInstance().getCreatorList().get(idx);
 
                   FlashCardOps fco = FlashCardOps.getInstance();
-                  fco.getTreeWalker().setCurrentNode(selectedCard);
+                  fco.getTreeWalker().setCurrentNodeReferance(selectedCard);
 
                   // SET THE SECTIONS TO THE CURRENT CARDS DATA
                   CreateFlash.getInstance().setListIdx(idx);
@@ -401,7 +404,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             ReadFlash rf = ReadFlash.getInstance();
             FlashCardMM oldCC = (FlashCardMM) FMTWalker.getInstance().getData();
             int oldNum = oldCC.getCNumber();
-            FMTWalker.getInstance().setCurrentNode(node);
+            FMTWalker.getInstance().setCurrentNodeReferance(node);
             // Display the tree
             displayTree();
             FlashCardMM currentCard = (FlashCardMM) node.getData();
@@ -517,7 +520,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
       @FMAnnotations.DoNotDeployMethod
       public Point2D getCircleXY(int nodeIdx) {
-            //LOGGER.setLevel(Level.DEBUG);
+            LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("circleArray.size: {}, Idx: {}", circleArray.size(), nodeIdx);
             if (nodeIdx < circleArray.size()) {
                   Circle c = circleArray.get(nodeIdx);

@@ -7,6 +7,7 @@ import core.RobotUtility;
 import core.ShapeUtility;
 import fileops.utility.Utility;
 import javafx.scene.control.ButtonType;
+import javafx.scene.media.MediaPlayer;
 import org.testfx.api.FxRobot;
 import type.draw.shapes.FMRectangle;
 import type.draw.shapes.GenericShape;
@@ -48,15 +49,19 @@ import uicontrols.FxNotify;
 import uicontrols.UIColors;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -495,8 +500,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
         robot.moveTo(xy.getX() + 80, xy.getY());
         sleep(30);
         robot.clickOn(xy.getX() + 80, xy.getY());
-
-        sleep(3000);
+        sleep(30);
 
         // a confrim delete dialogue should be showing
         assertTrue("When delete is clicked, an \" delete dialogue\" should request confirmation to be deleted. ",  FMAlerts.notificationIsShowing());
@@ -558,15 +562,196 @@ public class CreateFlashCloseTester extends ApplicationTest {
         assertTrue("When delete is clicked, an \" delete dialogue\" should request confirmation to be deleted. ",  FMAlerts.notificationIsShowing());
         // click on new error message ok button
         xy = FMAlerts.getOKBtnXY();
-        robot.moveTo(xy.getX() + 200,  xy.getY() - 40);
+        robot.clickOn(xy.getX() + 200,  xy.getY() );
         sleep(30);
-        robot.clickOn(xy.getX() + 200,  xy.getY() - 20);
 
-        // confirm node is deleted
+        // confirm node is cleared
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(2);
+        robot.clickOn(xy);
+        sleep(60);
+        String uText = cfp.getEditor_U_ForTestingOnly().getText();
+        String LText = cfp.getEditor_L_ForTestingOnly().getText();
+        sleep(60);
+        // go back make sure data is cleared
+//        for(int i = 0; i < 6; i++){
+//            xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(i);
+//            robot.clickOn(xy);
+//            sleep(3000);
+//        }
+        sleep(60);
+        assertTrue("When clear data is clicked, the data should be cleared from the last card.", uText.isEmpty() && LText.isEmpty());
+    }
+
+    @Test
+    @Order(6)
+    void test_nav_buttons_and_dialoge() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        //  ReadFlash rf = ReadFlash.getInstance();
+        setup("testeroffline@flashmonkey.xyz", "bangBang#01");
+        String q5Text = "upper text only, should cause error dialogue on prev button click";
+        sleep(200);
+        // uses a pre created deck.
+        setUpFileExists();
+        sleep(200);
+        Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
+        robot.clickOn(xy);
+        sleep(200);
+
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(200);
+
+        // test previous button click from non-complete card
+        // starting at last card, add data to upper area.
+        Point2D xyUType = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(xyUType);
+        sleep(100);
+        robot.write(q5Text);
+
+        Point2D prevBtnXY = cfp.getPrevBtnXY();
+        robot.clickOn(prevBtnXY);
+        sleep(60);
+        // confirm dialogue is showing, then return to edit.
+        assertTrue("When prev button is clicked, an \" choice error dialogue\" should show. ",  FMAlerts.notificationIsShowing());
+        // cancel message and add text to lower area.
+        xy = FMAlerts.getXBtnXY();
+        robot.clickOn(xy);
+
+        sleep(60);
+
+        Point2D xyLType = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(xyLType);
+        sleep(60);
+        robot.write("text in lower area");
+
+        // click on  previous button again  and confirm that there is no message
+        robot.clickOn(prevBtnXY);
+        sleep(60);
+        assertTrue("When prev button is clicked on a complete card, \" no error messages should show. ",  ! FMAlerts.notificationIsShowing());
+        sleep(60);
+
+        // test delete from dialogue on prev button click
+        // start at last card
+//        for(int i = 0; i < 6; i++){
+//            xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(i);
+//            robot.clickOn(xy);
+//            sleep(3000);
+//        }
+        // this is the last element.
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
+        robot.clickOn(xy);
+        sleep(30);
+        // add text to upper area.
+        robot.clickOn(xyUType);
+        robot.write(" some text in q6");
+
+        // click on prev button
+        // should get error, then delete.
+        robot.clickOn(prevBtnXY);
+        sleep(60);
+        // click on delete
+        xy = FMAlerts.getOKBtnXY();
+        robot.clickOn(xy.getX() + 80, xy.getY());
+        sleep(60);
+        // a confrim clear data dialogue should be showing
+        assertTrue("When clear card is clicked, an \" clear dialogue\" should request confirmation. ",  FMAlerts.notificationIsShowing());
+        // click clear data, click twice!!!
+        xy = FMAlerts.getOKBtnXY();
+        sleep(60);
+        robot.clickOn(xy.getX() + 200,  xy.getY() );
+        sleep(60);
+        robot.clickOn(xy.getX() + 200,  xy.getY() );
+        sleep(60);
+        // go back make sure data is cleared
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
+        robot.clickOn(xy);
+        sleep(60);
+        String uText = cfp.getEditor_U_ForTestingOnly().getText();
+        String LText = cfp.getEditor_L_ForTestingOnly().getText();
+        assertTrue("When clear data is clicked, the data should be cleared from the last card.", uText.isEmpty() && LText.isEmpty());
+
+        // Test next button on non-complete card,
+        // then just save the card.
+        // - delete the text in card 4. Note tree is not in order with array.
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(5);
+        robot.clickOn(xy);
+        xy = cfp.getEditor_L_ForTestingOnly().getClearTextBtnXY();
+        robot.clickOn(xy);
+        sleep(60);
+
+        // - click on next button
+        xy = cfp.getNextBtnXY();
+        robot.clickOn(xy);
+        sleep(60);
+        // - verify there is an error dialogue
+        assertTrue("When nextButton s clicked, and leaves a non-perfect card \n a choice delete dialogue should be shown.  ",  FMAlerts.notificationIsShowing());
+        // - click save
+        xy = FMAlerts.getOKBtnXY();
+        robot.clickOn(xy);
+        // - should move to next card, card 5
+        sleep(60);
+        assertTrue("Card showing should be the 5th node.",  cfp.getEditor_U_ForTestingOnly().getText().equalsIgnoreCase( q5Text ));
+
+
+        // Test next button on non-complete card
+        // and delete the card.
+        int length = cfp.getCreatorList().size();
+
+        // - move to card 2 and delete lower text to make non-complete
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(2);
+        robot.clickOn(xy);
+        sleep(60);
+        xy = cfp.getEditor_L_ForTestingOnly().getClearTextBtnXY();
+        robot.clickOn(xy);
+        sleep(60);
+        // click on next button ahdnd should see dialogue
+        xy = cfp.getNextBtnXY();
+        robot.clickOn(xy);
+        sleep(60);
+        // - verify there is an error dialogue
+        assertTrue("When nextButton is clicked, and leaves a non-perfect card \n a choice delete dialogue should be shown.  ",  FMAlerts.notificationIsShowing());
+        // - delete the card, click on DELETE button
+        xy = FMAlerts.getCancelBtnXY();
+        robot.clickOn(xy.getX() + 140, xy.getY() + 80);
+        sleep(60);
+        // - delete dialogue should be showing
+        assertTrue("When delete is clicked, a \" delete dialogue\" should request confirmation to be deleted. ",  FMAlerts.notificationIsShowing());
+        xy = FMAlerts.getOKBtnXY();
+        robot.clickOn(xy.getX() + 200,  xy.getY() - 20);
+        // - card 2 should be deleted and card 4 should be showing.
+        // play sound
+        Toolkit.getDefaultToolkit().beep();
+//        sleep(4000);
+//        for(int i = 0; i < 6; i++){
+//            xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(i);
+//            robot.moveTo(xy);
+//            sleep(3000);
+//        }
+
         int changedLength = cfp.getCreatorList().size();
-        sleep(60000);
-        assertTrue("When a card is deleted from the \" error dialogue\" it should be deleted",  changedLength < length);
-        assertTrue("Card showing should be the 4th node.",  cfp.getEditor_U_ForTestingOnly().getText().equalsIgnoreCase("q4"));
+        assertTrue("When a card is deleted from the \" error dialogue\" the length of the creatorList should be less,",  changedLength < length);
+        assertTrue("Card showing should be the 5th node.",  cfp.getEditor_U_ForTestingOnly().getText().equalsIgnoreCase( "q4" ));
+
+        Toolkit.getDefaultToolkit().beep();
+        bumpMouse(xy);
+        Toolkit.getDefaultToolkit().beep();
+        bumpMouse(xy);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(4000);
+
+        // test delete button. Just delete the 4th card
+        // that is already showing.
+        xy = cfp.getDeleteCardBtnXY();
+        robot.clickOn(xy);
+
+        // test undo button
+
+        // save deck
+
+        // bail out
+
+        // reset deck order
+
     }
 
 

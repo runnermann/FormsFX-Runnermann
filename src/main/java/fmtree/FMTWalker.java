@@ -96,14 +96,14 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        *
        * @param n
        */
-      public static void setCurrentNode(Node n) {
+      public static void setCurrentNodeReferance(Node n) {
             currentNode = n;
       }
 
-      public void setCurrentNode(FlashCardMM currentCard) {
+      public void setCurrentNodeReferance(FlashCardMM currentCard) {
             T fc = (T) currentCard;
             Node n = findNode(fc);
-            setCurrentNode(n);
+            setCurrentNodeReferance(n);
       }
 
       /**
