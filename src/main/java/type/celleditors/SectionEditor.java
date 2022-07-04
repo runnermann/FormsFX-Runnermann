@@ -2041,6 +2041,13 @@ public class SectionEditor {
       }
 
       @FMAnnotations.DoNotDeployMethod
+      public Point2D getDrawpadBtnXY() {
+
+            Bounds bounds = drawpadBtn.getLayoutBounds();
+            return drawpadBtn.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
       public Point2D getTextAreaXY() {
             Bounds bounds = stackL.getLayoutBounds();
             return tCell.getTextArea().localToScreen(bounds.getMinX() + 50, stackL.getLayoutY() + 40);

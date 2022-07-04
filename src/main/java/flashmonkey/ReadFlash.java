@@ -271,7 +271,7 @@ public final class ReadFlash implements BaseInterface {
             FlashCardOps fcOps = FlashCardOps.getInstance();
             // If the flashList is not empty,save before
             // refreshing.
-            if (fcOps.getFlashList() != null || !fcOps.getFlashList().isEmpty()) {
+            if (fcOps.getFlashList() != null || ! fcOps.getFlashList().isEmpty()) {
                   fcOps.safeSaveFlashList();
             }
             fcOps.refreshFlashList();
@@ -293,7 +293,7 @@ public final class ReadFlash implements BaseInterface {
        * @param e
        */
       private void shortcutKeyActions(KeyEvent e) {
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             GenericTestType test = TestList.selectTest(currentCard.getTestType());
 
             if (e.isAltDown() || e.isShiftDown()) {
@@ -419,7 +419,7 @@ public final class ReadFlash implements BaseInterface {
             FMTWalker.getInstance().getPrevious();
 
             //Node currentNode = FMTWalker.getCurrentNode();
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             rpCenter.getChildren().clear();
             // All of the work is accessed from selectTest()
@@ -444,7 +444,7 @@ public final class ReadFlash implements BaseInterface {
             ansQButtonSet(currentCard.getIsRight(), test);
             //setAnsButtonStatus(currentCard.getIsRight(), test);
 
-            buttonDisplay(FMTWalker.getCurrentNode());
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashMonkeyMain.AVLT_PANE.displayTree();
             // The animation for this button
             FMTransition.getQLeft().play();
@@ -464,8 +464,8 @@ public final class ReadFlash implements BaseInterface {
             // Get the next node in the treeWalker
             FMTWalker.getInstance().getNext();
 
-            // Node currentNode = FMTWalker.getCurrentNode();
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            // Node currentNode = FMTWalker.getInstance().getCurrentNode();
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             rpCenter.getChildren().clear();
             // All of the work is accessed from selectTest()
@@ -488,21 +488,21 @@ public final class ReadFlash implements BaseInterface {
             // be answered once
             ansQButtonSet(currentCard.getIsRight(), test);
 
-            buttonDisplay(FMTWalker.getCurrentNode());
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             // The animation for this button
             FMTransition.getQRight().play();
             if (FMTransition.getAWaitTop() != null) {
                   FMTransition.getAWaitTop().play();
             }
             FlashMonkeyMain.AVLT_PANE.displayTree();
-            buttonDisplay(FMTWalker.getCurrentNode());
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
       }
 
 
       //@todo change qNavButtonAction() to private in readflash.
       public void qNavButtonAction() {
             LOGGER.debug("\n *** qNavButtonAction ***");
-            buttonDisplay(FMTWalker.getCurrentNode());
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
       }
 
       /**
@@ -513,7 +513,7 @@ public final class ReadFlash implements BaseInterface {
             //visIndex = 1;
             FMTWalker.getInstance().setToFirst();
 
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             rpCenter.getChildren().clear();
             GenericTestType test = TestList.selectTest(currentCard.getTestType());
@@ -543,7 +543,7 @@ public final class ReadFlash implements BaseInterface {
             if (FMTransition.getAWaitTop() != null) {
                   FMTransition.getAWaitTop().play();
             }
-            buttonDisplay(FMTWalker.getCurrentNode());
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
       }
 
       /**
@@ -555,7 +555,7 @@ public final class ReadFlash implements BaseInterface {
             FMTWalker.getInstance().setToLast(); // O(log(n))
 
             //Node currentNode = TR.getCurrentNode();
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             rpCenter.getChildren().clear();
             long nanoStart = System.nanoTime();
@@ -587,7 +587,7 @@ public final class ReadFlash implements BaseInterface {
             if (FMTransition.getAWaitTop() != null) {
                   FMTransition.getAWaitTop().play();
             }
-            buttonDisplay(FMTWalker.getCurrentNode());
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
       }
 
       /**
@@ -690,8 +690,8 @@ public final class ReadFlash implements BaseInterface {
                   rpCenter.getChildren().clear();
             }
 
-            buttonDisplay(FMTWalker.getCurrentNode());
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             System.err.println("\tis CurrentCard data null? " + (currentCard.getQText() == null));
             mode = 't';
@@ -737,8 +737,8 @@ public final class ReadFlash implements BaseInterface {
                   rpCenter.getChildren().clear();
             }
 
-            buttonDisplay(FMTWalker.getCurrentNode());
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
             //studyButton.setText("Back");
             masterBPane.setCenter(rpCenter);
@@ -962,7 +962,7 @@ public final class ReadFlash implements BaseInterface {
             // padding top, right, bottom, left
             buttonBox.setPadding(new Insets(0, 0, 10, 0));
             buttonBox.setSpacing(15);
-            FMTWalker.getCurrentNode().getData();
+            FMTWalker.getInstance().getCurrentNode().getData();
             BorderPane contrlsBPane = new BorderPane();
             contrlsBPane.setId("studyBtnPane");
 
@@ -1109,11 +1109,11 @@ public final class ReadFlash implements BaseInterface {
       protected void buttonDisplay(FMTWalker.Node node) {
             LOGGER.debug("\n ***** in buttonTreeDisplay() ****");
 
-            Boolean low = (FMTWalker.getLowestNode() == node);
-            Boolean high = (FMTWalker.getHighestNode() == node);
+            Boolean low = (FMTWalker.getInstance().getLowestNode() == node);
+            Boolean high = (FMTWalker.getInstance().getHighestNode() == node);
 
             // if not equal to lowest or highest node addresses
-            if (!(low || high)) {
+            if ( ! (low || high)) {
                   LOGGER.debug("not low nor high");
                   nextQButton.setDisable(false);
                   endQButton.setDisable(false);
@@ -1158,7 +1158,7 @@ public final class ReadFlash implements BaseInterface {
                 score,
                 FMTWalker.getInstance().highestPossibleScore(),
                 progress,
-                FMTWalker.getCount(),
+                FMTWalker.getInstance().getCount(),
                 FlashCardOps.getInstance().getDeckLabelName()
             );
 
@@ -1328,7 +1328,7 @@ public final class ReadFlash implements BaseInterface {
                         thirdWrong(currentCard, listCard, test);
                         FlashMonkeyMain.AVLT_PANE.displayTree(newWrongNums);
                         FMTWalker.getInstance().setHighLow();  // treeWalker.setHighLow();
-                        progGauge.setMaxVal(500, FMTWalker.getCount());
+                        progGauge.setMaxVal(500, FMTWalker.getInstance().getCount());
                         //            scoreGauge.setMaxVal(500, (int) FMTWalker.getInstance().highestPossibleScore());
                         scoreGauge.moveNeedle(500, score);
                   } else {
@@ -1420,7 +1420,7 @@ public final class ReadFlash implements BaseInterface {
                   listCard.setNumRight(0);
                   // create the new card to be inserted into the stack
                   FlashCardMM iAdd = new FlashCardMM(currentCard);
-                  int newNum = (FMTWalker.getCount() * 10) + 1;
+                  int newNum = (FMTWalker.getInstance().getCount() * 10) + 1;
                   iAdd.setCNumber(newNum);
                   iAdd.setNumSeen(3);
                   iAdd.setIsRight(0);
@@ -1486,8 +1486,8 @@ public final class ReadFlash implements BaseInterface {
       // ***** FOR TESTING *****
       @FMAnnotations.DoNotDeployMethod
       public Point2D getStudyButtonXY() {
-            Bounds bounds = ButtoniKon.getStudyButton().getLayoutBounds();
-            return ButtoniKon.getStudyButton().localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+            Bounds bounds = masterBPane.getLayoutBounds();
+            return masterBPane.localToScreen(bounds.getMinX() , bounds.getMinY() );
       }
 
       @FMAnnotations.DoNotDeployMethod
@@ -1536,6 +1536,12 @@ public final class ReadFlash implements BaseInterface {
       public Point2D getTestButtonXY() {
             Bounds bounds = testButton.getLayoutBounds();
             return testButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getBackToMenuBtnXY() {
+            Bounds bounds = menuButton.getLayoutBounds();
+            return menuButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
       }
 
       @FMAnnotations.DoNotDeployMethod

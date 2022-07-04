@@ -499,7 +499,7 @@ public enum ButtoniKon { //extends Button {
             b.setId("blueButtonRndBdr");
             b.setFocusTraversable(false);
             // start with prevQButton enabled
-            b.setDisable(false);
+            //b.setDisable(false);
             return b;
       }
 
@@ -507,8 +507,8 @@ public enum ButtoniKon { //extends Button {
             Button b = CREATE_Q_NEXT.get();
             b.setId("blueButtonRndBdr");
             b.setFocusTraversable(false);
-            // start with prevQButton disabled
-            b.setDisable(true);
+            // start with nextQButton disabled
+            //b.setDisable(true);
             return b;
       }
 
@@ -517,7 +517,7 @@ public enum ButtoniKon { //extends Button {
             b.setId("blueButtonRnd");
             b.setFocusTraversable(false);
             // start with revertQButton disabled
-            b.setDisable(true);
+            //b.setDisable(true);
             return b;
       }
 
@@ -525,7 +525,7 @@ public enum ButtoniKon { //extends Button {
             Button b = DELETE_CARD.get();
             b.setId("blueButtonRnd");
             b.setFocusTraversable(false);
-            b.setDisable(false);
+            //b.setDisable(false);
             return b;
       }
 

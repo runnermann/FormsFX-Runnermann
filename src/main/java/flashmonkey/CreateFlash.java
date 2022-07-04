@@ -217,7 +217,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * To select the test types in the ComboBox.
        */
       private final ObservableList<TestMapper> TESTS = FXCollections.observableArrayList(TestMapper.getTestList(TestList.TEST_TYPES));
-      private static final PrefixSelectionComboBox<TestMapper> entryComboBox = new PrefixSelectionComboBox<TestMapper>();
+      private static PrefixSelectionComboBox<TestMapper> entryComboBox = new PrefixSelectionComboBox<TestMapper>();
 
       /* ***** FOR TESTING ONLY ********/
       DeckMetaPane metaPane;
@@ -308,9 +308,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   creatorList = new ArrayList<>(10);
             }
 
-            // The list's index starts at the end
-            // for the purpose of editing. It
-            // starts at the end of the list.
+            // The index starts at the end
+            // of the list.
             if (creatorList != null) {
                   listIdx = creatorList.size();
             }
@@ -390,12 +389,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Action call
             entryComboBox.setOnAction(e -> {
                   cfpCenter.getChildren().clear();
-//                  if (entryComboBox.getValue().getTestType().isDisabled()) {
-//                        cardNotEnabledMsg = "Arrrff! This feature will be enabled in a future version. It is on our to do list " +
-//                            "and is not yet available. :(";
-//                  } else {
-//                        cardNotEnabledMsg = null;
-//                  }
                   editors.EDITOR_U.styleToPrompt();
                   editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
                   cfpCenter.getChildren().addAll(entryComboBox.getValue().getTestType().getTEditorPane(creatorList, editors.EDITOR_U, editors.EDITOR_L, cfpCenter));
@@ -410,6 +403,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             masterPane = new VBox(2);
             getKeyboardShortcuts();
             cfpSouth = getCreatorButtons();
+            navButtonDisplay(listIdx);
             cfpSouth.setPadding(new Insets(10, 4, 10, 4));
             // Create a master borderPane then add buttons to the scene
             masterPane.setAlignment(Pos.CENTER);
@@ -681,10 +675,15 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             this.insertCardButton.setDisable(false);
             if (this.listIdx > 0) {
                   this.prevQButton.setDisable(false);
-                  this.undoQButton.setDisable(false);
+                  //this.undoQButton.setDisable(false);
+            } else {
+                  this.prevQButton.setDisable(true);
             }
             if (this.listIdx < creatorList.size() - 1) {
                   this.nextQButton.setDisable(false);
+
+            }
+            if(this.listIdx < FlashCardOps.getInstance().getFlashList().size()) {
                   this.undoQButton.setDisable(false);
             }
             this.resetDeckButton.setDisable(false);
@@ -893,9 +892,10 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       private boolean deleteQButtonAction(FlashCardMM cc) {
             // send message to user and check that they
             //intend to delete the card
+            final FlashCardMM ccRef = cc;
             boolean b = deletePopup();
             if (b) {
-                  deleteCardAction(cc);
+                  deleteCardAction(ccRef);
                   // buildTree and re-order deck
                   deleteClearHelper();
                   return true;
@@ -1014,7 +1014,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean ret = cardOnExitActions(false);
+            boolean ret = cardOnExitActions(false, true);
             if (ret) {
                   return;
             }
@@ -1069,7 +1069,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean moveOK = cardOnExitActions(false);
+            boolean moveOK = cardOnExitActions(false, false);
             if ( ! moveOK) {
                   return;
             }
@@ -1113,7 +1113,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean moveOK = cardOnExitActions(false);
+            boolean moveOK = cardOnExitActions(false, false);
             if ( ! moveOK) {
                   return;
             }
@@ -1123,11 +1123,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
             // set the UI to the current card
             if (listIdx > -1) {
-                  // for last card problem on move when there is a save.
-                  if (oldIdx >= creatorList.size() -1) {
-                        //    --cardNum;
-                        listIdx--;
-                  }
                   FlashCardMM currentCard = creatorList.get(listIdx);
                   // set section editors to current card.
                   setSectionEditors(currentCard);
@@ -1147,26 +1142,53 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
 
       private void navButtonDisplay(final int idx) {
-
+            LOGGER.debug("Idx: {}", idx);
             if (idx < 1) {
                   prevQButton.setDisable(true);
-                  undoQButton.setDisable(true);
+                  if( FlashCardOps.getInstance().getFlashList().size() == 0) {
+                        this.undoQButton.setDisable(true);
+                  } else {
+                        this.undoQButton.setDisable(false);
+                  }
                   //insertCardButton.setDisable(true);
-
             } else if (idx > (creatorList.size() - 2)) {
                   nextQButton.setDisable(true);
                   prevQButton.setDisable(false);
                   //insertCardButton.setDisable(false);
+                 // if(flashListChanged) { undoQButton.setDisable(true); }
                   deleteQButton.setDisable(true);
-                  undoQButton.setDisable(true);
+                  if(this.listIdx > FlashCardOps.getInstance().getFlashList().size() - 1) {
+                        this.undoQButton.setDisable(true);
+                  } else {
+                        this.undoQButton.setDisable(false);
+                  }
             } else {
                   metaButton.setDisable(false);
                   prevQButton.setDisable(false);
                   nextQButton.setDisable(false);
                   deleteQButton.setDisable(false);
                   insertCardButton.setDisable(false);
-                  undoQButton.setDisable(false);
+                  if(this.listIdx > FlashCardOps.getInstance().getFlashList().size() - 1) {
+                        this.undoQButton.setDisable(true);
+                  } else {
+                        this.undoQButton.setDisable(false);
+                  }
             }
+      }
+
+      /**
+       * Sets the next and last button visibility for the treeMap and readPane
+       * helper method for setCard()
+       * NOTE: Expects lowest and highest children are current.
+       *
+       * @param node Node that is refered to for buttons.
+       */
+      public  void buttonDisplay(FMTWalker.Node node) {
+            LOGGER.debug("\n ***** in buttonTreeDisplay() ****");
+
+            FlashCardMM fc = (FlashCardMM) node.getData();
+            int idx = fc.getANumber();
+            navButtonDisplay(idx);
       }
 
 
@@ -1181,7 +1203,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                               // Check content and save, or give user
                               // an error message. Respond based on user
                               // choice.
-                              boolean ret = cardOnExitActions(false);
+                              boolean ret = cardOnExitActions(false, isMoveFromEndCard());
                               if (ret) {
                                     return;
                               }
@@ -1195,7 +1217,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                               // Check content and save, or give user
                               // an error message. Respond based on user
                               // choice.
-                              boolean ret = cardOnExitActions(false);
+                              boolean ret = cardOnExitActions(false, isMoveFromEndCard());
                               if (ret) {
                                     return;
                               }
@@ -1266,7 +1288,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             LOGGER.info("\n *** insertCardAction() *** \n");
             LOGGER.debug("\t creatorList size: {}", creatorList.size() + 1);
 
-            boolean ret = cardOnExitActions(false);
+            boolean ret = cardOnExitActions(false, false);
             if (ret) {
                   return;
             }
@@ -1311,6 +1333,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             if(creatorList.size() < 1) {
                   return;
             }
+            setFlashListChanged(true);
 
             // The closest reliable number to this cards
             // location in the current deck.
@@ -1334,7 +1357,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   // if the forwardIndex finds the delete cardID then :
                   if (fwdIdx < creatorList.size() && creatorList.get(fwdIdx).getCID().equals(delCID)) {
                         ListIterator<FlashCardMM> iterator = creatorList.listIterator(fwdIdx);
-                        iterator.previous();
+                        iterator.next();
                         iterator.remove();
                         //listIdx = fwdIdx - 1;
                         //currentCard = creatorList.get(listIdx);
@@ -1399,11 +1422,9 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         revIdx--;
                         break;
                   }
+                  fwdIdx++;
+                  revIdx--;
             }
-
-            //resetSectionEditors();
-            //editors.EDITOR_U.resetSection();
-            //editors.EDITOR_L.resetSection();
 
             setSectionEditors(creatorList.get(listIdx));
       }
@@ -1429,7 +1450,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * false if the upstream navigation method should not move to the
        * next card.
        */
-      public boolean cardOnExitActions(boolean fromTree) {
+      public boolean cardOnExitActions(boolean fromTree, boolean moveForward) {
             // verify data completeness
             closeDrawToolsOnTreeClick( editors.EDITOR_U, editors.EDITOR_L);
             CardSaver cs = new CardSaver();
@@ -1486,7 +1507,11 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         if (listIdx < creatorList.size() - 1 && listIdx > -1) {
                               cs.saveEdtdCardInCreator(currentCard);
                         } else {
-                              cs.addCardAction();
+                              if(moveForward) {
+                                    cs.addNewCardForNewBtnAction();
+                              } else {
+                                    cs.addNewCardForPrevBtnAction();
+                              }
                         }
                         safeToMove = true;
                         break;
@@ -1502,51 +1527,31 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
              return safeToMove;
       }
 
+      // *********************                   ************************* //
+
+      /**
+       * If the listIdx is equal to the last card of the creatorList.
+       * @return True if the listIdx is set to the last card of the
+       * creatorList.
+       */
+      public boolean isMoveFromEndCard() {
+            return listIdx == creatorList.size() -1;
+      }
+
 
       // ********************* INNER CLASS ************************* //
 
       private class CardSaver {
             CardSaver() { /* empty no args constructor */}
 
-            /**
-             * Returns true if the user requests to return to the editor
-             * else it continues.
-             *
-             * @return Returns true if the user requests to go back to editing
-             * otherwise returns false.
-             */
-            boolean saveCard() {
-                  // Check if there is content and save, or give user
-                  // an error message. Respond based on user
-                  // choice.
-                  int result = checkContent();
-                  LOGGER.debug("saveCard(...) \"result\": <{}>", result);
-                  // Check response. Popup error with buttons, return
-                  // an integer for next action
-                  int status = statusResponse(result);
-
-                  LOGGER.debug("status response returned: <{}>", result);
-                  if (status == 0) {
-                        return false;
-                  }
-                  if (status == 1) {
-                        if (listIdx < creatorList.size() - 1 && listIdx > -1) {
-                              saveEdtdCardInCreator(currentCard);
-                        } else {
-                              addCardAction();
-                        }
-                        return false;
-                  }
-                  // user request to go back to editing
-                  return true;
-            }
-
 
             /**
-             * DESCRIPTION: Adds flashCard (question and answer objects)
-             * to the creatorList arrayList. Send media to the cloud
+             * Adds flashCard
+             * to the creatorList arrayList. Send media to the cloud. Increment
+             * the listIdx, add blank card to end of creatorList.
              */
-            private void addCardAction() {
+            private void addNewCardForNewBtnAction() {
+                  setFlashListChanged(true);
                   LOGGER.info("\n *** addCardAction() *** \n");
                   LOGGER.debug("\n\t saved as qID, The qID: {}", currentCard.getCID());
                   LOGGER.debug("\t cNum {}", currentCard.getCNumber());
@@ -1556,7 +1561,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   // update the listIdx
                   listIdx++;
                   // Save this card to the creator list
-                  saveNewCardToCreator();
+                  saveNewCardToCreator(listIdx);
+                  addBlankFlashCardToCreator();
                   // Send this cards media.
                   // runs using executor service. On separate thread.
                   sendAndCheck();
@@ -1566,10 +1572,49 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   editors.EDITOR_U.tCell.getTextArea().requestFocus();
 
                   insertCardButton.setText("New card");
-                  // display in the nav tree
+
                   navButtonDisplay(listIdx);
+                  // display in the nav tree
+                  if(creatorList.size() > 0) {
+                        FlashCardOps.getInstance().buildTree(creatorList);
+                        if (!FlashMonkeyMain.treeWindow.isShowing()) {
+                              FlashMonkeyMain.buildTreeWindow();
+                        }
+                        FlashMonkeyMain.AVLT_PANE.displayTree();
+                  }
             }
 
+            /**
+             * intended for saving a card when the previous button is pressed
+             * by the user. This handles the niche problem of adding a card
+             * at the end of the list when the previous button is clicked. Does not
+             * increment the listIdx. Does not add a blank card to the end of
+             * the creator list.
+             */
+            private void addNewCardForPrevBtnAction() {
+                  setFlashListChanged(true);
+                  saveNewCardToCreator(listIdx);
+                  sendAndCheck();
+                  // set the prompt
+                  editors.EDITOR_U.styleToPrompt();
+                  editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
+                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
+                  insertCardButton.setText("New card");
+                  navButtonDisplay(listIdx);
+                  // display in the nav tree
+                  if(creatorList.size() > 0) {
+                        FlashCardOps.getInstance().buildTree(creatorList);
+                        if (!FlashMonkeyMain.treeWindow.isShowing()) {
+                              FlashMonkeyMain.buildTreeWindow();
+                        }
+                        FlashMonkeyMain.AVLT_PANE.displayTree();
+                  }
+            }
+
+            /**
+             * Helper method to addCardForNewAction and addCardForPrevAction.
+             * Sends media and deck changes to cloud.
+             */
             private void sendAndCheck() {
                   ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(3);
                   AtomicInteger count = new AtomicInteger(); // increased to 5, for bad networks.
@@ -1631,13 +1676,13 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
              * <p>
              * Assumes that the card is complete
              */
-            private void saveNewCardToCreator() {
+            private void saveNewCardToCreator(int paramIdx) {
                   LOGGER.info("\n *** IN SAVE NEW CARD TO CREATOR *** \n");
                   //if(checkContent(editors.EDITOR_U, editors.EDITOR_L) == 1) {
                   // Assign currentTest from combobox
                   GenericTestType gT = entryComboBox.getValue().getTestType();
                   // card at end of list, or ??
-                  int cardNum = listIdx;
+                  int cardNum = paramIdx;
                   // Create a new FlashCardMM
                   currentCard.setAll(
                       cardNum * 10,        // Not super important until later. cardNumbers end as a multiple of ten. Used to set a card in the Tree
@@ -1656,23 +1701,25 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   LOGGER.info("added to creatorList, size is: " + creatorList.size());
                   LOGGER.debug("\n\n****currentCard ****\n{}\n\n ***************************", currentCard.toString());
 
-                  // create new card for next round.
-                  currentCard = new FlashCardMM();
-                  creatorList.add(currentCard);
-
-                  // Reset
-                  setSectionEditors(currentCard);
-                  //editors.EDITOR_U.resetSection();
-                  //editors.EDITOR_L.resetSection();
+//                  // create new card for next round.
+//                  currentCard = new FlashCardMM();
+//                  creatorList.add(currentCard);
+//
+//                  // Reset
+//                  setSectionEditors(currentCard);
+//                  //editors.EDITOR_U.resetSection();
+//                  //editors.EDITOR_L.resetSection();
                   gT.reset();
-
-                  FlashCardOps.getInstance().buildTree(creatorList);
-                  if (!FlashMonkeyMain.treeWindow.isShowing()) {
-                        FlashMonkeyMain.buildTreeWindow();
-                  }
-                  FlashMonkeyMain.AVLT_PANE.displayTree();
             }
 
+
+            /* ------------------------------------------------------- **/
+
+            private void addBlankFlashCardToCreator() {
+                  currentCard = new FlashCardMM();
+                  creatorList.add(currentCard);
+                  setSectionEditors(currentCard);
+            }
 
             /* ------------------------------------------------------- **/
 
@@ -1683,6 +1730,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
              * @param currentCard
              */
             private void saveEdtdCardInCreator(FlashCardMM currentCard) {
+                  setFlashListChanged(true);
                   LOGGER.debug(" *** CALLED SAVE EDITS IN CREATOR *** ");
                   // Assign currentTest from combobox
                   GenericTestType gA = entryComboBox.getValue().getTestType();
@@ -1920,17 +1968,22 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        */
       private long lastSaveTime = 0l;
       private void saveDeckAction() {
-            // if this has been called in the last 30 seconds, just ignore
+            // Prevent double calls that may corrupt files. Some situations
+            // will cause this to be called twice.
+            // if this has been called in the last 2 seconds, just ignore
             // the call.
-            if(System.currentTimeMillis() < lastSaveTime + 30000l) {
+            LOGGER.debug("lastSaveTime: {}", lastSaveTime);
+            if( ( lastSaveTime != 0 ) && System.currentTimeMillis() < lastSaveTime + 2000l ) {
+                  LOGGER.debug("Interrupted file save. It was already saved in the past 2 seconds");
                   return;
             }
+            lastSaveTime = System.currentTimeMillis();
             LOGGER.info(" saveDeckAction ");
             Timer.getClassInstance().createTestTimeStop();
             // Check content and save, or give user
             // an error message. Respond based on user
             // choice.
-            boolean safeToContinue = cardOnExitActions(false);
+            boolean safeToContinue = cardOnExitActions(false, false);
             // If requested, then
             // return user to screen.
             if ( ! safeToContinue ) {
@@ -1946,7 +1999,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
                   // Save the current card or not
                   FlashCardMM card = creatorList.get(creatorList.size() - 1);
-                  if (card.getQText().isEmpty() || card.getQFiles().length > 0) {
+                  if (card.getQText().isEmpty() && ( card.getQFiles() == null ||  card.getQFiles().length == 0) ) {
                         LOGGER.debug("calling saveButtonActionHelper. last cardQtext is empty. minus: -");
                         saveDeckActionHelper('-');
                   } else {
@@ -2256,5 +2309,11 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       public Point2D getDeleteCardBtnXY() {
             Bounds bounds = deleteQButton.getLayoutBounds();
             return deleteQButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public Point2D getUndoCardBtnXY() {
+            Bounds bounds = undoQButton.getLayoutBounds();
+            return undoQButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
       }
 }

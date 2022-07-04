@@ -886,7 +886,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       @Override
       public void stop() {
             if(notStopped ) {
-                  notStopped = true;
+                  notStopped = false;
                   LOGGER.debug("Called STOP in FlashMonkeyMain");
 
                   if (isLoggedinProperty.get()) {
@@ -904,7 +904,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                               actionWindow.close();
                         }
                         // checks if deck is compatible before saving
-                        //FlashCardOps.getInstance().safeSaveFlashList();
+                        FlashCardOps.getInstance().safeSaveFlashList();
                   }
             }
 

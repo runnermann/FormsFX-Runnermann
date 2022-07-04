@@ -137,7 +137,7 @@ public final class SearchPane {
                         FlashMonkeyMain.AVLT_PANE.clearHighlighted();
                         FlashMonkeyMain.AVLT_PANE.displayTree();
 
-                        FlashCardMM fc = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+                        FlashCardMM fc = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
                         ReadFlash.rpCenter.getChildren().clear();
                         ReadFlash.rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(fc, gc, ReadFlash.getInstance().getMasterBPane()));

@@ -314,7 +314,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             double lowerHt = parentPane.getHeight();
             double progress = ReadFlash.getInstance().getProgress();
 
-            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             final FlashCardOps fo = FlashCardOps.getInstance();
             final ReadFlash rf = ReadFlash.getInstance();
             rf.getProgGauge().moveNeedle(500, rf.incProg());
@@ -363,7 +363,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                         rf.new WrongAns(currentCard, listCard, this);
                   }
             }
-            if (progress >= FMTWalker.getCount()) {
+            if (progress >= FMTWalker.getInstance().getCount()) {
                   ReadFlash.getInstance().endGame();
             }
       }

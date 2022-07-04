@@ -85,7 +85,7 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
             HBox upperHBox;
             upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 1, true, 0, cc.getQFiles());
 
-            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             if (currentCard.getIsRight() == 0) {
                   final FlashCardOps fo = FlashCardOps.getInstance();
@@ -94,7 +94,7 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
                   rf.new JustAns(currentCard, listCard, this);
                   rf.getProgGauge().moveNeedle(500, rf.incProg());
                   double progress = rf.getProgress();
-                  if (progress >= FMTWalker.getCount()) {
+                  if (progress >= FMTWalker.getInstance().getCount()) {
                         ReadFlash.getInstance().endGame();
                   }
             }

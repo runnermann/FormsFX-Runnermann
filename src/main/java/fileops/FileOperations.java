@@ -228,10 +228,8 @@ public abstract class FileOperations implements Serializable {
             LOGGER.setLevel(Level.DEBUG);
             File folder = new File(DirectoryMgr.getMediaPath(minus));
             folder.mkdirs();
-
-            Thread.dumpStack();
-
             //Thread.dumpStack();
+
             System.out.println(" output dir fileName: " + folder + "/" +fileName);
 
             ObjectOutputStream output = null;

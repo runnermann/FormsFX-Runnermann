@@ -181,7 +181,7 @@ public abstract class QandA implements GenericTestType<QandA> {
       public void ansButtonAction() {
             lowerHBox.getChildren().clear();
             GenericSection genSection = GenericSection.getInstance();
-            final FlashCardMM cc = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            final FlashCardMM cc = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             final ReadFlash rf = ReadFlash.getInstance();
             FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, false);
 

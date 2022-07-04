@@ -53,7 +53,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        *
        * @return
        */
-      public static Node getCurrentNode() {
+      public  Node getCurrentNode() {
             return currentNode;
       }
 
@@ -62,7 +62,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        *
        * @return
        */
-      public static int getCount() {
+      public int getCount() {
             return nodeCount;
       }
 
@@ -73,7 +73,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        * loweest data.
        * Caution is advised if performance is an issue.
        */
-      public static Node getLowestNode() {
+      public Node getLowestNode() {
             return lowestNode;
       }
 
@@ -84,7 +84,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        * highest data.
        * Caution is advised if performance is an issue.
        */
-      public static Node getHighestNode() {
+      public Node getHighestNode() {
             return highestNode;
       }
 
@@ -96,7 +96,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        *
        * @param n
        */
-      public static void setCurrentNodeReferance(Node n) {
+      public  void setCurrentNodeReferance(Node n) {
             currentNode = n;
       }
 

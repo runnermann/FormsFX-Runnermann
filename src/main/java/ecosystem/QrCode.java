@@ -155,13 +155,13 @@ public class QrCode {
       }
 
 
-      public static void main(String[] args) throws WriterException, IOException {
-            String dir = DirectoryMgr.getMediaPath('q');
-            //Path path = buildPredicessorWithImage(1, "flash@flashmonkey.xyz", dir);
-            Path path = buildPredicessorQRCode(15, "rugbyuf@gmail.com", dir);
-
-            System.out.println(path);
-      }
+//      public static void main(String[] args) throws WriterException, IOException {
+//            String dir = DirectoryMgr.getMediaPath('q');
+//            //Path path = buildPredicessorWithImage(1, "flash@flashmonkey.xyz", dir);
+//            Path path = buildPredicessorQRCode(15, "rugbyuf@gmail.com", dir);
+//
+//            System.out.println(path);
+//      }
 }
 
 

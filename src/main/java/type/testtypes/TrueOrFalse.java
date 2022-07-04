@@ -179,7 +179,7 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             changed();
             FlashCardOps fcOps = FlashCardOps.getInstance();
             ReadFlash rf = ReadFlash.getInstance();
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             FlashCardMM listCard = fcOps.getFlashList().get(currentCard.getANumber());
             rf.getProgGauge().moveNeedle(500, rf.incProg());
             double progress = rf.getProgress();
@@ -191,7 +191,7 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
                   selectAnsButton.setDisable(true);
             }
 
-            if (progress >= FMTWalker.getCount()) {
+            if (progress >= FMTWalker.getInstance().getCount()) {
                   ReadFlash.getInstance().endGame();
             }
       }

@@ -132,7 +132,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        */
       public void displayTree() {
             circleArray = new ArrayList<>();
-            int log2 = (int) Math.ceil(Math.log(FMTWalker.getCount()) * 2);
+            int log2 = (int) Math.ceil(Math.log(FMTWalker.getInstance().getCount()) * 2);
             this.transition = false;
 
             int wd = (log2 * 100) + 200;
@@ -203,7 +203,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             // NOTE!!! USING REFERENCE NOT .equals(...)
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            if (root == FMTWalker.getCurrentNode()) {
+            if (root == FMTWalker.getInstance().getCurrentNode()) {
                   circle = new Circle(x, y, SELECTED);
                   circle.setStrokeWidth(2);
            //       circleArray.add(circle);
@@ -369,14 +369,17 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
       private void creatorFlashTreeOnClick( FMTree.Node node) {
 
             CreateFlash cfp = CreateFlash.getInstance();
+            //boolean endOfList = cfp.isMoveFromEndCard();
+            //LOGGER.debug("endOfList: {}", endOfList);
             //LOGGER.debug("currentCard: \n{}",   (FlashCardMM) node.getData());
             FlashCardMM selectedCard = (FlashCardMM) node.getData();
             // because we reset the tree on delete, and buildTree uses references
             // when comparing two nodes, we must set the current node to the
-            // new list. hahahahahahaaaaaa!
+            // new list. hahahahahahaaaaaa - NOT!
             int idx = selectedCard.getANumber();
-
-            boolean moveOK = cfp.cardOnExitActions(true );
+            // we do not want to move forward and add a node to the end of the tree.
+            //    If there is a save event the tree should remain the same number of nodes.
+            boolean moveOK = cfp.cardOnExitActions(true,  false);
             if ( moveOK ) {
                   // Set the treeWalker current node to the new reference for
                   // the selected node.
@@ -388,7 +391,8 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                   // SET THE SECTIONS TO THE CURRENT CARDS DATA
                   CreateFlash.getInstance().setListIdx(idx);
                   CreateFlash.getInstance().setSectionEditors(selectedCard);
-
+                  // SET THE BUTTONS
+                  CreateFlash.getInstance().buttonDisplay(node);
                   // Display the tree
                   displayTree();
             }
@@ -410,7 +414,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             FlashCardMM currentCard = (FlashCardMM) node.getData();
             GenericTestType test = TestList.selectTest(currentCard.getTestType());
             ReadFlash.ansQButtonSet(currentCard.getIsRight(), test);
-            rf.buttonDisplay(FMTWalker.getCurrentNode());
+            rf.buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             ReadFlash.rpCenter.getChildren().clear();
             if (rf.getMode() == 't') {
                   ReadFlash.rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
@@ -524,7 +528,9 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             LOGGER.debug("circleArray.size: {}, Idx: {}", circleArray.size(), nodeIdx);
             if (nodeIdx < circleArray.size()) {
                   Circle c = circleArray.get(nodeIdx);
-                  return new Point2D(c.getCenterX() + 8, c.getCenterY() + 16);
+                  Bounds bounds = c.getLayoutBounds();
+                  return c.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+                 // return new Point2D(c.getCenterX() + 8, c.getCenterY() + 16);
             }
             return null;
       }

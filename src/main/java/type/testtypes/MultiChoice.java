@@ -243,7 +243,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             changed();
             LOGGER.debug("\n~*~*~ Answer ButtAction called ~*~*~");
 
-            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getCurrentNode().getData();
+            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             final FlashCardOps fo = FlashCardOps.getInstance();
             final ReadFlash rf = ReadFlash.getInstance();
 
@@ -269,7 +269,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             selectAnsButton.setDisable(true);
 
             double progress = ReadFlash.getInstance().getProgress();
-            if (progress >= FMTWalker.getCount()) {
+            if (progress >= FMTWalker.getInstance().getCount()) {
                   ReadFlash.getInstance().endGame();
             }
             FlashMonkeyMain.AVLT_PANE.displayTree();

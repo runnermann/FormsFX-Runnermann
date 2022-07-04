@@ -292,7 +292,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 		create.getTestDeckHelper();
     	// !! SCENE CHANGE !! to study options
 
-    	assertTrue("Not in multiple choice mode", ( (FlashCardMM) FMTWalker.getCurrentNode().getData()).getTestType() ==
+    	assertTrue("Not in multiple choice mode", ( (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData()).getTestType() ==
 				 0b1000000000000010 );
     }
 
@@ -447,7 +447,7 @@ public class MultiChoiceGUITester extends ApplicationTest
     	
     	// click on nextQButton size of tree
     	//robot.moveTo(680, navBtnY);
-		for(int i = 0; i < FMTWalker.getCount(); i++) {
+		for(int i = 0; i < FMTWalker.getInstance().getCount(); i++) {
 			robot.clickOn(rfp.getNextQButtonXY());
 			sleep(500);
 		}
@@ -464,7 +464,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 
     	// Click on prevQButton till the beginning of the tree
     	// click on prevQButton
-		for(int i = 0; i < FMTWalker.getCount(); i++) {
+		for(int i = 0; i < FMTWalker.getInstance().getCount(); i++) {
 			robot.clickOn(rfp.getPrevQButtonXY());
 			sleep(200);
 		}
@@ -533,14 +533,10 @@ public class MultiChoiceGUITester extends ApplicationTest
     	// - answer button is disabled
     	// and nothing happens
     	//robot.moveTo(730, ansBtnY);
-		assertTrue(mc.getSelectAnsButton().isDisabled());
+	assertTrue(mc.getSelectAnsButton().isDisabled());
     	sleep(100);
 
     }
-
-
-
-
 
 	/* IMO, it is quite recommended to clear the ongoing events, in case of. */
 
@@ -553,5 +549,4 @@ public class MultiChoiceGUITester extends ApplicationTest
 		release(new KeyCode[] {});
 		release(new MouseButton[] {});
 	}
-
 }

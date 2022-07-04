@@ -6,6 +6,7 @@ import core.ImageUtility;
 import core.RobotUtility;
 import core.ShapeUtility;
 import fileops.utility.Utility;
+import javafx.geometry.Bounds;
 import javafx.scene.control.ButtonType;
 import javafx.scene.media.MediaPlayer;
 import org.testfx.api.FxRobot;
@@ -81,8 +82,9 @@ public class CreateFlashCloseTester extends ApplicationTest {
 
     private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlashCloseTester.class);
 
-    String userName = "idk@idk.com";
-    String deckName = "906b1830bb8c5bcbe8a90541d5a8c30d_906b1830bb8c5bcbe8a90541d5a8c30d$TestingDeck.dec";
+    private String userName = "idk@idk.com";
+    private String deckName = "906b1830bb8c5bcbe8a90541d5a8c30d_906b1830bb8c5bcbe8a90541d5a8c30d$TestingDeck.dec";
+    private String fileName = "1e3f03f29759f53ad1a895dff88ed535_1e3f03f29759f53ad1a895dff88ed535$4_cards_shapes_images.dec";
 
     private Canvas originalCanvas;
     // The FXRobot
@@ -134,23 +136,12 @@ public class CreateFlashCloseTester extends ApplicationTest {
     //@BeforeAll
     public void setup(String userName, String pw) throws Exception {
 
-        String strPath = "../flashMonkeyFile/Testing_DO_NOT_DELETE.dec";
-        //File file = new File(strPath);
-        Path filePath = Paths.get(strPath);
-
-        boolean fileBool = Files.deleteIfExists(filePath);
-        if(!fileBool){
-            System.out.println("It does not exist or, IDK where that file is: " + filePath);
-            //    System.exit(1);
-        }
-
         // Allow to connect to the internet?
         Utility.allowConnection(false);
-        //removePreviousFile();
 
         // Log in
         robot.robotSetup(userName, pw);
-        LOGGER.info("file deleted: " + fileBool);
+        //LOGGER.info("file deleted: " + fileBool);
         // Sleep Moved up here for windows
         sleep(100);
         // used to confirm if images are the same.
@@ -160,7 +151,14 @@ public class CreateFlashCloseTester extends ApplicationTest {
         delta_X = (int) window.getX();
         delta_Y = (int) window.getY();
         create = new CreateCards(delta_X, delta_Y);
+    }
 
+
+
+    public void setUpFileExists(String fileName ) throws Exception {
+        LOGGER.debug("setupFileExists(...) called");
+        this.fileName = fileName;
+        setUpFileExists();;
     }
 
     /**
@@ -172,7 +170,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
     public void setUpFileExists() throws Exception {
 
         File dir = new File(DirectoryMgr.getWorkingDirectory() + "/FlashMonkeyData/1e3f03f29759f53ad1a895dff88ed535/decks" );
-        File file = new File(dir + "/1e3f03f29759f53ad1a895dff88ed535_1e3f03f29759f53ad1a895dff88ed535$4_cards_shapes_images.dec");
+        File file = new File(dir + "/" + fileName);
 
 
         //Path filePath = Paths.get(strPath);
@@ -196,7 +194,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
     private void bumpMouse(Point2D xy) {
         Point2D bumpXY = new Point2D(xy.getX() + 48, xy.getY() + 48);
         robot.moveTo(bumpXY);
-        sleep(100);
+        sleep(30);
         robot.moveTo(xy);
     }
 
@@ -258,8 +256,6 @@ public class CreateFlashCloseTester extends ApplicationTest {
         boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
         assertTrue("Test deck file was not deleted", deleted);
 
-
-
         setup("idk@idk.com","bangBang#01");
         sleep(100);
         CoreUtility cu = new CoreUtility();
@@ -268,15 +264,12 @@ public class CreateFlashCloseTester extends ApplicationTest {
             cfp.getMasterPane().setOnKeyPressed(cu::escapeKeyActions);
         }
         create.writeDeckNameHelper();
-        //sleep(1000);
 
-        // Set CARD TYPE to Multi-Choice. Multi-choice is the top
-        // choice in the CardType drpdown button. The DropDown
-        // button should start opened.
         sleep(100);
         // The EntryCombobox should start in the open position.
         assertTrue(CreateFlash.getInstance().entryComboBoxIsShowing());
-
+        // Attempt to write in one of the editors. Should cause a popup
+        // notification.
         Point2D xyUType = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
         robot.clickOn(xyUType.getX() + 100, xyUType.getY());
 
@@ -320,6 +313,13 @@ public class CreateFlashCloseTester extends ApplicationTest {
         robot.clickOn(xy);
         assertTrue("moving from an non-perfect card should cause an error message.", FMAlerts.notificationIsShowing());
         sleep(6000);
+
+        // click on save to remove issue with error when
+        // app is closed with alert open.
+        xy = FMAlerts.getCancelBtnXY();
+        //robot.moveTo(xy.getX() + 80, xy.getY() +80);
+        sleep(30);
+        robot.clickOn(xy.getX() + 80, xy.getY() + 80);
 
     }
 
@@ -515,7 +515,14 @@ public class CreateFlashCloseTester extends ApplicationTest {
         sleep(30);
         assertTrue("When a card is deleted from the \" error dialogue\" it should be deleted",  changedLength < length);
 
+        // get node 1 and check that it is not equal to q1
+        FlashCardMM ccRet = (FlashCardMM) cfp.getCreatorList().get(0);
+        assertTrue("Delete card failed. ", ! ccRet.getQText().equals("q1") );
+
+        System.out.println("Returned first card upper text: " + ccRet.getQText());
         System.out.println("ENDING ...");
+
+        sleep(60000);
     }
 
     @Test
@@ -527,16 +534,14 @@ public class CreateFlashCloseTester extends ApplicationTest {
         sleep(200);
         // uses a pre created deck.
         setUpFileExists();
-        sleep(1000);
+        sleep(60);
         Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
         robot.clickOn(xy);
-        sleep(1000);
+        sleep(30);
 
         push(KeyCode.DOWN);
         push(KeyCode.ENTER);
         sleep(200);
-
-        int length = cfp.getCreatorList().size();
 
         // delete last element
 
@@ -573,17 +578,77 @@ public class CreateFlashCloseTester extends ApplicationTest {
         String LText = cfp.getEditor_L_ForTestingOnly().getText();
         sleep(60);
         // go back make sure data is cleared
-//        for(int i = 0; i < 6; i++){
-//            xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(i);
-//            robot.clickOn(xy);
-//            sleep(3000);
-//        }
+        for( int i = 0; i < cfp.getCreatorList().size(); i++) {
+
+            FlashCardMM ccRet = (FlashCardMM) cfp.getCreatorList().get(i);
+            assertTrue("Delete card failed. ", ! ccRet.getQText().equals("q2"));
+        }
         sleep(60);
         assertTrue("When clear data is clicked, the data should be cleared from the last card.", uText.isEmpty() && LText.isEmpty());
     }
 
     @Test
     @Order(6)
+    void test__delete_from_center_on_dialoge() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        //  ReadFlash rf = ReadFlash.getInstance();
+        setup("testeroffline@flashmonkey.xyz", "bangBang#01");
+        sleep(200);
+        // uses a pre created deck.
+        setUpFileExists();
+        sleep(60);
+        Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
+        robot.clickOn(xy);
+        sleep(30);
+
+        // get 2nd circle
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(4);
+        robot.clickOn(xy);
+        sleep(30);
+
+        // delete text in lower area
+        xy = cfp.getEditor_L_ForTestingOnly().getClearTextBtnXY();
+        robot.clickOn(xy);
+        sleep(30);
+
+        // click next button and should see a popup.
+        // - click on next button
+        xy = cfp.getNextBtnXY();
+        robot.clickOn(xy);
+        sleep(30);
+
+
+        assertTrue("When nextButton is clicked, and leaves a non-perfect card \n a choice delete dialogue should be shown.  ",  FMAlerts.notificationIsShowing());
+        // - delete the card, click on DELETE button
+        xy = FMAlerts.getCancelBtnXY();
+        robot.clickOn(xy.getX() + 140, xy.getY() + 80);
+        sleep(60);
+        // - delete dialogue should be showing
+        assertTrue("When delete is clicked, a \" delete dialogue\" should request confirmation to be deleted. ",  FMAlerts.notificationIsShowing());
+        xy = FMAlerts.getOKBtnXY();
+        robot.clickOn(xy.getX() + 200,  xy.getY() - 20);
+
+        // confirm 2nd card is deleted, and only the 2nd card is deleted.
+        // get node 1 and check that it is not equal to q1
+        for( int i = 0; i < cfp.getCreatorList().size(); i++) {
+
+            FlashCardMM ccRet = (FlashCardMM) cfp.getCreatorList().get(i);
+            assertTrue("Delete card failed. ", ! ccRet.getQText().equals("q2"));
+        }
+
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
+
+    }
+
+
+
+    @Test
+    @Order(7)
     void test_nav_buttons_and_dialoge() throws Exception {
         CreateFlash cfp = CreateFlash.getInstance();
         //  ReadFlash rf = ReadFlash.getInstance();
@@ -625,25 +690,42 @@ public class CreateFlashCloseTester extends ApplicationTest {
         robot.write("text in lower area");
 
         // click on  previous button again  and confirm that there is no message
+        // Viewed card should be the previous card, and a new card should be added
+        // to the end of the deck.
         robot.clickOn(prevBtnXY);
         sleep(60);
         assertTrue("When prev button is clicked on a complete card, \" no error messages should show. ",  ! FMAlerts.notificationIsShowing());
         sleep(60);
 
+
+
         // test delete from dialogue on prev button click
         // start at last card
-//        for(int i = 0; i < 6; i++){
+//        for(int i = 0; i < cfp.getCreatorList().size(); i++){
 //            xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(i);
 //            robot.clickOn(xy);
 //            sleep(3000);
 //        }
-        // this is the last element.
-        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
+        // this is the last element. It should not show a blank card
+        // since save on prevButton, and treeNode clicks were not
+        // adding new cards.
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(2);
+        robot.clickOn(xy);
+        // now add a new card
+        xy = cfp.getNewCardBtnXY();
         robot.clickOn(xy);
         sleep(30);
         // add text to upper area.
         robot.clickOn(xyUType);
         robot.write(" some text in q6");
+
+/*        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);*/
+
 
         // click on prev button
         // should get error, then delete.
@@ -652,9 +734,9 @@ public class CreateFlashCloseTester extends ApplicationTest {
         // click on delete
         xy = FMAlerts.getOKBtnXY();
         robot.clickOn(xy.getX() + 80, xy.getY());
-        sleep(60);
+        sleep(30);
         // a confrim clear data dialogue should be showing
-        assertTrue("When clear card is clicked, an \" clear dialogue\" should request confirmation. ",  FMAlerts.notificationIsShowing());
+        assertTrue("When clear card is clicked, a \"clear dialogue\" should request confirmation. ",  FMAlerts.notificationIsShowing());
         // click clear data, click twice!!!
         xy = FMAlerts.getOKBtnXY();
         sleep(60);
@@ -725,7 +807,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
 //        for(int i = 0; i < 6; i++){
 //            xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(i);
 //            robot.moveTo(xy);
-//            sleep(3000);
+            sleep(30);
 //        }
 
         int changedLength = cfp.getCreatorList().size();
@@ -737,23 +819,436 @@ public class CreateFlashCloseTester extends ApplicationTest {
         Toolkit.getDefaultToolkit().beep();
         bumpMouse(xy);
         Toolkit.getDefaultToolkit().beep();
-        sleep(4000);
+        sleep(400);
+    }
 
-        // test delete button. Just delete the 4th card
-        // that is already showing.
-        xy = cfp.getDeleteCardBtnXY();
+
+    @Test
+    @Order(8)
+    void test_undo_button() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        //  ReadFlash rf = ReadFlash.getInstance();
+        setup("testeroffline@flashmonkey.xyz", "bangBang#01");
+        String q5Text = "upper text only, should cause error dialogue on prev button click";
+        sleep(200);
+        // uses a pre created deck.
+        setUpFileExists();
+        sleep(200);
+        Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
+        robot.clickOn(xy);
+        sleep(200);
+
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(200);
+
+        // this is the 2nd element.
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(1);
+        robot.clickOn(xy);
+        sleep(30);
+        // Get text and store it.
+        String originalUpper = cfp.getEditor_U_ForTestingOnly().getText();
+        String originalLower = cfp.getEditor_L_ForTestingOnly().getText();
+        sleep(30);
+
+        // add text to upper area.
+        Point2D xyUType = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(xyUType);
+        robot.write(" some extra text in q2 upper text area");
+        sleep(60);
+
+        // add text to lower area.
+        Point2D xyLType = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
+        robot.clickOn(xyLType);
+        robot.write(" some extra text in q2 LOWER text area");
+        sleep(60);
+
+        // save the changes by moving to a new card
+        // this is the 2nd element.
+        xy = cfp.getNextBtnXY();
+        robot.clickOn(xy);
+        sleep(30);
+
+        // move back and undo changes
+        xy = cfp.getPrevBtnXY();
+        robot.clickOn(xy);
+        sleep(30);
+
+        // click undo button and check text
+        xy = cfp.getUndoCardBtnXY();
+        robot.clickOn(xy);
+        sleep(30);
+
+        // go to card 3
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(3);
+        robot.clickOn(xy);
+        sleep(30);
+
+        // go to card 2
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(1);
+        robot.clickOn(xy);
+        sleep(30);
+
+        // check that the card saved the changes back to its original state
+        String upper = cfp.getEditor_U_ForTestingOnly().getText();
+        String lower = cfp.getEditor_L_ForTestingOnly().getText();
+
+        sleep(30);
+        assertTrue("Undo button was not successful", upper.equals(originalUpper) && lower.equals(originalLower) );
+    }
+
+    @Test
+    @Order(9)
+    void test_saveDeck() throws Exception {
+        // Start off with an empty deck, build it up, and save it using exit edit
+        // Then repeat the process for exit using "x".
+
+        CreateFlash cfp = CreateFlash.getInstance();
+        ReadFlash rf = ReadFlash.getInstance();
+
+        boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
+        assertTrue("Test deck file was not deleted", deleted);
+
+        setup("idk@idk.com","bangBang#01");
+        sleep(100);
+        CoreUtility cu = new CoreUtility();
+
+        if(cfp.getMasterPane() != null) {
+            cfp.getMasterPane().setOnKeyPressed(cu::escapeKeyActions);
+        }
+        create.writeDeckNameHelper();
+        // The entry combo-box shoud start off open.
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(200);
+        // move create cards in the editors.
+
+        String upperText = "q";
+        String lowerText = "a";
+
+        Point2D xyUpper = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
+        Point2D xyLower = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
+        Point2D addBtnXY = cfp.getNewCardBtnXY();
+
+        // for the sake of numbering i starts at 1.
+        for(int i = 1; i < 5; i++) {
+            // write in upper text area
+            robot.clickOn(xyUpper);
+            sleep(30);
+            robot.write(upperText + i);
+            sleep(30);
+
+            // write in lower text area
+            robot.clickOn(xyLower);
+            sleep(30);
+            robot.write(lowerText + i);
+            sleep(30);
+
+            // Click on add button to save card
+            // and create a new one.
+            robot.clickOn(addBtnXY);
+            sleep(30);
+        }
+
+        robot.clickOn(xyUpper);
+        robot.write("q5");
+        sleep(30);
+
+        robot.clickOn(xyLower);
+        robot.write("a5");
+        sleep(30);
+
+        Point2D xy = cfp.getPrevBtnXY();
         robot.clickOn(xy);
 
-        // test undo button
+        // save the deck, move to review deck
+        // and check that there are no errors.
+        xy = cfp.getSaveDeckBtnXY();
+        robot.clickOn(xy);
+        sleep(30);
 
-        // save deck
+        // go to read flash test mode and check that the deck is 5 cards
+        // long.
+        xy = FlashMonkeyMain.getCreateButtonXY();
+        robot.clickOn(xy.getX(), xy.getY() - 40);
+        sleep(30);
 
-        // bail out
+        rf.getStudyButtonXY();
+        //robot.moveTo(xy.getX() + 300, xy.getY() + 110);
+        robot.clickOn(xy.getX() + 310, xy.getY() + 106);
+        sleep(30);
 
-        // reset deck order
+        int size = FlashCardOps.getInstance().getFlashList().size();
+        assertTrue("FlashList is not size 5", size == 5);
+
+        xy = FlashMonkeyMain.AVLT_PANE.getCircleXY(2);
+        robot.clickOn(xy);
+        // check that node 5 is correct manually.
+        sleep(1000);
+        String s = ((FlashCardMM) FlashCardOps.getInstance().getFlashList().get(4)).getQText();
+
+        assertTrue("Did not save the last card", s.equals("q5"));
+
+
+//        xy = rf.getBackToMenuBtnXY();
+//        robot.clickOn(xy);
+//        sleep(30);
+//
+//        xy = rf.getCreateButtonXY();
+//        robot.clickOn(xy);
+//
+//        push(KeyCode.DOWN);
+//        push(KeyCode.ENTER);
+//        sleep(200);
+
+//        robot.clickOn(xyUpper);
+//        robot.write("q5");
+//        sleep(30);
+//
+//        robot.clickOn(xyLower);
+//        robot.write("a5");
+//        sleep(30);
+//
+//        xy = cfp.getPrevBtnXY();
+//        robot.clickOn(xy);
+
+//        xy = cfp.getSaveDeckBtnXY();
+//        robot.clickOn(xy);
+//        sleep(30);
+//
+//        // go to read flash test mode and check that the deck is 5 cards
+//        // long.
+//        xy = FlashMonkeyMain.getCreateButtonXY();
+//        robot.clickOn(xy.getX(), xy.getY() - 40);
+//        sleep(30);
+//
+//        rf.getStudyButtonXY();
+//        //robot.moveTo(xy.getX() + 300, xy.getY() + 110);
+//        robot.clickOn(xy.getX() + 310, xy.getY() + 106);
+//        sleep(30);
+//
+//        Toolkit.getDefaultToolkit().beep();
+//        sleep(100);
+//        Toolkit.getDefaultToolkit().beep();
+//        sleep(100);
+//        Toolkit.getDefaultToolkit().beep();
+//        sleep(30);
+//
+//        size = FlashCardOps.getInstance().getFlashList().size();
+//        assertTrue("FlashList is not size 4", size == 5);
+
+
+        //FlashMonkeyMain.getWindow().close();
+        //Platform.exit();
+//        if(FxToolkit.isFXApplicationThreadRunning() ) {
+//            FxToolkit.hideStage();
+//            sleep(60);
+//            FxToolkit.hideStage();
+//        }
+//        Toolkit.getDefaultToolkit().beep();
+//        sleep(60);
+//        Toolkit.getDefaultToolkit().beep();
+//        sleep(60);
+//        Toolkit.getDefaultToolkit().beep();
+//        sleep(5000);
+
+
+
+//        // restart and check if file is corrupted
+//        setup("idk@idk.com","bangBang#01");
+//        sleep(100000);
+//
+//        deckName = "1e3f03f29759f53ad1a895dff88ed535_1e3f03f29759f53ad1a895dff88ed535$4_cards_shapes_images.dec ";
+//        setUpFileExists(deckName);
+//        sleep(200);
+//        rf.getStudyButtonXY();
+//        //robot.moveTo(xy.getX() + 300, xy.getY() + 110);
+//        robot.clickOn(xy.getX() + 310, xy.getY() + 106);
+//        sleep(30);
+//
+//        size = FlashCardOps.getInstance().getFlashList().size();
+//        assertTrue("FlashList is not size 4", size == 4);
 
     }
 
+    @Test
+    @Order(8)
+    void test_nav_buttons_disabled() throws Exception {
+        // Start off with an empty deck, build it up, and save it using exit edit
+        // Then repeat the process for exit using "x".
+
+//        CreateFlash cfp = CreateFlash.getInstance();
+//
+//        boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
+//        assertTrue("Test deck file was not deleted", deleted);
+//
+//        setup("idk@idk.com","bangBang#01");
+//        sleep(100);
+//        CoreUtility cu = new CoreUtility();
+//
+//        if(cfp.getMasterPane() != null) {
+//            cfp.getMasterPane().setOnKeyPressed(cu::escapeKeyActions);
+//        }
+//        create.writeDeckNameHelper();
+//        // The entry combo-box shoud start off open.
+//        push(KeyCode.DOWN);
+//        push(KeyCode.ENTER);
+//        sleep(200);
+//        // move create cards in the editors.
+//
+//        String upperText = "Text in Q";
+//        String lowerText = "Text in A";
+//
+//        Point2D xyUpper = cfp.getEditor_U_ForTestingOnly().getTextAreaXY();
+//        Point2D xyLower = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
+//        Point2D addBtnXY = cfp.getNewCardBtnXY();
+//
+//        for(int i = 0; i < 4; i++) {
+//            // write in upper text area
+//            robot.clickOn(xyUpper);
+//            sleep(30);
+//            robot.write(upperText + i);
+//            sleep(30);
+//
+//            // write in lower text area
+//            robot.clickOn(xyLower);
+//            sleep(30);
+//            robot.write(lowerText + i);
+//            sleep(30);
+//
+//            // Click on next button to save card
+//            // and create a new one.
+//            robot.clickOn(addBtnXY);
+//            sleep(30);
+//        }
+//
+//        // save the deck, move to review deck
+//        // and check that there are no errors.
+//        Point2D xy = cfp.getSaveDeckBtnXY();
+//        robot.clickOn(xy);
+//
+//        sleep(6000);
+
+
+
+
+    }
+
+
+    @Test
+    @Order(10)
+    void test_resetOrder() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        //  ReadFlash rf = ReadFlash.getInstance();
+        setup("testeroffline@flashmonkey.xyz", "bangBang#01");
+        String q5Text = "upper text only, should cause error dialogue on prev button click";
+        sleep(200);
+        // uses a pre created deck.
+        setUpFileExists();
+        sleep(200);
+        Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
+        robot.clickOn(xy);
+        sleep(200);
+
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(200);
+
+
+    }
+
+
+    @Test
+    @Order(11)
+    void test_bailOut() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        //  ReadFlash rf = ReadFlash.getInstance();
+        setup("testeroffline@flashmonkey.xyz", "bangBang#01");
+        String q5Text = "upper text only, should cause error dialogue on prev button click";
+        sleep(200);
+        // uses a pre created deck.
+        setUpFileExists();
+        sleep(200);
+        Point2D xy = ReadFlash.getInstance().getCreateButtonXY();
+        robot.clickOn(xy);
+        sleep(200);
+
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(200);
+
+
+    }
+
+
+    @Test
+    @Order(12)
+    void test_SHAPES_InEditorUOnlyCausesPopup() throws Exception {
+        CreateFlash cfp = CreateFlash.getInstance();
+        if(cfp.getMasterPane() != null) {
+            CoreUtility cu = new CoreUtility();
+            cfp.getMasterPane().setOnKeyPressed(cu::escapeKeyActions);
+        }
+
+        boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
+        assertTrue("Test deck file was not deleted", deleted);
+        //cfp.createFlashScene();
+        setup("idk@idk.com","bangBang#01");
+        sleep(200);
+        create.writeDeckNameHelper();
+        sleep(30);
+        // The EntryCombobox should start in the open position.
+        // assertTrue(CreateFlash.getInstance().entryComboBoxIsShowing());
+        //System.out.println("EntryComboBox is showing? : " + CreateFlash.getInstance().entryComboBoxIsShowing());
+        // Select multiChoice card type
+        push(KeyCode.DOWN);
+        push(KeyCode.ENTER);
+        sleep(30);
+
+        // Register the stage so we can
+        // test when the DrawTools window
+        // is closed.
+        DrawTools dt = DrawTools.getInstance();
+        FxToolkit.toolkitContext().setRegisteredStage(dt.getDrawToolWindow());
+
+        //  *** Create snapshot ***
+
+        double diff_x = 200;
+        double diff_y = 200;
+        Point2D xy = cfp.getEditor_L_ForTestingOnly().getDrawpadBtnXY();
+        robot.clickOn(xy);
+        sleep(30000);
+
+        //  CHECK FOR CORRECT SHAPES
+        // Resize the shapes box make sure this is saved in future test
+        double minX = dt.getDrawToolWindow().getX();
+        double minY = dt.getDrawToolWindow().getY();
+ //       dt.
+
+        // save and close popup and tools.
+//        dt.getDrawToolWindow();
+//        xy = dt.getSaveBtnXY();
+//        robot.clickOn(xy);
+//        xy = dt.getExitBtnXY();
+//        robot.moveTo(xy);
+//        robot.clickOn(xy);
+//        sleep(200);
+
+        // re-open
+//        xy = cfp.getEditor_L_ForTestingOnly().getRightPaneXY();
+//        robot.moveTo(xy);
+//        //sleep(2000);
+//        robot.clickOn(xy);
+//        sleep(1000);
+//
+//        // check that only one popUp will open
+//        robot.moveTo(500, 500);
+//        robot.clickOn(xy);
+//        sleep(1000);
+
+
+
+    }
 
 
 
@@ -763,27 +1258,29 @@ public class CreateFlashCloseTester extends ApplicationTest {
      * @throws Exception
      */
     @Test
-    ///@Order(3)
-    void test_SHAPES_InEditorUOnlyCausesPopup() throws Exception {
+    @Order(13)
+    void test_general_shapes() throws Exception {
 
         CreateFlash cfp = CreateFlash.getInstance();
+        if(cfp.getMasterPane() != null) {
+            CoreUtility cu = new CoreUtility();
+            cfp.getMasterPane().setOnKeyPressed(cu::escapeKeyActions);
+        }
+
+        boolean deleted = CoreUtility.deleteTestFile(deckName , userName);
+         assertTrue("Test deck file was not deleted", deleted);
         //cfp.createFlashScene();
         setup("idk@idk.com","bangBang#01");
         sleep(200);
         create.writeDeckNameHelper();
-        //sleep(1000);
-
-        // Set CARD TYPE to Multi-Choice. Multi-choice is the top
-        // choice in the CardType drpdown button. The DropDown
-        // button should start opened.
-        sleep(500);
+        sleep(30);
         // The EntryCombobox should start in the open position.
         // assertTrue(CreateFlash.getInstance().entryComboBoxIsShowing());
         //System.out.println("EntryComboBox is showing? : " + CreateFlash.getInstance().entryComboBoxIsShowing());
         // Select multiChoice card type
         push(KeyCode.DOWN);
         push(KeyCode.ENTER);
-        sleep(500);
+        sleep(30);
 
         Point2D xyUType = cfp.getEditor_L_ForTestingOnly().getTextAreaXY();
         robot.clickOn(xyUType);
@@ -796,7 +1293,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
         double diff_y = 200;
         Point2D xy = cfp.getEditor_L_ForTestingOnly().getSnapShotBtnXY();
         robot.clickOn(xy);
-        sleep(500);
+        sleep(30);
 
         // Create the snapshot by drawing the
         // snapshot rectangle on the screen.
@@ -901,7 +1398,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
         FxToolkit.hideStage();
 
 
-        /**
+        /*
          * Check Right Pane for image, editing shapes,
          * adding new shapes, and removing shapes.
          */
@@ -922,6 +1419,7 @@ public class CreateFlashCloseTester extends ApplicationTest {
         ImageView popUpView = (ImageView) dt.getOverlayPane().getChildren().get(0);
 
         assertEquals("Image in the right pane does not look correct. ", true, ImageUtility.imagesLookTheSame("popUp ", imageL, popUpView.getImage()) );
+
 
 
         // Check editing an existing shape.
@@ -1033,19 +1531,25 @@ public class CreateFlashCloseTester extends ApplicationTest {
         robot.moveTo(paneXY.getX() + 150, paneXY.getY() + 150);
         robot.release(MouseButton.PRIMARY);
 
+        sleep(30);
 
         // Check if new rectangle is showing while being drawn
-        //      assertTrue("line 520, overlayCanvas is not the original reference", (originalCanvas == dt.getCanvas()));
+//        assertTrue("line 1415, overlayCanvas is not the original reference", (originalCanvas == dt.getCanvas()));
         // May fail if background of first pixel is not white
         String msg = "New rectangle does not appear to be being drawn on the canvas";
-//        checkPixColor((int) paneXY.getX() + 50, (int) paneXY.getY() + 50, msg, 221, 0 ,223);
-        // Compare with UICOlors.HIGHLIGHT_PINK
 
-        robot.moveTo(paneXY.getX() + 53, (int) paneXY.getY() + 53);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
+        Toolkit.getDefaultToolkit().beep();
+        sleep(100);
 
         sleep(3000);
-        ImageUtility.checkPixColor((int) paneXY.getX() + 85, (int) paneXY.getY() + 85, msg, 255, 13 ,255);
 
+        // Compare with UICOlors.HIGHLIGHT_PINK
+        ImageUtility.checkPixColor((int) paneXY.getX() + 85, (int) paneXY.getY() + 85, msg, 255, 13 ,255);
+        sleep(3000);
 
 
         // check right pane for new rectangle
@@ -1067,19 +1571,19 @@ public class CreateFlashCloseTester extends ApplicationTest {
             //num++;
         }
 
-        /*Shape s = (Shape) rPane.getChildren().get(num - 1);
+        Shape s = (Shape) rPane.getChildren().get(num - 1);
 
         System.out.println("New rectangle height: " + ((Rectangle) s).getHeight() );
 
         assertTrue("Width in new Rectangle is not correct", 29 >= (int) ((Rectangle) s).getWidth() - 2 );
         assertTrue("Height in new Rectangle is not correct",29 >= (int) ((Rectangle) s).getHeight() - 2 );
-        assertTrue("RightPane does not contain the new Rectangle", rPane.getChildren().get(rPaneSize - 1).getClass().getName().contains("Rectangle"));*/
+        assertTrue("RightPane does not contain the new Rectangle", rPane.getChildren().get(rPaneSize - 1).getClass().getName().contains("Rectangle"));
         //sleep(1000);
 
         // CLOSE AND RE-OPEN AND CHECK FOR CORRECT SHAPES
 
         // save and close popup and tools.
-        dt.getDrawToolWindow();
+//        dt.getDrawToolWindow();
 //        xy = dt.getSaveBtnXY();
 //        robot.clickOn(xy);
 //        xy = dt.getExitBtnXY();
@@ -1088,16 +1592,16 @@ public class CreateFlashCloseTester extends ApplicationTest {
 //        sleep(200);
 
         // re-open
-        xy = cfp.getEditor_L_ForTestingOnly().getRightPaneXY();
-        robot.moveTo(xy);
-        //sleep(2000);
-        robot.clickOn(xy);
-        sleep(1000);
-
-        // check that only one popUp will open
-        robot.moveTo(500, 500);
-        robot.clickOn(xy);
-        sleep(1000);
+//        xy = cfp.getEditor_L_ForTestingOnly().getRightPaneXY();
+//        robot.moveTo(xy);
+//        //sleep(2000);
+//        robot.clickOn(xy);
+//        sleep(1000);
+//
+//        // check that only one popUp will open
+//        robot.moveTo(500, 500);
+//        robot.clickOn(xy);
+//        sleep(1000);
 
 
         // @TODO check if the saved additions are saved in the arrayOfShapes, Check if a shape is deleted
