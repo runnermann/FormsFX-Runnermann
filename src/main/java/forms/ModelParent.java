@@ -11,8 +11,8 @@ public abstract class ModelParent implements FormModel {
       /**
        * These are the resource bundles for german and english.
        */
-      protected ResourceBundle rbDE = ResourceBundle.getBundle("demo-locale", new Locale("de", "CH"));
-      protected ResourceBundle rbEN = ResourceBundle.getBundle("demo-locale", new Locale("en", "UK"));
+      //protected ResourceBundle rbDE = ResourceBundle.getBundle("demo-locale", new Locale("de", "CH"));
+      protected ResourceBundle rbEN = ResourceBundle.getBundle("demo-locale", new Locale("en", "US"));
       //private ResourceBundle rbSP = ResourceBundle.getBundle("demo-locale", new Locale("sp", "SP"));}
 
       /**

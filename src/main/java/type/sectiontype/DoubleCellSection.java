@@ -72,7 +72,6 @@ public class DoubleCellSection //extends GenericSection
 
             ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newval) -> {
                   LOGGER.debug("resizing heigth line 75");
-
                   double val = newval.doubleValue() - 244.0;
                   val /= numHSections; // grrrrrr!
                   sectionHBox.setPrefHeight(val);

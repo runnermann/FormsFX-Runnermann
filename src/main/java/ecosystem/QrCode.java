@@ -45,7 +45,7 @@ public class QrCode {
 
             // generate QR code
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(vertxGet, BarcodeFormat.QR_CODE, 200, 200);
+            BitMatrix bitMatrix = qrCodeWriter.encode(vertxGet, BarcodeFormat.QR_CODE, 250, 250);
 
             // write to file
             Path path = Paths.get(pathName);

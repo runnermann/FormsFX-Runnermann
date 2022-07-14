@@ -6,6 +6,7 @@ import campaign.Report;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
+import com.dlsc.formsfx.model.structure.Section;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
 import com.dlsc.formsfx.view.util.ColSpan;
@@ -26,6 +27,7 @@ import uicontrols.FxNotify;
 import uicontrols.UIColors;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * This class is used for the deck meta data form and holds all the necessary data. This
@@ -70,19 +72,23 @@ public class DeckMetaModel extends ModelParent {
                             .tooltip("tuts_tooltip")
                             .required("required_error_message"),
                         //.validate(StringLengthValidator.between(5, 120, "between_length_error")),
-                        Field.ofStringType(descriptor.deckBookProperty())
-                            .label("label_book")
-                            .placeholder("book_placeholder")
-                            .validate(StringLengthValidator.upTo(120, "upTo_length_error")),
                         Field.ofStringType(descriptor.deckProfProperty())
                             .label("label_prof")
                             .placeholder("prof_placeholder")
                             .required("required_error_message")
-                            .validate(StringLengthValidator.between(2, 120, "between_length_error")),
-                        Field.ofStringType(descriptor.courseCodeProperty())
-                            .label("label_course_code")
-                            .placeholder("course_code_placeholder")
-                            .validate(StringLengthValidator.upTo(120, "upTo_length_error")),
+                            .validate(StringLengthValidator.between(2, 120, "between_length_error"))
+                        ),
+                        Section.of(
+                          Field.ofStringType(descriptor.deckBookProperty())
+                              .label("label_book")
+                              .placeholder("book_placeholder")
+                              .validate(StringLengthValidator.upTo(120, "upTo_length_error")),
+                          Field.ofStringType(descriptor.courseCodeProperty())
+                              .label("label_course_code")
+                              .placeholder("course_code_placeholder")
+                              .validate(StringLengthValidator.upTo(120, "upTo_length_error"))
+                        ).title("course_detail_label"),
+                        Section.of(
                         Field.ofStringType(descriptor.deckClassProperty())
                             .label("label_class")
                             .placeholder("class_placeholder")
@@ -101,7 +107,7 @@ public class DeckMetaModel extends ModelParent {
                             .required("required_error_message")
                             .placeholder("language_placeholder")
                             .validate(StringLengthValidator.between(4, 120, "between_length_error"))
-                    )
+                    ).title("course_detail_label")
                 ).title("form_label")
                 .i18n(rbs);
       }
@@ -126,7 +132,7 @@ public class DeckMetaModel extends ModelParent {
                   try {
                         // deck_id is set by doAction.
                         // Predicessor Chain, get chain hash from db.
-                        QrCode.buildDeckQrCode(deck_id, dir, deckQRname, UserData.getUserName());
+                        Path path = QrCode.buildDeckQrCode(deck_id, dir, deckQRname, UserData.getUserName());
                   } catch (WriterException e) {
                         LOGGER.warn("ERROR: WriterException caused by {} ", e.getMessage());
                         e.printStackTrace();
@@ -165,7 +171,6 @@ public class DeckMetaModel extends ModelParent {
             try {
                   // update the metaDataAry
                   FlashCardOps.getInstance().setMetaInFile(metaData, path);
-
                   // send to database
                   deck_id = Report.getInstance().reportDeckMetadata(metaData);
                   if (deck_id > 0) {

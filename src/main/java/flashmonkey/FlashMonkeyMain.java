@@ -17,7 +17,6 @@ import flashmonkey.utility.VersionTimeStamp;
 import fmannotations.FMAnnotations;
 import forms.*;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -681,9 +680,9 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       /**
        * The users account form
        */
-      public static void getFMSAccountWindow() {
-            AccountPane actPane = new AccountPane();
-            Scene scene = new Scene(actPane.getMainGridPain());
+      public static void getSubscriptCancelWindow() {
+            SubscriptCancelPane cancelPane = new SubscriptCancelPane();
+            Scene scene = new Scene(cancelPane.getMainGridPain());
             if (actionWindow != null && actionWindow.isShowing()) {
                   actionWindow.close();
             }

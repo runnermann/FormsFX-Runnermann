@@ -5,18 +5,22 @@ import authcrypt.user.EncryptedAcct;
 import ch.qos.logback.classic.Level;
 import fileops.FileNaming;
 import fileops.VertxLink;
+import flashmonkey.ReadFlash;
 import forms.utility.Alphabet;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
 
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import uicontrols.SceneCntl;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -94,7 +98,7 @@ public class EcoPane extends BorderPane {
 
                         System.out.println("domain: " + engine.getLocation());
                         String domain = engine.locationProperty().getValue();
-                        if (!domain.startsWith("https://")) {
+                        if ( !domain.startsWith("https://") ) {
                               LOGGER.warn("WARNING: CRITICAL!!! Ecosystem purchase attempting a non secure connection at: {}", engine.getLocation());
                               System.exit(1);
                         }
@@ -145,7 +149,6 @@ public class EcoPane extends BorderPane {
             Pane pane = new Pane();
             pane.getChildren().add(webView);
 
-
             return pane;
       }
 
@@ -164,8 +167,6 @@ public class EcoPane extends BorderPane {
             // we use the encrypted users name. This is as good as it needs to be.
             String json = "{\"x1\":\"" + Alphabet.encrypt(UserData.getUserName()) + "\"}";
 
-            //System.out.println("json UserAgent string: " + json);
-
             // -----------------     start webview    --------------------- //
             WebView webView = new WebView();
             engine = webView.getEngine();
@@ -178,28 +179,26 @@ public class EcoPane extends BorderPane {
             });
 
             engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-                  // if user has previously subscribed (they are a "preem_distro"), the server returns
-                  // the onBoarding page, else (they are "free") it returns the subscription
+                   // if user has previously subscribed (they are a "preem_distro"), the server returns
+                   // the onBoarding page, else (they are "free") it returns the subscription
                   // page.
                   String domain = engine.locationProperty().getValue();
                   if (domain.endsWith("HF25XZ")) {
                         if (newValue == Worker.State.SUCCEEDED) {
-                              System.out.println("getReqSubscriptPane worker.state succeeded!");
+                              //System.out.println("getReqSubscriptPane worker.state succeeded!");
+                              //System.out.println("callMe sending: "  + Alphabet.encrypt(UserData.getUserName()));
                               engine.executeScript("callMe(\"" + Alphabet.encrypt(UserData.getUserName()) + "\")");
                         }
                   }
             });
 
-            VBox rBox = new VBox(webView);
-            BorderPane bPane = new BorderPane();
+            // RESPONSIVE SIZING for width and height by using stackPane
+            StackPane sPane = new StackPane();
+            sPane.getChildren().add(webView);
+            BorderPane bp = new BorderPane();
+            bp.setCenter(sPane);
 
-            VBox lBox = new VBox();
-            lBox.setMinSize(100, 600);
-            lBox.setAlignment(Pos.CENTER);
-            bPane.setRight(rBox);
-            bPane.setLeft(lBox);
-
-            return bPane;
+            return bp;
       }
 
 

@@ -255,7 +255,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-font-weight: 900;
     -fx-border-color: derive(-fx-base,16%);
     -fx-border-right: 3;
-    -fx-background-color: #00000000;
+    /*-fx-background-color: #00000000;*/
 }
 
 

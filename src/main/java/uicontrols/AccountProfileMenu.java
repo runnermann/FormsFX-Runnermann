@@ -34,7 +34,7 @@ public class AccountProfileMenu {
             howLink.setOnAction(e -> FlashMonkeyMain.getWebView(VertxLink.CANCEL_POLICY.getLink()));
 
             Hyperlink cancelLink = new Hyperlink("Cancel my subscription");
-            cancelLink.setOnAction(e -> FlashMonkeyMain.getFMSAccountWindow());
+            cancelLink.setOnAction(e -> FlashMonkeyMain.getSubscriptCancelWindow());
             //cancelLink.setId("hyperlink14white");
             cancelLink.setTextFill(Paint.valueOf("WHITE"));
 
@@ -48,11 +48,10 @@ public class AccountProfileMenu {
             label.setId("label24White");
             explainer.setId("label16White");
             explainer.setWrapText(true);
+            // The users profile form
             Button profileBtn = ButtoniKon.getProfileButton();
             profileBtn.setOnAction(e -> FlashMonkeyMain.getProfilePane());
-            // pay system
-            Button paySysBtn = ButtoniKon.getPaySysButton();
-            paySysBtn.setOnAction(e -> FlashMonkeyMain.getFMSAccountWindow());
+            // Sign up for advanced and pay system
             Button subsciptBtn = ButtoniKon.getSubscriptStatusButton();
             subsciptBtn.setOnAction(e -> FlashMonkeyMain.getSubscribeWindow());
 
@@ -70,7 +69,7 @@ public class AccountProfileMenu {
             return gridPane;
       }
 
-
+//    -- Commented out. It is moved to another location?
 //    private static void showPopup() {
 //        String emojiPath = "image/flashFaces_sunglasses_60.png";
 //        String message   = "Oooph!" +

@@ -3,14 +3,13 @@ package forms;
 
 import authcrypt.user.EncryptedAcct;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.GridPane;
 import org.slf4j.LoggerFactory;
 
 
-public class AccountPane extends SimpleFormParentPane {
+public class SubscriptCancelPane extends SimpleFormParentPane {
 
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AccountPane.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SubscriptCancelPane.class);
       //private static final Logger LOGGER = LoggerFactory.getLogger(DeckMetaModel.class);
 
       private AccountModel model;
@@ -18,7 +17,7 @@ public class AccountPane extends SimpleFormParentPane {
       // cancel subscription
       //    private Hyperlink cancelSubtLink;
 
-      public AccountPane() {
+      public SubscriptCancelPane() {
             super();
             super.initializeSelf();
       }

@@ -132,16 +132,16 @@
 }
 
 #formPane {
-    -fx-border-color: ICON_BLUE;
-    -fx-border-width: 2 0 2 0;
-    -fx-background-color: ICON_ELEC_BLUE;
+    /*-fx-border-color: ICON_BLUE;*/
+    /*-fx-border-width: 0 0 0 0;*/
+    -fx-background-color: #F7F7F7;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,0,10,0;
 }
 
 #infoPane {
-    -fx-background-color: BACKGROUND_DK_BLUE;
+    -fx-background-color: #F1F1F1;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;
@@ -162,6 +162,11 @@
     -fx-font-size: 14;
 }
 
+#label-bold-grey-emph {
+    -fx-text-fill: #01076d;
+    -fx-font-size: 14;
+}
+
 #switch-label {
     -fx-text-fill: #ffffff;
     -fx-font-size: 12;
@@ -173,26 +178,30 @@
 }
 
 #deckSubmitButton {
-    -fx-background-color: INSPIRE_ORANGE;
+    -fx-background-color: FOCUS_BLUE;
     -fx-text-fill: #ffffff;
     -fx-font-weight: 600;
 }
 
 .sellSwitch {
-    base-color: INSPIRE_ORANGE;
+    base-color: ICON_ELEC_BLUE;
     -fx-inner-border: base-color;
     -fx-body-color: base-color;
     -fx-inner-body-color: base-color;
     -fx-mark-highlight-color: base-color;
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: #333;
 }
 
 .sellSwitch .text {
-    -fx-fill: WHITE;
+    -fx-fill: #333;
 }
 
 .sellSwitch:selected .thumb-area {
     -fx-background-color: WHITE;
+    -fx-inner-border: base-color;
+    -fx-body-color: base-color;
+    -fx-inner-body-color: base-color;
+    -fx-mark-highlight-color: base-color;
 }
 
 #drop-down .text {

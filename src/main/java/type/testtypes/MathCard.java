@@ -309,6 +309,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             changed();
             // The users response
             String response = userAnsField.getText();
+
             // Solves the expression
             parser = new DijkstraParser(expression);
             double lowerHt = parentPane.getHeight();
@@ -321,6 +322,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // card from the arrayList - Used to update data in the ArrayList Card
             FlashCardMM listCard = fo.getFlashList().get(currentCard.getANumber());
 
+
             if (response.isEmpty()) {
                   userAnsField.setPromptText("Enter a valid response.");
             } else if (response.contains("/") && expression.contains("/")) {
@@ -332,12 +334,16 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                   String[] parts = response.split("/");
                   String answer = exp.getExpSolved();
                   String[] correctParts = answer.split(" ");
-
-                  if (Double.parseDouble(parts[0]) == Double.parseDouble(correctParts[1])
-                      && Double.parseDouble(parts[1]) == Double.parseDouble(correctParts[3])) {
-                        userAnsField.setId("right_border");
-                        rf.new RightAns(currentCard, listCard, this);
-                  } else {
+                  try {
+                        if (Double.parseDouble(parts[0]) == Double.parseDouble(correctParts[1])
+                            && Double.parseDouble(parts[1]) == Double.parseDouble(correctParts[3])) {
+                              userAnsField.setId("right_border");
+                              rf.new RightAns(currentCard, listCard, this);
+                        } else {
+                              responseWrong(cc, lowerHt);
+                              rf.new WrongAns(currentCard, listCard, this);
+                        }
+                  } catch (NumberFormatException e) {
                         responseWrong(cc, lowerHt);
                         rf.new WrongAns(currentCard, listCard, this);
                   }
@@ -363,9 +369,12 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                         rf.new WrongAns(currentCard, listCard, this);
                   }
             }
+
             if (progress >= FMTWalker.getInstance().getCount()) {
                   ReadFlash.getInstance().endGame();
             }
+
+
       }
 
       /* ------------------------------------------------- **/

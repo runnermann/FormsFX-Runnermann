@@ -83,15 +83,15 @@ public class DeckMetaPane extends FormParentPane {
             sellSwitch = new ToggleSwitch();
             shareDistSwitch = new ToggleSwitch();
             sellLabel = new Label("Sell this deck");
-            sellLabel.setId("switch-label");
-            shareLabel = new Label("Allow others to distribute in their social media");
-            shareLabel.setId("switch-label");
+            sellLabel.setId("label-bold-grey-emph");
+            shareLabel = new Label("Allow others to earn and share");
+            shareLabel.setId("label-bold-grey-emph");
 
-            cardNumLabel.setId("label-bold-white-emph");
-            imgNumLabel.setId("label-bold-white-emph");
-            vidNumLabel.setId("label-bold-white-emph");
-            audNumLabel.setId("label-bold-white-emph");
-            lastScoreLabel.setId("label-bold-white-emph");
+            cardNumLabel.setId("label-bold-grey-emph");
+            imgNumLabel.setId("label-bold-grey-emph");
+            vidNumLabel.setId("label-bold-grey-emph");
+            audNumLabel.setId("label-bold-grey-emph");
+            lastScoreLabel.setId("label-bold-grey-emph");
 
             qrButton = new Button("SAVE TO DESKTOP");
             qrButton.setStyle("-fx-background-color: #F2522E; -fx-text-fill: #ffffff; -fx-font-size: 14;");
@@ -154,7 +154,6 @@ public class DeckMetaPane extends FormParentPane {
             super.layoutParts();
             LOGGER.info("*** create MetaData form called ***");
             super.submitButton.setStyle("-fx-background-color: #F2522E; -fx-text-fill: #ffffff; -fx-font-size: 14; -fx-font-weight: BOLD");
-
             formRenderer.setMaxWidth(SceneCntl.getFormBox().getWd() - 10);
             formRenderer.setPrefSize(SceneCntl.getFormBox().getWd(), SceneCntl.getFormBox().getHt());
 
@@ -170,11 +169,11 @@ public class DeckMetaPane extends FormParentPane {
             // column 0, row 0 , column span 1, row span 1
             innerGPane.add(statsBox, 0, 0, 1, 1);
             innerGPane.add(lastScoreLabel, 0, 1, 1, 1);
-            innerGPane.add(box, 0, 2, 1, 1);
+            innerGPane.add(box, 0, 3, 1, 1);
 
             // Temp QR code column 1
-            innerGPane.add(qrView, 1, 0, 1, 3);
-            innerGPane.add(qrButton, 1, 3, 1, 1);
+            innerGPane.add(qrView, 1, 0, 1, 4);
+            innerGPane.add(qrButton, 1, 4, 1, 1);
 
       }
 
