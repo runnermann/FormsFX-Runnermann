@@ -300,11 +300,11 @@ public class FMRectangle extends GenericShape<FMRectangle> implements Serializab
       @Override
       public GenericBuilder<FMRectangle, RectangleBuilder> getBuilder(SectionEditor editor) {
 
-            DrawTools draw = DrawTools.getInstance();
+            DrawTools dt = DrawTools.getInstance();
             return new RectangleBuilder(
-                draw.getCanvas(),
-                draw.getGrapContext(),
-                draw.getOverlayPane(),
+                dt.getCanvas(),
+                dt.getGrapContext(),
+                dt.getOverlayPane(),
                 editor,
                 this.strokeColor,
                 this.fillColor

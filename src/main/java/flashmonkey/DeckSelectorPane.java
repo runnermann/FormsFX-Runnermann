@@ -34,12 +34,6 @@ public class DeckSelectorPane {
       protected VBox paneForFiles = new VBox(4);
       // For the file does not exist window
       private TextField newNameField;   // new name field
-      //private Label labelNnf;
-      private Label plainTxt;
-      // count, To keep track of when flashCards are added to an array.
-      // Prevents unnecessary communications with
-      // cloud servers.
-      private int count;
 
       //*** VIEW PANE CONSTRUCTOR ***
       //* File select pane
@@ -66,17 +60,10 @@ public class DeckSelectorPane {
             ArrayList<LinkObj> currentList = agrList.getRecentFiles();
             ArrayList<LinkObj> oldList = agrList.getOlderFiles();
 
-            //LOGGER.info("CurrentFiles.size() {}, olderFiles.size() {}", currentList.size(), oldList.size());
-            //LOGGER.info("AGRList.size(): {}", agrList.getSize());
 
             // Check if folder exists and has more than one file .
             // first file is default file.
             if (agrList.getSize() > 0) {
-
-                  // output list of files{
-                  //If there is a folder that exists and the agregated list of files is greater
-                  // than 0, filter out copies -"copy" 2) output the filenames, eliminate the
-                  // ".dec". 3) add a radio button 4) add the rdo/actionListener
                   LOGGER.debug("currentList.size(): <{}>", currentList.size());
                   if (currentList.size() > 0) {
                         addChildren(currentList, recLabel);
@@ -101,9 +88,6 @@ public class DeckSelectorPane {
                         if (e.isSecondaryButtonDown()) {
                               fieldSecondaryAction();
                         } else {
-                              // String deckFileName = lObject.getDescrpt();
-                              // changed to add ".dec back into the fileName
-                              // deckFileName = deckFileName.substring(0, deckFileName.length() -4);
                               FlashCardOps.getInstance().fieldPrimaryAction(lObject, lObject.getDescrpt());
                         }
                   });
@@ -123,11 +107,8 @@ public class DeckSelectorPane {
       //*
       //* @return Returns a VBox
       protected GridPane newFile() {
-            count = 0;
             FlashMonkeyMain.setIsInEditMode(true);
-            //DeckNameModel model = new DeckNameModel();
             DeckNamePane dmPane = new DeckNamePane();
-            //dmPane.requestFocus();
             return dmPane.getMainGridPain();
       }
 

@@ -47,7 +47,7 @@ public enum FileExtension {
       private static final Set<String> AUDIO_HASHSET = new HashSet<>(AUDIO_EXTENSIONS_LIST);
       private static final Set<String> VIDEO_HASHSET = new HashSet<>(VIDEO_EXTENSIONS_LIST);
       private static final Set<String> IMAGE_EXTENSIONS = new HashSet<>(
-          Arrays.asList("png", "jpg", "jpeg", "gif", "bmp", "exif", "tiff", "webp", "heif", "bat", "bpg", "svg"));
+            Arrays.asList("png", "jpg", "jpeg", "gif", "bmp", "exif", "tiff", "webp", "heif", "bat", "bpg", "svg", "JPEG"));
       static final Set<String> POPULAR_ZIP_EXTENSIONS = new HashSet<>(
           Arrays.asList("zip", "7z", "rar", "zipx", "bz2", "gz"));
 

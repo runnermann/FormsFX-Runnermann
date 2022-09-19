@@ -1,4 +1,4 @@
-package video.camera;
+package media.camera;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -291,7 +291,9 @@ public class WindowsCameraCapture extends Application {
                               sarxoswebCam = Webcam.getWebcams().get(webCamIndex);
                               sarxoswebCam.open();
 
-                              startWebCamStream();
+                              if(null != sarxoswebCam) {
+                                    startWebCamStream();
+                              }
 
                               return null;
                         }
@@ -306,7 +308,6 @@ public class WindowsCameraCapture extends Application {
             }
 
             protected void startWebCamStream() {
-
                   stopCamera = false;
 
                   Task<Void> task = new Task<>() {
@@ -320,6 +321,7 @@ public class WindowsCameraCapture extends Application {
                               BufferedImage img = null;
 
                               while (!stopCamera) {
+                                    if(null == sarxoswebCam) { stopCamera = true; }
                                     System.out.println("running");
                                     try {
                                           if ((img = sarxoswebCam.getImage()) != null) {
@@ -347,6 +349,7 @@ public class WindowsCameraCapture extends Application {
                   th.setDaemon(true);
                   th.start();
                   imgWebCamCapturedImage.imageProperty().bind(imageProperty);
+
             }
 
             private void createCameraControls() {

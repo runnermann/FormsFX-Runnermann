@@ -5,12 +5,20 @@ import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class AccountProfileMenu {
@@ -19,7 +27,7 @@ public class AccountProfileMenu {
             /* no args constructor */
       }
 
-      public static GridPane profileMenu(Stage actionWindow) {
+      public static GridPane profileMenu() {
             VBox buttonBox = new VBox(2);
             buttonBox.setPadding(new Insets(20, 0, 6, 0));
             GridPane gridPane = new GridPane();
@@ -55,6 +63,7 @@ public class AccountProfileMenu {
             Button subsciptBtn = ButtoniKon.getSubscriptStatusButton();
             subsciptBtn.setOnAction(e -> FlashMonkeyMain.getSubscribeWindow());
 
+            gridPane.setOnKeyPressed(k -> newt(k));
 
             //buttonBox.getChildren().addAll(paySysBtn, subsciptBtn, profileBtn);
             buttonBox.getChildren().addAll(subsciptBtn, profileBtn);
@@ -69,12 +78,56 @@ public class AccountProfileMenu {
             return gridPane;
       }
 
-//    -- Commented out. It is moved to another location?
-//    private static void showPopup() {
-//        String emojiPath = "image/flashFaces_sunglasses_60.png";
-//        String message   = "Oooph!" +
-//                "\n I need to be connected to the cloud \n to create or change your account information.";
-//        FxNotify.notificationBlue("Please Connect!", message, Pos.CENTER, 6,
-//                emojiPath, FlashMonkeyMain.getWindow());
-//    }
+      private static void newt(KeyEvent k) {
+            final KeyCombination keyComb = new KeyCodeCombination(KeyCode.F,
+                    KeyCombination.SHIFT_DOWN, KeyCombination.ALT_DOWN);
+            //public void handle(KeyEvent ke) {
+            if (keyComb.match(k)) {
+                  adminSecondaryAction();
+                  k.consume(); // <-- stops passing the event to next node
+            }
+            //}
+      }
+
+      private static void adminSecondaryAction() {
+//            Pane pane = new Pane();
+//            pane.setPrefSize(100, 100);
+//            FlashMonkeyMain.setActionWindow(new Scene(originCreatorAction()));
+
+      }
+
+      /**
+       * Give origins power to create Campaigns, and ability to
+       * see insights. :)
+       * 1) Create growth QR-Code and Link
+       * 2) create campaigns
+       * 3) See insights
+       * @return
+       */
+//      private static GridPane originCreatorAction() {
+//            // Show existing qr codes:
+//            GridPane grid = new GridPane();
+//            Button existingAllBtn = new Button("all existing campaigns");
+//            Button createNew = new Button("create new campaign");
+//            existingAllBtn.setOnAction(e -> showExisting());
+//            createNew.setOnAction(e -> create());
+//
+//            grid.addRow(0, existingAllBtn);
+//            grid.addRow(0, createNew);
+//
+//            return grid;
+//      }
+
+//      private static StackPane showExisting() {
+//            // show owner email
+//            // show note
+//            // show link
+//            // show qr code
+//            // Show hits
+//      }
+//
+//      private static StackPane create() {
+//
+//      }
+
 }

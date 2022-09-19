@@ -117,6 +117,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
             return super.toString()
                 + "\nQuestionMM: "
                 + "\n\t numRigth  = " + this.qType
+                    + "\n\t qType = " + this.qType
                 + "\n\t qFiles  = " + qFil;
 
       }

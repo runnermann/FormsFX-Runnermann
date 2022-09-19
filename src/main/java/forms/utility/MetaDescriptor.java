@@ -30,6 +30,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 
       // The deck description
       private StringProperty price;
+      private StringProperty numStars;
       private StringProperty deckDescript;
       private StringProperty deckSchool;
       private StringProperty deckBook;
@@ -39,7 +40,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
       private StringProperty subjSubCat;
       private StringProperty deckLanguage;
       private StringProperty courseCode;
-      private StringProperty deckPhotURL;
+      private StringProperty deckImgName;
       private IntegerProperty numCards;
       // slider switches in deckMetaPane
       private BooleanProperty shareDeck;
@@ -77,17 +78,6 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             super();
             LOGGER.debug("Calling MetaDescriptor Constructor");
             //LOGGER.setLevel(Level.DEBUG);
-
-/*		TroubleShooting MetaDataForm. It should have data in it. It is either in the form,
-				or it is in the DB. Currently there is no data in the form, but it is in
-				the DB. We've checked setMostRecent. It is working correctly. That is where we
-				have left off. We made a change and commented out an updateData somewhere.
-
-		May be a problem with the sequence of updating and deck inventory method. IE deck inventory
-				sets the metadata from the file, updates metadata with the current media and deck inventory, and
-				saves the current to file. This may be the root of the problem. Deleting data after it is uploaded
-				from the DB. and thus clearing the metadata with empty data from the file. ?????
-*/
             this.setMostRecent();
       }
 
@@ -97,6 +87,10 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
       // form.
       public String getPrice() {
             return price.get();
+      }
+
+      public String getNumStars() {
+            return numStars.get();
       }
 
       public String getDeckDescript() {
@@ -135,8 +129,8 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             return courseCode.get();
       }
 
-      public String getPhotoURL() {
-            return deckPhotURL.get();
+      public String getDeckImgName() {
+            return deckImgName.get();
       }
 
       public Integer getNumCards() {
@@ -184,6 +178,10 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             return price;
       }
 
+      public StringProperty numStarsProperty() {
+            return numStars;
+      }
+
       public StringProperty deckDescriptProperty() {
             return deckDescript;
       }
@@ -221,7 +219,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
       }
 
       public StringProperty deckPhotoURLProperty() {
-            return deckPhotURL;
+            return deckImgName;
       }
 
       public BooleanProperty shareDeckProperty() {
@@ -238,6 +236,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 
             LOGGER.debug("setPropertiesDefault()");
             price = new SimpleStringProperty("0");
+            numStars = new SimpleStringProperty("0");
             deckDescript = new SimpleStringProperty("");
             deckSchool = new SimpleStringProperty("");
             deckBook = new SimpleStringProperty("");
@@ -247,7 +246,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             subjSubCat = new SimpleStringProperty("");
             deckLanguage = new SimpleStringProperty("");
             courseCode = new SimpleStringProperty("");
-            deckPhotURL = new SimpleStringProperty("");
+            deckImgName = new SimpleStringProperty("");
             numCards = new SimpleIntegerProperty(0);
             shareDeck = new SimpleBooleanProperty(false);
             sellDeck = new SimpleBooleanProperty(false);
@@ -259,7 +258,8 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
 
       /**
        * Sets the variable properties for this
-       * descriptor
+       * descriptor. Used at intialization of form to populate data
+       * with existing data.
        *
        * @param m
        */
@@ -276,9 +276,10 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             subjSubCat = new SimpleStringProperty(m.getCat());
             deckLanguage = new SimpleStringProperty(m.getLang());
             courseCode = new SimpleStringProperty(m.getCourseCode());
-            deckPhotURL = new SimpleStringProperty(m.getDeckPhotoURL());
+            deckImgName = new SimpleStringProperty(m.getDeckPhotoURL());
             numCards = new SimpleIntegerProperty(Integer.parseInt(m.getNumCard()));
             price = new SimpleStringProperty(m.getPrice());
+            numStars = new SimpleStringProperty(m.getNumStars());
             shareDeck = new SimpleBooleanProperty(m.isShareDistro());
             sellDeck = new SimpleBooleanProperty(m.isSellDeck());
             allTuts = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -314,13 +315,11 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             // If the num value is greater, then chose local
             else if (num > 0) {
                   setToLocalData();
-                  setProperties(meta);
+                  //setProperties(meta);
             }
-            // Else the db has the most recent version.
-            else { // (num < 0)
-                  // meta is already set to the DB
-                  setProperties(meta);
-            }
+            // Else the db has the most recent version and data is already set.
+            setProperties(meta);
+            //}
 
             //System.out.println(); // clear buffer
       }
@@ -418,8 +417,9 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             subjCat.setValue("");
             subjSubCat.setValue("");
             courseCode.setValue("");
-            deckPhotURL.setValue("");
+            deckImgName.setValue("");
             price.setValue("0");
+            numStars.setValue("0");
             sellDeck.setValue(false);
             shareDeck.setValue(false);
       }

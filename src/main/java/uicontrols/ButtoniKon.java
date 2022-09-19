@@ -47,13 +47,13 @@ public enum ButtoniKon { //extends Button {
       NEW_CARD("", "Add a new card", FontAwesomeSolid.PLUS, UIColors.FM_WHITE, 20),
       INSERT_CARD("", "Insert a new card to the end of the deck", FontAwesomeSolid.PLUS, UIColors.FM_WHITE, 20),
       DELETE_CARD("", "Delete this card", FontAwesomeSolid.TIMES, UIColors.FM_WHITE, 20),
-      SAVE_DECK_RETURN("", "Save changes to the deck\n& return to menu", FontAwesomeSolid.REPLY, UIColors.FM_WHITE, 20),
-      UNDO_DECK_CHANGES("", "Don't save any changes\n and return to menu", FontAwesomeSolid.REDO_ALT, UIColors.FM_WHITE, 20),
-      RESET_ORDER("", "resets the deck back\nto it's original order", FontAwesomeSolid.SYNC_ALT, UIColors.FM_WHITE, 20),
+      SAVE_DECK_RETURN("", "Save changes to the deck\n& return to menu", FontAwesomeSolid.SHARE_SQUARE, UIColors.FM_WHITE, 20),
+      UNDO_DECK_CHANGES("", "Don't save any changes to the deck\n and return to menu", FontAwesomeSolid.TRASH_RESTORE, UIColors.FM_WHITE, 20),
+      RESET_ORDER("", "resets the deck back\nto it's original order", FontAwesomeSolid.RETWEET, UIColors.FM_WHITE, 20),
       CREATE_Q_PREV("", "Previous card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_LEFT, UIColors.FM_WHITE, 20),
       CREATE_Q_NEXT("", "Next card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_RIGHT, UIColors.FM_WHITE, 20),
       UNDO_CARD_CHANGES("", "Undo changes to \nthis card", FontAwesomeSolid.ERASER, UIColors.FM_WHITE, 20),
-      SELL_BUTTON("INCOME", "Add a description, and select to earn money from this deck.", FontAwesomeSolid.WALLET, UIColors.FM_WHITE),
+      SELL_BUTTON("EARN", "Add a description, and select to earn money from this deck.", FontAwesomeSolid.MONEY_BILL, UIColors.HIGHLIGHT_GREEN, 28),
       PURCHASE(" CHECKOUT ", "Go to checkout.", FontAwesomeSolid.SHOPPING_CART, UIColors.FM_WHITE),
       // I got paid pane buttons
       WALLET_BUTTON("WALLET", "See what you can spend", FontAwesomeSolid.MONEY_BILL_WAVE, UIColors.FM_WHITE),
@@ -71,7 +71,14 @@ public enum ButtoniKon { //extends Button {
       VID_FWD_5("", "Skip forward 5 seconds", FontAwesomeSolid.FAST_FORWARD, UIColors.FM_WHITE),
       VID_RESET("", "Reset", FontAwesomeSolid.UNDO_ALT, UIColors.FM_WHITE),
       VID_PLAY("", "Play", FontAwesomeSolid.PLAY, UIColors.FM_WHITE),
-      VID_PAUSE("", "Pause", FontAwesomeSolid.PAUSE, UIColors.FM_WHITE);
+      VID_PAUSE("", "Pause", FontAwesomeSolid.PAUSE, UIColors.FM_WHITE),
+      // IMAGE EDITING BUTTONS
+      IMAGE_ROTATE_R("", "Rotate right 90 degrees", FontAwesomeSolid.REDO_ALT, UIColors.FM_WHITE, 20),
+      IMAGE_ROTATE_L("", "Rotate left 90 degrees", FontAwesomeSolid.UNDO_ALT, UIColors.FM_WHITE, 20),
+      IMAGE_CROP("", "Crop the image", FontAwesomeSolid.CROP, UIColors.FM_WHITE, 20),
+      IMAGE_SAVE("", "Save changes", FontAwesomeSolid.SHARE_SQUARE, UIColors.FM_WHITE, 20),
+      IMAGE_UNDO_CHANGES("", "Exit and don't save changes", FontAwesomeSolid.TRASH_RESTORE, UIColors.FM_WHITE, 20);
+
 
 
       // --------------------------------- --------------------------------- //
@@ -565,6 +572,43 @@ public enum ButtoniKon { //extends Button {
       public static Button getVidPauseButton() {
             Button b = VID_PAUSE.get();
             b.setId("clearButtonSquare");
+            return b;
+      }
+
+      // *** IMAGE EDITING ***
+
+      public static Button getImgCropButton() {
+            Button b = IMAGE_CROP.get();
+            b.setId("clearButtonSquare");
+            b.setFocusTraversable(false);
+            return b;
+      }
+
+      public static Button getImgSaveButton() {
+            Button b = IMAGE_SAVE.get();
+            b.setId("clearButtonSquare");
+            b.setFocusTraversable(false);
+            return b;
+      }
+
+      public static Button getImgAbandButton() {
+            Button b = IMAGE_UNDO_CHANGES.get();
+            b.setId("clearButtonSquare");
+            b.setFocusTraversable(false);
+            return b;
+      }
+
+      public static Button getRotate_L_Button() {
+            Button b = IMAGE_ROTATE_L.get();
+            b.setId("clearButtonSquare");
+            b.setFocusTraversable(false);
+            return b;
+      }
+
+      public static Button getRotate_R_Button() {
+            Button b = IMAGE_ROTATE_R.get();
+            b.setId("clearButtonSquare");
+            b.setFocusTraversable(false);
             return b;
       }
 

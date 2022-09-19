@@ -237,7 +237,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             {
                   LOGGER.error("ERROR: FlashCard Class Copy Constructor given NULL. "
                       + "Exiting.");
-                  System.exit(0);
+                  //System.exit(0);
                   return new FlashCardMM(); // keep the compiler happy :)
             } else {
                   return new FlashCardMM(
@@ -715,20 +715,25 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        * Compares the ArrayList of shapes contained within the
        * provided shape files.
        *
-       * @param thisShapeFile
-       * @param otherShapeFile
+       * @param thisShapeFileName
+       * @param otherShapeFileName
        * @return true if the two are equal by X,Y, Wd, and Ht. or other as defined by
        * that shape class.
        */
-      private boolean compareShapeFiles(String thisShapeFile, String otherShapeFile) {
+      private boolean compareShapeFiles(String thisShapeFileName, String otherShapeFileName) {
             FileOpsShapes fs = new FileOpsShapes();
-            if (!thisShapeFile.equals(otherShapeFile)) {
+            boolean thisIsNull = thisShapeFileName == null;
+            boolean otherIsNull = otherShapeFileName == null;
+
+            if ( otherIsNull
+                    ||  ! thisShapeFileName.equals(otherShapeFileName)) {
                   return false;
-            } else if (thisShapeFile.isEmpty()) {
+            } else if (thisShapeFileName.isEmpty()
+                    || thisIsNull && otherIsNull) {
                   return true;
             } else {
-                  ArrayList<GenericShape> shapes1 = fs.getListFromFile(thisShapeFile);
-                  ArrayList<GenericShape> shapes2 = fs.getListFromFile(otherShapeFile);
+                  ArrayList<GenericShape> shapes1 = fs.getListFromFile(thisShapeFileName);
+                  ArrayList<GenericShape> shapes2 = fs.getListFromFile(otherShapeFileName);
                   // if sizes do not match, return false.
                   if (shapes1.size() != shapes2.size()) {
                         return false;
@@ -766,8 +771,11 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             Integer thisValue = 0;
             Integer otherValue = 0;
 
+            // special case, when node is root,
+            // parent is null.
             if (other == null) {
                   LOGGER.warn("CompareTo is attempting to compare: this.getCNumber: ({}) with other.cNumber({}) and is a null item", this.getCNumber(), ((FlashCardMM) other).getCNumber());
+                  //return -1;
             }
             try {
                   thisValue = this.cNumber;

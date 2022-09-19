@@ -14,6 +14,7 @@ import com.google.zxing.WriterException;
 import ecosystem.QrCode;
 import fileops.DirectoryMgr;
 import fileops.FileNaming;
+import fileops.utility.Utility;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.MetaDescriptor;
@@ -27,7 +28,6 @@ import uicontrols.FxNotify;
 import uicontrols.UIColors;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * This class is used for the deck meta data form and holds all the necessary data. This
@@ -42,6 +42,7 @@ public class DeckMetaModel extends ModelParent {
       private static final Logger LOGGER = LoggerFactory.getLogger(DeckMetaModel.class);
       private final MetaDescriptor descriptor = new MetaDescriptor();
       private long deck_id;
+      private String vertxGetDeckURL;
 
 
       /**
@@ -60,6 +61,10 @@ public class DeckMetaModel extends ModelParent {
                             .label("label_price")
                             .validate(StringNumRangeValidator.between(0, Integer.MAX_VALUE, "num_format_error"))
                             .required("required_error_message")
+                            .span(ColSpan.HALF),
+                        Field.ofStringType(descriptor.numStarsProperty())
+                            .label("label_num_stars")
+                            .validate(StringNumRangeValidator.between(0, 5, "num_star_error"))
                             .span(ColSpan.HALF),
                         Field.ofStringType(descriptor.deckDescriptProperty())
                             .label("label_description")
@@ -132,7 +137,7 @@ public class DeckMetaModel extends ModelParent {
                   try {
                         // deck_id is set by doAction.
                         // Predicessor Chain, get chain hash from db.
-                        Path path = QrCode.buildDeckQrCode(deck_id, dir, deckQRname, UserData.getUserName());
+                        QrCode.buildDeckQrCode(deck_id, dir, deckQRname, UserData.getUserName());
                   } catch (WriterException e) {
                         LOGGER.warn("ERROR: WriterException caused by {} ", e.getMessage());
                         e.printStackTrace();
@@ -145,6 +150,12 @@ public class DeckMetaModel extends ModelParent {
             } else {
                   // failed, send user a message
                   LOGGER.warn("formAction() set deckMetaData failed ???");
+                  String msg = "That didn't get updated in the ecosystem. " +
+                          "\nTo update so others may access " +
+                          "\nand purchase your deck, please check your"  +
+                          "\nconnection and try again.";
+                  FxNotify.notificationDark("Ooops", msg, Pos.CENTER, 15,
+                          "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
             }
       }
 
@@ -154,6 +165,22 @@ public class DeckMetaModel extends ModelParent {
       }
 
       /**
+       *
+       * @return Returns the URL to fetch the deck from VERTX server.
+       */
+      String getVertxGetDeckURL() {
+            return vertxGetDeckURL;
+      }
+
+      long getDeckID() {
+            if(deck_id == -99 || deck_id == 0) {
+                  deck_id = Report.getInstance().queryGetDeckID();
+            }
+            return this.deck_id;
+      }
+
+      /**
+       * Called by submit button
        * Saves metaData created by this form to file.
        * sends metaData to the cloud.
        * Prints a message if successful or not.
@@ -168,47 +195,41 @@ public class DeckMetaModel extends ModelParent {
             // metaData.saveDeckMetaData();
             // Update database
             boolean bool = false;
-            try {
-                  // update the metaDataAry
-                  FlashCardOps.getInstance().setMetaInFile(metaData, path);
-                  // send to database
-                  deck_id = Report.getInstance().reportDeckMetadata(metaData);
-                  if (deck_id > 0) {
-                        bool = true;
+            // update the metaDataAry
+
+            if( ! Utility.isConnected()) {
+                  return false;
+            } else {
+                  try {
+                        FlashCardOps.getInstance().setMetaInFile(metaData, path);
+                        // send to database
+                        deck_id = Report.getInstance().reportDeckMetadata(metaData);
+                        if (deck_id > 0) {
+                              bool = true;
+                        }
+                  } catch (Exception e) {
+                        LOGGER.warn("WARNING: {} StackTrace: {} ", e.getMessage(), e.getStackTrace());
+                        e.printStackTrace();
+                        bool = false;
                   }
-            } catch (Exception e) {
-                  LOGGER.warn("WARNING: {} StackTrace: {} ", e.getMessage(), e.getStackTrace());
-                  e.printStackTrace();
-                  bool = false;
             }
 
             if (bool) {
                   String msg = "You're updates have been saved to the cloud and should be viewable.";
                   FxNotify.notificationDark("Awesomeness!", msg, Pos.CENTER, 12,
-                      "image/flashFaces_stars_75.png", FlashMonkeyMain.getWindow());
+                      "image/flashFaces_stars_75.png", FlashMonkeyMain.getPrimaryWindow());
                   return true;
             } else {
-                  // failed, send user a notification
-                  String msg = "Awe dang! That didn't get through. Try checking your internet connection.";
-                  FxNotify.notificationDark("Ooops", msg, Pos.CENTER, 12,
-                      "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+                  // failed
                   return false;
             }
       }
-
-//	public void sellListener(ToggleSwitch sellSwitch) {
-//		sellSwitch.selectedProperty().bindBidirectional(descriptor.sellDeckProperty());
-//	}
-//
-//	public void shareListener(ToggleSwitch shareSwitch) {
-//		shareSwitch.selectedProperty().bindBidirectional(descriptor.shareDeckProperty());
-//	}
 
       public void sellSwitchAction(ToggleSwitch sellSwitch, ToggleSwitch shareSwitch) {
             if (!current()) {
                   FMAlerts alerts = new FMAlerts();
                   boolean b = alerts.choiceOnlyActionPopup(" Advanced FlashMonkey Alert ", FMAlerts.JOIN_OR_FAIL, "image/logo/vertical_logo_blue_480.png",
-                      UIColors.ICON_ELEC_BLUE);
+                      UIColors.ICON_ELEC_BLUE, null);
                   if (b) {
                         // if true send to create subscription.
                         FlashMonkeyMain.getSubscribeWindow();
@@ -234,21 +255,21 @@ public class DeckMetaModel extends ModelParent {
             DeckMetaData metaData = (DeckMetaData) data;
             getFormInstance().persist();
             // set user information for file system access
-            LOGGER.info("formAction() values " +
-                    "\ndata.Descript(): {} " +
-                    "\ndata.getSchool: {} " +
-                    "\ndata.getBook: {} " +
-                    "\ndata.getDeckProf: {} " +
-                    "\ndata.getDeckLang: {}" +
-                    "\ndata.getSubjCat: {}" +
-                    "\ndata.getSubjSubCat: {}" +
-                    "\ndata.getNumCard: {}" +
-                    "\ndata.getCourseCode: {}" +
-                    "\ndata.isSellDeck: {}" +
-                    "\ndata.isShareDeck: {}",
-                descriptor.getDeckDescript(), descriptor.getSelectedTut(), descriptor.getDeckBook(), descriptor.getDeckProf(), descriptor.getDeckLanguage(),
-                descriptor.getSubj(), descriptor.getSubjSubCat(), descriptor.getNumCards(), descriptor.getCourseCode(), descriptor.getSellDeck(),
-                descriptor.getShareDeck());
+//            LOGGER.info("formAction() values " +
+//                    "\ndata.Descript(): {} " +
+//                    "\ndata.getSchool: {} " +
+//                    "\ndata.getBook: {} " +
+//                    "\ndata.getDeckProf: {} " +
+//                    "\ndata.getDeckLang: {}" +
+//                    "\ndata.getSubjCat: {}" +
+//                    "\ndata.getSubjSubCat: {}" +
+//                    "\ndata.getNumCard: {}" +
+//                    "\ndata.getCourseCode: {}" +
+//                    "\ndata.isSellDeck: {}" +
+//                    "\ndata.isShareDeck: {}",
+//                descriptor.getDeckDescript(), descriptor.getSelectedTut(), descriptor.getDeckBook(), descriptor.getDeckProf(), descriptor.getDeckLanguage(),
+//                descriptor.getSubj(), descriptor.getSubjSubCat(), descriptor.getNumCards(), descriptor.getCourseCode(), descriptor.getSellDeck(),
+//                descriptor.getShareDeck());
 
             metaData.setDescript(descriptor.getDeckDescript());
             metaData.setDeckSchool(descriptor.getSelectedTut().getName());
@@ -260,6 +281,8 @@ public class DeckMetaModel extends ModelParent {
             metaData.setLang(descriptor.getDeckLanguage());
             metaData.setCourseCode(descriptor.getCourseCode());
             metaData.setPrice(Integer.parseInt(descriptor.getPrice()));
+            metaData.setNumStars(Integer.parseInt(descriptor.getNumStars()));
+            metaData.setDeckImgName(descriptor.getDeckImgName());
             // NOTE: shareDeck and sellDeck are switches in DeckMetaPane
             metaData.setShareDistro(descriptor.getShareDeck());
             metaData.setSellDeck(descriptor.getSellDeck());

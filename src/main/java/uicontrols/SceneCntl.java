@@ -5,6 +5,8 @@
 package uicontrols;
 
 import ch.qos.logback.classic.Level;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Point2D;
 import javafx.stage.Screen;
 
@@ -27,8 +29,10 @@ public abstract class SceneCntl {
       private static int deltaHt;
       private static int deltaWd;
       // Set by app
-      private static int screenWd;// = d.width;
-      private static int screenHt; //= d.height;
+      // = d.width;
+      private static int screenWd;
+      //= d.height;
+      private static int screenHt;
 
       private static final int defX = 0;
       private static final int defY = 0;
@@ -77,6 +81,9 @@ public abstract class SceneCntl {
             userSettings.setProperty("consumer-pane-wd", Integer.toString(Dim.CONSUMER_PANE_WD.get()));
             userSettings.setProperty("consumer-pane-ht", Integer.toString(Dim.CONSUMER_PANE_HT.get()));
             userSettings.setProperty("right-cell-wd", Integer.toString(Dim.RIGHT_CELL_WD.get()));
+            // sets if read and edit stages are maximized
+            //@TODO finish rw-stage-maxmized
+            userSettings.setProperty("rw-stage-maximized", Dim.RW_STAGE_MAXIMIZED.get() == 1 ? "1" : "0");
             Box2D[] bx = {Box2D.READFLASH_BOX, Box2D.CREATEFLASH_BOX, Box2D.FORM_BOX};
             // AppBox is always left at default
             buildSceneProperties(bx);
@@ -320,7 +327,8 @@ public abstract class SceneCntl {
             SOUTH_BPANE_HT(128),
             CONTROL_PANE_HT(160),
             CONSUMER_PANE_WD(1264),
-            CONSUMER_PANE_HT(754);
+            CONSUMER_PANE_HT(754),
+            RW_STAGE_MAXIMIZED(0);
 
             private int value;
 
@@ -355,7 +363,8 @@ public abstract class SceneCntl {
             private int ht;
             private int x;
             private int y;
-            private final String name;
+            private final String name;// The read and edit stage
+            private static final BooleanProperty RW_STAGE_MAXIMIZED = new SimpleBooleanProperty(false);
 
             Box2D(String name, int wd, int ht, int x, int y) {
                   boolean zero = x + y == 0;
@@ -449,6 +458,11 @@ public abstract class SceneCntl {
 
             public String getYStr() {
                   return Integer.toString(y);
+            }
+
+            // ** EDIT and READ are Maximized ** //
+            public BooleanProperty rwStageIsMaximized() {
+                  return RW_STAGE_MAXIMIZED;
             }
       }
 }

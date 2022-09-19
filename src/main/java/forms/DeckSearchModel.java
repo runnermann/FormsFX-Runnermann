@@ -22,12 +22,14 @@ public class DeckSearchModel extends ModelParent {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckSearchModel.class);
       private static final Logger LOGGER = LoggerFactory.getLogger(DeckSearchModel.class);
       private final SearchRemoteDescriptor descriptor = new SearchRemoteDescriptor();
+      private static boolean isBound;
 
       /**
        * Provides the form fields with validation and messaging to the user.
        */
       @Override
       public void createForm() {
+            isBound = false;
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("DeckSearchModel createForm called");
             //String[] pwCheck = new String[1];
@@ -104,16 +106,19 @@ public class DeckSearchModel extends ModelParent {
                       "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getActionWindow());
             } else {
                   dm.build();
-                  ConsumerPane.getInstance().layoutConsumer();
-                  FlashMonkeyMain.getActionWindow().setMinWidth(SceneCntl.getConsumerPaneWd());
-                  FlashMonkeyMain.getActionWindow().setMinHeight(SceneCntl.getConsumerPaneHt());
-                  FlashMonkeyMain.getActionWindow().minWidthProperty().bind(ConsumerPane.getInstance().widthProperty());
-                  FlashMonkeyMain.getActionWindow().minHeightProperty().bind(ConsumerPane.getInstance().heightProperty());
-                  // Note that onClose is called from FlashMonkeyMain
-                  FlashMonkeyMain.getActionWindow().setOnHidden(e -> {
-                        ConsumerPane.getInstance().onClose();
-                        FlashMonkeyMain.closeActionWindow();
-                  });
+                  if( !isBound ) {
+                        isBound = true;
+                        ConsumerPane.getInstance().layoutConsumer();
+                        FlashMonkeyMain.getActionWindow().setMinWidth(SceneCntl.getConsumerPaneWd());
+                        FlashMonkeyMain.getActionWindow().setMinHeight(SceneCntl.getConsumerPaneHt());
+                        FlashMonkeyMain.getActionWindow().minWidthProperty().bind(ConsumerPane.getInstance().widthProperty());
+                        FlashMonkeyMain.getActionWindow().minHeightProperty().bind(ConsumerPane.getInstance().heightProperty());
+                        // Note that onClose is called from FlashMonkeyMain
+                        FlashMonkeyMain.getActionWindow().setOnHidden(e -> {
+                              ConsumerPane.getInstance().onClose();
+                              FlashMonkeyMain.closeActionWindow();
+                        });
+                  }
             }
       }
 

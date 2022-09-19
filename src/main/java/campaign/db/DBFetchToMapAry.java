@@ -22,7 +22,7 @@ public enum DBFetchToMapAry {
             public ArrayList<HashMap<String, String>> query(String... whereStatement) {
                   ArrayList<HashMap<String, String>> map;
                   String strQuery = "SELECT " + formatColumns(DECK_COLUMNS) +
-                      " FROM deckMetadata " + whereStatement[0];
+                        " FROM public.deckmetadata d JOIN public.person p ON(p.orig_email = d.creator_email) " + whereStatement[0];
                   map = fetchSingleResult(strQuery, DECK_COLUMNS);
 
                   return map;
@@ -34,7 +34,7 @@ public enum DBFetchToMapAry {
             public ArrayList<HashMap<String, String>> query(String... whereStatement) {
                   ArrayList<HashMap<String, String>> multiMap;
                   String strQuery = "SELECT " + formatColumns(DECK_COLUMNS) +
-                      " FROM deckMetadata " + whereStatement[0];
+                         " FROM public.deckmetadata d JOIN public.person p ON(p.orig_email = d.creator_email) " + whereStatement[0];
                   multiMap = DBFetchToMapAry.fetchMultiResultSerial(strQuery, DECK_COLUMNS);
 
                   return multiMap;
@@ -69,7 +69,7 @@ public enum DBFetchToMapAry {
             public ArrayList<HashMap<String, String>> query(String... args) {
                   ArrayList<HashMap<String, String>> map;
                   // the columns requested and to be mapped in the return data.
-                  String[] columns = {"first_name", "last_name", "middle_name", "phone", "age", "institution", "descript", "photo_link",
+                  String[] columns = {"first_name", "last_name", "middle_name", "phone", "age", "institution", "descript", "photo_link", "avatar_name",
                       "education_level", "major", "minor", "cv_link", "person_id"};
 
                   String strQuery = "SELECT " + formatColumns(columns) +
@@ -95,6 +95,7 @@ public enum DBFetchToMapAry {
           "deck_photo",
           "deck_descript",
           "creator_email",
+          "avatar_name",
           "last_date",
           "create_date",
           "subj",

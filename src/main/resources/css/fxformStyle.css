@@ -13,6 +13,7 @@
     ICON_GOLD: #F2C744;
     INSPIRE_ORANGE: #F2522E;
     BACKGROUND_DK_BLUE: #155A9F;
+    NEW_BUTTON_BLUE: #0B2D59;
 
     FX_BACKGROUND: ICON_BLUE;
 }
@@ -159,22 +160,26 @@
 
 #label-bold-white-emph {
     -fx-text-fill: #ffffff;
-    -fx-font-size: 14;
+    -fx-font-size: 14px;
 }
 
 #label-bold-grey-emph {
     -fx-text-fill: #01076d;
-    -fx-font-size: 14;
+    -fx-font-size: 14px;
+}
+#label-blue-small {
+    -fx-text-fill: #01076d;
+    -fx-font-size: 12px;
 }
 
 #switch-label {
     -fx-text-fill: #ffffff;
-    -fx-font-size: 12;
+    -fx-font-size: 12px;
 }
 
 #signUpLabel {
     -fx-text-fill: HOVER;
-    -fx-font-size: 12;
+    -fx-font-size: 12px;
 }
 
 #deckSubmitButton {

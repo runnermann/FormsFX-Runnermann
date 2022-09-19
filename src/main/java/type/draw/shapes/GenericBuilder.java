@@ -29,6 +29,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
+import media.sound.SoundEffects;
 import type.CopyPasteInterface;
 import type.FMMouseInterface;
 import type.celleditors.DrawTools;
@@ -62,6 +63,11 @@ public abstract class GenericBuilder<T extends GenericShape<T>, B extends Generi
       Button deleteBtn;                               // package private
       protected boolean paste;
 
+      // SOUND EFFECTS
+      protected long startTime = 0;
+      protected boolean isPlaying = false;
+      protected boolean newSound = true;
+
 
       /**
        * No args constructor
@@ -69,8 +75,7 @@ public abstract class GenericBuilder<T extends GenericShape<T>, B extends Generi
       public GenericBuilder() { /* No args constructor */ }
 
       /**
-       * Constructor used when new shapes are created, Call this first
-       * to create the overlayPane over the area selected.
+       * Called by shapeBuilders
        *
        * @param c      The Canvas
        * @param graphC The GraphicsContext
@@ -112,9 +117,9 @@ public abstract class GenericBuilder<T extends GenericShape<T>, B extends Generi
             newShape = bool;
       }
 
-      public void setBuilderShapeAryIdx0(FMRectangle fmRectangle) {
-            gbcopyArrayOfFMShapes.set(0, fmRectangle);
-      }
+//      public void setBuilderShapeAryIdx0(FMRectangle fmRectangle) {
+//            gbcopyArrayOfFMShapes.set(0, fmRectangle);
+//      }
 
       /**
        * Sets anchorX and anchorY to the mouse x and y location
@@ -230,6 +235,7 @@ public abstract class GenericBuilder<T extends GenericShape<T>, B extends Generi
        */
       @Override
       public void mousePressed(MouseEvent mouse) {
+            SoundEffects.ROBOT_SERVO_2.play();
             DrawTools draw = DrawTools.getInstance();
             // Clear the resize nodes if they are present
             draw.clearNodes();

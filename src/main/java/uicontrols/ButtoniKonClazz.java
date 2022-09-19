@@ -16,7 +16,8 @@ import org.kordamp.ikonli.javafx.FontIcon;
 public class ButtoniKonClazz {
 
       private final Button ikonBtn;
-      private final int size = 24;
+      public static final int SIZE_24 = 24;
+      public static final int SIZE_16 = 16;
       private final int textEditorSize = 16;
 
       /**
@@ -28,7 +29,7 @@ public class ButtoniKonClazz {
        * @param ikon
        * @param clrStr
        */
-      public ButtoniKonClazz(String titleStr, String toolTip, Ikon ikon, String clrStr) {
+      public ButtoniKonClazz(String titleStr, String toolTip, Ikon ikon, String clrStr, int size) {
             FontIcon rIcon = new FontIcon(ikon);
             rIcon.setIconSize(size);
             rIcon.setFill(UIColors.convertColor(clrStr));
@@ -70,10 +71,16 @@ public class ButtoniKonClazz {
        * @param toolTip  The tooltip if needed
        * @param imgPath  The path to the image, ie /icon/card_delete2.png
        * @param clrStr   The color string.
+       * @param imgSize If a preferred size other than the image size, set it. If not use 0;
        */
-      public ButtoniKonClazz(String titleStr, String toolTip, String imgPath, String clrStr) {
+      public ButtoniKonClazz(String titleStr, String toolTip, String imgPath, String clrStr, int imgSize) {
             Image img = new Image(imgPath);
-            javafx.scene.control.Button newBtn = new Button(titleStr, new ImageView(img));
+            ImageView iv = new ImageView(img);
+//            if(imgSize != 0) {
+//                  iv.setFitWidth(imgSize);
+//                  iv.setFitHeight(imgSize);
+//            }
+            javafx.scene.control.Button newBtn = new Button(titleStr, iv);
             if (!toolTip.isEmpty()) {
                   newBtn.setTooltip(new Tooltip(toolTip));
             }
@@ -106,4 +113,6 @@ public class ButtoniKonClazz {
             button.setTooltip(new Tooltip("Pause"));
             return button;
       }
+
+
 }

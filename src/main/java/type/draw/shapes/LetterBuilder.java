@@ -35,6 +35,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celleditors.DrawTools;
@@ -517,6 +518,7 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
        */
       @Override
       public void shapePressed(MouseEvent mouse, GenericShape gs, Shape shape) {
+            SoundEffects.ROBOT_SERVO_START.play();
             shape.setStrokeWidth(shape.getStrokeWidth() + 2);
 
             // Clear the resize nodes if they are present
@@ -540,6 +542,12 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
 
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape shape) {
+            newSound = startTime < System.currentTimeMillis() - 1500;
+            if(newSound) {
+                  startTime = System.currentTimeMillis();
+                  SoundEffects.ROBOT_SERVO_3.play();
+                  //isPlaying = false;
+            }
             if (mouse.isPrimaryButtonDown()) {
                   ((Text) shape).setX(mouse.getSceneX() + deltaX);
                   ((Text) shape).setY(mouse.getSceneY() + deltaY);

@@ -9,9 +9,7 @@ package fmtree;
 public class AVLTree<E extends Comparable<E>> extends BinarySearchTreeWithRotate<E> {
 
       // Data Fields
-      /**
-       * Indicates that height of tree has increased.
-       */
+    /** Indicates that height of tree has increased. */
       private boolean heightChanged;
       int size = 0;
 

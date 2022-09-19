@@ -29,22 +29,14 @@ public final class SearchPane {
       private static SearchPane CLASS_INSTANCE;
 
       // *** Panes ***
-      /**
-       * Provides a scrollable pane to display the results of a search
-       */
+    /** Provides a scrollable pane to display the results of a search */
       private static ScrollPane scrollPane;
-      /**
-       * Displays the results of the search inside of the scrollPane
-       */
+    /** Displays the results of the search inside of the scrollPane*/
       private static VBox resultPane;
-      /**
-       * Contains the scrollPane and sent to the calling method
-       **/
+    /** Contains the scrollPane and sent to the calling method **/
       private static VBox finalPane;
 
-      /**
-       * The resulting search
-       */
+    /** The resulting search */
       //   private static Set<Hyperlink> newHypLinkSet;
       private final Set<Hyperlink> unionHypLinkSet;
       private SortedSet<SearchHyperLink> newSortedSet;
@@ -93,6 +85,8 @@ public final class SearchPane {
 
       /** ------ ------ ------ GETTERS ----- ------ ------ **/
 
+
+        // ---*---*---*---*--- * ---*---*---*---*--- //
 
       /**
        * Returns the searchBox containing the search field and the clear button. Also

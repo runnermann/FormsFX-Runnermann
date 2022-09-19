@@ -34,22 +34,6 @@ public class DjkResponseCell extends GenericCell implements Serializable {
             VBox vBox = new VBox(2);
             ScrollPane scrollPane = new ScrollPane();
 
-//        while( ! Operator.hasOperators()) {
-//            // expression node
-//            ExpNode exp = Operator.poll();
-//            TextField tf = new TextField(exp.getExpSolved());
-//            tf.setOnMouseEntered(e -> {
-//                tf.setStyle("-fx-border-color:" + UIColors.HIGHLIGHT_ORANGE + "; -fx-border-width: 2px");
-//                setIActiveStyle( prevIdx, exp.getIndex());
-//                prevIdx = exp.getIndex();
-//            });
-//            tf.setOnMouseExited(e -> {
-//                mouseExitedExpBox();
-//                tf.setStyle("-fx-border-width: 0px");
-//            });
-//            vBox.getChildren().add(tf);
-//            vBox.setMaxWidth(400);
-//        }
             scrollPane.setContent(vBox);
             scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scrollPane.setFitToWidth(true);

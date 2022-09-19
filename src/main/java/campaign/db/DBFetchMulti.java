@@ -136,6 +136,6 @@ public enum DBFetchMulti {
       private static void connectionErrorMessage() {
             String msg = "    Please check your connection.   ";
             FxNotify.notificationWarning("OUCH!", msg, Pos.TOP_CENTER, 15,
-                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow(), -75);
+                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow(), -75);
       }
 }

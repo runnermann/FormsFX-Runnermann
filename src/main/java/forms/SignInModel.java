@@ -13,6 +13,9 @@ import forms.utility.FirstDescriptor;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
@@ -89,12 +92,12 @@ public class SignInModel {
             LOGGER.debug("formAction() userName from form: {}", descriptor.getSiOrigEmail().toLowerCase());
 
             if (validate()) {
+                  SoundEffects.ACCESS_GRANTED.play();
+
                   FlashMonkeyMain.setLoggedinToTrue();
                   UserData.setFirstName(descriptor.getSiFirstName());
                   FlashMonkeyMain.getFileSelectPane();
                   FlashMonkeyMain.setTopPane();
-                  // Avoid unneccessary traffic to VERTX. Not
-                  // used for privileges.
 
             } else {
                   // set message that user does not exist,

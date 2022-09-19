@@ -2,9 +2,11 @@ package forms;
 
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import com.dlsc.formsfx.view.util.ViewMixin;
+import com.sun.glass.ui.Screen;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
@@ -16,6 +18,7 @@ import uicontrols.SceneCntl;
  */
 public abstract class FormParentPane extends Pane implements ViewMixin {
 
+      protected ScrollPane scrollPane = new ScrollPane();
       protected GridPane mainGridPain;
       protected Pane spacer;
       protected Pane spacer1;
@@ -64,11 +67,11 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
        *
        * @return
        */
-      public abstract GridPane getMainGridPain();
+      public abstract ScrollPane getMainPane();
 
       //@Override
       public void initialize(FormModel model, FormData data) {
-
+ //           scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             spacer = new Pane();
             spacer1 = new Pane();
             buttonHBox = new HBox();
@@ -83,8 +86,6 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
             innerGPane = new GridPane();
             this.model = model;
             this.data = data;
-
-            //getStylesheets().add(getClass().getResource("/css/fxformStyle.css").toExternalForm());
       }
 
       /**
@@ -133,7 +134,15 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
             mainGridPain.setAlignment(Pos.CENTER);
             mainGridPain.setHgap(10);
             mainGridPain.setVgap(12);
-            mainGridPain.setPrefSize(500, 800);
+            double scale = Screen.getMainScreen().getPlatformScaleY();
+            if( scale != 1.0) {
+                  double ht = Screen.getMainScreen().getVisibleHeight() * (int) (scale / 2);
+                  // leave some room
+                  ht -= 40;
+                  mainGridPain.setPrefSize(500, ht);
+            } else {
+                  mainGridPain.setPrefSize(500, 800);
+            }
 
             innerGPane.setId("infoPane");
             formRenderer.setId("formPane");
@@ -165,6 +174,7 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
             mainGridPain.addRow(3, formRenderer);
             mainGridPain.addRow(4, buttonHBox);
             mainGridPain.addRow(5, spacer1);
+            scrollPane.setContent(mainGridPain);
       }
 
       public void setFormPaneWidth(int w) {

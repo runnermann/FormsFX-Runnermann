@@ -51,7 +51,7 @@ public class StateHashTable<K extends String, V extends MediaSyncObj> extends Ha
                         newVal.setState(newVal.getState() + value.getState());
                         entry.setValue((V) newVal);
 
-                        LOGGER.debug("valueName: " + value.getFileName() + ", state value: " + newVal.getState());
+				LOGGER.debug("valueName: " + value.getFileName() + ", state value: " + newVal.getState());;
 
                         return entry.getValue();
                   }

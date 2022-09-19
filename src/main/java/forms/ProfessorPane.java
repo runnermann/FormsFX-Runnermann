@@ -3,6 +3,7 @@ package forms;
 import authcrypt.user.EncryptedProf;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import fmannotations.FMAnnotations;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +61,8 @@ public class ProfessorPane extends FormParentPane {
       }
 
       @Override
-      public GridPane getMainGridPain() {
-            return this.mainGridPain;
+	public ScrollPane getMainPane() {
+		return this.scrollPane;
       }
 
       @Override

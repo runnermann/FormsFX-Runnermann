@@ -19,7 +19,6 @@
 
 package type.sectiontype;
 
-import ch.qos.logback.classic.Level;
 import flashmonkey.FlashMonkeyMain;
 import flashmonkey.ReadFlash;
 import org.slf4j.Logger;
@@ -100,7 +99,7 @@ public class SingleCellSection //extends GenericSection
 
             // RESPONSIVE SIZING for width and height
             // Set the initial section height
-            double calcHt = SceneCntl.calcCenterHt(30, bottomPaneHt, FlashMonkeyMain.getWindow().getHeight());
+            double calcHt = SceneCntl.calcCenterHt(30, bottomPaneHt, FlashMonkeyMain.getPrimaryWindow().getHeight());
             sectionHBox.setPrefHeight(calcHt / numHSections);
             pane.setPrefHeight(calcHt / numHSections);
 

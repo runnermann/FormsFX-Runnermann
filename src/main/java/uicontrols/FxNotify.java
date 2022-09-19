@@ -4,11 +4,14 @@ import fmannotations.FMAnnotations;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
+import media.sound.SoundEffects;
 import uicontrols.api.FMNotifications;
 
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.stage.Stage;
+
+import java.awt.*;
 
 /**
  * <p>Provides a pop-up message without a button.</p>
@@ -39,6 +42,7 @@ public class FxNotify {
                       .padding(padding)
                       .position(pos);
 
+                  SoundEffects.NOTIFICATION_NORM.play();
                   notificationBuilder.owner(owner);
                   notificationBuilder.warningStyle();
                   notificationBuilder.show();
@@ -49,6 +53,8 @@ public class FxNotify {
             if (notificationBuilder == null || !notificationBuilder.isShowing()) {
                   Image img = new Image(iconPath);
                   Node graphic = new ImageView(img);
+                  //Toolkit.getDefaultToolkit().beep();
+                  SoundEffects.NOTIFICATION_NORM.play();
                   notificationBuilder = FMNotifications.create()
                       .title(title)
                       .text(msg)
@@ -65,6 +71,7 @@ public class FxNotify {
       public static synchronized void notificationDark(String title, String msg, Pos pos, int durationSeconds, String iconPath, Stage owner) {
             if (notificationBuilder == null || !notificationBuilder.isShowing()) {
                   Node graphic = new ImageView(iconPath);
+                  SoundEffects.NOTIFICATION_NORM.play();
                   notificationBuilder = FMNotifications.create()
                       .title(title)
                       .text(msg)
@@ -72,6 +79,7 @@ public class FxNotify {
                       .hideAfter(Duration.seconds(durationSeconds))
                       .position(pos);
 
+                  Toolkit.getDefaultToolkit().beep();
                   notificationBuilder.owner(owner);
                   notificationBuilder.darkStyle();
                   notificationBuilder.show();

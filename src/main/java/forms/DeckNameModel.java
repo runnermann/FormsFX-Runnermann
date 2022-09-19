@@ -1,6 +1,5 @@
 package forms;
 
-import ch.qos.logback.classic.Level;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -11,6 +10,7 @@ import flashmonkey.CreateFlash;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.DeckNameDescriptor;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +72,7 @@ public class DeckNameModel {
       }
 
       public void formAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             System.out.println("DeckNameModel.formAction called");
             // First check if form has correct values. THis
             // prevents the form from submitting when the user
@@ -115,6 +116,6 @@ public class DeckNameModel {
             formInstance = null;
             descriptor = null;
             CreateFlash createFlash = CreateFlash.getInstance();
-            FlashMonkeyMain.getWindow().setScene(createFlash.createFlashScene());
+            FlashMonkeyMain.getPrimaryWindow().setScene(createFlash.createFlashScene());
       }
 }

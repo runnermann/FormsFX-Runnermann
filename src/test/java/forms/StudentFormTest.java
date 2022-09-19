@@ -45,6 +45,7 @@ public class StudentFormTest extends ApplicationTest {
         String currentMail = "studentFormTestCurrent@flashmonkey.xyz";
         String origMail = "studentFormTestOrigt@flashmonkey.xyz";
         String photoLink = "photoLink/me.jpg";
+        String avatarName = "myAvatar";
 
 
         String institute= "TestInstitute";
@@ -95,7 +96,7 @@ public class StudentFormTest extends ApplicationTest {
         writeToDotEnv();
         ePerson = new EncryptedPerson();
 
-        ePerson.setAll(-1, phone, firstName, lastName, middle, currentMail, origMail, age, description, institute, photoLink);
+        ePerson.setAll(-1, phone, firstName, lastName, middle, currentMail, origMail, age, description, institute, photoLink, avatarName);
         encryptedStud = new EncryptedStud(ePerson, edLevel, major, minor, cVLink);
     }
 
@@ -120,6 +121,7 @@ public class StudentFormTest extends ApplicationTest {
         Assert.assertTrue(encryptedStud.getMajor().equals(major));
         Assert.assertTrue(encryptedStud.getMinor().equals(minor));
         Assert.assertTrue(encryptedStud.getCvLink().equals(cVLink));
+        Assert.assertTrue(encryptedStud.getAvatarName().equals(avatarName));
     }
 
     // Insert and retrieve the data from the DB
@@ -134,6 +136,7 @@ public class StudentFormTest extends ApplicationTest {
         // CLear the DB if the student already exists
         String[] args = {origMail};
         String[] result = DBFetchUnique.PERSON_ID.query(args);
+
         delete(result);
 
         // Set the UserData.userName
@@ -142,7 +145,7 @@ public class StudentFormTest extends ApplicationTest {
         // Insert data to the DB
         boolean bool = DBInsert.STUDENT_ENCRYPTED_DATA.doInsert(encryptedStud);
 
-        System.out.println(encryptedStud.toString());
+        System.out.println("StudentFormTest, encrypted student: " + encryptedStud.toString());
 
         Assert.assertTrue(bool == true);
 
@@ -154,6 +157,7 @@ public class StudentFormTest extends ApplicationTest {
         studDescript = new StudentDescriptor();
 
         result = DBFetchUnique.PERSON_ID.query(args);
+        System.out.println("person test unique id: " + result[0]);
         delete(result);
 
         Assert.assertFalse("student is null", encryptedStud == null);
@@ -177,6 +181,8 @@ public class StudentFormTest extends ApplicationTest {
         Assert.assertTrue(studDescript.getMiddleName().equals(middle));
         Assert.assertTrue(studDescript.getPhone().equals(phone) );
         Assert.assertTrue(studDescript.getPhotoLink().equals(photoLink) );
+        System.out.println("Student Descriptor avatar name: " + studDescript.getAvatarName());
+        Assert.assertTrue(studDescript.getAvatarName().equals(avatarName));
     }
 
 

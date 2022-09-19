@@ -12,6 +12,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 */
 /* For creating the button border like javafx modena.css */
 .root {
+
     /*-fx-base: #ececec;
     -fx-background: derive(-fx-base,26.4%); */
     -fx-control-inner-background: derive(-fx-base,80%);
@@ -54,12 +55,12 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     FM_SETTINGS_BCKGND: #37A1E8;
     IKON_BLUE: #0099CC;
     FOCUS_BLUE: #0096C9;
-    BTN_BOX_BLUE: rgba(51,130,163,1.0);
+    BTN_BOX_BLUE: #0B2D59;
     EVE_BLUE: #0064e1;
     ICON_BLUE: #304F8C;
     HOVER: #BAEEFF;
     /* The text label color */
-    FM_TEXT_LABEL: #FFFFFF; /* #F8B500 yellow */
+    FM_TEXT_LABEL: #F8FBFF; /* #F8B500 yellow */
     GRID_GREY: #B2B2B2;
     AXIS_GREY: #727272;
     FM_GREY: #393E46;
@@ -69,7 +70,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -dark-black: #272828; /*rgb(39, 40, 40);*/
     -darkest-black: #050505;/*rgb(5, 5, 5);*/
     FLASH_RED: #FC3C3C;
-    FLASH_WHITE: #FFF4E0; // FM_WHITE
+    FLASH_WHITE: #F8FBFF; /* FM_WHITE FFF4E0 */
     BUTTON_WHITE: #FFFFFF;
     ICON_YELLOW: #F2E744;
     ICON_GOLD: #F2C744;
@@ -197,7 +198,6 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 
 /* FONTS */
 @font-face{
-
     font-family: 'Raleway-Medium';
     src: url("../font/Roboto-Medium.ttf");
 }
@@ -211,12 +211,6 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     font-family: 'Raleway-Bold';
     src: url("../font/Roboto-Bold.ttf")
 }
-/*
-@font-face{
-    font-family: 'Lobster';
-    src: url('/resources/Lobster_1.3.otf');
-}
-*/
 
 
 .cfpCenter {
@@ -275,16 +269,20 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
  * May cause a conflict between forms text area and create/readflash
  */
 .text-area {
-    -fx-font-family: "Raleway-Medium.ttf";
+    -fx-font-family: "Times New Roman";
+    -fx-font-size: 13pt;
     -fx-background-insets: 2;
     -fx-background-color: transparent, white, transparent, white;
     -fx-background-radius: 0, 0, 0, 0;
 
-    /*-fx-box-border: none; */
-    /* -fx-background-color: transparent, white, transparent, white; */
-    /*-fx-faint-focus-color: -fx-control-inner-background;*/
-    /*-fx-text-box-border: -fx-control-inner-background; */
     -fx-border-width: -1;
+}
+
+/*
+Line spacing in text area if it works. ??? iDK
+ */
+.text-area .text {
+    -fx-line-spacing: 4pt;
 }
 
 /*
@@ -296,7 +294,8 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 }
 
 .text-field {
-    -fx-font-family: "Raleway-Medium.ttf";
+    -fx-font-family: Arial;
+    -fx-font-size: 12pt;
 }
 
 .progress-bar .bar {
@@ -314,7 +313,8 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 
 #deckNameLabel {
     -fx-font-size: 16px;
-    -fx-font-family: "Raleway-Bold";
+    -fx-font-family: "Arial";
+    -fx-font-weight: 800;
     -fx-text-fill: #ecf0f1;
     -fx-padding: 5 2 5 2;
 }
@@ -329,9 +329,11 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 
 /* menu labels */
 #label24White,
-#label24WhiteSP {
+#label24WhiteSP,
+#label24WhiteBld {
     -fx-font-size: 24px;
     -fx-text-fill: FM_TEXT_LABEL;
+    -fx-text-alignment: CENTER;
 }
 
 #label24WhiteSP {
@@ -339,21 +341,34 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-padding: 50 0 0 0;
 }
 
-#label16White {
-    -fx-font-size: 16px;
+#label24WhiteBld {
+    -fx-font-weight: 800;
+}
+
+#label18White,
+label14white {
     -fx-text-fill: FM_TEXT_LABEL;
+}
+
+#label18White {
+    -fx-font-size: 18px;
+    -fx-text-alignment: CENTER;
+}
+
+#label16White {
+    -fx-text-fill: FM_TEXT_LABEL;
+    -fx-font-size: 16px;
     -fx-padding: 10 0 24 0;
 }
 
 #label16white {
-    -fx-font-size: 16px;
     -fx-text-fill: FM_TEXT_LABEL;
+    -fx-font-size: 16px;
     -fx-padding: 6 0 6 0;
 }
 
 #label14white {
     -fx-font-size: 14px;
-    -fx-text-fill: FM_TEXT_LABEL;
 }
 
 #signUpLabel {
@@ -435,7 +450,7 @@ hyperlink14white {
 
 /* The createFlash MasterPane */
 #cfMasterPane {
-    -fx-background-color: #2980b9;
+    -fx-background-color: BTN_BOX_BLUE;
     -fx-padding: 2 2 3 2;
 }
 
@@ -444,7 +459,7 @@ hyperlink14white {
     -fx-border-insets: 20px;
     -fx-background-insets: 20px;
     -fx-font-size: 16px;
-    -fx-text-fill: #FF5400;
+    -fx-text-fill: #FFFFFF;
     -fx-wrap-text: true;
 }
 
@@ -455,7 +470,7 @@ hyperlink14white {
 #graphNumber {
     -fx-text-fill: WHITE;
     -fx-font-family: "Raleway-Medium.ttf";
-    -fx-font-size: 9;
+    -fx-font-size: 9px;
 }
 
 
@@ -637,7 +652,7 @@ hyperlink14white {
 
 /*  Background image  */
 #bckgnd_image {
-    -fx-background-image: url("/image/blue_collage1.jpg");
+    -fx-background-image: url("/image/FlashMonkeyAchieveBCKGND.png");
     -fx-background-repeat: stretch;
     /*-fx-background-size: 500 810;*/
     -fx-background-position: center center;
@@ -647,6 +662,7 @@ hyperlink14white {
 #bckgnd_image_study {
     -fx-background-image: url("/image/Ingenuity-helicoptor-jpl.jpg");
     -fx-background-repeat: stretch;
+    -fx-background-color: FM_GREY;
     /*-fx-background-size: 500 810;*/
     -fx-background-position: center center;
 }

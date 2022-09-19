@@ -22,6 +22,7 @@ package type.draw.shapes;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
+import media.sound.SoundEffects;
 import uicontrols.UIColors;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
@@ -347,6 +348,7 @@ public class TriangleBuilder extends GenericBuilder<FMTriangle, TriangleBuilder>
        */
       @Override
       public void shapePressed(MouseEvent mouse, GenericShape gs, Shape shape) {
+            SoundEffects.ROBOT_SERVO_START.play();
             DrawTools draw = DrawTools.getInstance();
             draw.setShapeNotSelected(false);
             Polygon tri1 = (Polygon) shape;
@@ -412,6 +414,12 @@ public class TriangleBuilder extends GenericBuilder<FMTriangle, TriangleBuilder>
 
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape shape) {
+            newSound = startTime < System.currentTimeMillis() - 1500;
+            if(newSound) {
+                  startTime = System.currentTimeMillis();
+                  SoundEffects.ROBOT_SERVO_3.play();
+                  //isPlaying = false;
+            }
             if (mouse.isPrimaryButtonDown()) ;
             {
                   // uses the observable list/reference

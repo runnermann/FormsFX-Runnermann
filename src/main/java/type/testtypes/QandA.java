@@ -35,8 +35,8 @@ import java.util.ArrayList;
 public abstract class QandA implements GenericTestType<QandA> {
 
       // The lower HBox used in TReadPane lambda
-      private HBox lowerHBox;
-      private HBox upperHBox;
+      private static HBox lowerHBox;
+      private static HBox upperHBox;
 
       /**
        * Answer Button
@@ -68,6 +68,7 @@ public abstract class QandA implements GenericTestType<QandA> {
             return vBox;
       }
 
+
       @Override
       public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
 
@@ -75,55 +76,50 @@ public abstract class QandA implements GenericTestType<QandA> {
 
             // Local variables
             GenericSection genSection = GenericSection.getInstance();
+            StackPane stackP = new StackPane();
             GridPane gPane = new GridPane();
             gPane.setVgap(2);
 
+            GenericTestType test = TestList.selectTest(cc.getTestType());
+            char sections = test.getCardLayout();
 
-            StackPane stackP = new StackPane();
-            if (answerButton == null) {
-                  answerButton = ButtoniKon.getAnsSelect();
-            } else {
-                  answerButton = ButtoniKon.getJustAns(answerButton, "Show Answer");
+
+            switch (sections) {
+                  case ('S'): {
+                        upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 1, false, 0, cc.getQFiles());
+                        //gPane.getChildren().clear();
+                        gPane.addRow(1, upperHBox);
+                        break;
+                  }
+                  default:
+                  case ('D'): {
+                        upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 2, true, 0, cc.getQFiles());
+                        // Using 'T' in the cType(Cell type) to start off with a defualt empty answer string
+                        // in the answer section.
+                        lowerHBox = genSection.sectionFactory("", 't', 2, true, 0, cc.getAFiles());
+
+                        stackP.setAlignment(Pos.BOTTOM_CENTER);
+
+                        if (answerButton == null) {
+                              answerButton = ButtoniKon.getAnsSelect();
+                        } else {
+                              answerButton = ButtoniKon.getJustAns(answerButton, "Show Answer");
+                        }
+
+                        //stackP.getChildren().clear();
+                        stackP.getChildren().add(lowerHBox);
+                        stackP.getChildren().add(answerButton);
+                        //gPane.getChildren().clear();
+                        gPane.addRow(2, stackP);
+                        gPane.addRow(1, upperHBox);
+                        // The answer btn action
+                        // Keeping action local. Makes using lamda easier.
+                        answerButton.setOnAction(e -> ansButtonAction());
+                        break;
+                  }
             }
 
-
-            upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 2, true, 0, cc.getQFiles());
-            // Using 'T' in the cType(Cell type) to start off with a defualt empty answer string
-            // in the answer section.
-            lowerHBox = genSection.sectionFactory("", 't', 2, true, 0, cc.getAFiles());
-
             rf.setShowAnsNavBtns(false);
-            // The answer btn action
-            // Keeping action local. Makes using lamda easier.
-            answerButton.setOnAction(e -> ansButtonAction());
-//        answerButton.setOnAction((ActionEvent e) ->
-//        {
-//            nextAnsButtAction();
-//            lowerHBox.getChildren().clear();
-//            FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, false);
-//
-//            lowerHBox.getChildren().add(genSection.sectionFactory(cc.getAText(), cc.getAType(), 2, true, 0, cc.getAFiles()));
-//            if (cc.getIsRight() == 0) {
-//                rf.getProgGauge().moveNeedle(500, rf.incProg());
-//            }
-//            //  answerButton.setVisible(false);
-//            cc.setIsRight(1);
-//            FMTransition.nodeFadeIn.play();
-//        });
-
-            VBox btnVBox = new VBox();
-            btnVBox.setPadding(new Insets(10));
-            btnVBox.getChildren().add(answerButton);
-            btnVBox.setAlignment(Pos.BOTTOM_CENTER);
-
-            stackP.setAlignment(Pos.BOTTOM_CENTER);
-
-            stackP.getChildren().add(lowerHBox);
-            stackP.getChildren().add(answerButton);
-
-            gPane.addRow(2, stackP);
-            gPane.addRow(1, upperHBox);
-
             // Transition for Question, Right & end button click
             FMTransition.setQRight(FMTransition.transitionFmRight(upperHBox));
             // Transition for Question, left & start button click
@@ -133,6 +129,8 @@ public abstract class QandA implements GenericTestType<QandA> {
 
             return gPane;
       }
+
+
 
       /**
        * Sets 4th (= 8) bit, all others set to 0
@@ -270,6 +268,52 @@ public abstract class QandA implements GenericTestType<QandA> {
             @Override
             public void setScore(double num) {
                   /* not used */
+            }
+
+            @Override
+            public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
+
+                  ReadFlash rf = ReadFlash.getInstance();
+
+                  // Local variables
+                  GenericSection genSection = GenericSection.getInstance();
+                  GridPane gPane = new GridPane();
+                  gPane.setVgap(2);
+
+                  StackPane stackP = new StackPane();
+                  if (answerButton == null) {
+                        answerButton = ButtoniKon.getAnsSelect();
+                  } else {
+                        answerButton = ButtoniKon.getJustAns(answerButton, "Show Answer");
+                  }
+
+
+                  upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 2, true, 0, cc.getQFiles());
+                  // Using 'T' in the cType(Cell type) to start off with a defualt empty answer string
+                  // in the answer section.
+                  lowerHBox = genSection.sectionFactory("", 't', 2, true, 0, cc.getAFiles());
+
+                  rf.setShowAnsNavBtns(false);
+                  // The answer btn action
+                  // Keeping action local. Makes using lamda easier.
+                  answerButton.setOnAction(e -> ansButtonAction());
+
+                  stackP.setAlignment(Pos.BOTTOM_CENTER);
+
+                  stackP.getChildren().add(lowerHBox);
+                  stackP.getChildren().add(answerButton);
+
+                  gPane.addRow(2, stackP);
+                  gPane.addRow(1, upperHBox);
+
+                  // Transition for Question, Right & end button click
+                  FMTransition.setQRight(FMTransition.transitionFmRight(upperHBox));
+                  // Transition for Question, left & start button click
+                  FMTransition.setQLeft(FMTransition.transitionFmLeft(upperHBox));
+                  // Transition for Answer for all navigation
+                  FMTransition.setAWaitTop(FMTransition.waitTransFmTop(lowerHBox, 0, 300, 350));
+
+                  return gPane;
             }
       }
 

@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
  */
 public enum DBFetchUnique {
 
-      CREATOR_HASH() {
+	CREATOR_HASH {
             @Override
             public String[] query(String... args) {
                   String strQuery = "SELECT email " +
@@ -30,7 +30,7 @@ public enum DBFetchUnique {
                   return fetchUniqueResult(strQuery);
             }
       },
-      PERSON_ID() {
+	PERSON_ID {
             @Override
             public String[] query(String... args) {
                   String strQuery = "SELECT person_id " +
@@ -49,8 +49,7 @@ public enum DBFetchUnique {
                   return fetchUniqueResult(strQuery);
             }
       },
-
-      STUDENT_ENCRYPTED_DATA() {
+	STUDENT_ENCRYPTED_DATA {
             /**
              * Queries the table provided in the param for the users encrypted data if it exists.
              *
@@ -60,13 +59,23 @@ public enum DBFetchUnique {
             @Override
             public String[] query(String... args) {
                   // photo link is not currently used.
-                  String strQuery = "SELECT first_name, last_name, middle_name, phone, age, institution, descript, photo_link," +
+			String strQuery = "SELECT first_name, last_name, middle_name, phone, age, institution, descript, photo_link, avatar_name," +
                       " education_level, major, minor, cv_link, person_id" +
                       " FROM Person JOIN Student USING(orig_email)" +
                       //" FROM Student" +
                       " WHERE orig_email = '" + Alphabet.encrypt(args[0]) + "';";
                   return fetchUniqueResult(strQuery);
             }
+	},
+	CAMPAIGN_GROW_INSERT {
+		public String[] query(String ... args) {
+			String strQuery = "INSERT INTO CampaignGrowKey(cg_id, fwd_id, person_id, qr_img, expire, visits, note)" +
+					" VALUES (" + args[0] + "," + args[1] + ","
+					+ args[2] + "," + args[3] + "," + args[4] + "," + args[5] + "," + args[6] + ")" +
+					" RETURNING ckey_id;";
+			System.out.println(strQuery);
+			return fetchUniqueResult(strQuery);
+		}
       };
 
 

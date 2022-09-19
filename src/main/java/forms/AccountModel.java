@@ -2,7 +2,6 @@ package forms;
 
 import authcrypt.Auth;
 import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -78,7 +77,7 @@ public class AccountModel {
                         // set message that user does not exist,
                         String msg = "That didn't work.... \n If you continue to have problems, Try \nresetting your password.";
                         FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 8,
-                            "image/Flash_hmm_75.png", FlashMonkeyMain.getWindow());
+                            "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
 
                         field1.setValue("");
                   }

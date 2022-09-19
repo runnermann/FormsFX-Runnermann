@@ -49,14 +49,13 @@ public class SubscriptCancelPane extends SimpleFormParentPane {
       public void initializeParts() {
             super.initializeParts();
             setFormTitle("CANCEL SUBSCRIPTION");
-            setMessageLabel("Awe... we are sorry to see you go.",
-                "FYI.",
-                "By cancelling, you may lose your" +
-                    "\nfuture profits to FlashMonkey or the " +
-                    "\nnext highest distributor.",
-                "If you are an early adopter, you will " +
-                    "\nlose your subscription discount if you " +
-                    "\nre-subscribe later.");
+            setMessageLabel("We are sorry to see you go.",
+                "What you should know:",
+                "You will lose your",
+                    "future sales to FlashMonkey or the " ,
+                    "next highest distributor." ,
+                "Early adopters lose " ,
+                    "their discounts.");
 
       }
 
@@ -81,7 +80,7 @@ public class SubscriptCancelPane extends SimpleFormParentPane {
        */
       @Override
       public void setupEventHandlers() {
-            EncryptedAcct a = new EncryptedAcct();
+            // Takes a deliberate button click.
             actionButton.setOnAction(e -> model.formAction());
       }
 

@@ -1,7 +1,6 @@
 package type.celleditors;
 
-import fileops.DirectoryMgr;
-import fileops.FileOpsUtil;
+import media.sound.SoundEffects;
 import type.draw.DrawObj;
 import flashmonkey.CreateFlash;
 import uicontrols.SceneCntl;
@@ -19,19 +18,13 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
-//import layouttest.*;
-
 
 /**
  * Singleton class is synchronized and thread safe... Maybe
  * DESCRIPTION: This class provides methods and variables for taking a snapshot of the
- * EncryptedUser.EncryptedUser screen
+ * EncryptedUser's screen
  * ALGORITHM:
  * - Locate the first xy position of the mouse on the first mouse click
  * - Draw a square from the first xy to the current position of the mouse
@@ -56,19 +49,11 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
       static Stage snapStage;
       // The scene that the image is captured from
       private Scene snapScene;
-
-      // variables
-      //private String deckName;
-      //private static String cID;
-      //private char qOrA;
-
       // Min is the upper left xy, and max is lower
       // right xy of rectangle.
       private int minX, minY, screenY;
-
       // The image in the buffer
       private BufferedImage imageBuffer;
-      //private WritableImage writableImage;
       private GraphicsContext gc;
       // gets the size of the screen to place a scene on top of it.
       // only way to capture the screenshot.
@@ -125,13 +110,8 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
        * @param stage
        */
       public void start(Stage stage) {
-
-            //System.out.println("StartSnapShot Called.");
-            // Stage set to full screen
-            //stage.setFullScreen(true);
             stage.setHeight(screenHt);
             stage.setWidth(screenWt);
-
 
             canvas = new Canvas();
             canvas.setHeight(screenHt);
@@ -188,6 +168,7 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
       // On mouse down, locate the first xy
       // position of the mouse.
       public void mousePressed(MouseEvent e) {
+            SoundEffects.ROBOT_SERVO.play();
             this.minX = (int) e.getSceneX();
             this.minY = (int) e.getSceneY();
             this.screenY = (int) e.getScreenY();
@@ -244,6 +225,7 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
        * @param e
        */
       public void mouseReleased(MouseEvent e) {
+            SoundEffects.CAMERA.play();
 
             // Save the image
             captureImage();
@@ -260,8 +242,9 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
             snapScene.setCursor(Cursor.DEFAULT);
             // Close the stage
             snapStage.close();
-
             e.consume();
+
+            //m.dispose();
       }
 
 
@@ -341,5 +324,4 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
             }
             //super.onClose();
       }
-
 }

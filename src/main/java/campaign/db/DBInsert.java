@@ -22,7 +22,7 @@ public enum DBInsert {
                   LOGGER.debug("userName: {}", authcrypt.UserData.getUserName());
 
                   String statement = //" BEGIN; " +
-                      " INSERT INTO Person (first_name, last_name, middle_name, orig_email, current_email, phone, age, ip_connect, institution, descript, photo_link) " +
+				" INSERT INTO Person (first_name, last_name, middle_name, orig_email, current_email, phone, age, ip_connect, institution, descript, photo_link, avatar_name) " +
                           " VALUES ('" +
                           Alphabet.encrypt(student.getFirstName()) + btw +
                           Alphabet.encrypt(student.getLastName()) + btw +
@@ -34,7 +34,8 @@ public enum DBInsert {
                           "ip address" + btw +
                           student.getInstitution() + btw +
                           student.getDescript() + btw +
-                          student.getPhotoLink() +
+				  student.getPhotoLink() + btw +
+				  student.getAvatarName() +
                           "'); " +
 
                           "INSERT INTO Student  VALUES ('" +
@@ -51,7 +52,7 @@ public enum DBInsert {
             }
       },
       /**
-       * Note: Does not use EncryptedStudent.
+	 * Note: Use plain text. Unencrypted student.
        */
       SESSION_NOTE() {
             private final Timer fmTimer = Timer.getClassInstance();

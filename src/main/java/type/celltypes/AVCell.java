@@ -106,7 +106,7 @@ public class AVCell implements MediaPlayerInterface {
                   return rightPane;
 
             } else { // media file cannot be found, show problem img currently poop img.
-                  LOGGER.warn("video/audio does not exist, calling oops.png: filePath: ", mediaFile.toURI());
+                  LOGGER.warn("media/audio does not exist, calling oops.png: filePath: ", mediaFile.toURI());
                   String imagePath = "File:" + "src/image/poop_img_problem.png";
                   mediaFile = new File(imagePath);
                   //LOGGER.info("poopImoji imagePath exists: " + mediaFile.exists());

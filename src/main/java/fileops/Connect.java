@@ -22,7 +22,7 @@ public enum Connect {
       //                               Common
       // --------------------------------- --------------------------------- //
       //private static final String local = "http://localhost:8080";
-      //private static final String ngrokTesting = "https://0766b27a8822.ngrok.io";
+    //   private static final String ngrokTesting = "https://3931fa8c82d0.ngrok.io";
       private static final String remote = "https://www.flashmonkey.xyz";
 
       Connect() { /* empty constructor */ }

@@ -1,7 +1,6 @@
 package fileops;
 
 import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import fileops.utility.Utility;
 import flashmonkey.FlashCardOps;
 import org.slf4j.Logger;
@@ -92,7 +91,6 @@ public final class DirectoryMgr {
                               //folderStr = folderStr.substring(0, folderStr.length() -4);
                               folderStr = folderStr.toLowerCase();
                               LOGGER.debug("deckName is: {}", folderStr);
-                              //Thread.dumpStack();
                         }
                         return SYSTEM_DIR + getUserNameHash() + "/" + folderStr + "/media/";
                   }

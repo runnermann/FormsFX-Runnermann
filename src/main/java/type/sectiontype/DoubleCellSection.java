@@ -55,13 +55,14 @@ public class DoubleCellSection //extends GenericSection
             // Set the rightCell initial width and height from SceneCntl
             rightCell = gc.cellFactory(type, rightCell, SceneCntl.getRightCellWd(), SceneCntl.calcCellHt(), fileName);
             rightCell.setMinWidth(SceneCntl.getRightCellWd());
+            rightCell.setMaxWidth(SceneCntl.getRightCellWd());
             sectionHBox.getChildren().addAll(leftCell, rightCell);
             // Set the initial section height
-            double no = SceneCntl.calcCenterHt(30, 244, FlashMonkeyMain.getWindow().getHeight());
+            double no = SceneCntl.calcCenterHt(30, 244, FlashMonkeyMain.getPrimaryWindow().getHeight());
             sectionHBox.setPrefHeight(no / numHSections);
 
             leftCell.setPrefHeight(no / numHSections);
-            leftCell.setPrefWidth(FlashMonkeyMain.getWindow().getWidth() - 124);
+            leftCell.setPrefWidth(FlashMonkeyMain.getPrimaryWindow().getWidth() - 124);
 
             // RESPONSIVE SIZING for width and height
             ReadFlash.getInstance().getMasterBPane().widthProperty().addListener((obs, oldval, newVal) -> {

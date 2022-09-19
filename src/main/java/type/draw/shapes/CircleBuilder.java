@@ -32,6 +32,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Shape;
+import media.sound.SoundEffects;
 import uicontrols.UIColors;
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
@@ -335,6 +336,7 @@ public class CircleBuilder extends GenericBuilder<FMCircle, CircleBuilder> {
        */
       @Override
       public void shapePressed(MouseEvent mouse, GenericShape gs, Shape fxshape) {
+            SoundEffects.ROBOT_SERVO_START.play();
             fxshape.setStrokeWidth(fxshape.getStrokeWidth() + 2);
 
             Ellipse fxCircle = (Ellipse) fxshape;
@@ -352,13 +354,12 @@ public class CircleBuilder extends GenericBuilder<FMCircle, CircleBuilder> {
 
             draw.getFillProperty().addListener(this::fillChanged);
             draw.getStrokeProperty().addListener(this::strokeChanged);
-            gs.setStrokeColor(draw.getStrokeProperty().getValue());
-            gs.setFillColor(draw.getFillProperty().getValue());
+            //gs.setStrokeColor(draw.getStrokeProperty().getValue());
+            //gs.setFillColor(draw.getFillProperty().getValue());
 
 
             /* If shape right mouse click create resize nodes **/
             if (mouse.isSecondaryButtonDown()) {
-
                   shapeRightPress(mouse, gs, fxshape);
 
             } else {
@@ -397,6 +398,12 @@ public class CircleBuilder extends GenericBuilder<FMCircle, CircleBuilder> {
 
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape fmCirc, Shape shape) {
+            newSound = startTime < System.currentTimeMillis() - 1500;
+            if(newSound) {
+                  startTime = System.currentTimeMillis();
+                  SoundEffects.ROBOT_SERVO_3.play();
+                  //isPlaying = false;
+            }
             if (mouse.isPrimaryButtonDown()) {
                   ((Ellipse) shape).setCenterX(mouse.getSceneX() + deltaX);
                   ((Ellipse) shape).setCenterY(mouse.getSceneY() + deltaY);

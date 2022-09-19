@@ -29,7 +29,9 @@ public class UIColors {
       public static final String EDITOR_COMP_CLR = "rgba(63, 74, 219, 1.0)"; // 3F4ADB
       public static final String FM_PURPLE = "rgba(129, 70, 182, 1.0)";// #8146B6
       public static final String FM_GREY = "rgba(57, 62, 70, 1.0)";  // 393E46
-      public static final String FM_WHITE = "rgba(255, 244, 224, 1.0)";// FFFE40
+      public static final String GREY_BLUE = "rgba(48, 77, 115, 1.0)"; // 304D73
+      public static final String EDITOR_BTNS = "rgba(52, 152, 219, 1.0)"; // 3498db
+      public static final String FM_WHITE = "rgba(248, 251, 255, 1.0)";// FFFE40, F8FBFF
       public static final String FLASH_PURPLE = "rgba(146, 118, 172, 1.0)";// 9276AC light purple
       public static final String GRAPH_BGND = "rgba(178, 178, 178, 0.6)";// 170117
       public static final String GRID_GREY = "rgba(114, 114, 114, 0.8)";// B2B2B2

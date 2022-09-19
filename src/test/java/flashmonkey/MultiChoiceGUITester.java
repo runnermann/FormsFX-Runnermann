@@ -129,7 +129,7 @@ public class MultiChoiceGUITester extends ApplicationTest
 		FxToolkit.registerPrimaryStage();
 		FxToolkit.setupApplication(FlashMonkeyMain.class);
 
-		final Stage window = FlashMonkeyMain.getWindow();
+		final Stage window = FlashMonkeyMain.getPrimaryWindow();
 
 		window.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override

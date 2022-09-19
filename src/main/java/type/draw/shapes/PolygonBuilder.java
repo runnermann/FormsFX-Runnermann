@@ -34,6 +34,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Shape;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celleditors.DrawTools;
@@ -158,6 +159,7 @@ public class PolygonBuilder extends GenericBuilder<FMPolygon, PolygonBuilder> {
        * @param mouse
        */
       public void mousePressed(MouseEvent mouse) {
+            SoundEffects.ROBOT_SERVO_2.play();
             LOGGER.debug("mousePressed called in polygonBuilder");
             DrawTools draw = DrawTools.getInstance();
             GraphicsContext gC = getGc();
@@ -352,7 +354,7 @@ public class PolygonBuilder extends GenericBuilder<FMPolygon, PolygonBuilder> {
        */
       @Override
       public void shapePressed(MouseEvent mouse, GenericShape gs, Shape fxShape) {
-
+            SoundEffects.ROBOT_SERVO_START.play();
             LOGGER.debug("shapePressed called");
             // if not adding to the existing line
             if (!mouse.isAltDown()) {
@@ -412,6 +414,12 @@ public class PolygonBuilder extends GenericBuilder<FMPolygon, PolygonBuilder> {
 
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape fxShape) {
+            newSound = startTime < System.currentTimeMillis() - 1500;
+            if(newSound) {
+                  startTime = System.currentTimeMillis();
+                  SoundEffects.ROBOT_SERVO_3.play();
+                  //isPlaying = false;
+            }
             if (!mouse.isAltDown()) {
                   if (mouse.isPrimaryButtonDown()) ;
                   {

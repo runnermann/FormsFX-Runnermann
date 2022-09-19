@@ -294,55 +294,55 @@ public class ModelError {
     method. If the files do not exist, it will cause an error. Comment out init() while creating
     the files. Uncomment init() when done creating the files.
      */
-/*    public static void main(String[] args) throws Exception {
-       // *********** Encryption is conducted prior to a build or after creating a new IAM key for S3 *********** //
-        String OUTPUT_FORMAT = "%-30s:%s";
-        ModelError m = ModelError.getInstance();
-
-        // 1. create SecretKey
-        // encrypt and decrypt need the same key.
-        // get AES 256 bits (32 bytes) key
-        Syekic icEnc = new Syekic();
-        icEnc.one = Util.getAESKey(AES_KEY_BIT);
-        // 2. create IV
-        // encrypt and decrypt need the same IV.
-        // AES-GCM needs IV 96-bit (12 bytes)
-        byte[] iv = Util.getRandomNonce(IV_LENGTH_BYTE);
-
-        // 3. save secretKey and IV to file
-        InnerOps<Syekic> innoEnc1 = new InnerOps<>();
-        innoEnc1.createSyekFile(icEnc, m.cypherKeyFile);
-        // 4. encrypt S3 & Stripe keys with Secret key & iv
-        Syek syekEnc = new Syek();
-        // s3 and Stripe accessKey, Cipher SecretKey and Cipher IV
-        Error error = new Error();
-        for(int i = 0; i < syekEnc.arr.length; i++) {
-            syekEnc.arr[i] = Util.encryptWithPrefixIV(error.arr[i].getBytes(UTF_8), icEnc.one, iv);
-        }
-        // 5. save encrypted keys to file
-        InnerOps<Syek> inno2 = new InnerOps<>();
-        /// save array of keys to file
-        inno2.createSyekFile(syekEnc, m.keysFile);
-
-
-        // verify output is correct
-        //System.out.println(String.format(OUTPUT_FORMAT, "User (hex)", Util.hex(syekEnc.arr[9])));
-
-        // 1. retrieve the secretKey and IV
-        Syekic icDec = new Syekic();
-        InnerOps<Syekic> innoDec1 = new InnerOps<Syekic>();
-        icDec = (Syekic) innoDec1.getSyekFile(m.cypherKeyFile.getName());
-        // 2. retrieve s3 keys and store in memory
-        InnerOps<Syek> innoDec2 = new InnerOps<Syek>();
-        Syek syekDec = innoDec2.getSyekFile(m.keysFile.getName());
-
-        // The decrypted s3 keys stored in memory.
-        Dec dec = new Dec();
-
-        for(int i = 0; i < dec.arr.length; i++) {
-            dec.arr[i] = Util.decryptWithPrefixIV(syekDec.arr[i], icDec.one);
-        }
-    }
+//    public static void main(String[] args) throws Exception {
+//       // *********** Encryption is conducted prior to a build or after creating a new IAM key for S3 *********** //
+//        String OUTPUT_FORMAT = "%-30s:%s";
+//        ModelError m = ModelError.getInstance();
+//
+//        // 1. create SecretKey
+//        // encrypt and decrypt need the same key.
+//        // get AES 256 bits (32 bytes) key
+//        Syekic icEnc = new Syekic();
+//        icEnc.one = Util.getAESKey(AES_KEY_BIT);
+//        // 2. create IV
+//        // encrypt and decrypt need the same IV.
+//        // AES-GCM needs IV 96-bit (12 bytes)
+//        byte[] iv = Util.getRandomNonce(IV_LENGTH_BYTE);
+//
+//        // 3. save secretKey and IV to file
+//        InnerOps<Syekic> innoEnc1 = new InnerOps<>();
+//        innoEnc1.createSyekFile(icEnc, m.cypherKeyFile);
+//        // 4. encrypt S3 & Stripe keys with Secret key & iv
+//        Syek syekEnc = new Syek();
+//        // s3 and Stripe accessKey, Cipher SecretKey and Cipher IV
+//        Error error = new Error();
+//        for(int i = 0; i < syekEnc.arr.length; i++) {
+//            syekEnc.arr[i] = Util.encryptWithPrefixIV(error.arr[i].getBytes(UTF_8), icEnc.one, iv);
+//        }
+//        // 5. save encrypted keys to file
+//        InnerOps<Syek> inno2 = new InnerOps<>();
+//        /// save array of keys to file
+//        inno2.createSyekFile(syekEnc, m.keysFile);
+//
+//
+//        // verify output is correct
+//        //System.out.println(String.format(OUTPUT_FORMAT, "User (hex)", Util.hex(syekEnc.arr[9])));
+//
+//        // 1. retrieve the secretKey and IV
+//        Syekic icDec = new Syekic();
+//        InnerOps<Syekic> innoDec1 = new InnerOps<Syekic>();
+//        icDec = (Syekic) innoDec1.getSyekFile(m.cypherKeyFile.getName());
+//        // 2. retrieve s3 keys and store in memory
+//        InnerOps<Syek> innoDec2 = new InnerOps<Syek>();
+//        Syek syekDec = innoDec2.getSyekFile(m.keysFile.getName());
+//
+//        // The decrypted s3 keys stored in memory.
+//        Dec dec = new Dec();
+//
+//        for(int i = 0; i < dec.arr.length; i++) {
+//            dec.arr[i] = Util.decryptWithPrefixIV(syekDec.arr[i], icDec.one);
+//        }
+//    }
 
 
 
@@ -362,6 +362,6 @@ public class ModelError {
             arr[0] = dbAccessString;
             return arr;
         }
-    }*/
+    }
       //*/
 }

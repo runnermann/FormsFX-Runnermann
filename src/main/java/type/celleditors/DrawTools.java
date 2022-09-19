@@ -31,6 +31,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.shape.*;
 import javafx.scene.text.Text;
+import media.sound.SoundEffects;
 import type.draw.DrawObj;
 import type.draw.shapes.*;
 import uicontrols.FMAlerts;
@@ -56,6 +57,8 @@ import javafx.stage.StageStyle;
 import flashmonkey.CreateFlash;
 import fileops.FileOpsShapes;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -86,12 +89,14 @@ import org.slf4j.LoggerFactory;
  * - When the EncryptedUser.EncryptedUser releases the mouse button
  * - If the shape Width or Height are greater than 0 and newShape is true, it is added to the arrayOfBuilderShapes.
  * 6) When the User exits the ToolWindow, the arrayOfBuilderShapes are saved to a file for this card.
- *
+ * <p><b>NOTE:</b> This class is a save on exit action.</p>
+ * <p>This class makes use of underlying supporting classes such as GenericShape, and GenericBuilder for example.
+ *   GenericBuilder contains the gbcopyArrayOfFMShapes. </p>
+ * <p>ArrayOfFMShapes.get(0) and GBCopyOfArrayOfFMShapes contains the size of the window for DrawPad. </p>
  * @author Lowell Stadelman
  */
 public class DrawTools implements BaseInterface//extends SectionEditor //implements CopyPasteInterface
 {
-
       private static DrawTools CLASS_INSTANCE;
 
       // THE LOGGER
@@ -116,10 +121,11 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       private static Stage toolWindow;
       private static TilePane toolPane;
       // contains tool popUp and action buttons
-      private static BorderPane popUpPane;
+      private static BorderPane toolMainPane;
       private static Scene toolScene;
       // contains non-shape buttons
       private static HBox zBtnHBox;
+      VBox containerVBox;
       private static GridPane colorBtnGrid;
       public static GraphicsContext toolGC;
       // The shape buttons
@@ -129,8 +135,8 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       // Other buttons
       private static Button deleteBtn, clearBtn, quitBtn;
       // The size of the overLayPane to be drawn on.
-      private static double overlayHt;
-      private static double overlayWd;
+      private static AtomicLong overlayHt;
+      private static AtomicLong overlayWd;
       // For the ShapeBuilders... IE CircleBuilder
       private static boolean shapeNotSelected;
 
@@ -174,8 +180,14 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       /**
        * Called by DrawPadButton in SectionEditor, Shapes and no image. Creates
        * a new 400 x 400 drawPad. Used when first creating a drawpad. For
-       * editing a drawPad with exisitng shapes, see buildDrawTools that is
+       * editing a drawPad with exising shapes, see buildDrawTools that is
        * called by rightPane onClick.
+       * <p><b>NOTE:</b> The DrawPad Window/Stage is sized at 400 x 400. The
+       * 0th rect is set from the window. This is set based on the scenario
+       * that the window only contains shapes and not tools or other items.
+       * If other UI items are added, account for their size when the
+       * rect is saved.</p>
+       * <p>The 0th rect is sized when the DrawPad is clicked.</p>
        *
        * @param x             ..
        * @param y             ..
@@ -188,20 +200,21 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             int ht = 400;
             LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("line 145) buildDrawTools for drawPad, fileName: " + shapeFileName);
+            overlayCanvas = new Canvas();
 
             StageStyle style = StageStyle.UTILITY;
 
-            overlayWindow = buildDrawTools(x, y, wd, ht, shapeFileName, paramEditor, style, null);
+            overlayWindow = buildNewCanvasEditor(x, y, wd, ht, shapeFileName, paramEditor, style, null);
             // Add the 0th rectangle for the size of the drawpad.
-            FMRectangle rect = paneSizeRectangle();
+            FMRectangle rect = setPaneSizeRectangle();
             rect.setWd(wd);
             rect.setHt(ht);
             paramEditor.getArrayOfFMShapes().add(rect);
-            // Update the size of the rectangle used for the shapespane size
+            // Update the size of the rectangle used for the shapesPane / DrawPad size
             // in arrayOfFMShapes. Used when iView doesn't exist.
             overlayScene.setOnMouseClicked((MouseEvent e) -> {
-                  rect.setWd(overlayPane.getWidth());
-                  rect.setHt(overlayWindow.getHeight());
+                  rect.setWd(overlayPane.getBoundsInLocal().getWidth());
+                  rect.setHt(overlayPane.getBoundsInLocal().getHeight());
                   // the 0th shape is always the size of the pane.
                   if (paramEditor.getArrayOfFMShapes().size() > 0) {
                         paramEditor.getArrayOfFMShapes().set(0, rect);
@@ -215,23 +228,27 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
 
       /**
-       * Called by SectionEditor immediately after image is captured.
-       *
+       * Called by snapshot immediately after image is captured.
        * @param drawObj     The drawObject containing minX, minY, width, height, qOrA, cID, and deckName
        * @param paramEditor ..
        */
       public void buildDrawTools(DrawObj drawObj, SectionEditor paramEditor) {
             StageStyle style = StageStyle.TRANSPARENT;
-            overlayWindow = buildDrawTools(drawObj.getMinX(), drawObj.getMinY(), drawObj.getDeltaX(), drawObj.getDeltaY(),
+            overlayCanvas = new Canvas();
+            containerVBox = new VBox();
+            containerVBox.setStyle("-fx-background-color: TRANSPARENT");
+            overlayWindow = buildNewCanvasEditor(drawObj.getMinX(), drawObj.getMinY(), drawObj.getDeltaX(), drawObj.getDeltaY(),
                 drawObj.getFileName(), paramEditor, style, null);
             overlayWindow.show();
       }
 
       /**
-       * Called by editor when card exists, for editing a card as opposed to creating a new one.
-       * Called by popup in SectionEditor
+       * Called by SectionEditor rightPane when card exists, for editing a
+       * card as opposed to creating a new card. For canvas ie shapes and image
+       * (Image & Shapes).
+       * Creates a popup.
        *
-       * @param fileName    ..
+       * @param shapeFileName    ..
        * @param paramEditor ..
        * @param iView       ..
        * @param x           ..
@@ -239,25 +256,222 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param wd          ..
        * @param ht          ..
        */
-      public void buildDrawTools(String fileName, SectionEditor paramEditor, ImageView iView, double x, double y, double wd, double ht) {
+      public void buildDrawTools(String shapeFileName, SectionEditor paramEditor, ImageView iView, double x, double y, double wd, double ht) {
             StageStyle style = StageStyle.UTILITY;
-            overlayWindow = buildDrawTools(x, y, wd, ht, fileName, paramEditor, style, iView);
+            containerVBox = new VBox();
+            containerVBox.setStyle("-fx-background-color: " + UIColors.FM_GREY);
+            // Misc variables
+            overlayCanvas = new Canvas();
+            overlayHt = new AtomicLong((long) ht);
+            overlayWd = new AtomicLong((long) wd);
+
+            x = x < 20 ? 20 : x;
+            y = y < 20 ? 20 : y;
+
+            if(wd + ht != 0 && paramEditor.getArrayOfFMShapes().size() > 0) {
+                  FMRectangle rect = setPaneSizeRectangle();
+                  rect.setWd(wd);
+                  rect.setHt(ht);
+                  paramEditor.getArrayOfFMShapes().set(0, rect);
+            }
+
+            // **** INSERTING NEW CODE FROM buildDrawTools ***** //
+
+            if (iView == null) {
+                  overlayWindow = drawToolsStageSetUp(shapeFileName, style, paramEditor, x, y, wd, ht, ht + 39);
+                  // drawpad/shapes, no image
+                  setupForShapesOnlyEditing(wd, ht);
+                  layoutBindings();
+            } else {
+                  // canvas: Image and/or shapes/drawpad
+                  overlayWindow = drawToolsStageSetUp(shapeFileName, style, paramEditor, x, y, wd, ht, ht + 76);
+                  setupForImageAndShapeEditing(iView, wd, ht);
+//                  final Button[] toolBtns = toolButtons(paramEditor);
+//                  setButtonsSettings(toolPane, toolBtns);
+                  // Set the GraphicsContext
+                  toolGC = overlayCanvas.getGraphicsContext2D();
+            }
+
+            final Scene overlayScene = overlaySceneSetup(paramEditor);
+
+            // **** END INSERT NEW CODE ****
+            overlayWindow.setScene(overlayScene);
             overlayWindow.show();
       }
 
+      /**
+       *
+       * @param wd
+       * @param ht
+       */
+      private void setupForShapesOnlyEditing(double wd, double ht) {
+            overlayPane.getChildren().add(overlayCanvas);
 
-      private Stage buildDrawTools(double prevX, double prevY, double prevWd, double prevHt,
+            overlayScene = new Scene(overlayPane, wd, ht, new Color(0, 0, 0, .01));
+            overlayPaneSettings(
+                    ht,
+                    wd,
+                    overlayPane.getBoundsInParent().getMinX(),
+                    overlayPane.getBoundsInParent().getMinY());
+            overlayWd.set((long) overlayPane.getWidth());
+            overlayHt.set((long) overlayPane.getHeight());
+            // color must not be completely transparent for an overlay to work.
+            //overlayScene = new Scene(overlayPane, ht, wd, new Color(0, 0, 0, .01));
+      }
+
+      /**
+       *
+       * @param iView
+       * @param wd
+       * @param ht
+       */
+      private void setupForImageAndShapeEditing(ImageView iView, double wd, double ht) {
+            // set up for image display and editing
+            ImageTools imgTools = ImageTools.getInstance();
+            iView = imgTools.handler(iView);
+
+            VBox southBox = new VBox();
+            southBox.setAlignment(Pos.CENTER);
+            VBox imgToolVBox = imgTools.getToolBoxContainer(classEditorRef);
+            imgToolVBox.setAlignment(Pos.CENTER);
+            //imgToolVBox.setPadding(new Insets(4));
+            overlayPane.getChildren().addAll(iView, overlayCanvas);
+            containerVBox.getChildren().addAll(overlayPane, imgToolVBox);
+            // color must not be completely transparent for an overlay to work.
+            overlayScene = new Scene(containerVBox, wd, ht, new Color(0, 0, 0, .01));
+            overlayPaneSettings(
+                    iView.getImage().getHeight(),
+                    iView.getImage().getWidth(),
+                    overlayPane.getBoundsInParent().getMinX(),
+                    overlayPane.getBoundsInParent().getMinY());
+
+            iView.setPreserveRatio(true);
+            //            ImageView finalIView = iView;
+            iView.fitHeightProperty().addListener(this::heightChangedListener);
+            iView.fitWidthProperty().addListener(this::widthChangedLister);
+      }
+
+      /**
+       *
+       * @param shapeFileName
+       * @param style
+       * @param paramEditor
+       */
+      private Stage drawToolsStageSetUp(String shapeFileName, StageStyle style, SectionEditor paramEditor,
+      double x, double y, double wd, double ht, double windowHt) {
+
+            Stage drawPadWindow = new Stage(style);
+            drawPadWindow.setTitle("DrawPad");
+            // toolWindow = new Stage(StageStyle.UTILITY);
+
+            drawPadWindow.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
+                  @Override
+                  public void changed(ObservableValue<? extends Boolean> prop, Boolean wasIconified, Boolean isIconified) {
+                        System.out.println("ignore fullscreen");
+                        drawPadWindow.setFullScreen(false);
+                  }
+            });
+            // actions on close/on hidden
+
+            drawPadWindow.setOnHidden(e -> {
+                  if(null != shapeFileName) { saveOnExit(shapeFileName, paramEditor); }
+                  onClose();
+            });
+
+
+            // Class SectionEditor referance
+            classEditorRef = paramEditor;
+            // Object instantiation and pane assignment for the Drawing area
+
+            overlayPane = new Pane();
+            overlayPane.setPrefSize(wd, ht);
+//            overlayPane.setMinWidth(wd);
+//            overlayPane.setMaxWidth(wd);
+//            overlayPane.setMinHeight(ht);
+//            overlayPane.setMaxHeight(ht);
+            // scene ht
+            // overlay Window settings
+ //           drawPadWindow.setMinHeight(windowHt);
+ //           drawPadWindow.setMaxHeight(windowHt);
+            drawPadWindow.setHeight(windowHt);
+            //drawPadWindow.setWidth(wd);
+            drawPadWindow.setX(x);
+            drawPadWindow.setY(y);
+            //drawPadWindow.setScene(overlayScene);
+            drawPadWindow.setAlwaysOnTop(true);
+            popUpTools(paramEditor, drawPadWindow);
+
+            return drawPadWindow;
+      }
+
+      private Scene overlaySceneSetup(SectionEditor paramEditor) {
+            // Escape. Abandon, ask to save work.
+            toolScene.setOnKeyPressed((KeyEvent f) -> {
+                  if (f.getCode() == KeyCode.ESCAPE) {
+                        abandAction(paramEditor);
+                  }
+            });
+            // Escape, Abandon, ask to save work.
+            overlayPane.setOnKeyPressed((KeyEvent f) -> {
+                  if (f.getCode() == KeyCode.ESCAPE) {
+                        abandAction(paramEditor);
+                  }
+            });
+            // Update the size of the rectangle used for the shapespane size
+            // in arrayOfFMShapes. Used for both with image and without.
+            overlayScene.setOnMouseClicked((MouseEvent e) -> {
+                  /* ******
+                  NOTE: If having problems with shapes in right pane appearing and
+                  disapearing. OverlayScene and OverlayPane vs OverlayCanvas may the the root cause.
+                  ********* */
+                  // Update the 0th shape. It is always the size of the pane.
+                  FMRectangle rect = (FMRectangle) paramEditor.getArrayOfFMShapes().get(0);
+                  if(overlayScene.getWidth() != 0) {
+                        rect = setPaneSizeRectangle();
+                        rect.setWd(overlayScene.getWidth());
+                        rect.setHt(overlayScene.getHeight());
+                        paramEditor.getArrayOfFMShapes().set(0, rect);
+                  } else if (overlayCanvas.getWidth() != 0) {
+                        rect = setPaneSizeRectangle();
+                        rect.setWd(overlayCanvas.getWidth());
+                        rect.setHt(overlayCanvas.getHeight());
+                        paramEditor.getArrayOfFMShapes().set(0, rect);
+                  }
+            });
+
+            overlayScene.getStylesheets().addAll("css/drawtools.css", "css/buttons.css");
+            overlayScene.setOnMouseExited((MouseEvent e) -> releaseMouse());
+            return overlayScene;
+      }
+
+
+      /**
+       * The drawPadWindow has either an image with shapes, or just shapes. The drawPadWindow contains the overlayScene.
+       * The overlayScene contains the overlayPane. The overlayPane contains an Iview with a transparent canvas "overlayCanvas"
+       * that shapes are created and edited in. And the image tools are attatched below the lower border of the canves
+       * within the overlayPane.
+       * <p>Used when a there is no image nor drawing</p>
+       * @param prevX
+       * @param prevY
+       * @param prevWd
+       * @param prevHt
+       * @param shapeFileName
+       * @param paramEditor
+       * @param style
+       * @param iView
+       * @return
+       */
+      private Stage buildNewCanvasEditor(double prevX, double prevY, double prevWd, double prevHt,
                                    String shapeFileName, SectionEditor paramEditor, StageStyle style, ImageView iView) {
             LOGGER.setLevel(Level.DEBUG);
-            if (!shapeFileName.endsWith(".shp")) {
-                  LOGGER.warn("buildDrawTools line 229: File did not end with .shp, FileName: {}", shapeFileName);
-                  Thread.dumpStack();
-            }
             LOGGER.info("shapeFileName: {} ends with .shp: {}", shapeFileName, shapeFileName.endsWith(".shp"));
 
             Stage drawPadWindow = new Stage(style);
 
-            toolWindow = new Stage(StageStyle.UTILITY);
+            prevX = prevX < 20 ? 20 : prevX;
+            prevY = prevY < 20 ? 20 : prevY;
+
+            // toolWindow = new Stage(StageStyle.UTILITY);
 
             drawPadWindow.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
                   @Override
@@ -268,24 +482,16 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             });
 
             // actions on close/on hidden
-
-            toolWindow.setOnHidden(e -> {
-                  saveOnExit(shapeFileName, paramEditor);
-                  onClose();
-            });
             drawPadWindow.setOnHidden(e -> {
-                  saveOnExit(shapeFileName, paramEditor);
+                  if(null != shapeFileName) { saveOnExit(shapeFileName, paramEditor); }
                   onClose();
             });
 
             drawPadWindow.setTitle("DrawPad");
 
             // Misc variables
-            overlayHt = prevHt;
-            overlayWd = prevWd;
-
-            popUpPane = new BorderPane();
-            toolScene = new Scene(popUpPane);
+            overlayHt = new AtomicLong((long) prevHt);
+            overlayWd = new AtomicLong((long) prevWd);
 
             // Class SectionEditor referance
             classEditorRef = paramEditor;
@@ -293,16 +499,46 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             // Object instantiation and pane assignment for the Drawing area
             overlayCanvas = new Canvas();
             overlayPane = new Pane();
+//            overlayPane.setAlignment(Pos.CENTER);
             if (iView == null) {
                   overlayPane.getChildren().add(overlayCanvas);
+                  overlayPane.setStyle("-fx-border-color: rgba(48, 128, 185, .9); " +
+                          "-fx-background-color: transparent; -fx-border-width: 3;");
+                  // color must not be completely transparent for an overlay to work.
+                  overlayScene = new Scene(overlayPane, prevWd, prevHt, new Color(0, 0, 0, .01));
+
+
             } else {
+                  // set up for image display and editing
+                  ImageTools imgTools = ImageTools.getInstance();
+                  iView = imgTools.handler(iView);
+                  //iView.setFitHeight(prevHt);
+
+                  VBox southBox = new VBox();
+                  southBox.setAlignment(Pos.CENTER);
+                  VBox imgToolVBox = imgTools.getToolBoxContainer(classEditorRef);
+                  imgToolVBox.setAlignment(Pos.CENTER);
+                  //imgToolVBox.setPadding(new Insets(4));
                   overlayPane.getChildren().addAll(iView, overlayCanvas);
+                  containerVBox.getChildren().addAll(overlayPane, imgToolVBox);
+                  // color must not be completely transparent for an overlay to work.
+                  overlayScene = new Scene(containerVBox, prevWd, prevHt, new Color(0, 0, 0, .01));
+                  overlayPaneSettings(iView.getImage().getHeight(),
+                                      iView.getImage().getWidth(),
+                                      overlayPane.getBoundsInParent().getMinX(),
+                                      overlayPane.getBoundsInParent().getMinY());
+//                  drawPadWindow.setOnHidden(e -> {
+//                        imgTools.saveOnExit(paramEditor);
+//                        if(null != shapeFileName) { saveOnExit(shapeFileName, paramEditor); }
+//                        onClose();
+//                  });
             }
 
             layoutBindings();
 
-            // Windows 10 fix
-            overlayScene = new Scene(overlayPane, prevWd, prevHt, new Color(0, 0, 0, 1d / 255d));
+            // Windows 10 fix ???
+
+            overlayScene.getStylesheets().addAll("css/drawtools.css", "css/buttons.css");
 
             // overlay Window settings
             drawPadWindow.setHeight(prevHt);
@@ -310,16 +546,27 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             drawPadWindow.setX(prevX);
             drawPadWindow.setY(prevY);
             drawPadWindow.setScene(overlayScene);
-            overlayScene.getStylesheets().addAll("css/drawtools.css", "css/buttons.css");
+            drawPadWindow.setAlwaysOnTop(true);
 
-            // Overlay Pane settings
-            overlayPane.setMaxHeight(overlayPane.getBoundsInParent().getHeight());
-            overlayPane.setMaxWidth(overlayPane.getBoundsInParent().getWidth());
-            overlayPane.setLayoutX(overlayPane.getBoundsInParent().getMinX());
-            overlayPane.setLayoutY(overlayPane.getBoundsInParent().getMinY());
-            overlayPane.setStyle("-fx-border-color: rgba(48, 128, 185, .9); " +
-                "-fx-background-color: transparent; -fx-border-width: 3;");
+            // Update the size of the rectangle used for the shapespane size
+            // in arrayOfFMShapes. Used for both with image and without.
+            overlayScene.setOnMouseClicked((MouseEvent e) -> {
+                  FMRectangle rect = setPaneSizeRectangle();
+                  rect.setWd(overlayCanvas.getWidth());
+                  rect.setHt(overlayCanvas.getHeight());
+                  // the 0th shape is always the size of the pane.
+                  if (paramEditor.getArrayOfFMShapes().size() > 0) {
+                        paramEditor.getArrayOfFMShapes().set(0, rect);
+                  }
+            });
 
+            overlayScene.setOnMouseExited((MouseEvent e) -> releaseMouse());
+
+//            final Button[] toolBtns = toolButtons(paramEditor);
+//            setButtonsSettings(toolPane, toolBtns);
+            // Set the GraphicsContext
+            popUpTools(paramEditor, drawPadWindow);
+            toolGC = overlayCanvas.getGraphicsContext2D();
 
             // Escape. Abandon, ask to save work.
             toolScene.setOnKeyPressed((KeyEvent f) -> {
@@ -334,22 +581,22 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   }
             });
 
-            // Update the size of the rectangle used for the shapespane size
-            // in arrayOfFMShapes. Used when iView doesn't exist.
-            overlayScene.setOnMouseClicked((MouseEvent e) -> {
-                  FMRectangle rect = paneSizeRectangle();
-                  rect.setWd(overlayCanvas.getWidth());
-                  rect.setHt(overlayCanvas.getHeight());
-                  // the 0th shape is always the size of the pane.
-                  if (paramEditor.getArrayOfFMShapes().size() > 0) {
-                        paramEditor.getArrayOfFMShapes().set(0, rect);
-                  }
-            });
+            return drawPadWindow;
+      } // *** END buildDrawTools() ***
 
+
+
+
+      /**
+       * Builds the ToolButtons for DrawPad Tools
+       * @param paramEditor
+       * @return
+       */
+      private Button[] toolButtons(SectionEditor paramEditor) {
             double[] linePts = {0, 0, 20, 0};
             double[] arrowPts = {23.4970013410768, 25.295000853688194, 44.0, 13.0, 23.502999877840676, 0.6950015850386819,
-                23.501200316811513, 8.075001365633536, 3.0011997073527747, 8.080000146270098, 2.9988002926472253,
-                17.9199998537299, 23.498800902105963, 17.91500107309334, 23.4970013410768, 25.295000853688194};
+                    23.501200316811513, 8.075001365633536, 3.0011997073527747, 8.080000146270098, 2.9988002926472253,
+                    17.9199998537299, 23.498800902105963, 17.91500107309334, 23.4970013410768, 25.295000853688194};
             double[] polyPts = {20.0, 19.0, 32.0, 8.0, 9.0, 8.0, 9.0, 29.0, 31.0, 30.0};
             FMCircle fmCirc = new FMCircle(-10, 0, 10, 10, 3, strokeBTNProperty.getValue(), fillBTNProperty.getValue(), 0);
             FMRectangle fmRect = new FMRectangle(0, 0, 20, 20, 3, strokeBTNProperty.getValue(), fillBTNProperty.getValue(), 0);
@@ -390,14 +637,14 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
             // Tool buttons array
             Button[] toolBtns = {
-                circleBtn = new Button("", btnCircle),
-                rectBtn = new Button("", btnSqr),
-                triangleBtn = new Button("", btnTri),
-                polyBtn = new Button("", btnPoly),
-                lineBtn = new Button("", btnLine),
-                arrowBtn = new Button("", btnArrow),
-                penBtn = new Button(""),
-                txtBtn = new Button("", btnText)
+                    circleBtn = new Button("", btnCircle),
+                    rectBtn = new Button("", btnSqr),
+                    triangleBtn = new Button("", btnTri),
+                    polyBtn = new Button("", btnPoly),
+                    lineBtn = new Button("", btnLine),
+                    arrowBtn = new Button("", btnArrow),
+                    penBtn = new Button(""),
+                    txtBtn = new Button("", btnText)
             };
             circleBtn.setAlignment(Pos.BASELINE_LEFT);
             rectBtn.setAlignment(Pos.BASELINE_LEFT);
@@ -412,9 +659,9 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             // Color buttons for Fill Color and Stroke Color
             final int btnSize = 20;
             String[] colors = {
-                UIColors.FM_WHITE, UIColors.FLASH_RED, UIColors.HIGHLIGHT_PINK,
-                UIColors.HIGHLIGHT_ORANGE, UIColors.HIGHLIGHT_YELLOW, UIColors.HIGHLIGHT_GREEN,
-                UIColors.BELIZE_BLUE_OPAQUE, UIColors.GRAPH_BGND, UIColors.FLASH_BLACK
+                    UIColors.FM_WHITE, UIColors.FLASH_RED, UIColors.HIGHLIGHT_PINK,
+                    UIColors.HIGHLIGHT_ORANGE, UIColors.HIGHLIGHT_YELLOW, UIColors.HIGHLIGHT_GREEN,
+                    UIColors.BELIZE_BLUE_OPAQUE, UIColors.GRAPH_BGND, UIColors.FLASH_BLACK
             };
 
             Shape[] strokeColors = createColors(btnSize, false, colors);
@@ -444,13 +691,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             deleteBtn = new Button("delete");
             deleteBtn.setTooltip(new Tooltip("Deletes the active shape"));
 
-/*        saveBtn = new Button("save");
-        saveBtn.setTooltip(new Tooltip("Save and exit"));
-        saveBtn.setOnAction(a -> {
-            onClose();
-            saveOnExit(shapeFileName, paramEditor);
-        });*/
-
             clearBtn = new Button("clear");
             clearBtn.setTooltip(new Tooltip("Clear all shapes"));
             clearBtn.setOnAction(a -> clearShapesAction(paramEditor));
@@ -473,27 +713,39 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             // Pane containing nodes when a shape is
             // resized.
             nodesPane = new Pane();
-            overlayScene.setOnMouseExited((MouseEvent e) -> releaseMouse());
 
-            setButtonsSettings(toolPane, toolBtns);
-            // Set the GraphicsContext
-            toolGC = overlayCanvas.getGraphicsContext2D();
+            return toolBtns;
+      }
 
-
-            return drawPadWindow;
-      } // *** END buildDrawTools() ***
+      private void overlayPaneSettings(double ht, double wd, double minX, double minY) {
+            overlayHt.set((long) ht);
+            overlayWd.set((long) wd);
+            overlayPane.setMaxSize(wd, ht);
+            overlayPane.setMinSize(wd, ht);
+            overlayPane.setLayoutX(minX);
+            overlayPane.setLayoutY(minY);
+            overlayPane.setStyle("-fx-border-color: rgba(48, 128, 185, .9); " +
+                    "-fx-background-color: transparent; -fx-border-width: 3;");
+      }
 
 
       /**
        * The popup tool window
        */
-      public void popUpTools() {
+      public void popUpTools(SectionEditor paramEditor, Stage overlayWindow) {
+            toolWindow = new Stage(StageStyle.UTILITY);
+            toolMainPane = new BorderPane();
+            toolScene = new Scene(toolMainPane);
 
             toolWindow.setResizable(false);
-            popUpPane.setTop(colorBtnGrid);
-            popUpPane.setCenter(toolPane);
-            popUpPane.setBottom(zBtnHBox);
-            popUpPane.setStyle("-fx-background-color: " + UIColors.GRAPH_BGND);
+
+            final Button[] toolBtns = toolButtons(paramEditor);
+            setButtonsSettings(toolPane, toolBtns);
+
+            toolMainPane.setTop(colorBtnGrid);
+            toolMainPane.setCenter(toolPane);
+            toolMainPane.setBottom(zBtnHBox);
+            toolMainPane.setStyle("-fx-background-color: " + UIColors.GRAPH_BGND);
             toolWindow.setScene(toolScene);
             double x = overlayWindow.getX() + overlayWindow.getWidth() + 10;
             double y = overlayWindow.getY() + 10;
@@ -503,7 +755,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             // toolWindow/stage should always be
             // on top until it is closed.
             toolWindow.setAlwaysOnTop(true);
-            //toolWindow.setOnHidden(e -> justClose());
+            toolWindow.setOnHidden(e -> onClose());
             toolWindow.show();
       }
 
@@ -549,11 +801,11 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       }
 
       public double getOverlayHt() {
-            return overlayHt;
+            return overlayHt.get();
       }
 
       public double getOverlayWd() {
-            return overlayWd;
+            return overlayWd.get();
       }
 
 
@@ -613,6 +865,33 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             overlayCanvas.widthProperty().bind(overlayPane.widthProperty());
       }
 
+      private void heightChangedListener(ObservableValue<? extends Number> property, Number oldVal, Number newVal) {
+            LOGGER.setLevel(Level.ALL);
+            LOGGER.debug("called, HEIGHT changed. newVal: <{}>", newVal);
+
+            double ht = (double) newVal;
+            overlayHt.set((long) ht);
+            overlayPane.setMaxHeight(ht);
+            overlayPane.setMinHeight(ht);
+            overlayCanvas.setHeight(ht);
+            // add for image toolbar
+            overlayWindow.setMaxHeight(ht + 76);
+            overlayWindow.setMinHeight(ht + 76);
+      }
+
+      private void widthChangedLister(ObservableValue<? extends Number> property, Number oldVal, Number newVal) {
+            LOGGER.setLevel(Level.ALL);
+            LOGGER.debug("called, WIDTH changed. newVal: <{}>", newVal);
+
+            double wd = (double) newVal;
+            overlayWd.set((long) wd);
+            overlayPane.setMaxWidth(wd);
+            overlayPane.setMinWidth(wd);
+            overlayCanvas.setWidth(wd);
+            overlayWindow.setMaxWidth(wd);
+            overlayWindow.setMinWidth(wd);
+      }
+
 
       /**
        * Creates an array of square rectangles. Must isolate the transparent button because its color
@@ -625,7 +904,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * the parameter.
        */
       private Shape[] createColors(final int btnSize, boolean isFill, String... colors) {
-
             Shape[] shape = new Shape[colors.length + 1];
             double[] squareSlashPts = {0, 0, 18, 0, 18, 18, 0, 18, 0, 0, 18, 18};
 
@@ -638,6 +916,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   shape[0].setStroke(Color.web(UIColors.FM_WHITE));
                   shape[0].setFill(Color.TRANSPARENT);
                   shape[0].setOnMouseClicked(e -> {
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
                         fillBTNProperty.setValue(UIColors.TRANSPARENT);
                         fillProperty.setValue(UIColors.TRANSPARENT);
                         setShapesColors();
@@ -648,6 +927,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   for (String s : colors) {
                         shape[idx] = new Rectangle(btnSize, btnSize, Color.web(s));
                         shape[idx].setOnMouseClicked(e -> {
+                              SoundEffects.PRESS_BUTTON_COMMON.play();
                               fillBTNProperty.setValue(s);
                               fillProperty.setValue(s);
                               setShapesColors();
@@ -664,6 +944,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   shape[0].setStrokeLineJoin(StrokeLineJoin.BEVEL);
                   shape[0].setFill(Color.web(UIColors.FM_WHITE));
                   shape[0].setOnMouseClicked(e -> {
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
                         strokeBTNProperty.setValue(UIColors.TRANSPARENT);
                         strokeProperty.setValue(UIColors.TRANSPARENT);
                         setShapesColors();
@@ -678,6 +959,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                         shape[idx].setStrokeWidth(2);
                         shape[idx].setFill(Color.web(UIColors.TRANSPARENT));
                         shape[idx].setOnMouseClicked(e -> {
+                              SoundEffects.PRESS_BUTTON_COMMON.play();
                               strokeBTNProperty.setValue(s);
                               strokeProperty.setValue(s);
                               setShapesColors();
@@ -685,18 +967,16 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                         // increment the idx
                         idx++;
                   }
-
             }
-
             return shape;
       }
 
       private void setShapesColors() {
             if (!classEditorRef.getArrayOfFMShapes().isEmpty()) {
                   FMRectangle r = (FMRectangle) classEditorRef.getArrayOfFMShapes().get(0);
-                  double wd = r.getWd();
-                  double ht = r.getHt();
-                  classEditorRef.setShapesInRtPane(classEditorRef.getArrayOfFMShapes(), wd, ht);
+ //                 double wd = r.getWd();
+ //                 double ht = r.getHt();
+ //                 classEditorRef.setShapesInRtPane(classEditorRef.getArrayOfFMShapes(), wd, ht);
             }
       }
 
@@ -735,7 +1015,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        **/
 
       private void clearShapesAction(SectionEditor paramEditor) {
-
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             // @todo bug with overlayPane shapes. After clear, you do not see the shapes when the pane is redrawn on.
 
             paramEditor.clearShapes(paramEditor.getArrayOfFMShapes());
@@ -746,6 +1026,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * Quit and do not save changes.
        */
       private void quitBtnAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             onClose();
       }
 
@@ -754,9 +1035,10 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        *
        * @param fileName The fileName only;
        */
-      private static void saveShapesAction(String fileName, SectionEditor paramEditor) {
-            // Provide the correct type
-            paramEditor.setSectionType('D');
+      private static void saveShapesToFile(String fileName, SectionEditor paramEditor) {
+            // Provide the correct type. Added during changes for 1.3.0, commented out on 30 July 2022,
+            // causing images to be hidden when snapshot is used;
+            // paramEditor.setSectionType('D')
             FileOpsShapes fo = new FileOpsShapes();
             // Pass the shapeFileName to cardEditor
             if (paramEditor.getArrayOfFMShapes().size() > 1) {
@@ -770,10 +1052,12 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param ed ..
        */
       private void circleBtnAction(SectionEditor ed) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             clearListeners();
             // Clear the overlayPane of any resize nodes if they exist
             clearNodes();
 
+            toolGC = overlayCanvas.getGraphicsContext2D();
             CircleBuilder cBuilder = new CircleBuilder(overlayCanvas, toolGC, overlayPane, ed, strokeProperty.getValue(), fillProperty.getValue());
 
             overlayScene.setOnMousePressed(cBuilder::mousePressed);
@@ -781,7 +1065,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             overlayScene.setOnMouseReleased(cBuilder::mouseReleased);
 
             //System.out.println("\n *** circeBtnAction called ***");
-            toolGC = overlayCanvas.getGraphicsContext2D();
+
 
             overlayPane.setOnMouseEntered((MouseEvent e) -> overlayPane.setCursor(Cursor.CROSSHAIR));
             overlayPane.setOnMouseExited((MouseEvent e) -> overlayPane.setCursor(Cursor.DEFAULT));
@@ -796,18 +1080,17 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param ed ..
        */
       private void rectBtnAction(SectionEditor ed) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             clearListeners();
             // Clear the overlayPane of any resize nodes if they exist
             clearNodes();
+            toolGC = overlayCanvas.getGraphicsContext2D();
             RectangleBuilder rectBuilder = new RectangleBuilder(overlayCanvas, toolGC, overlayPane, ed, strokeProperty.getValue(), fillProperty.getValue());
 
+            // builds the first shape, not edit
             overlayScene.setOnMousePressed(rectBuilder::mousePressed);
             overlayScene.setOnMouseDragged(rectBuilder::mouseDragged);
             overlayScene.setOnMouseReleased(rectBuilder::mouseReleased);
-
-            //System.out.println("\n *** rectBtnAction called ***");
-            toolGC = overlayCanvas.getGraphicsContext2D();
-
             overlayPane.setOnMouseEntered((MouseEvent e) -> overlayPane.setCursor(Cursor.CROSSHAIR));
             overlayPane.setOnMouseExited((MouseEvent e) -> overlayPane.setCursor(Cursor.DEFAULT));
             shapeNotSelected = true;
@@ -819,6 +1102,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param ed
        */
       private void triangleBtnAction(SectionEditor ed) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             clearListeners();
             // Clear the overlayPane of any resize nodes if they exist
             clearNodes();
@@ -844,6 +1128,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param ed ..
        */
       private void polyBtnAction(SectionEditor ed) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             clearListeners();
             // Clear the overlayPane of any resize nodes if they exist
             clearNodes();
@@ -853,7 +1138,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             overlayScene.setOnMouseDragged(polygonBuilder::mouseDragged);
             overlayScene.setOnMouseReleased(polygonBuilder::mouseReleased);
             toolGC = overlayCanvas.getGraphicsContext2D();
-
             overlayPane.setOnMouseEntered((MouseEvent e) -> overlayPane.setCursor(Cursor.CROSSHAIR));
             overlayPane.setOnMouseExited((MouseEvent e) -> overlayPane.setCursor(Cursor.DEFAULT));
             shapeNotSelected = true;
@@ -865,6 +1149,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param ed ..
        */
       private void lineBtnAction(SectionEditor ed) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             clearListeners();
             // Clear the overlayPane of any resize nodes if they exist
             clearNodes();
@@ -885,6 +1170,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param ed ..
        */
       private void arrowBtnAction(SectionEditor ed) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             clearListeners();
             clearNodes();
             ArrowBuilder arrow = new ArrowBuilder(overlayCanvas, toolGC, overlayPane, ed, strokeProperty.getValue(), fillProperty.getValue());
@@ -911,6 +1197,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * @param ed ..
        */
       private void txtBtnAction(SectionEditor ed) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             //System.out.println("\n *** txtBtnAction called ***");
             clearListeners();
             // Clear the overlayPane of any resize nodes if they exist
@@ -930,18 +1217,23 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
 
       /**
-       * <P>
-       * Use with caution. Calls a private method for saving on exit
+       * <P> Allows a saveOnExit from outside of this class</p>
+       * <p> Use with caution. Calls a private method for saving on exit
        * that requires the DeckFileName and SectionEditor. References may
        * not be correct.</P>
+       * <p>Called by CreateFlash saveOnExit</p>
        * <p>Ensures that this class complies with BaseInterface.</p>
        */
       @Override
       public void saveOnExit() {
             /*LOGGER.debug("saveOnExit : classEditorRef. number of shapes: {}\n" +
                 "deckFileName: {}", classEditorRef.getArrayOfFMShapes().size(), FlashCardOps.getInstance().getDeckFileName());*/
-
-            saveOnExit(classEditorRef.getShapesFileName(), classEditorRef);
+            if(null != classEditorRef) {
+                  String shapeFileName = classEditorRef.getShapesFileName();
+                  if (null != shapeFileName) {
+                        saveOnExit(shapeFileName, classEditorRef);
+                  }
+            }
       }
 
       /**
@@ -952,15 +1244,20 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * this method will result in it being called twice if it is called for an exit
        * Action.
        *
-       * <p><B>NOTE:</B> Does not exit the Stage/Window</p>
+       * <p><b>NOTE:</b> Does not exit the Stage/Window</p>
+       * <p><b>NOTE:</b> Does not check for null. Null pointer should be handled before
+       * this method.</p>
        *
        * @param shapeFileName
        * @param paramEditor
        */
       private void saveOnExit(String shapeFileName, SectionEditor paramEditor) {
+            if(ImageTools.instanceExists()) {
+                  ImageTools.getInstance().saveOnExit(paramEditor);
+            }
             // The '0' element is the size of the drawpad. Shapes start at
             // '1'
-            saveShapesAction(shapeFileName, paramEditor);
+            saveShapesToFile(shapeFileName, paramEditor);
       }
 
 
@@ -976,8 +1273,16 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       public void onClose() {
             // save arrayOfBuilderShapes to file.
             //if ( DrawTools.instanceExists() ) {
+            ImageTools imgTools = ImageTools.getInstance();
+            imgTools.onClose();
+            // @TODO !!!! check if the lower call is circular !!!!
+            // is this a circular call???
+            if(null != classEditorRef) {
                   classEditorRef.setDrawPadClosed();
-           // }
+                  toolMainPane.getChildren().clear();
+                  overlayWindow.close();
+                  toolWindow.close();
+            }
 
             clearListeners();
             LOGGER.info("onCLose called");
@@ -987,9 +1292,8 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             cfp.enableButtons();
 
             // paramEditor.setShapeFile(fileName);
-            popUpPane.getChildren().clear();
-            overlayWindow.close();
-            toolWindow.close();
+
+
       }
 
       /**
@@ -1012,7 +1316,8 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   onClose();
             } else {
                   // save the shapes
-                  saveOnExit(FlashCardOps.getInstance().getDeckFileName(), paramEditor);
+                  String shapeFileName = FlashCardOps.getInstance().getDeckFileName();
+                  if(null != shapeFileName) { saveOnExit(shapeFileName, paramEditor); }
                   onClose();
             }
             return;
@@ -1021,11 +1326,11 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
       /**
        * Provides the size of the pane from the first shape in shapesArray
-       *
+       * Should be sized by the overlayCanvas
        * @return an FMRectangle
        */
-      private static FMRectangle paneSizeRectangle() {
-            LOGGER.debug("calling paneSizeRectangle(), setting to new FMRectangle\n\t-Called by overlayScene.setOnMouseClicked");
+      private static FMRectangle setPaneSizeRectangle() {
+            LOGGER.debug("calling setPaneSizeRectangle(), setting to new FMRectangle\n\t-StackTrace");
             return new FMRectangle(0, 0, 0, 0, 1.0, UIColors.TRANSPARENT, UIColors.TRANSPARENT, 0);
       }
 
@@ -1054,13 +1359,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             Bounds bounds = clearBtn.getLayoutBounds();
             return clearBtn.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
       }
-
-      // REmoved save button. Now save on exit
-/*    @FMAnnotations.DoNotDeployMethod
-    public Point2D getExitBtnXY() {
-        Bounds bounds = saveBtn.getLayoutBounds();
-        return saveBtn.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
-    }*/
 
       @FMAnnotations.DoNotDeployMethod
       public Point2D getOverlayPaneXY() {

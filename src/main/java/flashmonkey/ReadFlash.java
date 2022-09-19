@@ -21,7 +21,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.TextAlignment;
+import media.sound.SoundEffects;
 import metadata.DeckMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,6 +156,7 @@ public final class ReadFlash implements BaseInterface {
             if (CLASS_INSTANCE == null) {
                   CLASS_INSTANCE = new ReadFlash();
             }
+            FlashMonkeyMain.getPrimaryWindow().setResizable(true);
             return CLASS_INSTANCE;
       }
 
@@ -160,15 +164,15 @@ public final class ReadFlash implements BaseInterface {
        * The createRead Scene class creates the flashcard scene.
        * UI FLow: The user enters the scene from the MenuPane/modeSelectPane after
        * clicking on the study button.
-       * 1) The first scene the EncryptedUser.EncryptedUser sees asks
+       * 1) The first scene the EncryptedUser sees asks
        * them what study mode to use.
-       * a) There is Q and A session which is a
-       * normal Flash card mode. The pane presents the 1st question and the
-       * EncryptedUser.EncryptedUser clicks for the answer or the next question. The users can
+       * a) There is Q and A session which is similar to a
+       * Flash card mode. The pane presents the 1st question and the
+       * EncryptedUser clicks the answer button. The users can
        * traverse forward or backwards through the questions. There is no
        * scoring associated with QAndA mode.
        * b) The Test session is the test mode. In test mode the
-       * EncryptedUser.EncryptedUser is presented a question and one of the test cards.
+       * EncryptedUser is presented a question and one of the test cards.
        */
       public Scene readScene() {
             LOGGER.info("\n\n **** createReadScene() called ****");
@@ -218,15 +222,15 @@ public final class ReadFlash implements BaseInterface {
             masterBPane.setBottom(exitBox);
             masterBPane.setId("bckgnd_image_study");
 
-
             LOGGER.debug("readflash masterBPane width: " + masterBPane.widthProperty());
 
             // *** BUTTON ACTIONS ***
             menuButton.setOnAction(e -> {
+                  SoundEffects.GAME_OVER.play();
                   leaveAction();
                   FlashMonkeyMain.setWindowToMenu();
             });
-            //exitButton.setOnAction(e -> Platform.exit() );
+
             qaButton.setOnAction((ActionEvent e) -> qaButtonAction());
             testButton.setOnAction((ActionEvent e) -> testButtonAction());
             /*
@@ -279,7 +283,7 @@ public final class ReadFlash implements BaseInterface {
             if (fcOps.getFlashList().size() < 4) {
                   emptyListAction();
             } else {
-                  studyModeMenuPane = listHasCardsAction();
+                  studyModeMenuPane = buildStudyModeMenuPane();
                   origNumCards = fcOps.getFlashList().size();
                   setTree();
             }
@@ -302,12 +306,14 @@ public final class ReadFlash implements BaseInterface {
                         test.ansButtonAction();
                         masterBPane.requestFocus();
                   } else if (e.getCode() == KeyCode.LEFT) {
+                        SoundEffects.SLIDE_LEFT.play();
                         LOGGER.debug("Left pressed for leftAnswer");
 
                         test.prevAnsButtAction();
                         masterBPane.requestFocus();
 
                   } else if (e.getCode() == KeyCode.RIGHT) {
+                        SoundEffects.SLIDE_RIGHT.play();
                         LOGGER.debug("Right pressed for rightAnswer");
                         test.nextAnsButtAction();
                         masterBPane.requestFocus();
@@ -332,7 +338,7 @@ public final class ReadFlash implements BaseInterface {
        *
        * @return
        */
-      private GridPane listHasCardsAction() {
+      private GridPane buildStudyModeMenuPane() {
             LOGGER.debug("listHasCardsAction() called");
 
             int flSize;
@@ -415,6 +421,7 @@ public final class ReadFlash implements BaseInterface {
        */
       @SuppressWarnings("rawTypes")
       protected void prevQButtonAction() {
+            SoundEffects.SLIDE_RIGHT.play();
             // Get the previous node in treeWalker
             FMTWalker.getInstance().getPrevious();
 
@@ -463,6 +470,7 @@ public final class ReadFlash implements BaseInterface {
       protected void nextQButtonAction() {
             // Get the next node in the treeWalker
             FMTWalker.getInstance().getNext();
+            SoundEffects.SLIDE_RIGHT.play();
 
             // Node currentNode = FMTWalker.getInstance().getCurrentNode();
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
@@ -500,16 +508,17 @@ public final class ReadFlash implements BaseInterface {
 
 
       //@todo change qNavButtonAction() to private in readflash.
-      public void qNavButtonAction() {
+/*      public void qNavButtonAction() {
             LOGGER.debug("\n *** qNavButtonAction ***");
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-      }
+      }*/
 
       /**
        * Sends the treedisplay and the flashcard panes to the
        * first question in the tree.
        */
       private void firstQButtonAction(ActionEvent e) {
+            SoundEffects.GOTO_START.play();
             //visIndex = 1;
             FMTWalker.getInstance().setToFirst();
 
@@ -552,6 +561,7 @@ public final class ReadFlash implements BaseInterface {
        */
       private void endQButtonAction(ActionEvent e) {
             //visIndex = FLASH_CARD_OPS.getFlashList().size();
+            SoundEffects.GOTO_END.play();
             FMTWalker.getInstance().setToLast(); // O(log(n))
 
             //Node currentNode = TR.getCurrentNode();
@@ -648,6 +658,7 @@ public final class ReadFlash implements BaseInterface {
        * is recreated from new showing any new files.
        */
       protected void deckSelectButtonAction() {
+            SoundEffects.GOTO_FILE_SELECT.play();
             // save metadata and
             // send metadata to the db.
             // save flashlist changes.
@@ -664,9 +675,9 @@ public final class ReadFlash implements BaseInterface {
       /**
        * TEST BUTTON ACTION:  provides the actions for the test button scene
        * Void method. testButton exists in the second menu after the study button
-       * has been pressed by the EncryptedUser.EncryptedUser.
+       * has been pressed by the EncryptedUser.
        *
-       * <p><b>Note: </b> The xpected Result... multi choice example:
+       * <p><b>Note: </b> The expected Result... multi choice example:
        * the centerPane is set to two sections, the top section is for the
        * question, and the bottom section is for the answers. The first answer
        * drops down from the top and the successive answers come in from the right
@@ -682,7 +693,7 @@ public final class ReadFlash implements BaseInterface {
        * treeWalker navigation tree. :)</p>
        */
       protected void testButtonAction() {
-
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             LOGGER.info(" testButtonAction called ");
             Timer.getClassInstance().startTime();
 
@@ -693,7 +704,7 @@ public final class ReadFlash implements BaseInterface {
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
-            System.err.println("\tis CurrentCard data null? " + (currentCard.getQText() == null));
+            //System.err.println("\tis CurrentCard data null? " + (currentCard.getQText() == null));
             mode = 't';
 
             // All of the work is accessed from selectTest()
@@ -709,7 +720,6 @@ public final class ReadFlash implements BaseInterface {
             deckNameLabel = new Label("Deck: " + FlashCardOps.getInstance().getDeckLabelName());
             deckNameLabel.setId("label16white");
             topVBox.getChildren().add(deckNameLabel);
-            //       topVBox.setStyle("-fx-background-color: " + UIColors.GRAPH_BGND);
             topVBox.setAlignment(Pos.CENTER);
 
             masterBPane.setTop(topVBox);
@@ -736,11 +746,21 @@ public final class ReadFlash implements BaseInterface {
             if (!rpCenter.getChildren().isEmpty()) {
                   rpCenter.getChildren().clear();
             }
-
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
+            //String name = FlashCardOps.getInstance().getDeckFileName();
+            VBox topVBox = new VBox();
+            FlashCardOps.getInstance().resetDeckLabelName();
+            deckNameLabel = new Label("Deck: " + FlashCardOps.getInstance().getDeckLabelName());
+            deckNameLabel.setId("label16white");
+            topVBox.getChildren().add(deckNameLabel);
+            topVBox.setAlignment(Pos.CENTER);
+
+            masterBPane.setTop(topVBox);
             rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
             //studyButton.setText("Back");
+            masterBPane.setId("readFlashPane");
             masterBPane.setCenter(rpCenter);
             mode = 'q';
             masterBPane.setBottom(manageSouthPane('q'));
@@ -754,7 +774,6 @@ public final class ReadFlash implements BaseInterface {
 
       public void leaveAction() {
             DeckMetaData meta = DeckMetaData.getInstance();
-
             try {
                   LOGGER.debug("trying to enter data to the DB for exit event");
 
@@ -789,7 +808,6 @@ public final class ReadFlash implements BaseInterface {
        */
       @Override
       public void saveOnExit() {
-
             FlashCardOps.getInstance().unsafeSaveFlashList();
             FlashCardOps.getInstance().clearFlashList();
             leaveAction();
@@ -1150,20 +1168,37 @@ public final class ReadFlash implements BaseInterface {
 
       /**
        * Provides the end of session statistics along with a media
-       * overlay.
+       * overlay. Called by testTypes. Set the conditions and what to
+       * display here.
        */
       public void endGame() {
-            // @todo finisher video for endGame call
-            EndGame endGame = new EndGame(
-                score,
-                FMTWalker.getInstance().highestPossibleScore(),
-                progress,
-                FMTWalker.getInstance().getCount(),
-                FlashCardOps.getInstance().getDeckLabelName()
-            );
+            int size = FlashCardOps.getInstance().getFlashList().size();
+            int numTestCards = DeckMetaData.getInstance().numTestCards();
+            int threshold = size / 4;
+            double scoreLimit = FMTWalker.getInstance().highestPossibleScore();
 
-            rpCenter.getChildren().clear();
-            rpCenter.getChildren().add(endGame.getPane());
+            if(numTestCards > 20
+                    && numTestCards > threshold
+                    && score == scoreLimit
+                    && mode == 't') {
+                  EndGame endGame = new EndGame(
+                          score,
+                          scoreLimit,
+                          progress,
+                          FMTWalker.getInstance().getCount(),
+                          FlashCardOps.getInstance().getDeckLabelName(),
+                          EndGame.HONORABLE
+                  );
+            } else {
+                  EndGame endGame = new EndGame(
+                          score,
+                          scoreLimit,
+                          progress,
+                          FMTWalker.getInstance().getCount(),
+                          FlashCardOps.getInstance().getDeckLabelName(),
+                          EndGame.COMPLETE
+                  );
+            }
       }
 
 
@@ -1221,6 +1256,7 @@ public final class ReadFlash implements BaseInterface {
 
             public RightAns(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType genTest) {
 
+                  SoundEffects.CORRECT_ANSWER.play();
                   LOGGER.debug("/n*** rightAns called ***");
 
                   score += genTest.score();
@@ -1314,6 +1350,7 @@ public final class ReadFlash implements BaseInterface {
                    *    Set remember & make it a priority card.
                    */
                   if (currentCard.getCNumber() % 10 == 0 && currentCard.getNumSeen() == 0) {
+                        SoundEffects.WRONG_ANSWER_1.play();
                         // Score subtract card points
                         score -= test.score();
 
@@ -1332,6 +1369,7 @@ public final class ReadFlash implements BaseInterface {
                         //            scoreGauge.setMaxVal(500, (int) FMTWalker.getInstance().highestPossibleScore());
                         scoreGauge.moveNeedle(500, score);
                   } else {
+                        SoundEffects.WRONG_ANSWER_2.play();
                         // RemAction not used until after the card has been seen more than once for this session
                         score -= test.score();
                         //scoreGauge.moveNeedle(500, FMTWalker.getInstance().highestPossibleScore() * -1);
@@ -1363,7 +1401,7 @@ public final class ReadFlash implements BaseInterface {
 
             /**
              * Helper Method to selectAnswerButton action
-             * Adds the first card to the stack when the EncryptedUser.EncryptedUser answers a question incorrectly.
+             * Adds the first card to the stack when the EncryptedUser answers a question incorrectly.
              * The first card is added into the stack immediately after the card answered.
              *
              * @param newNum

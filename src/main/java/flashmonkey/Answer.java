@@ -135,7 +135,10 @@ public abstract class Answer implements Serializable, Comparable {
 
       // *** OTHERS ***
 
-
+    /**
+     * toString method
+     * @return this answer
+     */
       public String toString() {
             StringBuilder sb = new StringBuilder();
             for (Integer i : answerSet) {

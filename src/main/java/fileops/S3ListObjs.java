@@ -95,7 +95,7 @@ public class S3ListObjs {
             String destination = "/media-s3-list";
             listObjsHelper(json, destination);
 
-            LOGGER.debug("listMedia returning <{}> names from media-s3", cloudLinks.size());
+        LOGGER.debug("listMedia returning <{}> names from media-s3", this.cloudLinks.size());
 
             return cloudLinks;
       }

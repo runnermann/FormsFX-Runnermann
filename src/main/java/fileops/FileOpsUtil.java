@@ -31,7 +31,6 @@ public class FileOpsUtil {
                   }
             } catch (NullPointerException e) {
                   LOGGER.warn("NullPointerError in folderExists");
-                  e.printStackTrace();
                   System.exit(0);
             }
 

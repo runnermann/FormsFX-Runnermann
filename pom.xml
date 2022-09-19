@@ -10,10 +10,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- java version 11 LTS latest as of Mar 11 2022 -->
         <!--<maven.compiler.source>11.0.14</maven.compiler.source>
         <maven.compiler.target>11.0.14</maven.compiler.target>-->
-        <javafx.version>17.0.2</javafx.version>
+        <javafx.version>18.0.2</javafx.version>
         <mavenshade.version>3.2.0</mavenshade.version>
         <!-- JAXB -->
         <javax.activation.version>1.2.0</javax.activation.version>
@@ -367,13 +366,13 @@
                         </goals>
                         <configuration>
                             <!--<minimizeJar>true</minimizeJar>-->
-                            <filters>
-                                <filter>
-                                    <includes>
-                                        <include>video.resources.**</include>
-                                    </includes>
-                                </filter>
-                            </filters>
+<!--                            <filters>-->
+<!--                                <filter>-->
+<!--                                    <includes>-->
+<!--                                        <include>video.resources.**</include>-->
+<!--                                    </includes>-->
+<!--                                </filter>-->
+<!--                            </filters>-->
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>shaded</shadedClassifierName>
                             <transformers>

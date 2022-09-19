@@ -2,8 +2,12 @@ package fmtree;
 
 import flashmonkey.CompareFCard;
 import flashmonkey.FlashCardMM;
+import javafx.beans.property.SimpleLongProperty;
 import type.testtypes.GenericTestType;
 import type.testtypes.TestList;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * FMTWalker adds a variable linking to the parent node and navigation methods.
@@ -18,9 +22,7 @@ import type.testtypes.TestList;
  * @author Lowell Stadelman. Class modified from Koffman and Wolfgang AVLTree
  */
 public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWithRotate<T> {
-
       private static FMTWalker CLASS_INSTANCE;
-
       // The current node being used.
       private static Node currentNode;
       // The extreme right and left nodes.
@@ -116,7 +118,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
       }
 
       public boolean isEmpty() {
-
             return root == null;
       }
 
@@ -527,7 +528,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
 
       /**
        * Gets the next larger parent in the tree above
-       *
+       * Currently comparing the cNumber or card number
        * @param node
        * @param value, The value that the comparitor uses. IE if an int
        * @return the next larger parent node
@@ -536,6 +537,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             if (value.compareTo(node.data) < 0) {
                   return node;
             }
+            System.out.println("getting parent: " + ((FlashCardMM) node.parent.getData()).getCNumber());
             return getLgParent(node.parent, value);
       }
 
@@ -560,7 +562,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        */
       public double highestPossibleScore() {
             Score score = new Score();
-            return score.highestPossible();
+            return score.highestPossible(root);
       }
 
       private class Score extends FMTree<FlashCardMM> {
@@ -569,23 +571,25 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
                   /* no args */
             }
 
-            public double highestPossible() {
+            public double highestPossible(Node root) {
                   // traverse through the tree
                   // and get the score from the data
                   // in the node.
-                  double score = 0;
-                  return inOrderTraverseForScore(root, score);
+                  AtomicInteger at = new AtomicInteger(0);
+                  inorderTraverseForScore(root, at);
+                  return at.get();
             }
 
-            private double inOrderTraverseForScore(Node<FlashCardMM> node, double num) {
+            private void inorderTraverseForScore(Node<FlashCardMM> node, AtomicInteger at) {
+                  //double no = num;
                   if (node == null) {
+                        //return num;
+                        //return num;
                   } else {
-                        inOrderTraverseForScore(node.left, num);
-                        num += getValue(node.data);
-                        inOrderTraverseForScore(node.right, num);
-                        num += getValue(node.data);
+                        at.set(at.get() + (int) getValue(node.getData()));
+                        inorderTraverseForScore(node.left, at);
+                        inorderTraverseForScore(node.right, at);
                   }
-                  return num;
             }
 
             /**

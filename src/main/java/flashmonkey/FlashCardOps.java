@@ -17,6 +17,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import media.sound.SoundEffects;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -739,7 +742,8 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                   if (flashListMM.size() > 0) {
                         //FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
                         // Send user to main menu
-                        FlashMonkeyMain.getWindow().setScene(FlashMonkeyMain.getMenuScene());
+                        FlashMonkeyMain.getPrimaryWindow().setScene(FlashMonkeyMain.getMenuScene());
+                        SoundEffects.GOTO_MENU.play();
                   }
             }
       }

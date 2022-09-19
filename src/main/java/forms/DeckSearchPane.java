@@ -8,9 +8,11 @@ import flashmonkey.Timer;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import metadata.DeckSearchData;
+import org.apache.http.MethodNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.ButtoniKon;
@@ -74,7 +76,16 @@ public class DeckSearchPane extends FormParentPane {
 
 
       @Override
-      public GridPane getMainGridPain() {
+      public ScrollPane getMainPane() {
+            try {
+                  throw new MethodNotSupportedException("This method is not implemented. Use getMainGridPane()");
+            } catch (MethodNotSupportedException e) {
+                  e.getMessage();
+            }
+            return new ScrollPane();
+      }
+
+      public GridPane getMainGridPane() {
             this.mainGridPain.setMaxHeight(600);
             this.mainGridPain.setMaxWidth(400);
             this.mainGridPain.setStyle("-fx-background-radius: 15 15 15 15; -fx-border-radius: 15 15 15 15; ");
@@ -93,9 +104,6 @@ public class DeckSearchPane extends FormParentPane {
             exitBox.setVgap(2);
             exitBox.setPadding(new Insets(15, 15, 15, 15));
             exitBox.addColumn(1, menuButton);
-            //exitBox.addColumn(2, exitButton);
-            //exitButton.setOnAction(e -> Platform.exit());
-            //exitBox.setId("buttonBox");
             return exitBox;
       }
 

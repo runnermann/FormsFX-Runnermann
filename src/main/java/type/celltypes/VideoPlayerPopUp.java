@@ -47,8 +47,8 @@ public class VideoPlayerPopUp implements MediaPlayerInterface {
       private static Media media;
       private static MediaPlayer mediaPlayer;
       private static MediaView singleMViewer;
-      private final ButtoniKonClazz VID_PLAY = new ButtoniKonClazz("", "Play", FontAwesomeSolid.PLAY, UIColors.FM_WHITE);
-      private final ButtoniKonClazz VID_PAUSE = new ButtoniKonClazz("", "Pause", FontAwesomeSolid.PAUSE, UIColors.FM_WHITE);
+      private final ButtoniKonClazz VID_PLAY = new ButtoniKonClazz("", "Play", FontAwesomeSolid.PLAY, UIColors.FM_WHITE, ButtoniKonClazz.SIZE_24);
+      private final ButtoniKonClazz VID_PAUSE = new ButtoniKonClazz("", "Pause", FontAwesomeSolid.PAUSE, UIColors.FM_WHITE, ButtoniKonClazz.SIZE_24);
       private final int prefWd = 624;
       private int prefHt;
 

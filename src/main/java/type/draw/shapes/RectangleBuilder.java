@@ -30,6 +30,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
+import media.sound.SoundEffects;
 import uicontrols.UIColors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -256,7 +257,6 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
                         // Show the shape in the overlayPane
                         getOverlayPane().getChildren().add(fxRect);
 
-
                         // show the shape in the overlayPane
                         //getOverlayPane().getChildren().add( fxRect);
                         // Add the scaled version of the shape in the right pane
@@ -343,6 +343,7 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
        */
       @Override
       public void shapePressed(MouseEvent mouse, GenericShape gs, Shape fxShape) {
+            SoundEffects.ROBOT_SERVO_START.play();
             fxShape.setStrokeWidth(fxShape.getStrokeWidth() + 2);
 
             Rectangle fxRect = (Rectangle) fxShape;
@@ -366,8 +367,6 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
             if (mouse.isSecondaryButtonDown()) {
                   shapeRightPress(mouse, gs, fxShape);
             } else {
-                  //gs.setX( ((Rectangle) fxShape).getX());
-                  // gs.setY( ((Rectangle) fxShape).getY());
                   // Used for shape drag
                   // set the delta between the shapes x,y location for a point,
                   // and the mouse's x,y location. Then use delta x & y later
@@ -405,8 +404,16 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
       }
 
 
+
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape shape) {
+            newSound = startTime < System.currentTimeMillis() - 1500;
+            if(newSound) {
+                  startTime = System.currentTimeMillis();
+                  SoundEffects.ROBOT_SERVO_3.play();
+                  //isPlaying = false;
+            }
+
             if (mouse.isPrimaryButtonDown()) {
                   ((Rectangle) shape).setX(mouse.getSceneX() + deltaX);
                   ((Rectangle) shape).setY(mouse.getSceneY() + deltaY);

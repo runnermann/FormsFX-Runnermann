@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DeckNamePane extends SimpleFormParentPane {
-
       private static final Logger LOGGER = LoggerFactory.getLogger(DeckNamePane.class);
 
       private DeckNameModel model;
@@ -46,10 +45,11 @@ public class DeckNamePane extends SimpleFormParentPane {
       @Override
       public void initializeParts() {
             super.initializeParts();
-            setFormTitle("CREATE");
-            setMessageLabel("Name your study deck. For example \"Calc 203",
-                "Estimating Limits Part 1\". You may provide further",
-                "information about the deck in the create and edit section.");
+            setFormTitle("DECK NAME");
+            setMessageLabelStyle("white14");
+            setMessageLabel("Example: \"Calc 203 Estimating Limits Part 1\".",
+                "More information can be provided",
+                "in Create and Edit Mode.");
       }
 
       @Override
@@ -67,7 +67,6 @@ public class DeckNamePane extends SimpleFormParentPane {
       public void setupBindings() {
             LOGGER.info("setupBindings() called");
             actionButton.disableProperty().bind(model.getFormInstance().persistableProperty().not());
-            //reset.disableProperty().bind(model.getFormInstance().changedProperty().not());
             displayForm.prefWidthProperty().bind(mainGridPane.prefWidthProperty());
       }
 

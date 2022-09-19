@@ -3,12 +3,13 @@ package forms;
 import authcrypt.user.EncryptedStud;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import fmannotations.FMAnnotations;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import org.slf4j.LoggerFactory;
 
 /**
  * Displays users data. 1) Ensure this form is not displayed unless the user
- * has passed login. 2) Ensure users data is not over-writen unless the user
+ * has passed login. 2) Ensure users data is not over-written unless the user
  * has passed login. 3) Ensure users data is not available unless the user
  * has passed login.
  */
@@ -57,8 +58,8 @@ public class StudentPane extends FormParentPane {
       }
 
       @Override
-      public GridPane getMainGridPain() {
-            return this.mainGridPain;
+	public ScrollPane getMainPane() {
+		return this.scrollPane;
       }
 
       @Override

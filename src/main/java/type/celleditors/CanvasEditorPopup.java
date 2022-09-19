@@ -31,21 +31,26 @@ import javafx.scene.image.ImageView;
 import org.slf4j.LoggerFactory;
 import uicontrols.SceneCntl;
 
+import java.awt.*;
 import java.util.ArrayList;
 
-public class ShapesEditorPopup {
+/**
+ * <p>Provides the Canvas Editor Popup. Handles the display of an image
+ *  and shapes overlay that provides manipulation of shapes and the image.</p>
+ *  <p>Top level class that supplies the methods
+ *  to underlying DrawTools and DrawPad.</p>
+ */
+public class CanvasEditorPopup {
 
       // THE LOGGER
-      private static final Logger LOGGER = LoggerFactory.getLogger(ShapesEditorPopup.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(CanvasEditorPopup.class);
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ShapesEditorPopup.class);
-
-      private static ShapesEditorPopup CLASS_INSTANCE;
-
+      private static CanvasEditorPopup CLASS_INSTANCE;
       private DrawTools draw;
       private ArrayList<GenericShape> editorShapeAry;
 
 
-      private ShapesEditorPopup() {
+      private CanvasEditorPopup() {
             //drawObj = new DrawObj();
       }
 
@@ -56,9 +61,9 @@ public class ShapesEditorPopup {
        *
        * @return The class instance
        */
-      public static synchronized ShapesEditorPopup getInstance() {
+      public static synchronized CanvasEditorPopup getInstance() {
             if (CLASS_INSTANCE == null) {
-                  CLASS_INSTANCE = new ShapesEditorPopup();
+                  CLASS_INSTANCE = new CanvasEditorPopup();
             }
             //LOGGER.setLevel(Level.DEBUG);
             return CLASS_INSTANCE;
@@ -67,6 +72,25 @@ public class ShapesEditorPopup {
       public void init() {
             this.draw = DrawTools.getInstance();
             this.editorShapeAry = new ArrayList<>(4);
+      }
+
+
+      /**
+       * Call to create popup for either shapes only aka drawpad, or image/shapes and image only.
+       * @param shapeArray
+       * @param thisEditor
+       * @param mediaFileNames
+       * @param deckName
+       * @param cID
+       */
+      public void popup(ArrayList<GenericShape> shapeArray, SectionEditor thisEditor, final String[] mediaFileNames,
+                        String deckName, String cID) {
+            if(mediaFileNames[0] == null) {
+                  shapePopupHandler(shapeArray, thisEditor, mediaFileNames[1], deckName, cID);
+            } else {
+                  imagePopupHandler(shapeArray, thisEditor, mediaFileNames, deckName, cID);
+            }
+
       }
 
 
@@ -89,6 +113,8 @@ public class ShapesEditorPopup {
       }
 
 
+
+
       /**
        * Creates shapes in the drawpad popup and gets DrawTools for editing the shapes in the drawpad popup.
        *
@@ -96,28 +122,31 @@ public class ShapesEditorPopup {
        * @param thisEditor    ..
        * @param shapeFileName ..
        */
-      public void shapePopupHandler(ArrayList<GenericShape> shapeArray, SectionEditor thisEditor, String shapeFileName,
-                                    String deckName, String cID, char qOrA) {
+      private void shapePopupHandler(ArrayList<GenericShape> shapeArray, SectionEditor thisEditor, String shapeFileName,
+                                    String deckName, String cID) {
+
+
+            System.out.println("shapePopupHandler line 100, x and y are zero");
 
             CreateFlash.getInstance().setFlashListChanged(true);
-            CreateFlash cfp = CreateFlash.getInstance();
-            cfp.disableButtons();
+            CreateFlash.getInstance().disableButtons();
 
             double mediaWd = ((FMRectangle) shapeArray.get(0)).getWd();
             double mediaHt = ((FMRectangle) shapeArray.get(0)).getHt();
-            double popUpX = FlashMonkeyMain.getWindow().getX() - (mediaWd - 20);
-            double popUpY = FlashMonkeyMain.getWindow().getY() + 25;
+            double popUpX = FlashMonkeyMain.getPrimaryWindow().getX() - (mediaWd - 20);
+            double popUpY = FlashMonkeyMain.getPrimaryWindow().getY() + 24;
 
-            //   drawObj.setDems(popUpX, popUpY + 15, mediaWd, mediaHt);
-
-            //   fileNaming = new FileNaming(deckName, data.getUserName(), cID, qOra, ".shp");
-            //   String shapeFileName = fileNaming.getImgFileName();
-            //  drawObj.setFullPathName(shapeFileName);
+            if(popUpX < 20.0 | popUpY < 20.0) {
+                  Toolkit.getDefaultToolkit().beep();
+                  System.err.println("shapePopupHandler line 100, x and y are zero");
+                  System.err.println("shapePopupHandler line 100, x and y are zero");
+                  System.err.println("shapePopupHandler line 100, x and y are zero");
+                  System.err.println("shapePopupHandler line 100, x and y are zero");
+                  //Thread.dumpStack();
+            }
 
             draw = DrawTools.getInstance();
-            //draw.buildPopupDrawTools(drawObj, thisEditor, null);
             draw.buildDrawTools(shapeFileName, thisEditor, null, popUpX, popUpY, mediaWd, mediaHt);
-            draw.popUpTools();
 
             // If there are shapes to display
             if (shapeArray.size() > 1) {
@@ -131,7 +160,7 @@ public class ShapesEditorPopup {
 
       /**
        * Creates a popUp of the right pane with Image and shapes (if they exist)
-       * * on top of the image1.
+       * on top of the image1.
        *
        * @param shapeArray     ..
        * @param thisEditor     ..
@@ -139,7 +168,7 @@ public class ShapesEditorPopup {
        * @param deckName       ..
        * @param cID            ..
        */
-      public void imagePopupHandler(ArrayList<GenericShape> shapeArray, SectionEditor thisEditor, final String[] mediaFileNames,
+      private void imagePopupHandler(ArrayList<GenericShape> shapeArray, SectionEditor thisEditor, final String[] mediaFileNames,
                                     String deckName, String cID) {
             LOGGER.info("imagePopupHandler called");
 
@@ -147,45 +176,42 @@ public class ShapesEditorPopup {
             cfp.disableButtons();
             String path = DirectoryMgr.getMediaPath('c');
 
-            Image image = new Image("File:" + path + mediaFileNames[0]);
-            ImageView localIView = new ImageView(image);
-            double popUpX = FlashMonkeyMain.getWindow().getX() - localIView.getFitWidth() - 450;
-            double popUpY = FlashMonkeyMain.getWindow().getY() + 25;
+            Image image = null;
+            ImageView localIView = null;
+            double popUpY = FlashMonkeyMain.getPrimaryWindow().getY() + 25;
+            double popUpX = 0;
+            image = new Image("File:" + path + mediaFileNames[0]);
+            localIView = new ImageView(image);
             double mediaWd;
             double mediaHt;
 
-            if (image != null) {
-                  if (localIView.getFitWidth() < SceneCntl.getScreenWd()) {
-                        LOGGER.info("image1 is smaller than screen width");
-                        mediaWd = image.getWidth();
-                        mediaHt = image.getHeight();
-                  } else {
-                        LOGGER.info("image1 is larger than screen in one dimension");
-                        mediaWd = SceneCntl.getScreenWd() - 400;
-                        mediaHt = SceneCntl.getScreenHt() - 400;
-                  }
-
-                  localIView = new ImageView(image);
-                  LOGGER.info("In popup, mediaWd: {}, mediaHt: {}", mediaWd, mediaHt);
-
+            popUpX = FlashMonkeyMain.getPrimaryWindow().getX() - localIView.getFitWidth() - 450;
+            if (localIView.getFitWidth() < SceneCntl.getScreenWd()) {
+                  LOGGER.info("image1 is smaller than screen width");
+                  mediaWd = image.getWidth();
+                  mediaHt = image.getHeight();
             } else {
-                  mediaWd = ((FMRectangle) shapeArray.get(0)).getWd();
-                  mediaHt = ((FMRectangle) shapeArray.get(0)).getHt();
+                  LOGGER.info("image1 is larger than screen in one dimension");
+                  mediaWd = SceneCntl.getScreenWd() - 400;
+                  mediaHt = SceneCntl.getScreenHt() - 400;
             }
 
+            LOGGER.info("In popup, mediaWd: {}, mediaHt: {}", mediaWd, mediaHt);
             LOGGER.debug("ImageFileName: {}", mediaFileNames[0]);
-
             draw = DrawTools.getInstance();
             String shapeFile = "";
 
+            /*If shapesFile does not yet exist, Create the name*/
             if (mediaFileNames.length == 1) {
                   shapeFile = FileNaming.getShapesName(mediaFileNames[0]);
             } else {
                   shapeFile = mediaFileNames[1];
             }
 
+            thisEditor.setShapeFileName(shapeFile);
+
             draw.buildDrawTools(shapeFile, thisEditor, localIView, popUpX, popUpY, mediaWd, mediaHt);
-            draw.popUpTools();
+            //draw.popUpTools();
 
             // If there are shapes to display
             if (shapeArray != null && shapeArray.size() > 1) {

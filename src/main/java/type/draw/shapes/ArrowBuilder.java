@@ -34,6 +34,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Shape;
 import javafx.scene.transform.Rotate;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celleditors.DrawTools;
@@ -156,6 +157,7 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
        */
       @Override
       public void mousePressed(MouseEvent mouse) {
+            SoundEffects.ROBOT_SERVO_2.play();
 
             System.out.println("mousePressed in ArrowBuilder");
 
@@ -407,6 +409,7 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
       @Override
       public void shapePressed(MouseEvent mouse, GenericShape gs, Shape fxShape) {
             System.err.println("shapePressed in arrowBuilder called");
+            SoundEffects.ROBOT_SERVO_START.play();
             // if not adding to the existing line
             //if(gs.get) {
             fxShape.setStrokeWidth(fxShape.getStrokeWidth() + 2);
@@ -474,6 +477,12 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape fxShape) {
             System.out.println("called shapeDragged");
+            newSound = startTime < System.currentTimeMillis() - 1500;
+            if(newSound) {
+                  startTime = System.currentTimeMillis();
+                  SoundEffects.ROBOT_SERVO_3.play();
+                  //isPlaying = false;
+            }
             if (!mouse.isAltDown()) {
                   if (mouse.isPrimaryButtonDown()) {
                         // uses the observable list/reference

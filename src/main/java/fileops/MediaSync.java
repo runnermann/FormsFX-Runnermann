@@ -17,6 +17,12 @@ import java.util.stream.Stream;
 
 import static habanero.edu.rice.pcdp.PCDP.*;
 
+/**
+ * This class synchronizes media between a users system and the cloud. Media can exist and be synchronized between
+ * multiple devices.
+ * <p><b>NOTE:</b> This class is intended to be thread safe. If multi core threading is used, it should
+ * be implemented by the upstream calling method.</p>
+ */
 public class MediaSync {
 
       private static final Logger LOGGER = LoggerFactory.getLogger(MediaSync.class);
@@ -153,10 +159,17 @@ public class MediaSync {
 
 
       /**
-       * Sets the media state according to it's location in comparison with
+	 *<p> Sets the media state according to it's location in comparison with
        * the media in the deck. I.E. if media is in the deck and not in local
-       * file system. The media is annotated for upload.
-       *
+	 * 	 file system. The media is annotated for upload.</p>
+	 * <pre>The underlying methods create a map<String, boolean> of the most current decks.
+	 * 		Uses a hashtable and adds integers for values.
+	 * 		Takes advantage of collisions.
+	 * 		 a.	If media exists in all three locations -> value = 7
+	 * 		 b.	If media@remote needs download -> value = 5
+	 * 		 c.	If media@remote needs delete -> value = 4
+	 * 		 d.	If media@local needs upload -> value = 3
+	 * 		 e.	If media@local needs cache -> value = 2</pre>
        * @param fListMedia  the flashList
        * @param localNames  local media fileNames
        * @param remoteNames remote media fileNames
@@ -166,15 +179,6 @@ public class MediaSync {
             StateHashTable<String, MediaSyncObj> stateMap = new StateHashTable<>();
 
             LOGGER.info(" *** setMediaStateMap called *** \n");
-            // create a map<String, boolean> of the most current decks.
-            // use a hashtable and add integers for values
-            // Take advantage of collisions.
-            // a.	If media exists in all three locations -> value = 7
-            // b.	If media@remote needs download -> value = 5
-            // c.	If media@remote needs delete -> value = 4
-            // d.	If media@local needs upload -> value = 3
-            // e.	If media@local needs cache -> value = 2
-
 
             stateMap = getStateMap(localNames, remoteNames, fListMedia, stateMap);
 

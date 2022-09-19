@@ -4,7 +4,6 @@ import fileops.CloudOps;
 import fileops.S3ListObjs;
 import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.Pos;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FMAlerts;
@@ -135,14 +134,14 @@ public class Auth {
                         case -1: {
                               String msg = "That didn't work.... Try resetting your password.";
                               FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 8,
-                                  "image/Flash_hmm_75.png", FlashMonkeyMain.getWindow());
+                                  "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
                               FlashMonkeyMain.showResetOnePane();
                               break;
                         }
                         case 0: {
                               String msg = "I cannot connect with the server. Please check the connection to the internet";
                               FxNotify.notificationDark("", " Oooph! " + msg, Pos.CENTER, 8,
-                                  "image/flashFaces_smirking_75.png", FlashMonkeyMain.getWindow());
+                                  "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
                               break;
                         }
                         case 1: {
@@ -171,13 +170,13 @@ public class Auth {
                   case -1: {
                         String msg = "That didn't work.";
                         FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 4,
-                            "image/Flash_hmm_75.png", FlashMonkeyMain.getWindow());
+                            "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
                         break;
                   }
                   case 0: {
                         String msg = " Please check your connection to the internet";
                         FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 4,
-                            "image/flashFaces_smirking_75.png", FlashMonkeyMain.getWindow());
+                            "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
 
                         break;
                   }
@@ -186,7 +185,7 @@ public class Auth {
                             " you get more than a grade. \n1. You can Learn Smarter\n" +
                             "2. Earn Cash\n3. Organize Everything\n4. Find Faster\n5. and Create on the Fly";
                         FxNotify.notificationDark("", " Awesomeness! " + msg, Pos.CENTER, 4,
-                            "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+                            "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                         // set flashmonkey main to filesPane()
                         FlashMonkeyMain.getFileSelectPane();
                         break;
@@ -226,7 +225,6 @@ public class Auth {
 
 
       /**
-       * '
        * Sets the state field based on the responses from local and remote. The responses
        * are from: if the users email exists, and if their pw is correct. See chart in the
        * Security, Privacy, Account Create, and Log-in section of the FlashMonkey Developer
@@ -320,7 +318,7 @@ public class Auth {
       // **** HELPER METHODS **** //
       private static void notifyError(String errorMessage) {
             FxNotify.notificationDark("", " Ooops! " + errorMessage, Pos.CENTER, 10,
-                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 
       /**

@@ -71,7 +71,7 @@ public class ConsumerPane extends StackPane {
             //LOGGER.setLevel(Level.DEBUG);
             mainStackPane = new StackPane();
             searchPane = new DeckSearchPane();
-            layer1 = new AnchorPane(searchPane.getMainGridPain());
+            layer1 = new AnchorPane(searchPane.getMainGridPane());
             layoutSearch();
       }
 
@@ -79,8 +79,8 @@ public class ConsumerPane extends StackPane {
       private void layoutSearch() {
             LOGGER.debug("layoutSearch called");
             mainStackPane.getChildren().clear();
-            AnchorPane.setTopAnchor(searchPane.getMainGridPain(), 0.0);
-            AnchorPane.setLeftAnchor(searchPane.getMainGridPain(), 0.0);
+            AnchorPane.setTopAnchor(searchPane.getMainPane(), 0.0);
+            AnchorPane.setLeftAnchor(searchPane.getMainPane(), 0.0);
             // set 20 from left and 50 from top
             //layer1.getFormPane().setPadding(new Insets(20,0,0,50));
             mainStackPane.getChildren().add(layer1);
@@ -90,8 +90,8 @@ public class ConsumerPane extends StackPane {
       public void layoutConsumer() {
             LOGGER.debug("layoutConsumer called");
             mainStackPane.setAlignment(Pos.TOP_LEFT);
-            AnchorPane.setTopAnchor(searchPane.getMainGridPain(), 20.0);
-            AnchorPane.setLeftAnchor(searchPane.getMainGridPain(), 50.0);
+            AnchorPane.setTopAnchor(searchPane.getMainPane(), 20.0);
+            AnchorPane.setLeftAnchor(searchPane.getMainPane(), 50.0);
             layer1.setMaxWidth(600);
             // EcoPurchase ep = new EcoPurchase();
             layer0 = DeckMarketPane.getInstance(); // everything else
@@ -131,7 +131,7 @@ public class ConsumerPane extends StackPane {
                   } else {
                         String errorMessage = " Please select a deck for your purchase";
                         FxNotify.notificationBlue("Ooops!", errorMessage, Pos.CENTER, 4,
-                            "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+                        "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                   }
             }
 
@@ -144,7 +144,7 @@ public class ConsumerPane extends StackPane {
             }
       }
 
-      public static class EcoOnboard {
+      public static class EcoReqSubscription {
             private static void layoutWebView() {
                   LOGGER.debug("layoutWebView called");
                   EcoPane ePane = new EcoPane();

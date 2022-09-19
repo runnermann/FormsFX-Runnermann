@@ -65,6 +65,11 @@ public class StudentModel extends ModelParent {
 
             formInstance = Form.of(
                     Group.of(
+                        Field.ofStringType(descriptor.avatarNameProperty())
+                             .label("label_avatarname")
+                             .placeholder("avatarname_placeholder")
+                             .required(false)
+                             .validate(StringLengthValidator.between(2, 16, "3_20_error_message")),
                         // first name
                         Field.ofStringType(descriptor.firstNameProperty())
                             .label("label_firstname")
@@ -140,8 +145,9 @@ public class StudentModel extends ModelParent {
       }
 
       /**
-       * While there is no financially valuable information requested in the form, storing
+       * There is no financially valuable information requested in the form, storing
        * the personal information is not as high of a concern, but is still a concern.
+       * We encrypt it here.
        *
        * @param data
        */
@@ -163,6 +169,7 @@ public class StudentModel extends ModelParent {
             student.setCvLink(descriptor.getCVLink());
             student.setOrigUserEmail(descriptor.getOrigEmail().toLowerCase());
             student.setCurrentUserEmail(descriptor.getCurrentEmail().toLowerCase());
+            student.setAvatarName(descriptor.getAvatarName().toLowerCase());
 
             // We are not storing personal information to the users system
             // It is sent to the cloud.
@@ -213,18 +220,18 @@ public class StudentModel extends ModelParent {
       }
 
       // REMOVE THIS.... It is not used.
-      private long fetchStudentID(EncryptedStud student) {
-            String[] strs = {student.getOrigUserEmail()};
-            String[] response = DBFetchUnique.STUDENT_ENCRYPTED_DATA.query(strs);
-            //String[] strAry = response.split(",");
-
-            LOGGER.debug("fetchStudentID.strAry");
-
-            if (response[0].equals("EMPTY")) {
-                  return -1;
-            } else {
-                  return Long.parseLong(response[0]);
-            }
-      }
+//      private long fetchStudentID(EncryptedStud student) {
+//            String[] strs = {student.getOrigUserEmail()};
+//            String[] response = DBFetchUnique.STUDENT_ENCRYPTED_DATA.query(strs);
+//            //String[] strAry = response.split(",");
+//
+//            LOGGER.debug("fetchStudentID.strAry");
+//
+//            if (response[0].equals("EMPTY")) {
+//                  return -1;
+//            } else {
+//                  return Long.parseLong(response[0]);
+//            }
+//      }
 
 }

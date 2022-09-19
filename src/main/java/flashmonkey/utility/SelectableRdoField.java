@@ -96,12 +96,12 @@ public class SelectableRdoField extends ToggleButton {
 
                   deckRdoBox.setOnMouseEntered(e -> {
                         deckRdoBox.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.WEBSITE_BLUE), CornerRadii.EMPTY, Insets.EMPTY)));
-                        FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
+                        FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.HAND);
                   });
 
                   deckRdoBox.setOnMouseExited(e -> {
                         deckRdoBox.setBackground(Background.EMPTY);
-                        FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
+                        FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.DEFAULT);
                   });
             }
             return deckRdoBox;

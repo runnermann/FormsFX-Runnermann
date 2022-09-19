@@ -132,7 +132,7 @@ public class S3PutObjs {
                   // .mp4
                   else if (ending.equals("mp4")) {
                         // the content type to be uploaded, ie "image/jpg"
-                        response = uploadURI(localURL, signedUrls.get(i), "video/mp4");
+                         response = uploadURI(localURL, signedUrls.get(i), "media/mp4");
                         if (response == -1) {
                               return false;
                         } else if (response == 0 && retry < 3) {
@@ -225,7 +225,7 @@ public class S3PutObjs {
                                     String message = "Deck failed to upload";
 
                                     FxNotify.notificationDark("", " Ooops! " + message, Pos.CENTER, 3,
-                                        "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
+                                    "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
 
                               }
                         }

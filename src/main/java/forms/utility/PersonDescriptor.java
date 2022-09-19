@@ -48,6 +48,7 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
       // String properties
 
       // The personDescript obj.
+
       private StringProperty personDescript;
       private StringProperty firstName;
       private StringProperty lastName;
@@ -60,6 +61,7 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
       private StringProperty age;
       private StringProperty photoLink;
       private StringProperty institution;
+      private StringProperty avatarName;
 
 
       /**
@@ -116,6 +118,10 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
             return institution.get();
       }
 
+      public String getAvatarName() {
+            return avatarName.get();
+      }
+
 
       // person properties
       public StringProperty personDescriptProperty() {
@@ -162,6 +168,10 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
             return institution;
       }
 
+      public StringProperty avatarNameProperty() {
+            return avatarName;
+      }
+
 
       // Prevent multiple upload and downloads
       // iF person data has been set, set to true.
@@ -186,6 +196,7 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
             age = new SimpleStringProperty("0");
             photoLink = new SimpleStringProperty("");
             institution = new SimpleStringProperty("");
+            avatarName = new SimpleStringProperty("unknown");
       }
 
       @Override
@@ -204,6 +215,7 @@ public abstract class PersonDescriptor implements Descriptor<EncryptedPerson> {
             institution = new SimpleStringProperty(u.getInstitution());
             photoLink = new SimpleStringProperty(u.getPhotoLink());
             phone = new SimpleStringProperty(u.getPhone());
+            avatarName = new SimpleStringProperty(u.getAvatarName());
       }
 
       /**

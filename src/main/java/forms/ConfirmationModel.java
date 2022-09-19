@@ -64,7 +64,7 @@ public class ConfirmationModel {
                   String emojiPath = "image/Flash_hmm_75.png";
 
                   FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 5,
-                      emojiPath, FlashMonkeyMain.getWindow());
+                      emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
             createForm();
       }
@@ -149,6 +149,6 @@ public class ConfirmationModel {
       // **** HELPER METHODS **** //
       private void notifyError(String errorMessage) {
             FxNotify.notificationWarning("", " Ooops! " + errorMessage, Pos.CENTER, 8,
-                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow(), 15);
+                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow(), 15);
       }
 }

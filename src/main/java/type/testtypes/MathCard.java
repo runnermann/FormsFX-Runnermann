@@ -119,8 +119,10 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             StackPane sPane = new StackPane();
             p.sectionHBox.setPrefHeight(SceneCntl.calcCellHt());
             // Set prompt in Question/upperBox
-            p.setPrompt("Enter Math Formula, student entries go into textFields");
-            r.setPrompt("Enter the response if answered incorrectly");
+            p.setPrompt("Enter Math Formula");
+            r.setPrompt("Enter the response if answered incorrectly. Use calc button below to check for errors. The response will be displayed " +
+                "in review / Q and A mode. Video and images may be used in this area and will be displayed during review mode or if the answer is " +
+                "incorrect during test mode.");
 
             sPane.getChildren().add(p.sectionHBox);
             vBox.getChildren().addAll(sPane, r.sectionHBox);
@@ -394,7 +396,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                   sb.append(expression);
                   sb.append("\n\n " + parser.getErrorMessage());
                   FxNotify.notificationDark("", " Hmmmm! " + sb, Pos.CENTER, 15,
-                      "emojis/flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+                      "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
 
             } else {
                   StringBuilder sb = new StringBuilder(lEditor.getText());

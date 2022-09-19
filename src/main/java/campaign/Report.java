@@ -129,11 +129,10 @@ public final class Report {
 
       /**
        * Sets metadata to the database. Depending on if the deck exists, this method will
-       * conduct an insert or an update. Returns a long. Negitive numbers are an error.
-       *
+     * conduct an insert or an update. Returns a long. Negative numbers are an error.
        * @param metaData ..
-       * @return Returns the deck_id if successful, otherwise returns -1 if the insert failed, or
-       * -2 if the update failed
+     * @return Returns the deck_id for insert or update and was successful, otherwise returns -99 if the insert failed,
+     * -2 if the update failed.
        */
       public long reportDeckMetadata(DeckMetaData metaData) {
             //query DB for username and deckname, get ID, and do update
@@ -144,7 +143,7 @@ public final class Report {
             if (id == -99) {
                   // item does not exist, do insert
                   LOGGER.debug("result was -99. inserting new row");
-                  return insertDeckMetadata(metaData) ? id : -1;
+                  return insertDeckMetadata(metaData);
             } else {
                   // item exists, do update
                   LOGGER.debug("result was " + id + ". updating!");
@@ -155,7 +154,6 @@ public final class Report {
       /**
        * Updates test metaData, uses same array as
        * reportDeckMetadata
-       *
        * @param metaDataAry ..
        */
       public void reportTestMetaData(HashMap<String, String> metaDataAry) {
@@ -170,11 +168,10 @@ public final class Report {
        * The initial insert of this decks metadata into the DB. If the deck was originally
        * created by this user it will set the name of the creator to this user. Otherwise
        * it will query the DB for the correct user.
-       *
        * @param metaObj ..
        * @return ..
        */
-      private boolean insertDeckMetadata(DeckMetaData metaObj) {
+       private long insertDeckMetadata(DeckMetaData metaObj) {
             if (connect != null && Utility.isConnected()) {
                   //UserData user = new UserData();
                   String sep = "', '";
@@ -205,7 +202,9 @@ public final class Report {
                       "sell_deck, " +     // 20 will share deck
                       "full_name, " +     // 21 The deck file full name
                       "user_hash, " +     // 22 This user's md5Hash
-                      "price) VALUES ('"; // 23 requested price
+                    "price, " +         // 23 requested price
+                    "deck_numstars, " +   // 24 num
+                    "deck_photo) VALUES ('"; // 25 photo
                   sbuffer.append(insertQuery);
                   // subtract the last element from the array. We are
                   // not reporting the session score here.
@@ -232,30 +231,38 @@ public final class Report {
                   sbuffer.append(metaObj.isSellDeck() + sep);
                   sbuffer.append(FlashCardOps.getInstance().getDeckFileName() + sep);
                   sbuffer.append(authcrypt.UserData.getUserMD5Hash() + sep);
-                  sbuffer.append(metaObj.getPrice() + "')");
-
+                  sbuffer.append(metaObj.getPrice() + sep);
+//            sbuffer.append(metaObj.getNumSessions() + sep);
+                  sbuffer.append(metaObj.getNumStars() + sep);
+                  sbuffer.append(metaObj.getDeckImgName() + "')" +
+                    " RETURNING deck_id;");
                   DBConnect db = DBConnect.getInstance();
 
                   LOGGER.debug(sbuffer.toString());
 
                   try {
                         CompletableFuture<QueryResult> future = db.getConnection()
-                            //.sendPreparedStatement(sbuffer.toString()); // causes an error :(
-                            .sendQuery(sbuffer.toString());
-                        future.get();
-                        return true;
+                              .sendPreparedStatement(sbuffer.toString());
+                        QueryResult queryResult = future.get();
+                        if (queryResult.getRows().size() == 0) {
+                              return -99;
+                        } else {
+                              String num = Arrays.toString(((ArrayRowData) (queryResult.getRows().get(0))).getColumns());
+                              num = num.replaceAll("\\D", "");
+                              return Long.valueOf(num);
+                        }
+                  } catch (NullPointerException e) {
+                        LOGGER.warn("INFO: Null pointer exception at getDeckID. Deck may not exist. ");
                   } catch (ExecutionException e) {
-                        LOGGER.warn("WARNING: DBConnection ERROR: {}", e.getMessage()); //+ " " + e.getStackTrace());
-                        e.printStackTrace();
-                        return false;
+                        LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage());//, e.getStackTrace());
                   } catch (InterruptedException e) {
-                        LOGGER.warn("WARNING: DBConnection ERROR: {}", e.getMessage()); //, e.getStackTrace());
-                        e.printStackTrace();
-                        return false;
+                        LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage());//, e.getStackTrace());
                   }
+                  // failed return -99
+                  return -99;
             } else {
                   LOGGER.info(" reportDeckMetaData() DB is not connected. Check network connection.");
-                  return false;
+                  return -99;
             }
       }
 
@@ -290,7 +297,6 @@ public final class Report {
        */
       private boolean updateDeckMetadata(DeckMetaData metaObj, long id) {
             boolean bool = false;
-
             LOGGER.info("updateDeckMetadata sending, ID: {}" + id);
 
             if (connect != null) {
@@ -315,6 +321,8 @@ public final class Report {
                       ", share_distro = '" + metaObj.isShareDistro() + "'" +
                       ", sell_deck = '" + metaObj.isSellDeck() + "'" +
                       ", price = '" + metaObj.getPrice() + "'" +
+                    ", deck_numstars = '" +metaObj.getNumStars() + "'" +
+                    ", deck_photo = '" +   metaObj.getDeckImgName() + "'" +
                       ", session_count = session_count+1 " +
                       " WHERE deck_id = " + id + ";";
 
@@ -390,7 +398,7 @@ public final class Report {
        *
        * @return ..
        */
-      private long queryGetDeckID() {
+      public long queryGetDeckID() {
             long id = -99;
             String idQuery = "SELECT deck_id FROM deckMetadata"
                 + " WHERE user_email = " + "'" + Alphabet.encrypt(UserData.getUserName()) + "'"

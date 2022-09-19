@@ -19,6 +19,5 @@ public enum TokenStore {
 
       public static void set(String tkn) throws EmptyTokenException {
             token = tkn;
-      }
-
+    };
 }

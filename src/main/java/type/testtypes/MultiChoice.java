@@ -12,6 +12,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
+import media.sound.SoundEffects;
 import multimedia.AnswerMM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -281,6 +282,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
        */
       @Override
       public void nextAnsButtAction() {
+            SoundEffects.SLIDE_RIGHT.play();
             LOGGER.debug("\n~*~*~ nextAnsButtAction called in MultiChoice ~*~*~");
             taIndex++;
             LOGGER.debug("taIndex: " + taIndex);
@@ -320,6 +322,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
        */
       @Override
       public void prevAnsButtAction() {
+            SoundEffects.SLIDE_LEFT.play();
             LOGGER.debug("\n~*~*~ prevAnsButtAction called ~*~*~");
             //selectAnsButton.setVisible(true);
             taIndex--;
@@ -529,7 +532,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                                         "\n  Please create more Multi-Choice questions.";
 
                                     FxNotify.notificationDark("", " ouch! " + msg, Pos.CENTER, 8,
-                                        "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+                                        "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
 
                                     // disable the answer buttons
                                     nextAnsButton.setDisable(true);

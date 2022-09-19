@@ -60,7 +60,7 @@
 .notification-bar.purple > .pane .title,
 .notification-bar.purple > .pane .label {
     -fx-font-family: "Raleway-Medium.ttf";
-    -fx-text-fill: #ebebeb;
+    -fx-text-fill: #F8FBFF;
 }
 
 /******************************************************************************
@@ -76,7 +76,7 @@
 
 .notification-bar.dark > .pane .title,
 .notification-bar.dark > .pane .label {
-    -fx-text-fill: #ebebeb;
+    -fx-text-fill: #F8FBFF;
 }
 
 /******************************************************************************

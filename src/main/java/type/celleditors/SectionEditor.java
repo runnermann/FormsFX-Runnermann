@@ -20,12 +20,12 @@
 package type.celleditors;
 
 import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import fileops.*;
 import fileops.utility.FileExtension;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.media.MediaPlayer;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import type.celltypes.MediaPlayerInterface;
 import type.draw.DrawObj;
@@ -74,9 +74,9 @@ import java.util.function.Consumer;
 
 import org.slf4j.LoggerFactory;
 import uicontrols.*;
-import video.api.JaveInterface;
-import video.camera.CameraCapture;
-import video.camera.WindowsCameraCapture;
+import media.api.JaveInterface;
+import media.camera.CameraCapture;
+import media.camera.WindowsCameraCapture;
 import ws.schild.jave.*;
 import ws.schild.jave.info.MultimediaInfo;
 
@@ -162,17 +162,23 @@ public class SectionEditor {
       private Button drawpadBtn;
       private Button deleteTCellBtn;
       private Button deleteMMCellBtn;
-      private Button textAreaBtn;
+      private Button addTextCellBtn;
+      private Button HashTagBtn;
       private Button cameraBtn;
       private Button findBtn;
 
-      private final ButtoniKonClazz FIND = new ButtoniKonClazz("FIND", "Search for images, videos, animations, and tools", FontAwesomeSolid.SEARCH, UIColors.FM_WHITE);
-      private final ButtoniKonClazz CAMERA = new ButtoniKonClazz("", "Take a snapshot from your camera", FontAwesomeSolid.CAMERA, UIColors.FOCUS_BLUE_OPAQUE);
-      private final ButtoniKonClazz SNAPSHOT = new ButtoniKonClazz("", "Take a snapshot from your screen", "icon/24/snapshot_blue4.png", UIColors.FOCUS_BLUE_OPAQUE);
-      private final ButtoniKonClazz DRAWPAD = new ButtoniKonClazz("", "Draw shapes only", FontAwesomeSolid.DRAW_POLYGON, UIColors.FOCUS_BLUE_OPAQUE);
-      private final ButtoniKonClazz CLEAR_TEXT = new ButtoniKonClazz("", "Clear text", FontAwesomeSolid.BACKSPACE, UIColors.FOCUS_BLUE_OPAQUE);
-      private final ButtoniKonClazz CLEAR_T_AREA = new ButtoniKonClazz("", "Remove text area", FontAwesomeSolid.MINUS_CIRCLE, UIColors.FOCUS_BLUE_OPAQUE);
-      private final ButtoniKonClazz CLEAR_RIGHT = new ButtoniKonClazz("", "Remove right area", FontAwesomeSolid.MINUS_CIRCLE, UIColors.FOCUS_BLUE_OPAQUE);
+      private final ButtoniKonClazz FIND = new ButtoniKonClazz("FIND", "Search for images, videos, animations, and tools", FontAwesomeSolid.SEARCH, UIColors.FM_WHITE, ButtoniKonClazz.SIZE_24);
+      private final ButtoniKonClazz CAMERA = new ButtoniKonClazz("", "Take a snapshot from your camera", FontAwesomeSolid.CAMERA, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_24);
+      private final ButtoniKonClazz SNAPSHOT = new ButtoniKonClazz("", "Take a snapshot from your screen", "icon/24/snapshot_blue4.png", UIColors.EDITOR_BTNS, 0);
+      private final ButtoniKonClazz DRAWPAD = new ButtoniKonClazz("", "Draw shapes only", FontAwesomeSolid.DRAW_POLYGON, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_24);
+      private final ButtoniKonClazz CLEAR_TEXT = new ButtoniKonClazz("", "Clear text", FontAwesomeSolid.BACKSPACE, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_24);
+      private final ButtoniKonClazz CLEAR_T_AREA = new ButtoniKonClazz("", "Remove text area", FontAwesomeSolid.MINUS_CIRCLE, UIColors.FOCUS_BLUE_OPAQUE, ButtoniKonClazz.SIZE_24);
+      private final ButtoniKonClazz CLEAR_RIGHT = new ButtoniKonClazz("", "Remove right area", FontAwesomeSolid.MINUS_CIRCLE, UIColors.FOCUS_BLUE_OPAQUE,ButtoniKonClazz.SIZE_24);
+      // upper section area.
+      private final ButtoniKonClazz TEXT_CELL = new ButtoniKonClazz("", "Add a text cell", FontAwesomeSolid.FONT, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_16);
+      private final ButtoniKonClazz HASHTAG = new ButtoniKonClazz("", "Add searchable keywords about this media", FontAwesomeSolid.HASHTAG, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_16);
+      private final ButtoniKonClazz DELETE_T_CELL = new ButtoniKonClazz("", "Remove text cell", FontAwesomeSolid.TIMES_CIRCLE, UIColors.EDITOR_BTNS,ButtoniKonClazz.SIZE_16);
+      private final ButtoniKonClazz DELETE_MM_CELL = new ButtoniKonClazz("", "Remove multi-media cell", FontAwesomeSolid.TIMES_CIRCLE, UIColors.EDITOR_BTNS,ButtoniKonClazz.SIZE_16);
 
       private char qOra;
       private String cID;
@@ -257,19 +263,14 @@ public class SectionEditor {
             aviFileName = null;
             rightPane = new Pane();
 
-            //if(edPopup == null) {
-            //    edPopup = ShapesEditorPopup.getInstance();
-            //}
-
             this.tCell = new TextCell();
             this.sectionHBox = new HBox();
             this.stackL = new StackPane();
             this.stackR = new StackPane();
-            // create a deep copy of tCellVBox
             this.txtVBox = new VBox( tCell.buildCell ( "", prompt, true, 0 ) );
 
 
-            double w = FlashMonkeyMain.getWindow().getWidth();
+            double w = FlashMonkeyMain.getPrimaryWindow().getWidth();
             this.txtVBox.setPrefWidth(w);
 
             // The stackpanes containing left and right items. Allows
@@ -278,14 +279,14 @@ public class SectionEditor {
             stackL.setAlignment(Pos.TOP_RIGHT);
             stackR.getChildren().add(this.rightPane);
             stackR.setAlignment(Pos.TOP_RIGHT);
-     //       tCell.getTextArea().setEditable(true);
-     //       tCell.getTextArea().setPrefHeight(Double.MAX_VALUE);
 
             this.cID = cID;
             this.qOra = qOrA;
 
             // Get the sectionEditorButtons
-            HBox buttonBox = sectionEditorButtons();
+            HBox buttonBox = new HBox();
+            buttonBox.getChildren().add(sectionEditorButtons());
+            buttonBox.setAlignment(Pos.CENTER_RIGHT);
             buttonBox.setId("editorButtonBox");
             txtVBox.getChildren().add(buttonBox);
 
@@ -299,7 +300,7 @@ public class SectionEditor {
             dragAndDrop.dndOperations();
 
             // Set the initial textCell size and container size
-            double no = SceneCntl.calcCenterHt(40, 150, FlashMonkeyMain.getWindow().getHeight());
+            double no = SceneCntl.calcCenterHt(40, 150, FlashMonkeyMain.getPrimaryWindow().getHeight());
             sectionHBox.setPrefHeight(no);
             txtVBox.setPrefHeight(no);
             tCell.getTextArea().setPrefHeight(no - 150);
@@ -307,7 +308,7 @@ public class SectionEditor {
 
             // Provide a responsive UI.
             // Responsive height
-            FlashMonkeyMain.getWindow().heightProperty().addListener((obs, oldVal, newVal) -> {
+            FlashMonkeyMain.getPrimaryWindow().heightProperty().addListener((obs, oldVal, newVal) -> {
                   double n = SceneCntl.calcCenterHt(40, 150, (double) newVal);
                   sectionHBox.setPrefHeight(n);
                   txtVBox.setPrefHeight(300);
@@ -342,6 +343,7 @@ public class SectionEditor {
             this.clearBtn.setId("navButtonLight");
             this.clearBtn.setFocusTraversable(false);
             this.clearBtn.setOnAction((ActionEvent e) -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   tCell.getTextArea().setText("");
                   tCell.getTextArea().requestFocus();
             });
@@ -377,43 +379,64 @@ public class SectionEditor {
             });
 
             // Text area button
-            this.textAreaBtn = new Button("add text");
-            this.textAreaBtn.setFocusTraversable(false);
-            this.textAreaBtn.setTooltip(new Tooltip("Add a text area to the\n card"));
+            this.addTextCellBtn = TEXT_CELL.get();
+            this.addTextCellBtn.setFocusTraversable(false);
+            this.addTextCellBtn.setId("clrBtn");
+            //this.addTextCellBtn.setTooltip(new Tooltip("Add a text area to the\n card"));
             // Action when textAreaBtn is pressed.
-            this.textAreaBtn.setOnAction((ActionEvent e) -> {
+            this.addTextCellBtn.setOnAction((ActionEvent e) -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   addTCellAction();
             });
 
+            this.HashTagBtn = HASHTAG.get();
+            this.HashTagBtn.setFocusTraversable(false);
+            this.HashTagBtn.setId("clrBtn");
+            this.HashTagBtn.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
+                  hashTagsPopupEditor();
+            });
+
             // Delete text cell & multi media cell buttons
-            this.deleteTCellBtn = new Button("x");
-            this.deleteMMCellBtn = new Button("x");
+            this.deleteTCellBtn = DELETE_T_CELL.get();
+            this.deleteMMCellBtn = DELETE_MM_CELL.get();
             deleteTCellBtn.setFocusTraversable(false);
             deleteMMCellBtn.setFocusTraversable(false);
-            deleteTCellBtn.setTooltip(new Tooltip("Remove TextArea"));
-            deleteMMCellBtn.setTooltip(new Tooltip("Remove Multi-Media"));
             deleteTCellBtn.setId("clrBtn");
             deleteMMCellBtn.setId("clrBtn");
-
             // Clear stackL from sectionHBox & remove
             // deleteMMCellBtn from right stackR
             this.deleteTCellBtn.setOnAction((ActionEvent e) -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   deleteTCellAction();
-                  LOGGER.debug("textAreaBtn width {}", this.textAreaBtn.getBoundsInLocal().getWidth());
+                  LOGGER.debug("textAreaBtn width {}", this.addTextCellBtn.getBoundsInLocal().getWidth());
             });
 
             // Clear stackR from sectionHBox & remove
             this.deleteMMCellBtn.setOnAction((ActionEvent e) -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   CreateFlash.getInstance().setFlashListChanged(true);
                   deleteMMcellAction();
             });
 
-            HBox buttonBox = new HBox();
-            buttonBox.getChildren().addAll(this.findBtn, this.clearBtn, this.cameraBtn, this.snapShotBtn, this.drawpadBtn);
+            HBox buttonBox = new HBox(2);
+            buttonBox.setPadding(new Insets(0, 2, 0, 2));
+            buttonBox.setStyle("-fx-background-color: #FFFFFF");
+            buttonBox.setMaxWidth(225);
+//            buttonBox.getChildren().addAll(this.findBtn, this.clearBtn, this.cameraBtn, this.snapShotBtn, this.drawpadBtn);
+            buttonBox.getChildren().addAll( this.clearBtn, this.cameraBtn, this.snapShotBtn, this.drawpadBtn);
             buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
             return buttonBox;
       } // End Button settings
+
+      /* ------------------------------------------------------- **/
+
+      private void hashTagsPopupEditor() {
+            HashTagEditorPopup hashTagEditor = HashTagEditorPopup.getInstance();
+            hashTagEditor.popup(this);
+      }
+
 
 
       /* ------------------------------------------------------- **/
@@ -421,75 +444,86 @@ public class SectionEditor {
 
       /**
        * Deletes the TextCell and replaces it with a single section
-       * containing a Media or Image cell. Used by deleteTCellBtn.
+       * containing a Media or Image cell. Used by deleteTCellBtn and
+       * when an existing card is read in for editing.
        */
-      private void deleteTCellAction() {
+      public void deleteTCellAction() {
+
             LOGGER.info(" DeleteTCellButton pressed ");
             LOGGER.info("masterBox width setting to: " + this.sectionHBox.getWidth());
 
             CreateFlash.getInstance().setFlashListChanged(true);
 
-            if (this.sectionType == 'D') {
-                  LOGGER.info("\tsetting type to 'd'");
-                  this.sectionType = 'd';
-            } else if (this.sectionType == 'M') {
-                  LOGGER.info("\tsetting type to'm'");
-                  this.sectionType = 'm';
-            } else if (this.sectionType == 'C') { // this is a drawing only
-                  LOGGER.info("\t setting type to 'c'");
-                  this.sectionType = 'c';
-            } else {
-                  LOGGER.info("this section type is: " + this.sectionType);
-            }
-
             this.sectionHBox.getChildren().clear();
-
             stackR.getChildren().clear();
-            // if this section is not a drawing type
-            if (this.sectionType != 'D' && this.sectionType != 'd') {
-                  // for images
-                  if (this.iView == null) {
-                        this.iView = new ImageView(image);
-                  }
-                  LOGGER.debug("deleteTCellAction, setting iView");
 
-                  int width = (int) this.sectionHBox.getWidth() - 90;
-                  int height = (int) this.sectionHBox.getHeight() - 20;
-                  // Scale image to the pane
-                  this.iView = Fit.viewResize(iView.getImage(), width, height);
+            switch (this.sectionType) {
+                  case 'c':
+                  case 'C': {
+                        this.sectionType = 'c';
+                        if (this.iView == null) {
+                              this.iView = new ImageView(image);
+                        }
+                        LOGGER.debug("deleteTCellAction, setting iView");
 
-                  rightPane.getChildren().clear();
-                  rightPane.getChildren().add(iView);
+                        int width = (int) this.sectionHBox.getWidth() - 90;
+                        int height = (int) this.sectionHBox.getHeight() - 20;
+                        // Scale image to the pane
+                        this.iView = Fit.viewResize(iView.getImage(), width, height);
 
-                  if (iView != null) {
+                        rightPane.getChildren().clear();
+                        rightPane.getChildren().add(iView);
+
+                        //if (iView != null) {
                         // responsive width
                         sectionHBox.widthProperty().addListener((obs, oldval, newVal) -> iView.setFitWidth(newVal.doubleValue() - 90));
                         // repsonsive height
                         sectionHBox.heightProperty().addListener((obs, oldval, newVal) -> iView.setFitHeight(newVal.doubleValue() - 20));
+                        //}
+                        break;
                   }
-            } else {
-                  // for media
-                  LOGGER.info("section is 'd' or 'D'");
-                  this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
+                  case 'd':
+                  case 'D': {
+                        LOGGER.info("\tsetting type to 'd'");
+                        this.sectionType = 'd';
+                        // for media
+                        this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
+
+                        break;
+                  }
+                  case 'm':
+                  case 'M': {
+                        LOGGER.info("\tsetting type to 'm'");
+                        this.sectionType = 'm';
+                        this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
+                  }
+                  default: {
+                        // Default, do nothing. This should not happen.
+                  }
             }
 
+            VBox btnBox = new VBox(2);
+            btnBox.setPadding(new Insets(4));
+//            btnBox.setId(xxxxxxxxxxxx);
+            btnBox.getChildren().addAll(addTextCellBtn, HashTagBtn);
             stackR.getChildren().add(this.rightPane);
-            this.sectionHBox.getChildren().addAll(textAreaBtn, stackR);
+            this.sectionHBox.getChildren().addAll(btnBox, stackR);
       }
 
       /* ------------------------------------------------------- **/
 
 
-      /**
-       * Removes the TCell from the left pane. Called by CreateFlash
-       * when a card is edited as opposed to created.
-       */
-      public void removeTCell() {
-            this.sectionHBox.getChildren().clear();
-            stackR.getChildren().clear();
-            stackR.getChildren().add(this.rightPane);
-            this.sectionHBox.getChildren().addAll(textAreaBtn, stackR);
-      }
+//      /**
+//       * Removes the TCell from the left pane. Called by CreateFlash
+//       * when a card is edited as opposed to created.
+//       */
+//      public void deleteTCell() {
+//            this.sectionHBox.getChildren().clear();
+//            stackR.getChildren().clear();
+//            stackR.getChildren().add(this.rightPane);
+//            this.sectionHBox.getChildren().addAll(textAreaBtn, stackR);
+//            CreateFlash.getInstance().setFlashListChanged(true);
+//      }
 
       /* ------------------------------------------------------- **/
 
@@ -497,25 +531,37 @@ public class SectionEditor {
        * Adds a text cell to the left pane.
        */
       private void addTCellAction() {
+
             LOGGER.info("\ntextAreaBtn pressed");
 
-            if (this.sectionType == 'd') {
-                  //LOGGER.info("\tsetting type to 'D'");
-                  this.sectionType = 'D';
-            } else if (this.sectionType == 'm') {
-                  //LOGGER.info("\tsetting type to'M'");
-                  this.sectionType = 'M';
-            } else if (this.sectionType == 'c') { // this is a drawing only
-                  //LOGGER.info("\t setting type to 'C'");
-                  this.sectionType = 'C';
-            } else {
-                  LOGGER.info("this section type is: " + this.sectionType);
+            //@TODO FINISH addTCell to include media ie video, and reset when addTCell button is clicked.
+
+            CreateFlash.getInstance().setFlashListChanged(true);
+
+            switch (this.sectionType) {
+                  case 'c': {
+                        this.sectionType = 'C';
+                        setImageHelper(image);
+                        break;
+                  }
+                  case 'd': {
+                        this.sectionType = 'D';
+                        break;
+                  }
+                  case 'm': {
+                        this.sectionType = 'M';
+                        break;
+                  }
+                  default: {
+                        // Default, do nothing. This should not happen.
+                  }
             }
 
+            this.stackR.getChildren().clear();
+            this.stackR.getChildren().add(deleteMMCellBtn);
             this.rightPane.setMaxWidth(100);
             this.sectionHBox.getChildren().clear();
             this.sectionHBox.getChildren().addAll(stackL, stackR);
-            this.stackR.getChildren().add(deleteMMCellBtn);
       }
 
 
@@ -527,6 +573,8 @@ public class SectionEditor {
        * deleteTCellbtn from stackL.
        */
       private void deleteMMcellAction() {
+            //SoundEffects.PRESS_BUTTON_COMMON.play();
+            CreateFlash.getInstance().setFlashListChanged(true);
             this.sectionType = 't';
             if (arrayOfFMShapes != null) {
                   arrayOfFMShapes.clear();
@@ -799,22 +847,11 @@ public class SectionEditor {
       /* ------------------------------------------------------- **/
 
 
-      /**
-       * Sets this section to t
-       */
-      public void setSectionType(char sectionType) {
-            this.sectionType = sectionType;
-            if (!hasTextCell(sectionType)) {
-                  deleteTCellAction();
-            }
-      }
-
-
-      /* ------------------------------------------------------- **/
-
-
       public boolean hasTextCell(char sectionType) {
-            return sectionType == 't' || sectionType == 'C' || sectionType == 'M' || sectionType == 'D';
+            return sectionType == 't'
+                    || sectionType == 'C'
+                    || sectionType == 'M'
+                    || sectionType == 'D';
       }
 
 
@@ -827,7 +864,7 @@ public class SectionEditor {
        *
        * @param imgBuffer Expects a BufferedImage
        */
-      public void setImage(BufferedImage imgBuffer) {
+      private void setImageRightPane(BufferedImage imgBuffer) {
             image = SwingFXUtils.toFXImage(imgBuffer, null);
             setImageHelper(image);
       }
@@ -841,7 +878,7 @@ public class SectionEditor {
        * in the HBox
        */
       public void setTextCellWdForMedia() {
-            double w = FlashMonkeyMain.getWindow().getWidth() - 144;
+            double w = FlashMonkeyMain.getPrimaryWindow().getWidth() - 144;
             this.txtVBox.setPrefWidth(w);
       }
 
@@ -850,7 +887,7 @@ public class SectionEditor {
 
 
       public void setTextCellWidthFull() {
-            double w = FlashMonkeyMain.getWindow().getWidth();
+            double w = FlashMonkeyMain.getPrimaryWindow().getWidth();
             this.txtVBox.setPrefWidth(w);
       }
 
@@ -867,20 +904,17 @@ public class SectionEditor {
        * for the text box. Also adds
        * the delete cell buttons if media is present
        *
-       * @param mediaFileNames Expects the imageName
+       * @param mediaFileNames Expects the imageName, and shapesArrayName if either exist
        * @param mediaType      drawing only = 'D' 'd', Media = 'm' 'M', Canvas (image and drawing or image only) = 'c' or 'C'
        * @param qOrA           ..
-       * @param cID            ..
+       * @param cID            cardID, does not change.
        */
       public void setSectionMedia(String[] mediaFileNames, char mediaType, char qOrA, final String cID) {
             DirectoryMgr dirMgr = new DirectoryMgr();
             LOGGER.info(" setSectionMedia() called \n");
-            // Get the path to the media directory
-
-
             this.sectionType = mediaType;
 
-            double num = SceneCntl.calcCenterHt(40, 150, FlashMonkeyMain.getWindow().getHeight());
+            double num = SceneCntl.calcCenterHt(40, 150, FlashMonkeyMain.getPrimaryWindow().getHeight());
             sectionHBox.setPrefHeight(num);
             txtVBox.setPrefHeight(num);
             tCell.getTextArea().setPrefHeight(num - 150);
@@ -890,7 +924,7 @@ public class SectionEditor {
                   // text
                   // 'T' is never used
                   case 't': {
-                        double w = FlashMonkeyMain.getWindow().getWidth() - 16;
+                        double w = FlashMonkeyMain.getPrimaryWindow().getWidth() - 16;
                         this.txtVBox.setPrefWidth(w);
                         CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) -> txtVBox.setPrefWidth(newVal.doubleValue()));
                         break;
@@ -908,7 +942,9 @@ public class SectionEditor {
                         if (f.exists()) {
                               image = new Image("File:" + path);
                               // set shapes in right pane with image
-                              setImageHelper(image);
+                              if(mediaType == 'C') {
+                                    setImageHelper(image);
+                              }
 
                               FileOpsShapes fo = new FileOpsShapes();
                               if (mediaFileNames.length == 2) {
@@ -918,6 +954,8 @@ public class SectionEditor {
                               }
 
                               this.rightPane.setOnMouseClicked(e -> {
+                                    SoundEffects.PRESS_BUTTON_COMMON.play();
+                                    System.out.println("in SectionEditor mediaFileNames: <" + mediaFileNames + ">");
                                     rightPaneAction(mediaFileNames);
                               });
                         }
@@ -929,11 +967,6 @@ public class SectionEditor {
                   // drawings only
                   case 'D':
                   case 'd': {
-                        if (mediaFileNames == null || mediaFileNames.length < 2) {
-                              LOGGER.warn("mediaFileNames[1] is null. processing as text");
-                              setSectionMedia(mediaFileNames, 't', qOrA, cID);
-                              return;
-                        }
                         this.shapesFileName = mediaFileNames[1];
                         LOGGER.debug(" Shapes Only .. This is a DrawPad");
                         this.arrayOfFMShapes.clear();
@@ -949,10 +982,10 @@ public class SectionEditor {
                               addDrawRPane(this);
                               setShapesInRtPane(this.arrayOfFMShapes, wd, ht);
                               this.rightPane.setOnMouseClicked(e -> {
-                                    ShapesEditorPopup edPopup = ShapesEditorPopup.getInstance();
+                                    CanvasEditorPopup edPopup = CanvasEditorPopup.getInstance();
                                     edPopup.init();
                                     String deckName = FlashCardOps.getInstance().getDeckLabelName();
-                                    edPopup.shapePopupHandler(this.arrayOfFMShapes, this, shapesFileName, deckName, cID, qOrA);
+                                    edPopup.popup(this.arrayOfFMShapes, this, mediaFileNames, deckName, cID);
                               });
                         } else {
                               LOGGER.warn("ERROR: Shapes file does not exist. Path: {}", f);
@@ -960,7 +993,6 @@ public class SectionEditor {
 
                         LOGGER.debug("mediaPath: " + path + ", shapesPathName: " + shapesFileName);
                         LOGGER.debug("mediaType: " + mediaType);
-
 
                         // for responsive text pane with the right pane.
                         CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) -> txtVBox.setPrefWidth(newVal.doubleValue() - 124));
@@ -985,18 +1017,20 @@ public class SectionEditor {
       }
 
       /**
-       * Provides the rightPane clickOn action that should popup the image
+       * Provides the rightPane clickOn action that creates a popup with the image
        * and shapeToolPane/popup.
        *
        * @param mediaFileNames ..
        */
       private void rightPaneAction(String[] mediaFileNames) {
+            String[] mediaFiles = getMediaNameArray();
+
             minimizeFullScreen();
             LOGGER.debug("rightPane action called");
-            ShapesEditorPopup edPopup = ShapesEditorPopup.getInstance();
+            CanvasEditorPopup edPopup = CanvasEditorPopup.getInstance();
             edPopup.init();
             String deckName = FlashCardOps.getInstance().getDeckLabelName();
-            edPopup.imagePopupHandler(this.arrayOfFMShapes, this, mediaFileNames, deckName, cID);
+            edPopup.popup(this.arrayOfFMShapes, this, mediaFiles, deckName, cID);
             CreateFlash.getInstance().setFlashListChanged(true);
       }
 
@@ -1010,13 +1044,14 @@ public class SectionEditor {
        *
        * @param image ..
        */
-      private void setImageHelper(Image image) {
+      void setImageHelper(Image image) {
             LOGGER.debug("does image exist, check width: {}", image.getWidth());
 
             this.sectionHBox.getChildren().clear();
             this.stackR.getChildren().clear();
             // Set the size of the ImageView pane
             this.iView = Fit.viewResize(image, 100, 100);
+//            iView.setRotate(90);
             setTextCellWdForMedia();
             LOGGER.debug("is imageView contains an image: Check if width is a number: {}", iView.getImage().getWidth());
             // sets the image, & shapes, in the right
@@ -1284,6 +1319,7 @@ public class SectionEditor {
        * from the camera.
        */
       private void cameraBtnAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             this.sectionType = 'C';
             LOGGER.info("\n ~^~^~^ *** cameraBtnAction called *** ~^~^~^");
 
@@ -1310,7 +1346,7 @@ public class SectionEditor {
                       "\n  Something went wrong. I didn't find a web-cam." +
                           "\n  If you have one, check your computer settings and try again. ";
                   FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 20,
-                      "emojis/flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+                      "emojis/flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
                   LOGGER.warn("Camera error: Possibly no camera available");
             }
 
@@ -1332,6 +1368,7 @@ public class SectionEditor {
        * defined image from their screen.
        */
       public void snapShotBtnAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             minimizeFullScreen();
             this.sectionType = 'C';
             LOGGER.info("\n ~^~^~^ *** SnapShot Button Action called *** ~^~^~^");
@@ -1369,9 +1406,9 @@ public class SectionEditor {
                   // Set the image in this editor, and
                   // set it in the rightPane
                   if (SnapShot.getInstance().getImgBuffer() != null) {
-                        setImage(SnapShot.getInstance().getImgBuffer());
-                        String imgHash = FileNaming.getImageHash(SnapShot.getInstance().getImgBuffer());
-                        FileNaming fileNaming = new FileNaming(imgHash, 'i', ".png");
+                        setImageRightPane(SnapShot.getInstance().getImgBuffer());
+                        final String imgHash = FileNaming.getImageHash(SnapShot.getInstance().getImgBuffer());
+                        final FileNaming fileNaming = new FileNaming(imgHash, 'i', ".png");
                         //Atomic reference for lambda
                         imgFileName.set(fileNaming.getMediaFileName());
 
@@ -1397,18 +1434,15 @@ public class SectionEditor {
                         // Also saves the shapes to file.
                         // set the drawObj fileName to be passed to
                         // DrawTools
-                        //fileNaming = new FileNaming(name, imgHash, 'i', ".shp");
                         shapesFileName = FileNaming.getShapesName(imgFileName.get());
                         drawObj.setFileName(shapesFileName);
                         // and finally build the drawtools
                         draw.buildDrawTools(drawObj, this);
-                        draw.popUpTools();
-
+                        //draw.popUpTools();
                         drawObj.clearDrawObj();
-
                         // prevent unecessary work/ Are we editing or creating/ & initially
                         // we are creating
-                        cfp.setFlashListChanged(true);
+            //            cfp.setFlashListChanged(true);
                   }
                   drawObj.clearDrawObj();
             });
@@ -1432,11 +1466,14 @@ public class SectionEditor {
       }
 
       private void setEditorPopup(String[] mediaFileNames, String deckName, String cID) {
-            ShapesEditorPopup edPopup = ShapesEditorPopup.getInstance();
+            CanvasEditorPopup edPopup = CanvasEditorPopup.getInstance();
             edPopup.init();
-            edPopup.imagePopupHandler(this.getArrayOfFMShapes(),
-                this, mediaFileNames, deckName,
-                cID);
+            edPopup.popup(
+                    this.getArrayOfFMShapes(),
+                this,
+                    mediaFileNames,
+                    deckName,
+                    cID);
       }
 
 
@@ -1460,6 +1497,7 @@ public class SectionEditor {
        * @param parentPane ..
        */
       protected void drawpadBtnAction(Pane parentPane) {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             this.rightPane.setMinWidth(100);
             this.rightPane.setMaxWidth(100);
             this.rightPane.setMinHeight(100);
@@ -1500,7 +1538,7 @@ public class SectionEditor {
             drawPadOpen = true;
             draw = DrawTools.getInstance();
             draw.buildDrawTools(minX, minY, shapesFileName, this);
-            draw.popUpTools();
+            //draw.popUpTools();
 
             this.rightPane.getChildren().clear();
             this.rightPane.setOnMouseClicked(e -> {
@@ -1510,6 +1548,15 @@ public class SectionEditor {
             addDrawRPane(this);
 
             CreateFlash.getInstance().setFlashListChanged(true);
+      }
+
+      void saveImageFromImageTool(Image img, String mime) {
+            String deckName = FlashCardOps.getInstance().getDeckLabelName();
+            // Save the image to the FMCanvas Folder
+            // and rename it.
+            DragAndDrop dragAndDrop = new DragAndDrop();
+            String imgNewName = dragAndDrop.saveImage(img, mime, deckName);
+            setMediaFileName(imgNewName);
       }
 
 
@@ -1543,7 +1590,6 @@ public class SectionEditor {
              */
 
             private void dragOver(DragEvent e) {
-
                   //if(!fileAccepted || fileRejected) {
                   // allows an image, URL or a file
                   Dragboard dragboard = e.getDragboard();
@@ -1631,7 +1677,10 @@ public class SectionEditor {
             }
 
             /**
-             * Sets this objects ImageView to the image in the parameter.
+             * Intended as an internal method on a drag-drop action.
+             * Sets this objects ImageView to the image in the parameter. Names the
+             * image, sets the sectionType to 'C', saves the image, and sets the
+             * shapesFileName.
              *
              * @param img  ..
              * @param mime the file ending either .png for all except, if. gif use .gif
@@ -1647,10 +1696,10 @@ public class SectionEditor {
                         // set section type to double section
                         // with canvas
                         sectionType = 'C';
+                        String deckName = FlashCardOps.getInstance().getDeckLabelName();
                         // Transfer the image to the FMCanvas Folder
                         // and rename it.
-                        saveImage(img, mime, FlashCardOps.getInstance().getDeckLabelName());
-                        String deckName = FlashCardOps.getInstance().getDeckLabelName();
+                        saveImage(img, mime, deckName);
                         String cID = CreateFlash.getInstance().getCurrentCID();
                         shapesFileName = FileNaming.getShapesName(deckName, cID);
 
@@ -1683,7 +1732,7 @@ public class SectionEditor {
                             "\n Try dragging to the desktop first. " +
                             "\n then drag from the desk top";
                         FxNotify.notificationBlue("OUCH!!!!", errorMessage, Pos.CENTER, 7,
-                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
                   } else {
                         setMediaFileName(fileNaming.getMediaFileName());
                   }
@@ -1704,6 +1753,11 @@ public class SectionEditor {
 
                   int num = fromDrag.getName().lastIndexOf('.') + 1;
                   String mime = fromDrag.getName().substring(num);
+                  if(mime.equals("JPEG")) {
+                        mime = "JPG";
+                  } else if (mime.equals("jpeg")) {
+                        mime = "jpg";
+                  }
 
                   LOGGER.info(" *** in transferMediaFile(list<File>) and OriginFilePath: " + fromDrag.toPath() + " ***");
                   String fromPath = fromDrag.toPath().toString();
@@ -1726,7 +1780,6 @@ public class SectionEditor {
                         // insert media into the rightPane.
                         // and add delete buttons
                         setImageHelper(image);
-
                         return true;
 
                         // Else its a video, or audio, first try to use JavaFX.
@@ -1792,7 +1845,6 @@ public class SectionEditor {
                         rightPane.setMinSize(100, 50);
                         return true;
                   }
-
                   return false;
             }
 
@@ -1824,7 +1876,7 @@ public class SectionEditor {
                             "\n Try dragging to the desktop first. " +
                             "\n then drag from the desk top";
                         FxNotify.notificationBlue("OUCH!!!!", errorMessage, Pos.CENTER, 7,
-                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
                         e.printStackTrace();
                   }
                   return false;

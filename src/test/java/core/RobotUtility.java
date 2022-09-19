@@ -1,6 +1,5 @@
 package core;
 
-import fileops.DirectoryMgr;
 import flashmonkey.CreateCards;
 import flashmonkey.FlashMonkeyMain;
 import javafx.stage.Stage;
@@ -37,7 +36,7 @@ public class RobotUtility extends ApplicationTest {
 		FxToolkit.setupApplication(FlashMonkeyMain.class);
 		
 		//sleep(100);
-		final Stage window = FlashMonkeyMain.getWindow();
+		final Stage window = FlashMonkeyMain.getPrimaryWindow();
 		delta_X = (int) window.getX();// getScegetY();
 		delta_Y = (int) window.getY() -10;
 		create = new CreateCards(delta_X, delta_Y);

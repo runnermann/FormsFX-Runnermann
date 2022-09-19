@@ -1,9 +1,7 @@
 package ecosystem;
 
-import ch.qos.logback.classic.Level;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.Alphabet;
-import javafx.beans.value.WritableValue;
 import javafx.css.StyleableProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -84,18 +82,18 @@ public class TeaserPane extends ToggleButton {
             // stars
             // columnNum, rowNum, num cols, num rows
             //gridP.add(DeckMarketPane.getInstance().getStars(map.get("deck_numstars"), 80), 0, 4, 2, 1);
-            teaserGrid.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("creator_email")), 0, 4, 2, 1);
+             teaserGrid.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("avatar_name")), 0, 4, 2, 1);
             //rdoBox.setId("#teaser" + idx);
             rdoBox.getChildren().add(teaserGrid);
 
             teaserGrid.setOnMouseEntered(e -> {
                   //gridP.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.GRID_GREY), CornerRadii.EMPTY, Insets.EMPTY)));
-                  FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND);
+            FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.HAND);
             });
 
             teaserGrid.setOnMouseExited(e -> {
                   //gridP.setBackground(Background.EMPTY);
-                  FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
+            FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.DEFAULT);
             });
 
             return rdoBox;
@@ -114,9 +112,11 @@ public class TeaserPane extends ToggleButton {
             StringBuilder sb = new StringBuilder();
             sb.append("Created by: ");
             for (int i = 0; i < authors.length - 1; i++) {
-                  sb.append(Alphabet.decrypt(authors[i]) + ", ");
+                  //sb.append(Alphabet.decrypt(authors[i]) + ", ");
+                  sb.append(authors[i] + ", ");
             }
-            sb.append(Alphabet.decrypt(authors[authors.length - 1]));
+            //sb.append(Alphabet.decrypt(authors[authors.length - 1]));
+            sb.append(authors[authors.length - 1]);
             return new Label(sb.toString());
       }
 
@@ -152,9 +152,7 @@ public class TeaserPane extends ToggleButton {
        *                                                                         *
        **************************************************************************/
 
-      /**
-       * {@inheritDoc}
-       */
+    /** {@inheritDoc} */
       @Override
       public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
             switch (attribute) {

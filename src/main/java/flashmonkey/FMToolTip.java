@@ -69,6 +69,7 @@ public class FMToolTip {
 
       // Flag if there is an FMToolTip visible
       private static boolean isVisible;
+    private final boolean showing = false;
 
       /***************************************************************************
        *                                                                         *
@@ -179,9 +180,6 @@ public class FMToolTip {
       public Text getText() {
             return this.text;
       }
-
-
-      private final boolean showing = false;
 
       public Pane getFMTooltip(MouseEvent mouse, String str, Color color) {
 

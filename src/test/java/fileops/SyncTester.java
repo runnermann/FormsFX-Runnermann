@@ -1,15 +1,11 @@
 package fileops;
 
 import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import core.RobotUtility;
-import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
-import flashmonkey.ReadFlash;
 import forms.utility.Alphabet;
-import io.reactivex.Observable;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -23,15 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.testfx.api.FxRobot;
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationTest;
-import security_and_login.LoginTesterUtility;
 
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -140,7 +132,7 @@ public class SyncTester extends ApplicationTest {
         FxToolkit.setupApplication(FlashMonkeyMain.class);
 
 
-        final Stage window = FlashMonkeyMain.getWindow();
+        final Stage window = FlashMonkeyMain.getPrimaryWindow();
         delta_X = (int) window.getX();// getScegetY();
         delta_Y = (int) window.getY() - 30;
 

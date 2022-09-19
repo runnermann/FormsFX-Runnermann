@@ -36,6 +36,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Shape;
 
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celleditors.DrawTools;
@@ -164,6 +165,7 @@ public class PolylineBuilder extends GenericBuilder<FMPolyLine, PolylineBuilder>
        */
       @Override
       public void mousePressed(MouseEvent mouse) {
+            SoundEffects.ROBOT_SERVO_2.play();
             DrawTools draw = DrawTools.getInstance();
             // Clear the resize nodes if they are present
             draw.clearNodes();
@@ -374,6 +376,7 @@ public class PolylineBuilder extends GenericBuilder<FMPolyLine, PolylineBuilder>
 
             // if not adding to the existing line
             if (!mouse.isAltDown()) {
+                  SoundEffects.ROBOT_SERVO_START.play();
                   fxShape.setStrokeWidth(fxShape.getStrokeWidth() + 2);
                   Polyline fxLine1 = (Polyline) fxShape;
                   fxL = fxLine1;
@@ -439,6 +442,12 @@ public class PolylineBuilder extends GenericBuilder<FMPolyLine, PolylineBuilder>
 
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape fxShape) {
+            newSound = startTime < System.currentTimeMillis() - 1500;
+            if(newSound) {
+                  startTime = System.currentTimeMillis();
+                  SoundEffects.ROBOT_SERVO_3.play();
+                  //isPlaying = false;
+            }
             if (!mouse.isAltDown()) {
                   if (mouse.isPrimaryButtonDown()) {
                         // uses the observable list/reference
@@ -491,7 +500,7 @@ public class PolylineBuilder extends GenericBuilder<FMPolyLine, PolylineBuilder>
                   // with the demensions of the original SnapShot rectangle.
                   double origWd = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getWd();
                   double origHt = ((FMRectangle) gbcopyArrayOfFMShapes.get(0)).getHt();
-                  editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, origWd, origHt);
+                  editorRef.setShapesInRtPane(   gbcopyArrayOfFMShapes, origWd, origHt);
                   //obsvPts.clear();
             } else {
                   //System.out.println("Called nich case in shapeReleased");

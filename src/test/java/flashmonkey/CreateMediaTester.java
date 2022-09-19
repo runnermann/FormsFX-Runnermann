@@ -39,7 +39,6 @@ import type.celleditors.SnapShot;
 import type.celltypes.MediaPopUp;
 import type.testtypes.QandA;
 import type.tools.imagery.Fit;
-import uicontrols.UIColors;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -207,7 +206,7 @@ public class CreateMediaTester extends ApplicationTest {
         // used to confirm if images are the same.
         bool = false;
 
-        final Stage window = FlashMonkeyMain.getWindow();
+        final Stage window = FlashMonkeyMain.getPrimaryWindow();
         delta_X = (int) window.getX();
         delta_Y = (int) window.getY();
         create = new CreateCards(delta_X, delta_Y);
@@ -246,7 +245,7 @@ public class CreateMediaTester extends ApplicationTest {
         FxToolkit.registerPrimaryStage();
         FxToolkit.setupApplication(FlashMonkeyMain.class);
 
-        final Stage window = FlashMonkeyMain.getWindow();
+        final Stage window = FlashMonkeyMain.getPrimaryWindow();
         delta_X = (int) window.getX();// getScegetY();
         delta_Y = (int) window.getY();
         create = new CreateCards(delta_X, delta_Y);

@@ -4,7 +4,6 @@
 package flashmonkey;
 
 
-import authcrypt.UserData;
 import campaign.Report;
 import ch.qos.logback.classic.Level;
 import ecosystem.ConsumerPane;
@@ -21,6 +20,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.*;
+import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -29,14 +29,17 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 //import javafx.stage.StageStyle;
 import javafx.stage.StageStyle;
+import media.sound.SoundEffects;
 import org.slf4j.LoggerFactory;
 import type.celltypes.VideoPlayerPopUp;
 import uicontrols.*;
 
+import java.awt.Toolkit;
 import java.util.prefs.BackingStoreException;
 
 import static flashmonkey.FlashCardOps.*;
@@ -65,13 +68,13 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       @SuppressWarnings("rawtypes")
 
       // The publicly known version
-      public static final String VERSION_STR = "1.2.1";
+      public static final String VERSION_STR = "1.3.0";
       // for serializing objects to file. The serial version.
       // Used with "serialVersionUID"
       public static final long VERSION = 20200612;
       public static final AVLTreePane AVLT_PANE = new AVLTreePane();
 
-      private static Stage window;
+      private static Stage primaryWindow;
       private static Stage actionWindow;
       protected static Stage treeWindow;
 
@@ -97,8 +100,11 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       // The error message to be displayed in the UI
       private static String errorMsg = "";
       // FLAGS
+      // if the account menu is showing. Used by
+      // acct button.
+      private static boolean acctShowing = false;
       private static boolean isInEditMode;
-      private static boolean returnToFullScreen;
+      private static BooleanProperty returnToFullScreenProperty = new SimpleBooleanProperty(false);
       private static final BooleanProperty isLoggedinProperty = new SimpleBooleanProperty(false);
 
 
@@ -110,6 +116,9 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       // *** Java FX UI *** STAGE *** ***
       @Override
       public void start(Stage primaryStage) {
+
+            SoundEffects.APP_START.play();
+
             // We control when the platform closes to ensure
             // any open stage/window saves its work before
             // the application is closed. We must call Platform.exit()
@@ -127,10 +136,10 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   // in edit mode. If true, save work
                   // before closing.
                   isInEditMode = false;
-                  window = primaryStage;
+                  primaryWindow = primaryStage;
 //            window.setAlwaysOnTop(true);
                   // set to call stop() when stage is closed
-                  window.setOnCloseRequest(e -> {
+                  primaryWindow.setOnCloseRequest(e -> {
                         //saveOnExit();
                         onClose();
                   });
@@ -138,9 +147,9 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   // Getting image resources as a stream is finicky. No more than two dashes per name,
                   // and cannot be under a subdirectory. Although conveniently finds the resource directory
                   // on it's own.
-                  flash = new Image(getClass().getResourceAsStream("/image/logo/vertical_logo_white_8per_120x325.png"));
+      //            flash = new Image(getClass().getResourceAsStream("/image/logo/vertical_logo_white_8per_120x325.png"));
                   Image icon = new Image(getClass().getResourceAsStream("/image/logo/blue_flash_128.png"));
-                  window.getIcons().add(icon);
+                  primaryWindow.getIcons().add(icon);
                   // Determine if FlashMonkey Data Directory
                   // exists and show signUp or signIn
                   if (flashmonkeyExists()) {
@@ -149,8 +158,13 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                         showIntroPane();
                   }
 
-                  window.setTitle("FlashMonkey");
-                  window.show();
+//                  primaryWindow.fullScreenProperty().addListener((obs, oldval, newVal) -> {
+//                        returnToFullScreenProperty.setValue(true);
+//                  });
+
+                  primaryWindow.setTitle("FlashMonkey");
+                  primaryStage.setResizable(false);
+                  primaryWindow.show();
             } catch (BackingStoreException e) {
                   LOGGER.warn(e.getMessage());
                   e.printStackTrace();
@@ -183,16 +197,17 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             GridPane gridPane1 = new GridPane();
 
             // Calculate logo fit height
-            int fitHeight = 120; //calcFitHeight((int) focusPane.getPrefHeight());
+            int fitHeight = 128; //calcFitHeight((int) focusPane.getPrefHeight());
             int gapHeight = (int) calcGapHeight(fitHeight);
 
-            ImageView iconView = new ImageView(flash);
-            //iconView.setFitHeight(fitHeight);
-            iconView.setFitHeight(fitHeight);
-            iconView.setPreserveRatio(true);
-            iconView.setSmooth(true);
+//            ImageView iconView = new ImageView(flash);
+ //           //iconView.setFitHeight(fitHeight);
+ //           iconView.setFitHeight(fitHeight);
+ //           iconView.setPreserveRatio(true);
+ //           iconView.setSmooth(true);
             VBox imageBox = new VBox();
-            imageBox.getChildren().add(iconView);
+            imageBox.setPrefHeight(fitHeight);
+ //           imageBox.getChildren().add(iconView);
             imageBox.setAlignment(Pos.CENTER);
 
             gridPane1.setAlignment(Pos.TOP_CENTER);
@@ -205,6 +220,9 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             gridPane1.addRow(2, spacerL);
             gridPane1.addRow(3, focusPane);
 
+            // Set the account access button to the top
+            // always.
+            firstPane.setTop(getAccountBox());
             firstPane.setCenter(gridPane1);
             // grey #393E46  // #29AbE2
             firstPane.setStyle("-fx-background-color:" + UIColors.FM_GREY); //#393E46"); //086ABF
@@ -222,10 +240,10 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   SceneCntl.getAppBox().setY((int) firstScene.getY());
             };
 
-            window.widthProperty().addListener(stagePropsListener);
-            window.heightProperty().addListener(stagePropsListener);
-            window.xProperty().addListener(stagePropsListener);
-            window.yProperty().addListener(stagePropsListener);
+            primaryWindow.widthProperty().addListener(stagePropsListener);
+            primaryWindow.heightProperty().addListener(stagePropsListener);
+            primaryWindow.xProperty().addListener(stagePropsListener);
+            primaryWindow.yProperty().addListener(stagePropsListener);
 
             return firstScene;
       }
@@ -257,8 +275,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
       /**
        * Creates the Navigation/Menu stage. The Navigation/MenuStage provides the buttons
-       * used to navigate to studying, back to the firstScene, create/edit scene. It is second
-       * scene unless the EncryptedUser is creating a new deck.
+       * used to navigate to studying, back to the firstScene or deck selection, or to create/edit.
        *
        * @return Returns the Navigation Scene
        */
@@ -307,31 +324,33 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       } // end Scene getNavigationScene
 
       protected static void createButtonAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             isInEditMode = true;
             Timer.getClassInstance().startTime();
             createFlash = CreateFlash.getInstance();
             menuButton.setDisable(false);
-            window.setScene(createFlash.createFlashScene());   // called once
+            primaryWindow.setScene(createFlash.createFlashScene());   // called once
       }
 
 
       /**
-       * Sends EncryptedUser.EncryptedUser to a new screen and calls the
+       * Sends EncryptedUser to a new screen and calls the
        * treePane
        */
       private static void studyButtonAction() {
+            SoundEffects.PRESS_STUDY.play();
             LOGGER.debug("\n*** studyButtonAction() FlashMonkeyMain ***");
             Timer.getClassInstance().testTimeStop();
             LOGGER.debug("testTime: " + Timer.getClassInstance().getTakeTestTime());
             readFlash = ReadFlash.getInstance();
             menuButton.setDisable(false);
-            window.setScene(readFlash.readScene());
+            primaryWindow.setScene(readFlash.readScene());
       }
 
       /**
        * Assist with StudyButtonAction used in navigation scene when creating
        * a new study session. Actions are not needed when moving from either test
-       * or from QAndA sessions when the UI should be consistant and the tree structure
+       * or from QAndA sessions when the UI should be consistent and the tree structure
        * stable from changes except for modifications due to an incorrect answer.
        */
       protected static void buildTreeWindow() {
@@ -344,7 +363,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
             treeWindow.setTitle("Navigation and Status tree");
             treeWindow.setScene(sceneTree);
-            if (!window.isFullScreen()) {
+            if (!primaryWindow.isFullScreen()) {
                   treeWindow.show();
             }
       }
@@ -368,66 +387,84 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             return buttonBox;
       }
 
-
+      /**
+       * Provides the account button and actions
+       * @return
+       */
       private static HBox getAccountBox() {
             HBox hBox = new HBox(2);
             hBox.setAlignment(Pos.CENTER_RIGHT);
             hBox.setPadding(new Insets(2, 2, 2, 2));
-
-            String name = UserData.getFirstName();
+//            String email = Alphabet.decrypt(UserData.getUserName());
+//            Label emailLabel = new Label("Email: " + email);
+//            emailLabel.setId("label14white");
             Button acctBtn = ButtoniKon.getAccountButton();
             Button iGotPdBtn = ButtoniKon.getIgotPdButton();
 
-            acctBtn.setOnMousePressed(e -> {
-                  if (e.isSecondaryButtonDown()) {
-                        acctSecondaryAction();
+            acctBtn.setOnMousePressed(m -> {
+
+                  System.out.println("acctBtn pressed and boolean is: " + acctShowing);
+
+                  if (m.isSecondaryButtonDown()) {
+                      acctSecondaryAction();
+                  } else if( !acctShowing ){
+                      acctShowing = true;
+                      primaryWindow.setScene(getFirstScene(AccountProfileMenu.profileMenu()));
+                      firstPane.setOnMouseClicked(f -> {
+                            acctShowing = false;
+                            primaryWindow.setScene(getFirstScene(getFilePane()));
+                      });
+
                   } else {
-                        window.setScene(getFirstScene(AccountProfileMenu.profileMenu(actionWindow)));
-                        firstPane.setOnMouseReleased(f -> window.setScene(getFirstScene(getFilePane())));
-                        firstPane.setTop(getAccountBox());
+                      primaryWindow.setScene(getFirstScene(getFilePane()));
+                      acctShowing = false;
                   }
             });
             // @TODO implement the getPaidPane with real data
             // and uncomment this page.
             // iGotPdBtn.setOnMouseClicked(e -> getPaidPane());
             // cursors
-            acctBtn.setOnMouseEntered(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND));
-            acctBtn.setOnMouseExited(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT));
-            iGotPdBtn.setOnMouseEntered(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.HAND));
-            iGotPdBtn.setOnMouseExited(e -> FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT));
+            acctBtn.setOnMouseEntered(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.HAND));
+            acctBtn.setOnMouseExited(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.DEFAULT));
+            iGotPdBtn.setOnMouseEntered(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.HAND));
+            iGotPdBtn.setOnMouseExited(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.DEFAULT));
 
-            hBox.getChildren().addAll(new Label(name), acctBtn, iGotPdBtn);
+            //hBox.getChildren().addAll(emailLabel, acctBtn, iGotPdBtn);
+            hBox.getChildren().addAll( acctBtn, iGotPdBtn);
 
             return hBox;
       }
 
       private static void acctSecondaryAction() {
             String version = VersionTimeStamp.getVersionBuildStamp();
-            FxNotify.notificationDark("Version", version, Pos.CENTER, 10, "image/blue_flash_128.png", FlashMonkeyMain.getWindow());
+            FxNotify.notificationDark("Version", version, Pos.CENTER, 10, "image/blue_flash_128.png", FlashMonkeyMain.getPrimaryWindow());
       }
 
-      public static void setReturnToFullScreen(boolean bool) {
-            returnToFullScreen = bool;
-      }
 
-      public static boolean isSetToFullScreen() {
-            return returnToFullScreen;
+
+      public static void setReturnToFullScreenProperty(boolean bool) {
+            LOGGER.debug("called");
+            returnToFullScreenProperty.setValue(bool);
       }
 
       public static void wasMaximizedReset() {
-            if (isSetToFullScreen()) {
-                  setReturnToFullScreen(false);
-                  getWindow().setFullScreenExitHint("");
-                  getWindow().setIconified(false);
-                  getWindow().setFullScreen(true);
+            LOGGER.debug("called");
+            if (returnToFullScreenProperty.get()) {
+                  LOGGER.debug("isSetToFullScreen was set to TRUE. Now setting it to full screen");
+                  setReturnToFullScreenProperty(false);
+                  getPrimaryWindow().setFullScreenExitHint("");
+                  getPrimaryWindow().setIconified(false);
+                  getPrimaryWindow().setFullScreen(true);
             }
       }
 
       public static void minimizeFullScreen() {
-            if (FlashMonkeyMain.getWindow().isFullScreen()) {
-                  FlashMonkeyMain.getWindow().setFullScreen(false);
-                  FlashMonkeyMain.getWindow().setIconified(true);
-                  FlashMonkeyMain.setReturnToFullScreen(true);
+            LOGGER.debug("Called");
+            if (FlashMonkeyMain.getPrimaryWindow().isFullScreen()) {
+                  LOGGER.debug(" primaryWindow is set to Full screen. Now setting it to minimize");
+                  FlashMonkeyMain.getPrimaryWindow().setFullScreen(false);
+                  FlashMonkeyMain.getPrimaryWindow().setIconified(true);
+                  FlashMonkeyMain.setReturnToFullScreenProperty(true);
             }
       }
 
@@ -505,13 +542,15 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   backButton = ButtoniKon.getBackButton();
                   backButton.setAlignment(Pos.CENTER);
                   backButton.setOnAction(e -> {
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
                         deckSelector.paneForFiles.getChildren().clear();
                         gridPane1.getChildren().clear();
-                        window.setScene(getFirstScene(getFilePane()));
+                        primaryWindow.setScene(getFirstScene(getFilePane()));
                   });
 
                   // new file button action
                   newDeckButton.setOnAction(e -> {
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
                         gridPane1.getChildren().clear();
                         HBox hb = new HBox(25);
                         hb.setPadding(new Insets(20, 0, 6, 0));
@@ -529,6 +568,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             }
 
             searchRscButton.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   getSearchWindow();
             });
 
@@ -542,7 +582,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             SignInModel model = new SignInModel();
             SignInPane signInPane = new SignInPane(model);
             model.getFormInstance();
-            window.setScene(getFirstScene(signInPane.getMainGridPane()));
+            primaryWindow.setScene(getFirstScene(signInPane.getMainGridPane()));
             signInPane.getMainGridPane().requestFocus();
       }
 
@@ -550,7 +590,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             SignUpModel model = new SignUpModel();
             SignUpPane signUpPane = new SignUpPane(model);
             model.getFormInstance();
-            window.setScene(getFirstScene(signUpPane.getSignUpPane()));
+            primaryWindow.setScene(getFirstScene(signUpPane.getSignUpPane()));
             signUpPane.getSignUpPane().requestFocus();
       }
 
@@ -558,15 +598,21 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             ConfirmationModel model = new ConfirmationModel();
             ConfirmationPane confirmPane = new ConfirmationPane(model);
             model.getFormInstance();
-            window.setScene(getFirstScene(confirmPane.getConfirmPane()));
+            primaryWindow.setScene(getFirstScene(confirmPane.getConfirmPane()));
             confirmPane.requestFocus();
       }
 
       private static void showIntroPane() {
             IntroPane introPane = new IntroPane();
-            introPane.getSignInBtn().setOnAction(e -> showSignInPane());
-            introPane.getSignUpBtn().setOnAction(e -> showSignUpPane());
-            window.setScene(getFirstScene(introPane.getIntroPane()));
+            introPane.getSignInBtn().setOnAction( e ->{
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
+                  showSignInPane();
+            });
+            introPane.getSignUpBtn().setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
+                  showSignUpPane();
+            });
+            primaryWindow.setScene(getFirstScene(introPane.getIntroPane()));
             introPane.getIntroPane().requestFocus();
       }
 
@@ -576,7 +622,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             //ResetOneModel model = new ResetOneModel();
             ResetOnePane reset = new ResetOnePane();
             //model.getFormInstance();
-            window.setScene(getFirstScene(reset.getMainGridPane()));
+            primaryWindow.setScene(getFirstScene(reset.getMainGridPane()));
             reset.getMainGridPain().requestFocus();
       }
 
@@ -586,7 +632,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             //ResetTwoModel model = new ResetTwoModel();
             ResetTwoPane reset = new ResetTwoPane();
             //model.getFormInstance();
-            window.setScene(getFirstScene(reset.getMainGridPane()));
+            primaryWindow.setScene(getFirstScene(reset.getMainGridPane()));
             reset.getMainGridPain().requestFocus();
       }
 
@@ -610,8 +656,19 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   String message = "Oooph!" +
                       "\n I need to be connected to the cloud \n to create or change your account information.";
                   FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
-                      emojiPath, FlashMonkeyMain.getWindow(), 15);
+                      emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
             }
+      }
+
+      public static void setTreeWindow(Scene scene) {
+            if(treeWindow != null) {
+                  treeWindow.close();
+            }
+            minimizeFullScreen();
+            treeWindow = new Stage(StageStyle.UTILITY);
+            treeWindow.setScene(scene);
+            treeWindow.setOnHidden(e -> wasMaximizedReset());
+            treeWindow.show();
       }
 
       public static void setActionWindow(Scene scene) {
@@ -644,8 +701,9 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   StudentModel model = new StudentModel();
                   StudentPane stuPane = new StudentPane();
                   model.getFormInstance();
-                  Scene scene = new Scene(stuPane.getMainGridPain());
+                  Scene scene = new Scene(stuPane.getMainPane());
                   scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
+
                   if (actionWindow != null && actionWindow.isShowing()) {
                         actionWindow.close();
                   }
@@ -655,8 +713,10 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   actionWindow.setOnHidden(e -> wasMaximizedReset());
                   actionWindow.show();
             } else {
-                  // show error message
-                  //showPopup();
+                  String emojiPath = "image/flashFaces_sunglasses_60.png";
+                  String message = "I need to be connected to the cloud.";
+                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
             }
       }
 
@@ -673,7 +733,10 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   actionWindow.setOnHidden(e -> wasMaximizedReset());
                   actionWindow.show();
             } else {
-                  //showPopup();
+                  String emojiPath = "image/flashFaces_sunglasses_60.png";
+                  String message = "I need to be connected to the cloud.";
+                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
             }
       }
 
@@ -681,32 +744,46 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
        * The users account form
        */
       public static void getSubscriptCancelWindow() {
-            SubscriptCancelPane cancelPane = new SubscriptCancelPane();
-            Scene scene = new Scene(cancelPane.getMainGridPain());
-            if (actionWindow != null && actionWindow.isShowing()) {
-                  actionWindow.close();
+            if(Utility.isConnected()) {
+                  SubscriptCancelPane cancelPane = new SubscriptCancelPane();
+                  Scene scene = new Scene(cancelPane.getMainGridPain());
+                  if (actionWindow != null && actionWindow.isShowing()) {
+                        actionWindow.close();
+                  }
+                  minimizeFullScreen();
+                  actionWindow = new Stage();
+                  actionWindow.setScene(scene);
+                  actionWindow.setOnHidden(e -> wasMaximizedReset());
+                  actionWindow.show();
+            } else {
+                  String emojiPath = "image/flashFaces_sunglasses_60.png";
+                  String message = "I need to be connected to the cloud to cancel your account.";
+                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
             }
-            minimizeFullScreen();
-            actionWindow = new Stage();
-            actionWindow.setScene(scene);
-            actionWindow.setOnHidden(e -> wasMaximizedReset());
-            actionWindow.show();
       }
 
       /**
        * General Purpose webview window
        */
       public static void getWebView(String page) {
-            EcoPane eco = new EcoPane();
-            Scene scene = new Scene(eco.getWebViewPane(page, 400, 650));
-            if (actionWindow != null && actionWindow.isShowing()) {
-                  actionWindow.close();
+            if(Utility.isConnected()) {
+                  EcoPane eco = new EcoPane();
+                  Scene scene = new Scene(eco.getWebViewPane(page, 400, 650));
+                  if (actionWindow != null && actionWindow.isShowing()) {
+                        actionWindow.close();
+                  }
+                  minimizeFullScreen();
+                  actionWindow = new Stage();
+                  actionWindow.setScene(scene);
+                  actionWindow.setOnHidden(e -> wasMaximizedReset());
+                  actionWindow.show();
+            } else {
+                  String emojiPath = "image/flashFaces_sunglasses_60.png";
+                  String message = "I need to be connected to the cloud to cancel your account.";
+                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
             }
-            minimizeFullScreen();
-            actionWindow = new Stage();
-            actionWindow.setScene(scene);
-            actionWindow.setOnHidden(e -> wasMaximizedReset());
-            actionWindow.show();
       }
 
       /**
@@ -717,14 +794,14 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             if (actionWindow != null && actionWindow.isShowing()) {
                   actionWindow.close();
             }
-
             minimizeFullScreen();
 
             Scene scene = new Scene(ConsumerPane.getInstance().getConsumerPane());
             scene.getStylesheets().addAll("css/consumerButtons.css", "css/consumerPane.css");
             actionWindow = new Stage();
             actionWindow.setScene(scene);
-            actionWindow.setResizable(false);
+            actionWindow.setMaxHeight(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+   //         actionWindow.setResizable(false);
             actionWindow.setOnHidden(e -> {
                   ConsumerPane.getInstance().onClose();
                   FlashMonkeyMain.closeActionWindow();
@@ -767,11 +844,11 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       }
 
       public static void getFileSelectPane() {
-            window.setScene(getFirstScene(getFilePane()));
+            primaryWindow.setScene(getFirstScene(getFilePane()));
       }
 
-      public static Stage getWindow() {
-            return window;
+      public static Stage getPrimaryWindow() {
+            return primaryWindow;
       }
 
       /**
@@ -780,8 +857,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
        * @return Point2D location of the current XY position
        */
       public static Point2D getWindowXY() {
-            double x = window.getX();
-            double y = window.getY();
+            double x = primaryWindow.getX();
+            double y = primaryWindow.getY();
             return new Point2D(x, y);
       }
 
@@ -795,7 +872,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       public static void setWindowToMenu() {
             LOGGER.debug("setWindowToNav called");
             isInEditMode = false;
-            window.setScene(getMenuScene());
+            primaryWindow.setScene(getMenuScene());
       }
 
       /**
@@ -827,7 +904,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                 "   We're working on this, but for now we \n" +
                 "   are not able to process the file. \n\n";
             FxNotify.notificationDark("OUCH!", msg, Pos.CENTER, 30,
-                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getWindow());
+                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 
       /**
@@ -887,6 +964,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             if(notStopped ) {
                   notStopped = false;
                   LOGGER.debug("Called STOP in FlashMonkeyMain");
+                  SoundEffects.APP_END.play();
 
                   if (isLoggedinProperty.get()) {
                         if (readFlash != null) {

@@ -74,7 +74,7 @@ public class SignUpModel {
                   String emojiPath = "image/Flash_hmm_75.png";
 
                   FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 5,
-                      emojiPath, FlashMonkeyMain.getWindow());
+                      emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
             createForm();
       }

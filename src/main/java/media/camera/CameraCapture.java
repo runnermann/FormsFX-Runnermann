@@ -1,8 +1,13 @@
-package video.camera;
+package media.camera;
 
-import ch.qos.logback.classic.Level;
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
+
 import flashmonkey.CreateFlash;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -28,21 +33,29 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
-import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
 import type.celleditors.SnapShot;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.LoggerFactory;
 
-public class MacCameraCapture extends Application {
 
-      private static MacCameraCapture CLASS_INSTANCE;
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MacCameraCapture.class);
-      //private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
+/**
+ * Starts a camera that is attached to the users
+ * machine. Provides the CreateFlash snapshot capability
+ * allowing the User to create a snapshot over an image
+ * captured by thier local camera.
+ * <p>
+ * as of 11-12-2019, Recording video is currently not implemented.
+ * //@TODO implement video record,
+ * //@TODO implment audio record
+ */
+public class CameraCapture extends Application {
+
+      private static CameraCapture CLASS_INSTANCE;
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CameraCapture.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
 
       private SectionEditor parentEditor;
       private static Stage cameraStage;
@@ -61,15 +74,15 @@ public class MacCameraCapture extends Application {
       private Button btnCameraStart;
       private Button btnCameraDispose;
 
-      private MacCameraCapture.WebCamControl camControl;
+      private WebCamControl camControl;
 
       /* *************** CONSTRUCTOR ****************/
 
-      private MacCameraCapture() {/* no args constructor */}
+      private CameraCapture() {/* no args constructor */}
 
-      public static synchronized MacCameraCapture getInstance() {
+      public static synchronized CameraCapture getInstance() {
             if (CLASS_INSTANCE == null) {
-                  CLASS_INSTANCE = new MacCameraCapture();
+                  CLASS_INSTANCE = new CameraCapture();
             }
             return CLASS_INSTANCE;
       }
@@ -83,7 +96,7 @@ public class MacCameraCapture extends Application {
        * @throws Exception ..
        */
       public boolean cameraCaptureBuilder(SectionEditor editor) throws Exception {
-            LOGGER.setLevel(Level.DEBUG);
+            //LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("cameraCaptureBuilder called");
 
             //Webcam webcam = Webcam.getDefault(300, TimeUnit.MILLISECONDS);
@@ -149,7 +162,7 @@ public class MacCameraCapture extends Application {
             bottomCameraControlPane.setVgap(10);
             bottomCameraControlPane.setPrefHeight(40);
             bottomCameraControlPane.setDisable(true);
-            camControl = new MacCameraCapture.WebCamControl();
+            camControl = new WebCamControl();
             camControl.createCameraControls();
             root.setBottom(bottomCameraControlPane);
 
@@ -170,7 +183,7 @@ public class MacCameraCapture extends Application {
 
                   Platform.runLater(() -> {
                         //cameraSelectCBox.setValue(cameraList.get(0));
-                        MacCameraCapture.WebCamControl wc = new MacCameraCapture.WebCamControl();
+                        WebCamControl wc = new WebCamControl();
                         wc.initializeWebCam(0);
                   });
             } else {
@@ -228,32 +241,32 @@ public class MacCameraCapture extends Application {
       private void createTopPane() {
 
             int webCamCounter = 0;
-            javafx.scene.control.Label lbInfoLabel = new Label("Select Your WebCam Camera");
-            ObservableList<MacCameraCapture.WebCamInfo> cameraList = FXCollections.observableArrayList();
+            Label lbInfoLabel = new Label("Select Your WebCam Camera");
+            ObservableList<WebCamInfo> cameraList = FXCollections.observableArrayList();
 
             topPane.getChildren().add(lbInfoLabel);
 
             for (Webcam webcam : Webcam.getWebcams()) {
-                  MacCameraCapture.WebCamInfo webCamInfo = new MacCameraCapture.WebCamInfo();
+                  WebCamInfo webCamInfo = new WebCamInfo();
                   webCamInfo.setWebCamIndex(webCamCounter);
                   webCamInfo.setWebCamName(webcam.getName());
                   cameraList.add(webCamInfo);
                   webCamCounter++;
             }
 
-            ComboBox<MacCameraCapture.WebCamInfo> cameraSelectCBox = new ComboBox<MacCameraCapture.WebCamInfo>();
+            ComboBox<WebCamInfo> cameraSelectCBox = new ComboBox<WebCamInfo>();
             cameraSelectCBox.setItems(cameraList);
             cameraSelectCBox.setPromptText(cameraListPromptText);
 
             System.out.println("Camera List size: " + cameraList.size());
 
-            cameraSelectCBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<MacCameraCapture.WebCamInfo>() {
+            cameraSelectCBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<WebCamInfo>() {
 
                   @Override
-                  public void changed(ObservableValue<? extends MacCameraCapture.WebCamInfo> arg0, MacCameraCapture.WebCamInfo arg1, MacCameraCapture.WebCamInfo arg2) {
+                  public void changed(ObservableValue<? extends WebCamInfo> arg0, WebCamInfo arg1, WebCamInfo arg2) {
 
                         if (arg2 != null) {
-                              MacCameraCapture.WebCamControl wc = new MacCameraCapture.WebCamControl();
+                              WebCamControl wc = new WebCamControl();
                               System.out.println("WebCam Index: " + arg2.getWebCamIndex() + ": WebCam Name:" + arg2.getWebCamName());
                               wc.initializeWebCam(arg2.getWebCamIndex());
                         }

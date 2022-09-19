@@ -1,17 +1,12 @@
-package video.api;
+package media.api;
 
 import ch.qos.logback.classic.Level;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ProgressIndicator;
 import org.slf4j.LoggerFactory;
 import type.celleditors.SectionEditor;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
-import ws.schild.jave.InputFormatException;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
@@ -118,6 +113,5 @@ public class JaveInterface implements EncoderProgressListener {
       public String buildMetaDataString(int wd, int ht) {
             return "Video: h264 (High), yuv420p, " + wd + "x" + ht + ", ";
       }
-
 
 }

@@ -5,11 +5,15 @@ import fmannotations.FMAnnotations;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import media.sound.SoundEffects;
 
+import java.awt.*;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,7 +60,18 @@ public class FMAlerts {
             /* empty constructor */
       }
 
-      //boolean bool;
+      public void purchaseWindow(Pane pane) {
+            alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Purchase Pane");
+            alert.setResizable(true);
+            alert.setHeight(690);
+            alert.setWidth(460);
+            //alert.getDialogPane().contentTextProperty().toString();//   setStyle(" -fx-text-fill: #FFFFFF");
+            alert.getDialogPane().setStyle(" -fx-background-color: " + UIColors.BACKGROUND_BLUE);
+
+            alert.getDialogPane().getChildren().add(pane);
+            alert.show();
+      }
 
       /**
        * Single button choice popup message box.
@@ -68,7 +83,6 @@ public class FMAlerts {
        */
       public boolean saveAlertAction(String alertMsg, String btnString, String emojiPath) {
             AtomicBoolean bool = new AtomicBoolean(false);
-
             alert = new Alert(Alert.AlertType.CONFIRMATION);
 
             alert.setTitle("ALERT");
@@ -83,6 +97,7 @@ public class FMAlerts {
             alert.setWidth(200);
             alert.getDialogPane().contentTextProperty().toString();//   setStyle(" -fx-text-fill: #FFFFFF");
             alert.getDialogPane().setStyle(" -fx-background-color: " + UIColors.BACKGROUND_BLUE);
+            SoundEffects.ATTENTION.play();
 
             alert.showAndWait().ifPresent((btnType) -> {
                   // if user clicks ok button
@@ -105,6 +120,7 @@ public class FMAlerts {
 
             alert.setHeaderText(null);
             alert.setContentText(alertMsg);
+            SoundEffects.ATTENTION.play();
 
             ImageView sunglasses = new ImageView("emojis/Flash_hmm_75.png");
             alert.setGraphic(sunglasses);
@@ -130,6 +146,7 @@ public class FMAlerts {
             alert.setWidth(200);
             alert.getDialogPane().contentTextProperty().toString();//   setStyle(" -fx-text-fill: #FFFFFF");
             alert.getDialogPane().setStyle(" -fx-background-color: " + UIColors.FM_WHITE);
+            SoundEffects.ATTENTION.play();
 
             alert.showAndWait().ifPresent((btnType) -> {
                   // if user clicks ok button
@@ -156,6 +173,7 @@ public class FMAlerts {
             // null as a value will cause the section to not be displayed
             alert.setHeaderText(null);
             alert.setContentText(alertMsg);
+            SoundEffects.ATTENTION.play();
 
             //ImageView sunglasses = new ImageView("emojis/flashFaces_sunglasses_60.png");
             ImageView emojiView = new ImageView(emojiPath);
@@ -194,9 +212,10 @@ public class FMAlerts {
        * @param alertMsg
        * @param emojiPath
        * @param uiColor
+       * @param effects SoundEffect, provide your choice of SoundEffect. If left null the default will be played.
        * @return
        */
-      public boolean choiceOnlyActionPopup(String title, String alertMsg, String emojiPath, String uiColor) {
+      public boolean choiceOnlyActionPopup(String title, String alertMsg, String emojiPath, String uiColor, SoundEffects effects) {
             alert = new Alert(Alert.AlertType.CONFIRMATION);
             ((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/image/logo/blue_flash_128.png"));
             AtomicBoolean bool = new AtomicBoolean(false);
@@ -205,7 +224,11 @@ public class FMAlerts {
             // null as a value will cause the section to not be displayed
             alert.setHeaderText(null);
             alert.setContentText(alertMsg);
-
+            if(null == effects) {
+                  SoundEffects.ATTENTION.play();
+            } else {
+                  effects.play();
+            }
             //ImageView sunglasses = new ImageView("emojis/flashFaces_sunglasses_60.png");
             ImageView emojiView = new ImageView(emojiPath);
             emojiView.setFitWidth(emojiView.getFitWidth());
@@ -256,7 +279,7 @@ public class FMAlerts {
             // okButton Name
             alert.getButtonTypes().clear();
 
-		ButtonType bt1 = new ButtonType(confirmName);
+		    ButtonType bt1 = new ButtonType(confirmName);
             ButtonType bt2 = new ButtonType(denyName);
             ButtonType escBtn = ButtonType.CANCEL;
 
@@ -265,6 +288,8 @@ public class FMAlerts {
             Node cancelNode = alert.getDialogPane().lookupButton(ButtonType.CANCEL);
             cancelNode.managedProperty().bind(cancelNode.visibleProperty());
             cancelNode.setVisible(false);
+
+            SoundEffects.ATTENTION.play();
 
             // set alert to trigger an escape on the escape key press.
             alert.getDialogPane().setOnKeyPressed(e -> {
@@ -331,7 +356,7 @@ public class FMAlerts {
 
       @FMAnnotations.DoNotDeployMethod
       public static Point2D getXBtnXY() {
-            return new Point2D(alert.getX() + 16, alert.getY() + 16);
+            return new Point2D(alert.getX() + alert.getWidth() - 20, alert.getY() + 16);
       }
 
 

@@ -26,6 +26,7 @@ import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import fmtree.*;
 import javafx.util.Duration;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.testtypes.GenericTestType;
@@ -55,8 +56,8 @@ import static flashmonkey.ReadFlash.GEN_CARD;
  */
 public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
-      //private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AVLTreePane.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVLTreePane.class);
 
 
       private static final double UNSELECTED = 20; // size of circle
@@ -83,7 +84,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
       /**
        * sets the message used to display in the AVL-TreePane
-       *
        * @param msg
        */
       protected void setMessage(String msg) {
@@ -102,7 +102,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
       /**
        * Call this method if the Fade Transition is needed for this build iteration of the tree.
        * Call setTransition(boolean transition) to set it to true before calling this method.
-       *
        * @param newNums The wrong nums for this iteration
        */
       protected void displayTree(int[] newNums) {
@@ -154,7 +153,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
       /**
        * Adds the node in the parameter to the display tree.
-       *
        * @param node
        * @param x
        * @param y
@@ -209,8 +207,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
            //       circleArray.add(circle);
             } else if (((FlashCardMM) root.getData()).getANumber() == highlighted) {
                   circle = new Circle(x, y, UNSELECTED);
-            //      circleArray.add(circle);
-
                   circle.setStrokeWidth(2);
                   circle.setStroke(Color.web("#9276AC"));
                   //circle.setFill(Color.web("#8146B6"));
@@ -226,7 +222,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             // If node is not selected make it normal size
             else {
                   circle = new Circle(x, y, UNSELECTED);
-           //       circleArray.add(circle);
                   circle.setStrokeWidth(2);
             }
 
@@ -286,7 +281,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
       /**
        * Creates interactive circles displayed in the AVLTreePane.
-       *
        * @param node
        * @return
        */
@@ -381,6 +375,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             //    If there is a save event the tree should remain the same number of nodes.
             boolean moveOK = cfp.cardOnExitActions(true,  false);
             if ( moveOK ) {
+    //              SoundEffects.TREE_PRESS_NODE.play();
                   // Set the treeWalker current node to the new reference for
                   // the selected node.
                   selectedCard = (FlashCardMM) CreateFlash.getInstance().getCreatorList().get(idx);
@@ -416,6 +411,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             ReadFlash.ansQButtonSet(currentCard.getIsRight(), test);
             rf.buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             ReadFlash.rpCenter.getChildren().clear();
+            SoundEffects.TREE_PRESS_NODE.play();
             if (rf.getMode() == 't') {
                   ReadFlash.rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, ReadFlash.rpCenter));
             } else {
@@ -473,7 +469,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
       /**
        * Sets the color of the fill according to this sessions status
-       *
        * @param node
        * @return Returns White if not seen, red if incorrect, and green if correct.
        */
@@ -501,7 +496,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        * Creates a line and circle union. The line starts at the parent circle's XY location
        * and ends at this node circles center xy. The circle contains the node as a clickable
        * node.
-       *
        * @param centerX The location of the circle X position
        * @param centerY The location of the circle Y position
        * @param parentX The parent x pos
@@ -524,7 +518,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
       @FMAnnotations.DoNotDeployMethod
       public Point2D getCircleXY(int nodeIdx) {
-            LOGGER.setLevel(Level.DEBUG);
+            //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("circleArray.size: {}, Idx: {}", circleArray.size(), nodeIdx);
             if (nodeIdx < circleArray.size()) {
                   Circle c = circleArray.get(nodeIdx);
