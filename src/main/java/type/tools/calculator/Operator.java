@@ -459,7 +459,7 @@ public enum Operator implements OperatorInterface {
       }
 
       public static boolean hasOperators() {
-            return ansComponents == null || ansComponents.isEmpty();
+            return ansComponents == null || ansComponents.size() < 1;
       }
 
       public static ExpNode getLast() {

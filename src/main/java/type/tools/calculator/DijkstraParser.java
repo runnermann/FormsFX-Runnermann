@@ -16,14 +16,14 @@ import java.util.Stack;
  * Absolute Value when entering a string expression.
  *
  * *** NOTE:
- * !!! To print the problem for the EncryptedUser.EncryptedUser in a simple and understandable format, We first create an object for each element
- *  *   that can be referanced and display a result to the EncryptedUser.EncryptedUser. Otherwise if we printed the results in the order they
+ * !!! To print the problem for the EncryptedUser in a simple and understandable format, We first create an object for each element
+ *  *   that can be referanced and display a result to the EncryptedUser. Otherwise if we printed the results in the order they
  *  *   are executed, although they are in left to right PERMDAS order, a 9 * 9 may not provide a good hint if there isn't
  *  *   a 9 * 9 in the original string. ie in the problem, 9 * 3 ^ 2 - 2 -{ 3 ^ 2 ( 5 + 1 ) } } / ...
  *  *   9 * 9 does not appear in the original string. Niether would 2 * -1 which is used to calcuate the results of the
- *  *   2 -{ ...}. To create an easy to understand display when the EncryptedUser.EncryptedUser gets the answer wrong, due to ordering, or to
- *  *   help the EncryptedUser.EncryptedUser understand the order that is used to solve problems in this calculator, the expression is
- *  *   parsed into a expNode to be used as a referance. The referance may be used later for displaying and creating
+ *  *   2 -{ ...}. To create an easy to understand display when the EncryptedUser gets the answer wrong, due to ordering, or to
+ *  *   help the EncryptedUser understand the order that is used to solve problems in this calculator, the expression is
+ *  *   parsed into a expNode (Expression Node) to be used as a referance. The referance may be used later for displaying and creating
  *  *   behaviors that assist with understanding.
  *
  * Algorithm:
@@ -168,7 +168,7 @@ public class DijkstraParser implements OperatorInterface {
        */
       private double evaluate(String string) {
 
-            // Working on sending a message to the EncryptedUser.EncryptedUser when they do not provide
+            // Working on sending a message to the EncryptedUser when they do not provide
             //    clean input. Try catch currently implemented but is not very
             //    good.
 

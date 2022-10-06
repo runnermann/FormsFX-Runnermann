@@ -12,7 +12,6 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 */
 /* For creating the button border like javafx modena.css */
 .root {
-
     /*-fx-base: #ececec;
     -fx-background: derive(-fx-base,26.4%); */
     -fx-control-inner-background: derive(-fx-base,80%);
@@ -75,13 +74,9 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     ICON_YELLOW: #F2E744;
     ICON_GOLD: #F2C744;
 
-
     -mid-gray: #d8dee3; /*rgb(216, 222, 227);*/
     -fx-background-color: -mid-gray;
 
-    /*linear-gradient( [ [from <point> to <point>] | [ to <side-or-corner>], ]? [ [ repeat | reflect ], ]? <color-stop>[, <color-stop>]+) */
-    /*-fx-inner-border-horizontal:  linear-gradient(to top, derive(#ececec,55%) 0%, derive(#ececec,-5%) 50%);
-    -fx-inner-border-bottomup: linear-gradient(to top, derive(#ececec, 55%), derive(#ececec,-5%));*/
 }
 
 #wrong_border {
@@ -215,7 +210,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 
 .cfpCenter {
     -fx-font-size: 15px;
-    -fx-font-family: "Raleway";
+    -fx-font-family: Arial;
 }
 
 .scroll-pane {
@@ -257,12 +252,14 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 }
 
 .label {
-    -fx-font-family: "Raleway-Medium.ttf";
+    -fx-font-family: Arial;
+    -fx-font-size: 16pt;
+    -fx-font-weight: 800;
 }
 
 
 .text {
-    -fx-font-family: "Raleway-Medium.ttf";
+    -fx-font-family: Arial;
 }
 
 /*
@@ -274,15 +271,14 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-background-insets: 2;
     -fx-background-color: transparent, white, transparent, white;
     -fx-background-radius: 0, 0, 0, 0;
-
     -fx-border-width: -1;
 }
 
 /*
-Line spacing in text area if it works. ??? iDK
+Line spacing in text area.
  */
 .text-area .text {
-    -fx-line-spacing: 4pt;
+    -fx-line-spacing: 3pt;
 }
 
 /*
@@ -469,11 +465,9 @@ hyperlink14white {
 
 #graphNumber {
     -fx-text-fill: WHITE;
-    -fx-font-family: "Raleway-Medium.ttf";
+    -fx-font-family: Arial;
     -fx-font-size: 9px;
 }
-
-
 
 #roundCorners {
     -fx-border-radius: 10 10 10 10;
@@ -540,8 +534,6 @@ hyperlink14white {
     -fx-padding: 4,4,4,4;
 }
 
-
-
 #searchText{
     -fx-border-radius: 3 0 0 3;
     -fx-background-radius: 3 0 0 3;
@@ -604,50 +596,12 @@ hyperlink14white {
     /* -fx-padding: 2 2 2 2; */
 }
 
-
-
-
 #letterbox {
     -fx-background-insets: 2;
     -fx-background-color: #000000;
     -fx-background-radius: 0, 0, 0, 0;
     -fx-border-width: 2;
 }
-
-
-/* *** formsfx related *** */
-
-#form-field {
-/*
-    -fx-color: #8248B9;
-    -fx-faint-focus-color: #8248B9;
-    -fx-background-color: #8248B9;
-    -fx-control-inner-background: #8248B9 10%;
-    -fx-outer-border: #8248B9;
-    -fx-inner-border: #8248B9;
-    -fx-text-box-border: #8248B9;
-    -fx-box-border: #8248B9;
-    -fx-inner-border-horizontal: #8248B9;
- */
-}
-
-
-#form-field:focused {
- /*   -fx-border-color: white;
-    -fx-color: white;
-    -fx-faint-focus-color: white;
-    -fx-control-inner-background: white 10%;
-
-  */
-}
-
-
-#password:focused {
-    /*-fx-border-color: #8248B9;
-    -fx-color: #8248B9;
-    -fx-faint-focus-color: #8248B9;*/
-}
-
 
 
 /*  Background image  */

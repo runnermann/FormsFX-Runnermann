@@ -95,7 +95,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
       @Override
       public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane) {
             LOGGER.debug("\ncalled getTEditorPane in MultipleChoice :) ");
-
+            a.setPrompt("answer");
             // Instantiate vBox and "set spacing" !important!!!
             VBox vBox = new VBox(2);
             vBox.getChildren().addAll(q.sectionHBox, a.sectionHBox);

@@ -1334,19 +1334,18 @@ public class SectionEditor {
 
             try {
                   String os = System.getProperty("os.name");
-                  if (os.toLowerCase(Locale.ROOT).startsWith("win")) {
+                    if (os.toLowerCase(Locale.ROOT).startsWith("win")) {
                         WindowsCameraCapture.getInstance().cameraCaptureBuilder(this);
                   } else {
                         CameraCapture.getInstance().cameraCaptureBuilder(this);
                   }
             } catch (Exception e) {
                   cfp.enableButtons();
-
-                  String message =
-                      "\n  Something went wrong. I didn't find a web-cam." +
-                          "\n  If you have one, check your computer settings and try again. ";
-                  FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 20,
-                      "emojis/flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
+                  String message = "\n  Something went wrong. I didn't find a web-cam." +
+                          "\n  If you have one, check your computer settings \n and try again. ";
+                  String emojiPath = "image/Flash_hmm_75.png";
+                  FxNotify.notificationBlue("Oooph!", message, Pos.CENTER, 20,
+                      emojiPath, FlashMonkeyMain.getPrimaryWindow());
                   LOGGER.warn("Camera error: Possibly no camera available");
             }
 

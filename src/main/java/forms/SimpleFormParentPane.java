@@ -226,7 +226,7 @@ public abstract class SimpleFormParentPane extends Pane implements ViewMixin {
                 //msgLabel.setId(style);
                 msgVBox.getChildren().add(msgLabel);
                 if(style.equals("white14")) {
-                    msgLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 20px; -fx-text-alignment: CENTER;");
+                    msgLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 14px; -fx-text-alignment: CENTER;");
                 } else {
                     msgLabel.setStyle("-fx-font-size: 20px; -fx-text-alignment: CENTER;");
                 }

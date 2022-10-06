@@ -1653,7 +1653,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
              * Sends media and deck changes to cloud.
              */
             private void sendAndCheck() {
-                  Thread.dumpStack();
+                  //Thread.dumpStack();
                   ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(3);
                   AtomicInteger count = new AtomicInteger(); // increased to 5, for bad networks.
                   AtomicBoolean bool = new AtomicBoolean(false);

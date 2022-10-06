@@ -241,7 +241,7 @@ public class MacCameraCapture extends Application {
                   webCamCounter++;
             }
 
-            ComboBox<MacCameraCapture.WebCamInfo> cameraSelectCBox = new ComboBox<MacCameraCapture.WebCamInfo>();
+            ComboBox<MacCameraCapture.WebCamInfo> cameraSelectCBox = new ComboBox<>();
             cameraSelectCBox.setItems(cameraList);
             cameraSelectCBox.setPromptText(cameraListPromptText);
 

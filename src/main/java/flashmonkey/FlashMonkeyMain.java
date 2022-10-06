@@ -508,7 +508,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             scrollP.setMaxHeight(446);
             scrollP.setStyle("-fx-background-color:transparent");
 
-            Label selectLabel = new Label("Select a deck to study");
+            Label selectLabel = new Label("Select a study deck");
             selectLabel.setId("label24White");
             gridPane1.setId("fileSelectPane");
             gridPane1.setAlignment(Pos.TOP_CENTER);
@@ -988,7 +988,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             //onClose();
             System.exit(0);
       }
-
 
 
       public static void main(String[] args) {

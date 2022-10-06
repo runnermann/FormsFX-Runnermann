@@ -92,7 +92,7 @@ public class CameraCapture extends Application {
        * detected returns true = failed;
        *
        * @param editor ..
-       * @return true if successful
+       * @return true if failed.
        * @throws Exception ..
        */
       public boolean cameraCaptureBuilder(SectionEditor editor) throws Exception {
@@ -218,7 +218,7 @@ public class CameraCapture extends Application {
             //@formatter:on
 
             // your camera must support HD720p to run this code
-            Webcam webcam = Webcam.getDefault();
+            Webcam webcam = Webcam. getDefault();
             webcam.setCustomViewSizes(nonStandardResolutions);
             webcam.setViewSize(WebcamResolution.HD.getSize());
 

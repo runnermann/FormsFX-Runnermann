@@ -18,8 +18,11 @@ import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
 import uicontrols.UIColors;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 
 /**
@@ -150,9 +153,9 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
       public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
 
             // Clear the Operator answer components arrayList
-            if (Operator.hasOperators()) {
+ //           if (Operator.hasOperators()) {
                   Operator.clearAnsComponents();
-            }
+ //           }
 
             genSection = GenericSection.getInstance();
             gPane = new GridPane();
@@ -355,16 +358,26 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                   // Get the correct answer from the expression
                   double correctAnsDbl = parser.getResult();
                   // Display a colored border around the users answer box.
+
                   // for invalid inputs use try catch
                   try {
-                        double responseDbl = Double.parseDouble(response);
-                        if (responseDbl == correctAnsDbl) {
+                        if((response.toLowerCase().equals("infinity") && correctAnsDbl == Double.POSITIVE_INFINITY)
+                        || (response.toLowerCase().equals("-infinity") && correctAnsDbl == Double.NEGATIVE_INFINITY)) {
                               userAnsField.setId("right_border");
                               rf.new RightAns(currentCard, listCard, this);
-                              //ansField.setStyle( "-fx-border-color: " + UIColors.HIGHLIGHT_GREEN + "; -fx-border-width: 5;");
-                        } else { // Answer is wrong
-                              responseWrong(cc, lowerHt);
-                              rf.new WrongAns(currentCard, listCard, this);
+                        } else {
+                              double num = round(correctAnsDbl, 4);
+                              double responseDbl = Double.parseDouble(response);
+                              double ans = round(responseDbl, 4);
+
+                              if (ans == num) {
+                                    userAnsField.setId("right_border");
+                                    rf.new RightAns(currentCard, listCard, this);
+                                    //ansField.setStyle( "-fx-border-color: " + UIColors.HIGHLIGHT_GREEN + "; -fx-border-width: 5;");
+                              } else { // Answer is wrong
+                                    responseWrong(cc, lowerHt);
+                                    rf.new WrongAns(currentCard, listCard, this);
+                              }
                         }
                   } catch (NumberFormatException e) {
                         responseWrong(cc, lowerHt);
@@ -375,8 +388,14 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             if (progress >= FMTWalker.getInstance().getCount()) {
                   ReadFlash.getInstance().endGame();
             }
+      }
 
+      /* ------------------------------------------------- **/
 
+      private double round(double value, int places) {
+            BigDecimal dec = new BigDecimal(Double.toString(value));
+            dec = dec.setScale(places, RoundingMode.HALF_UP);
+            return dec.doubleValue();
       }
 
       /* ------------------------------------------------- **/
@@ -441,7 +460,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // the user's mouse is hovering over.
 
             vBox.getChildren().add(new TextField("Solve L -> R using PERMDAS"));
-            vBox.getChildren().add(getResponseBox(DijkstraParser.getWriterList()));
+            vBox.getChildren().add(getResponseBox());
             vBox.setAlignment(Pos.TOP_LEFT);
 
             lowerGridP.getChildren().clear();
@@ -497,11 +516,11 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
        * @return returns a ScrollPane with an HBox containing the evaluations
        * in ordered form.
        */
-      private ScrollPane getResponseBox(ArrayList expList) {
+      private ScrollPane getResponseBox() {
             VBox vBox = new VBox(2);
             ScrollPane scrollPane = new ScrollPane();
 
-            while (!Operator.hasOperators()) {
+            while ( ! Operator.hasOperators()) {
                   // expression node
                   ExpNode exp = Operator.poll();
                   TextField tf = new TextField(exp.getExpSolved());
@@ -520,6 +539,10 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                   vBox.getChildren().add(tf);
                   //vBox.setMaxWidth(exp.getExpSolved().length() + 4);
             }
+            //clear Operator for the next problem
+//            Operator.clearAnsComponents();
+
+
             scrollPane.setContent(vBox);
             scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scrollPane.setFitToWidth(true);
