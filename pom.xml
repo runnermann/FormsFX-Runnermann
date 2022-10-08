@@ -66,7 +66,7 @@
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>11.1.0</version>
+            <version>11.1.1</version>
         </dependency>
         <!-- RxJava ReactiveX -->
         <dependency>
@@ -236,15 +236,8 @@
         <!-- MEDIA NAMING - SIMILAR IMAGE HAS SIMILAR NAME -->
         <dependency>
             <groupId>dev.brachtendorf</groupId>
-            <artifactId>UtilityCode</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <!-- Required for perceptive hasher by brachtendorf -->
-        <dependency>
-            <groupId>com.github.wendykierp</groupId>
-            <artifactId>JTransforms</artifactId>
-            <version>3.1</version>
-            <classifier>with-dependencies</classifier>
+            <artifactId>JImageHash</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <!-- JJWT -->
         <dependency>
@@ -312,15 +305,15 @@
             </executions>
         </plugin> -->
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                <version>3.8.1</version>-->
+<!--                <configuration>-->
+<!--                    <source>17</source>-->
+<!--                    <target>17</target>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -366,34 +359,60 @@
             </plugin>
 
             <!-- build a single executable JAR -->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-shade-plugin</artifactId>-->
+<!--                <version>${mavenshade.version}</version>-->
+<!--                <executions>-->
+<!--                    &lt;!&ndash; Attach the shade into the package phase &ndash;&gt;-->
+<!--                    <execution>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>shade</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            &lt;!&ndash;<minimizeJar>true</minimizeJar>&ndash;&gt;-->
+
+<!--                            <shadedArtifactAttached>true</shadedArtifactAttached>-->
+<!--                            <shadedClassifierName>shaded</shadedClassifierName>-->
+<!--                            <transformers>-->
+<!--                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
+<!--                                    &lt;!&ndash; use the launcher here &ndash;&gt;-->
+<!--                                    <mainClass>flashmonkey.AppLauncher</mainClass>-->
+<!--                                </transformer>-->
+<!--                            </transformers>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>${mavenshade.version}</version>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
                 <executions>
-                    <!-- Attach the shade into the package phase -->
                     <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
+                        <!-- Default configuration for running with: mvn clean javafx:run -->
+                        <id>default-cli</id>
                         <configuration>
-                            <!--<minimizeJar>true</minimizeJar>-->
-<!--                            <filters>-->
-<!--                                <filter>-->
-<!--                                    <includes>-->
-<!--                                        <include>video.resources.**</include>-->
-<!--                                    </includes>-->
-<!--                                </filter>-->
-<!--                            </filters>-->
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>shaded</shadedClassifierName>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <!-- use the launcher here -->
-                                    <mainClass>flashmonkey.AppLauncher</mainClass>
-                                </transformer>
-                            </transformers>
+                            <mainClass>flashmonkey.FlashMonkeyMain</mainClass>
+                            <launcher>app</launcher>
+                            <jlinkZipName>app</jlinkZipName>
+                            <jlinkImageName>app</jlinkImageName>
+                            <noManPages>true</noManPages>
+                            <stripDebug>true</stripDebug>
+                            <noHeaderFiles>true</noHeaderFiles>
                         </configuration>
                     </execution>
                 </executions>

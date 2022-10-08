@@ -32,8 +32,6 @@
 
 package uicontrols.api;
 
-import impl.org.controlsfx.skin.NotificationBar;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
@@ -62,6 +59,7 @@ import javafx.util.Duration;
 
 import org.controlsfx.control.action.Action;
 import org.controlsfx.tools.Utils;
+//import impl.org.controlsfx.skin.NotificationBar;
 
 /**
  * NOTE: Call FXNotify, Don't use this class directly!
@@ -426,7 +424,7 @@ public class FMNotifications {
                         screenHeight = notification.owner.getHeight();
                         window = notification.owner;
                   }
-                  show(window, notification);
+//                  show(window, notification);
             }
 
             private Optional<Screen> getScreenBounds(Window window) {
@@ -445,346 +443,346 @@ public class FMNotifications {
 		/*void setPadding(int num) {
 			padding = num;
 		}*/
-
-            private void show(Window owner, final FMNotifications notification) {
-                  // Stylesheets which are added to the scene of a popup aren't
-                  // considered for styling. For this reason, we need to find the next
-                  // window in the hierarchy which isn't a popup.
-                  Window ownerWindow = owner;
-                  while (ownerWindow instanceof PopupWindow) {
-                        ownerWindow = ((PopupWindow) ownerWindow).getOwnerWindow();
-                  }
-                  // need to install our CSS
-                  Scene ownerScene = ownerWindow == null ? null : ownerWindow.getScene();
-                  if (ownerScene != null) {
-                        String stylesheetUrl = FMNotifications.class.getResource("/css/notificationpopup.css").toExternalForm(); //$NON-NLS-1$
-                        if (!ownerScene.getStylesheets().contains(stylesheetUrl)) {
-                              // The stylesheet needs to be added at the beginning so that
-                              // the styling can be adjusted with custom stylesheets.
-                              ownerScene.getStylesheets().add(0, stylesheetUrl);
-                        }
-                  }
-
-                  final Popup popup = new Popup();
-                  popup.setAutoFix(false);
-
-                  final Pos p = notification.position;
-
-                  final NotificationBar notificationBar = new NotificationBar() {
-                        @Override
-                        public String getTitle() {
-                              return notification.title;
-                        }
-
-                        @Override
-                        public String getText() {
-                              return notification.text;
-                        }
-
-                        @Override
-                        public Node getGraphic() {
-                              return notification.graphic;
-                        }
-
-                        @Override
-                        public ObservableList<Action> getActions() {
-                              return notification.actions;
-                        }
-
-                        @Override
-                        public boolean isShowing() {
-                              return isShowing;
-                        }
-
-                        @Override
-                        protected double computeMinWidth(double height) {
-                              String text = getText();
-                              Node graphic = getGraphic();
-                              if ((text == null || text.isEmpty()) && (graphic != null)) {
-                                    return graphic.minWidth(height);
-                              }
-                              return 375;
-                        }
-
-                        @Override
-                        protected double computeMinHeight(double width) {
-                              String text = getText();
-                              Node graphic = getGraphic();
-                              if ((text == null || text.isEmpty()) && (graphic != null)) {
-                                    return graphic.minHeight(width);
-                              }
-                              int num = text.split("\n").length -1;
-                              double ht = 40 + (num * 20);
-                              return ht;
-                        }
-
-                        @Override
-                        public boolean isShowFromTop() {
-                              return NotificationPopupHandler.this.isShowFromTop(notification.position);
-                        }
-
-                        @Override
-                        public void hide() {
-                              isShowing = false;
-
-                              // this would slide the notification bar out of view,
-                              // but I prefer the fade out below
-                              // doHide();
-
-                              // fade
-                              createHideTimeline(popup, this, p, Duration.ZERO).play();
-                        }
-
-                        @Override
-                        public boolean isCloseButtonVisible() {
-                              return !notification.hideCloseButton;
-                        }
-
-                        @Override
-                        public double getContainerHeight() {
-                              return startY + screenHeight;
-                        }
-
-                        @Override
-                        public void relocateInParent(double x, double y) {
-                              // this allows for us to slide the notification upwards
-                              switch (p) {
-                                    case BOTTOM_LEFT:
-                                    case BOTTOM_CENTER:
-                                    case BOTTOM_RIGHT:
-                                          popup.setAnchorY(y - padding);
-                                          break;
-                                    default:
-                                          // no-op
-                                          break;
-                              }
-                        }
-                  };
-
-                  notificationBar.getStyleClass().addAll(notification.styleClass);
-
-                  notificationBar.setOnMouseClicked(e -> {
-                        if (notification.onAction != null) {
-                              ActionEvent actionEvent = new ActionEvent(notificationBar, notificationBar);
-                              notification.onAction.handle(actionEvent);
-
-                              // animate out the popup
-                              createHideTimeline(popup, notificationBar, p, Duration.ZERO).play();
-                        }
-                  });
-
-                  popup.getContent().add(notificationBar);
-                  popup.setHideOnEscape(true);
-                  popup.show(owner, 0, 0);
-
-                  // determine location for the popup
-                  double anchorX = 0, anchorY = 0;
-                  final double barWidth = notificationBar.getWidth();
-                  final double barHeight = notificationBar.getHeight();
-
-                  // get anchorX
-                  switch (p) {
-                        case TOP_LEFT:
-                        case CENTER_LEFT:
-                        case BOTTOM_LEFT:
-                              anchorX = padding + startX;
-                              break;
-
-                        case TOP_CENTER:
-                        case CENTER:
-                        case BOTTOM_CENTER:
-                              anchorX = startX + (screenWidth / 2.0) - barWidth / 2.0 - padding / 2.0;
-                              break;
-
-                        default:
-                        case TOP_RIGHT:
-                        case CENTER_RIGHT:
-                        case BOTTOM_RIGHT:
-                              anchorX = startX + screenWidth - barWidth - padding;
-                              break;
-                  }
-
-                  // get anchorY
-                  switch (p) {
-                        case TOP_LEFT:
-                        case TOP_CENTER:
-                        case TOP_RIGHT:
-                              anchorY = padding + startY;
-                              break;
-
-                        case CENTER_LEFT:
-                        case CENTER:
-                        case CENTER_RIGHT:
-                              anchorY = startY + (screenHeight / 2.0) - barHeight / 2.0 - padding / 2.0;
-                              break;
-
-                        default:
-                        case BOTTOM_LEFT:
-                        case BOTTOM_CENTER:
-                        case BOTTOM_RIGHT:
-                              anchorY = startY + screenHeight - barHeight - padding;
-                              break;
-                  }
-
-                  popup.setAnchorX(anchorX);
-                  setFinalAnchorY(popup, anchorY);
-                  popup.setAnchorY(anchorY);
-
-                  isShowing = true;
-                  notificationBar.doShow();
-
-                  addPopupToMap(p, popup);
-
-                  // begin a timeline to get rid of the popup
-                  Timeline timeline = createHideTimeline(popup, notificationBar, p, notification.hideAfterDuration);
-                  timeline.play();
-            }
-
-            private void hide(Popup popup, Pos p) {
-                  popup.hide();
-                  removePopupFromMap(p, popup);
-            }
-
-            private Timeline createHideTimeline(final Popup popup, NotificationBar bar, final Pos p, Duration startDelay) {
-                  KeyValue fadeOutBegin = new KeyValue(bar.opacityProperty(), 1.0);
-                  KeyValue fadeOutEnd = new KeyValue(bar.opacityProperty(), 0.0);
-
-                  KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
-                  KeyFrame kfEnd = new KeyFrame(Duration.millis(500), fadeOutEnd);
-
-                  Timeline timeline = new Timeline(kfBegin, kfEnd);
-                  timeline.setDelay(startDelay);
-                  timeline.setOnFinished(e -> hide(popup, p));
-
-                  return timeline;
-            }
-
-            private void addPopupToMap(Pos p, Popup popup) {
-                  List<Popup> popups;
-                  if (!popupsMap.containsKey(p)) {
-                        popups = new LinkedList<>();
-                        popupsMap.put(p, popups);
-                  } else {
-                        popups = popupsMap.get(p);
-                  }
-
-                  doAnimation(p, popup);
-
-                  // add the popup to the list so it is kept in memory and can be
-                  // accessed later on
-                  popups.add(popup);
-            }
-
-            private void removePopupFromMap(Pos p, Popup popup) {
-                  if (popupsMap.containsKey(p)) {
-                        List<Popup> popups = popupsMap.get(p);
-                        popups.remove(popup);
-                  }
-            }
-
-            private void doAnimation(Pos p, Popup changedPopup) {
-                  List<Popup> popups = popupsMap.get(p);
-                  if (popups == null) {
-                        return;
-                  }
-
-                  parallelTransition.stop();
-                  parallelTransition.getChildren().clear();
-
-                  final boolean isShowFromTop = isShowFromTop(p);
-
-                  // animate all other popups in the list upwards so that the new one
-                  // is in the 'new' area.
-                  // firstly, we need to determine the target positions for all popups
-                  double sum = 0;
-                  double[] targetAnchors = new double[popups.size()];
-                  for (int i = popups.size() - 1; i >= 0; i--) {
-                        Popup _popup = popups.get(i);
-
-                        final NotificationBar notificationBar = (NotificationBar) _popup.getContent().get(0);
-                        final double popupHeight = notificationBar.minHeight(notificationBar.getWidth());
-
-                        if (isShowFromTop) {
-                              if (i == popups.size() - 1) {
-                                    sum = getFinalAnchorY(changedPopup) + popupHeight + SPACING;
-                              } else {
-                                    sum += popupHeight + SPACING;
-                              }
-                              targetAnchors[i] = sum;
-                              _popup.setAnchorY(sum - popupHeight);
-                        } else {
-                              if (i == popups.size() - 1) {
-                                    sum = getFinalAnchorY(changedPopup) - (popupHeight + SPACING);
-                              } else {
-                                    sum -= (popupHeight + SPACING);
-                              }
-
-                              targetAnchors[i] = sum;
-                              _popup.setAnchorY(sum + popupHeight);
-                        }
-                  }
-
-                  // then we set up animations for each popup to animate towards the
-                  // target
-                  for (int i = popups.size() - 1; i >= 0; i--) {
-                        final Popup _popup = popups.get(i);
-                        _popup.setAnchorX(changedPopup.getAnchorX());
-                        final double anchorYTarget = targetAnchors[i];
-                        if (anchorYTarget < 0) {
-                              _popup.hide();
-                        }
-                        final double oldAnchorY = getFinalAnchorY(_popup);
-                        final double distance = anchorYTarget - oldAnchorY;
-
-                        setFinalAnchorY(_popup, oldAnchorY + distance);
-                        Transition t = new CustomTransition(_popup, oldAnchorY, distance);
-                        t.setCycleCount(1);
-                        parallelTransition.getChildren().add(t);
-                  }
-                  parallelTransition.play();
-            }
-
-            private double getFinalAnchorY(Popup popup) {
-                  return (double) popup.getProperties().get(FINAL_ANCHOR_Y);
-            }
-
-            private void setFinalAnchorY(Popup popup, double anchorY) {
-                  popup.getProperties().put(FINAL_ANCHOR_Y, anchorY);
-            }
-
-            private boolean isShowFromTop(Pos p) {
-                  switch (p) {
-                        case TOP_LEFT:
-                        case TOP_CENTER:
-                        case TOP_RIGHT:
-                              return true;
-                        default:
-                              return false;
-                  }
-            }
-
-            class CustomTransition extends Transition {
-
-                  private final WeakReference<Popup> popupWeakReference;
-                  private final double oldAnchorY;
-                  private final double distance;
-
-                  CustomTransition(Popup popup, double oldAnchorY, double distance) {
-                        popupWeakReference = new WeakReference<>(popup);
-                        this.oldAnchorY = oldAnchorY;
-                        this.distance = distance;
-                        setCycleDuration(Duration.millis(350.0));
-                  }
-
-                  @Override
-                  protected void interpolate(double frac) {
-                        Popup popup = popupWeakReference.get();
-                        if (popup != null) {
-                              double newAnchorY = oldAnchorY + distance * frac;
-                              popup.setAnchorY(newAnchorY);
-                        }
-                  }
-            }
+//
+//            private void show(Window owner, final FMNotifications notification) {
+//                  // Stylesheets which are added to the scene of a popup aren't
+//                  // considered for styling. For this reason, we need to find the next
+//                  // window in the hierarchy which isn't a popup.
+//                  Window ownerWindow = owner;
+//                  while (ownerWindow instanceof PopupWindow) {
+//                        ownerWindow = ((PopupWindow) ownerWindow).getOwnerWindow();
+//                  }
+//                  // need to install our CSS
+//                  Scene ownerScene = ownerWindow == null ? null : ownerWindow.getScene();
+//                  if (ownerScene != null) {
+//                        String stylesheetUrl = FMNotifications.class.getResource("/css/notificationpopup.css").toExternalForm(); //$NON-NLS-1$
+//                        if (!ownerScene.getStylesheets().contains(stylesheetUrl)) {
+//                              // The stylesheet needs to be added at the beginning so that
+//                              // the styling can be adjusted with custom stylesheets.
+//                              ownerScene.getStylesheets().add(0, stylesheetUrl);
+//                        }
+//                  }
+//
+//                  final Popup popup = new Popup();
+//                  popup.setAutoFix(false);
+//
+//                  final Pos p = notification.position;
+//
+//                  final NotificationBar notificationBar = new NotificationBar() {
+//                        @Override
+//                        public String getTitle() {
+//                              return notification.title;
+//                        }
+//
+//                        @Override
+//                        public String getText() {
+//                              return notification.text;
+//                        }
+//
+//                        @Override
+//                        public Node getGraphic() {
+//                              return notification.graphic;
+//                        }
+//
+//                        @Override
+//                        public ObservableList<Action> getActions() {
+//                              return notification.actions;
+//                        }
+//
+//                        @Override
+//                        public boolean isShowing() {
+//                              return isShowing;
+//                        }
+//
+//                        @Override
+//                        protected double computeMinWidth(double height) {
+//                              String text = getText();
+//                              Node graphic = getGraphic();
+//                              if ((text == null || text.isEmpty()) && (graphic != null)) {
+//                                    return graphic.minWidth(height);
+//                              }
+//                              return 375;
+//                        }
+//
+//                        @Override
+//                        protected double computeMinHeight(double width) {
+//                              String text = getText();
+//                              Node graphic = getGraphic();
+//                              if ((text == null || text.isEmpty()) && (graphic != null)) {
+//                                    return graphic.minHeight(width);
+//                              }
+//                              int num = text.split("\n").length -1;
+//                              double ht = 40 + (num * 20);
+//                              return ht;
+//                        }
+//
+//                        @Override
+//                        public boolean isShowFromTop() {
+//                              return NotificationPopupHandler.this.isShowFromTop(notification.position);
+//                        }
+//
+//                        @Override
+//                        public void hide() {
+//                              isShowing = false;
+//
+//                              // this would slide the notification bar out of view,
+//                              // but I prefer the fade out below
+//                              // doHide();
+//
+//                              // fade
+//                              createHideTimeline(popup, this, p, Duration.ZERO).play();
+//                        }
+//
+//                        @Override
+//                        public boolean isCloseButtonVisible() {
+//                              return !notification.hideCloseButton;
+//                        }
+//
+//                        @Override
+//                        public double getContainerHeight() {
+//                              return startY + screenHeight;
+//                        }
+//
+//                        @Override
+//                        public void relocateInParent(double x, double y) {
+//                              // this allows for us to slide the notification upwards
+//                              switch (p) {
+//                                    case BOTTOM_LEFT:
+//                                    case BOTTOM_CENTER:
+//                                    case BOTTOM_RIGHT:
+//                                          popup.setAnchorY(y - padding);
+//                                          break;
+//                                    default:
+//                                          // no-op
+//                                          break;
+//                              }
+//                        }
+//                  };
+//
+//                  notificationBar.getStyleClass().addAll(notification.styleClass);
+//
+//                  notificationBar.setOnMouseClicked(e -> {
+//                        if (notification.onAction != null) {
+//                              ActionEvent actionEvent = new ActionEvent(notificationBar, notificationBar);
+//                              notification.onAction.handle(actionEvent);
+//
+//                              // animate out the popup
+//                              createHideTimeline(popup, notificationBar, p, Duration.ZERO).play();
+//                        }
+//                  });
+//
+//                  popup.getContent().add(notificationBar);
+//                  popup.setHideOnEscape(true);
+//                  popup.show(owner, 0, 0);
+//
+//                  // determine location for the popup
+//                  double anchorX = 0, anchorY = 0;
+//                  final double barWidth = notificationBar.getWidth();
+//                  final double barHeight = notificationBar.getHeight();
+//
+//                  // get anchorX
+//                  switch (p) {
+//                        case TOP_LEFT:
+//                        case CENTER_LEFT:
+//                        case BOTTOM_LEFT:
+//                              anchorX = padding + startX;
+//                              break;
+//
+//                        case TOP_CENTER:
+//                        case CENTER:
+//                        case BOTTOM_CENTER:
+//                              anchorX = startX + (screenWidth / 2.0) - barWidth / 2.0 - padding / 2.0;
+//                              break;
+//
+//                        default:
+//                        case TOP_RIGHT:
+//                        case CENTER_RIGHT:
+//                        case BOTTOM_RIGHT:
+//                              anchorX = startX + screenWidth - barWidth - padding;
+//                              break;
+//                  }
+//
+//                  // get anchorY
+//                  switch (p) {
+//                        case TOP_LEFT:
+//                        case TOP_CENTER:
+//                        case TOP_RIGHT:
+//                              anchorY = padding + startY;
+//                              break;
+//
+//                        case CENTER_LEFT:
+//                        case CENTER:
+//                        case CENTER_RIGHT:
+//                              anchorY = startY + (screenHeight / 2.0) - barHeight / 2.0 - padding / 2.0;
+//                              break;
+//
+//                        default:
+//                        case BOTTOM_LEFT:
+//                        case BOTTOM_CENTER:
+//                        case BOTTOM_RIGHT:
+//                              anchorY = startY + screenHeight - barHeight - padding;
+//                              break;
+//                  }
+//
+//                  popup.setAnchorX(anchorX);
+//                  setFinalAnchorY(popup, anchorY);
+//                  popup.setAnchorY(anchorY);
+//
+//                  isShowing = true;
+//                  notificationBar.doShow();
+//
+//                  addPopupToMap(p, popup);
+//
+//                  // begin a timeline to get rid of the popup
+//                  Timeline timeline = createHideTimeline(popup, notificationBar, p, notification.hideAfterDuration);
+//                  timeline.play();
+//            }
+//
+//            private void hide(Popup popup, Pos p) {
+//                  popup.hide();
+//                  removePopupFromMap(p, popup);
+//            }
+//
+//            private Timeline createHideTimeline(final Popup popup, NotificationBar bar, final Pos p, Duration startDelay) {
+//                  KeyValue fadeOutBegin = new KeyValue(bar.opacityProperty(), 1.0);
+//                  KeyValue fadeOutEnd = new KeyValue(bar.opacityProperty(), 0.0);
+//
+//                  KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
+//                  KeyFrame kfEnd = new KeyFrame(Duration.millis(500), fadeOutEnd);
+//
+//                  Timeline timeline = new Timeline(kfBegin, kfEnd);
+//                  timeline.setDelay(startDelay);
+//                  timeline.setOnFinished(e -> hide(popup, p));
+//
+//                  return timeline;
+//            }
+//
+//            private void addPopupToMap(Pos p, Popup popup) {
+//                  List<Popup> popups;
+//                  if (!popupsMap.containsKey(p)) {
+//                        popups = new LinkedList<>();
+//                        popupsMap.put(p, popups);
+//                  } else {
+//                        popups = popupsMap.get(p);
+//                  }
+//
+//                  doAnimation(p, popup);
+//
+//                  // add the popup to the list so it is kept in memory and can be
+//                  // accessed later on
+//                  popups.add(popup);
+//            }
+//
+//            private void removePopupFromMap(Pos p, Popup popup) {
+//                  if (popupsMap.containsKey(p)) {
+//                        List<Popup> popups = popupsMap.get(p);
+//                        popups.remove(popup);
+//                  }
+//            }
+//
+//            private void doAnimation(Pos p, Popup changedPopup) {
+//                  List<Popup> popups = popupsMap.get(p);
+//                  if (popups == null) {
+//                        return;
+//                  }
+//
+//                  parallelTransition.stop();
+//                  parallelTransition.getChildren().clear();
+//
+//                  final boolean isShowFromTop = isShowFromTop(p);
+//
+//                  // animate all other popups in the list upwards so that the new one
+//                  // is in the 'new' area.
+//                  // firstly, we need to determine the target positions for all popups
+//                  double sum = 0;
+//                  double[] targetAnchors = new double[popups.size()];
+//                  for (int i = popups.size() - 1; i >= 0; i--) {
+//                        Popup _popup = popups.get(i);
+//
+//                        final NotificationBar notificationBar = (NotificationBar) _popup.getContent().get(0);
+//                        final double popupHeight = notificationBar.minHeight(notificationBar.getWidth());
+//
+//                        if (isShowFromTop) {
+//                              if (i == popups.size() - 1) {
+//                                    sum = getFinalAnchorY(changedPopup) + popupHeight + SPACING;
+//                              } else {
+//                                    sum += popupHeight + SPACING;
+//                              }
+//                              targetAnchors[i] = sum;
+//                              _popup.setAnchorY(sum - popupHeight);
+//                        } else {
+//                              if (i == popups.size() - 1) {
+//                                    sum = getFinalAnchorY(changedPopup) - (popupHeight + SPACING);
+//                              } else {
+//                                    sum -= (popupHeight + SPACING);
+//                              }
+//
+//                              targetAnchors[i] = sum;
+//                              _popup.setAnchorY(sum + popupHeight);
+//                        }
+//                  }
+//
+//                  // then we set up animations for each popup to animate towards the
+//                  // target
+//                  for (int i = popups.size() - 1; i >= 0; i--) {
+//                        final Popup _popup = popups.get(i);
+//                        _popup.setAnchorX(changedPopup.getAnchorX());
+//                        final double anchorYTarget = targetAnchors[i];
+//                        if (anchorYTarget < 0) {
+//                              _popup.hide();
+//                        }
+//                        final double oldAnchorY = getFinalAnchorY(_popup);
+//                        final double distance = anchorYTarget - oldAnchorY;
+//
+//                        setFinalAnchorY(_popup, oldAnchorY + distance);
+//                        Transition t = new CustomTransition(_popup, oldAnchorY, distance);
+//                        t.setCycleCount(1);
+//                        parallelTransition.getChildren().add(t);
+//                  }
+//                  parallelTransition.play();
+//            }
+//
+//            private double getFinalAnchorY(Popup popup) {
+//                  return (double) popup.getProperties().get(FINAL_ANCHOR_Y);
+//            }
+//
+//            private void setFinalAnchorY(Popup popup, double anchorY) {
+//                  popup.getProperties().put(FINAL_ANCHOR_Y, anchorY);
+//            }
+//
+//            private boolean isShowFromTop(Pos p) {
+//                  switch (p) {
+//                        case TOP_LEFT:
+//                        case TOP_CENTER:
+//                        case TOP_RIGHT:
+//                              return true;
+//                        default:
+//                              return false;
+//                  }
+//            }
+//
+//            class CustomTransition extends Transition {
+//
+//                  private final WeakReference<Popup> popupWeakReference;
+//                  private final double oldAnchorY;
+//                  private final double distance;
+//
+//                  CustomTransition(Popup popup, double oldAnchorY, double distance) {
+//                        popupWeakReference = new WeakReference<>(popup);
+//                        this.oldAnchorY = oldAnchorY;
+//                        this.distance = distance;
+//                        setCycleDuration(Duration.millis(350.0));
+//                  }
+//
+//                  @Override
+//                  protected void interpolate(double frac) {
+//                        Popup popup = popupWeakReference.get();
+//                        if (popup != null) {
+//                              double newAnchorY = oldAnchorY + distance * frac;
+//                              popup.setAnchorY(newAnchorY);
+//                        }
+//                  }
+//            }
       }
 }
 

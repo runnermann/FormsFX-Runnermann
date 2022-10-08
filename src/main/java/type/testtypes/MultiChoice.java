@@ -531,7 +531,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                                         "\n  There are not enough Multi-Choice compatible questions for me to work.  " +
                                         "\n  Please create more Multi-Choice questions.";
 
-                                    FxNotify.notificationDark("", " ouch! " + msg, Pos.CENTER, 8,
+                                    FxNotify.notification("", " ouch! " + msg, Pos.CENTER, 8,
                                         "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
 
                                     // disable the answer buttons

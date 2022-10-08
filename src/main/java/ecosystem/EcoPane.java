@@ -85,7 +85,7 @@ public class EcoPane extends BorderPane {
                         boolean bool = engine.getLocation().equals(VertxLink.REQ_PURCHASE.getLink());
                         if (bool) {
                             String msg = "NOTICE! There was an attempt to reach a non-secure link. Please reset the connection to the internet.";
-                            FxNotify.notificationDark("", " Oooph! " + msg, Pos.CENTER, 8,
+                            FxNotify.notification("", " Oooph! " + msg, Pos.CENTER, 8,
                                     "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
                             //System.exit(1);
                         }

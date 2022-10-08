@@ -29,8 +29,8 @@ public abstract class FileOperations implements Serializable {
 
     private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
-      //private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FileOperations.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
+    // private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FileOperations.class);
     private static String fileName = "default.dec";
     private static File deckFolder;
 

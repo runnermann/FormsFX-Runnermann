@@ -133,14 +133,14 @@ public class Auth {
                   switch (res) {
                         case -1: {
                               String msg = "That didn't work.... Try resetting your password.";
-                              FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 8,
+                              FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 8,
                                   "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
                               FlashMonkeyMain.showResetOnePane();
                               break;
                         }
                         case 0: {
                               String msg = "I cannot connect with the server. Please check the connection to the internet";
-                              FxNotify.notificationDark("", " Oooph! " + msg, Pos.CENTER, 8,
+                              FxNotify.notification("", " Oooph! " + msg, Pos.CENTER, 8,
                                   "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
                               break;
                         }
@@ -169,13 +169,13 @@ public class Auth {
             switch (res) {
                   case -1: {
                         String msg = "That didn't work.";
-                        FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 4,
+                        FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 4,
                             "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
                         break;
                   }
                   case 0: {
                         String msg = " Please check your connection to the internet";
-                        FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 4,
+                        FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 4,
                             "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
 
                         break;
@@ -184,7 +184,7 @@ public class Auth {
                         String msg = " Congratulations! \n Welcome to FlashMonkey. The learning platform where" +
                             " you get more than a grade. \n1. You can Learn Smarter\n" +
                             "2. Earn Cash\n3. Organize Everything\n4. Find Faster\n5. and Create on the Fly";
-                        FxNotify.notificationDark("", " Awesomeness! " + msg, Pos.CENTER, 4,
+                        FxNotify.notification("", " Awesomeness! " + msg, Pos.CENTER, 4,
                             "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                         // set flashmonkey main to filesPane()
                         FlashMonkeyMain.getFileSelectPane();
@@ -210,8 +210,7 @@ public class Auth {
       private boolean resetPasswordRemote() {
             // ?????
             LOGGER.debug("resetPasswordRemote called");
-            String errorMessage = "There is a problem with your email-password combination. \n\n If this problem continues" +
-                " reset your password";
+            String errorMessage = "There is a problem with your password .";
             notifyError(errorMessage);
             UserData.clear();
 
@@ -241,7 +240,7 @@ public class Auth {
 
             switch (v.succeeded()) {
                   case 0: {
-                        String errorMessage = "There is a problem with your email-password combination.";
+                        String errorMessage = "There is a problem with your password.";
                         notifyError(errorMessage);
                         return false;
                   }
@@ -317,7 +316,7 @@ public class Auth {
 
       // **** HELPER METHODS **** //
       private static void notifyError(String errorMessage) {
-            FxNotify.notificationDark("", " Ooops! " + errorMessage, Pos.CENTER, 10,
+            FxNotify.notification("", " Ooops! " + errorMessage, Pos.CENTER, 10,
                 "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 

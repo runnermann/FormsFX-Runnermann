@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 
 /**
@@ -414,7 +413,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                   StringBuilder sb = new StringBuilder();
                   sb.append(expression);
                   sb.append("\n\n " + parser.getErrorMessage());
-                  FxNotify.notificationDark("", " Hmmmm! " + sb, Pos.CENTER, 15,
+                  FxNotify.notification("", " Hmmmm! " + sb, Pos.CENTER, 15,
                       "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
 
             } else {

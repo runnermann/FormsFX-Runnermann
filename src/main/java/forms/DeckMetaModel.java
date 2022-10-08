@@ -154,7 +154,7 @@ public class DeckMetaModel extends ModelParent {
                           "\nTo update so others may access " +
                           "\nand purchase your deck, please check your"  +
                           "\nconnection and try again.";
-                  FxNotify.notificationDark("Ooops", msg, Pos.CENTER, 15,
+                  FxNotify.notification("Ooops", msg, Pos.CENTER, 15,
                           "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
             }
       }
@@ -216,7 +216,7 @@ public class DeckMetaModel extends ModelParent {
 
             if (bool) {
                   String msg = "You're updates have been saved to the cloud and should be viewable.";
-                  FxNotify.notificationDark("Awesomeness!", msg, Pos.CENTER, 12,
+                  FxNotify.notification("Awesomeness!", msg, Pos.CENTER, 12,
                       "image/flashFaces_stars_75.png", FlashMonkeyMain.getPrimaryWindow());
                   return true;
             } else {

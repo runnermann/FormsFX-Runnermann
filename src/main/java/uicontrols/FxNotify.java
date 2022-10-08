@@ -1,10 +1,10 @@
 package uicontrols;
 
 import fmannotations.FMAnnotations;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 import media.sound.SoundEffects;
+import org.controlsfx.control.Notifications;
 import uicontrols.api.FMNotifications;
 
 import javafx.geometry.Pos;
@@ -31,60 +31,73 @@ public class FxNotify {
 
       private static FMNotifications notificationBuilder;
 
-      public static synchronized void notificationWarning(String title, String msg, Pos pos, int duration, String iconPath, Stage owner, int padding) {
+      public static synchronized void notification(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
             if (notificationBuilder == null || !notificationBuilder.isShowing()) {
+
                   Node graphic = new ImageView(iconPath);
-                  notificationBuilder = FMNotifications.create()
+                  Notifications.create()
                       .title(title)
-                      .text(msg)
                       .graphic(graphic)
+                      .text(msg)
+                      .threshold(1, Notifications.create().title("Collapsed Notification"))
                       .hideAfter(Duration.seconds(duration))
-                      .padding(padding)
-                      .position(pos);
+                      .position(pos)
+                      .showWarning();
+
+//                  notificationBuilder = FMNotifications.create()
+//                      .title(title)
+//                      .text(msg)
+//                      .graphic(graphic)
+//                      .hideAfter(Duration.seconds(duration))
+//                      .padding(padding)
+//                      .position(pos);
 
                   SoundEffects.NOTIFICATION_NORM.play();
-                  notificationBuilder.owner(owner);
-                  notificationBuilder.warningStyle();
-                  notificationBuilder.show();
+//                  notificationBuilder.owner(owner);
+//                  notificationBuilder.warningStyle();
+//                  notificationBuilder.show();
             }
       }
 
-      public static synchronized void notificationBlue(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
-            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
-                  Image img = new Image(iconPath);
-                  Node graphic = new ImageView(img);
-                  //Toolkit.getDefaultToolkit().beep();
-                  SoundEffects.NOTIFICATION_NORM.play();
-                  notificationBuilder = FMNotifications.create()
-                      .title(title)
-                      .text(msg)
-                      .graphic(graphic)
-                      .hideAfter(Duration.seconds(duration))
-                      .position(pos);
+//      public static synchronized void notificationBlue(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
+//            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
+//                  Image img = new Image(iconPath);
+//                  Node graphic = new ImageView(img);
+//
+//
+//
+//                  //Toolkit.getDefaultToolkit().beep();
+//                  SoundEffects.NOTIFICATION_NORM.play();
+//                  notificationBuilder = FMNotifications.create()
+//                      .title(title)
+//                      .text(msg)
+//                      .graphic(graphic)
+//                      .hideAfter(Duration.seconds(duration))
+//                      .position(pos);
+//
+//                  notificationBuilder.owner(owner);
+//                  notificationBuilder.blueStyle();
+//                  notificationBuilder.show();
+//            }
+//      }
 
-                  notificationBuilder.owner(owner);
-                  notificationBuilder.blueStyle();
-                  notificationBuilder.show();
-            }
-      }
-
-      public static synchronized void notificationDark(String title, String msg, Pos pos, int durationSeconds, String iconPath, Stage owner) {
-            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
-                  Node graphic = new ImageView(iconPath);
-                  SoundEffects.NOTIFICATION_NORM.play();
-                  notificationBuilder = FMNotifications.create()
-                      .title(title)
-                      .text(msg)
-                      .graphic(graphic)
-                      .hideAfter(Duration.seconds(durationSeconds))
-                      .position(pos);
-
-                  Toolkit.getDefaultToolkit().beep();
-                  notificationBuilder.owner(owner);
-                  notificationBuilder.darkStyle();
-                  notificationBuilder.show();
-            }
-      }
+//      public static synchronized void notificationDark(String title, String msg, Pos pos, int durationSeconds, String iconPath, Stage owner) {
+//            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
+//                  Node graphic = new ImageView(iconPath);
+//                  SoundEffects.NOTIFICATION_NORM.play();
+//                  notificationBuilder = FMNotifications.create()
+//                      .title(title)
+//                      .text(msg)
+//                      .graphic(graphic)
+//                      .hideAfter(Duration.seconds(durationSeconds))
+//                      .position(pos);
+//
+//                  Toolkit.getDefaultToolkit().beep();
+//                  notificationBuilder.owner(owner);
+//                  notificationBuilder.darkStyle();
+//                  notificationBuilder.show();
+//            }
+//      }
 
       @FMAnnotations.DoNotDeployMethod
       public static boolean notificationIsShowing() {

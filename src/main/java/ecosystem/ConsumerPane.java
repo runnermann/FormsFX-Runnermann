@@ -130,7 +130,7 @@ public class ConsumerPane extends StackPane {
                         layoutWebView(ePane);
                   } else {
                         String errorMessage = " Please select a deck for your purchase";
-                        FxNotify.notificationBlue("Ooops!", errorMessage, Pos.CENTER, 4,
+                        FxNotify.notification("Ooops!", errorMessage, Pos.CENTER, 4,
                         "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                   }
             }

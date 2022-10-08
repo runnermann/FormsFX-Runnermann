@@ -1,11 +1,9 @@
 package campaign.db;
 
-import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
 import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.Pos;
-import org.apache.http.MethodNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
@@ -135,7 +133,7 @@ public enum DBFetchMulti {
 
       private static void connectionErrorMessage() {
             String msg = "    Please check your connection.   ";
-            FxNotify.notificationWarning("OUCH!", msg, Pos.TOP_CENTER, 15,
-                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow(), -75);
+            FxNotify.notification("OUCH!", msg, Pos.TOP_CENTER, 15,
+                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 }

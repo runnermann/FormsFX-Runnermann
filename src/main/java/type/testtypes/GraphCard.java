@@ -669,7 +669,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
                         sb.append(expression);
                         sb.append("\n\n " + parser.getErrorMessage());
 
-                        FxNotify.notificationDark("What !?!", sb.toString(), Pos.CENTER, 20,
+                        FxNotify.notification("What !?!", sb.toString(), Pos.CENTER, 20,
                             "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
 
                         return 0;

@@ -2,7 +2,6 @@ package ecosystem;
 
 import campaign.db.DBFetchMulti;
 import flashmonkey.FlashMonkeyMain;
-import forms.utility.Alphabet;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -345,7 +344,7 @@ public class CenterPane {
         if(dmp.getMapArray().isEmpty()) {
             String message = " I was unable to find anything for that search." +
                     "\nTry a different spelling or a broader search.";
-                  FxNotify.notificationDark("Oooph!", message, Pos.CENTER, 10,
+                  FxNotify.notification("Oooph!", message, Pos.CENTER, 10,
                       "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getActionWindow());
         } else {
             HashMap<String, String> map = dmp.getMapArray().get(idx);

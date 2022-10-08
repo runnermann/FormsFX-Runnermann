@@ -63,7 +63,7 @@ public class ConfirmationModel {
                       "\nYou may reset the password by clicking\n on \"reset password\" on the sign-in page.";
                   String emojiPath = "image/Flash_hmm_75.png";
 
-                  FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 5,
+                  FxNotify.notification("Ouch!", message, Pos.CENTER, 5,
                       emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
             createForm();
@@ -102,7 +102,7 @@ public class ConfirmationModel {
                   Auth.finalizeUserRemote(descriptor.getCode(), field1.get());
             } else {
                   // TODO sign in failed message
-                  String errorMessage = "There is a problem with your email-password combination. ";
+                  String errorMessage = "There is a problem with your password. ";
                   notifyError(errorMessage);
                   UserData.clear();
             }
@@ -148,7 +148,7 @@ public class ConfirmationModel {
 
       // **** HELPER METHODS **** //
       private void notifyError(String errorMessage) {
-            FxNotify.notificationWarning("", " Ooops! " + errorMessage, Pos.CENTER, 8,
-                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow(), 15);
+            FxNotify.notification("", " Ooops! " + errorMessage, Pos.CENTER, 8,
+                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 }

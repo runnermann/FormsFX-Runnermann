@@ -668,8 +668,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
       private void notifyEditorsDiabled() {
             String msg = "    Please set the \"CARD TYPE\"";
-            FxNotify.notificationWarning("Oooph!", msg, Pos.TOP_LEFT, 7,
-                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow(), 100);
+            FxNotify.notification("Oooph!", msg, Pos.CENTER, 7,
+                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 
       /* ------------------------------------------------------- **/
@@ -1080,7 +1080,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                           "\nTo upload and make this deck available " +
                           "\nplease check the internet connection and" +
                           "\ntry again.";
-                  FxNotify.notificationDark("Ooops", msg, Pos.CENTER, 15,
+                  FxNotify.notification("Ooops", msg, Pos.CENTER, 15,
                           "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                   metaButton.setDisable(true);
             }

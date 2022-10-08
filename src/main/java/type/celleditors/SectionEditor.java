@@ -1344,7 +1344,7 @@ public class SectionEditor {
                   String message = "\n  Something went wrong. I didn't find a web-cam." +
                           "\n  If you have one, check your computer settings \n and try again. ";
                   String emojiPath = "image/Flash_hmm_75.png";
-                  FxNotify.notificationBlue("Oooph!", message, Pos.CENTER, 20,
+                  FxNotify.notification("Oooph!", message, Pos.CENTER, 20,
                       emojiPath, FlashMonkeyMain.getPrimaryWindow());
                   LOGGER.warn("Camera error: Possibly no camera available");
             }
@@ -1730,7 +1730,7 @@ public class SectionEditor {
                         String errorMessage = " That's a drag. That didn't work." +
                             "\n Try dragging to the desktop first. " +
                             "\n then drag from the desk top";
-                        FxNotify.notificationBlue("OUCH!!!!", errorMessage, Pos.CENTER, 7,
+                        FxNotify.notification("OUCH!!!!", errorMessage, Pos.CENTER, 7,
                             "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
                   } else {
                         setMediaFileName(fileNaming.getMediaFileName());
@@ -1874,7 +1874,7 @@ public class SectionEditor {
                         String errorMessage = " That's a drag. That didn't work." +
                             "\n Try dragging to the desktop first. " +
                             "\n then drag from the desk top";
-                        FxNotify.notificationBlue("OUCH!!!!", errorMessage, Pos.CENTER, 7,
+                        FxNotify.notification("OUCH!!!!", errorMessage, Pos.CENTER, 7,
                             "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
                         e.printStackTrace();
                   }

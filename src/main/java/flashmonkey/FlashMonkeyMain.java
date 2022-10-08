@@ -27,9 +27,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 //import javafx.stage.StageStyle;
@@ -437,7 +435,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
       private static void acctSecondaryAction() {
             String version = VersionTimeStamp.getVersionBuildStamp();
-            FxNotify.notificationDark("Version", version, Pos.CENTER, 10, "image/blue_flash_128.png", FlashMonkeyMain.getPrimaryWindow());
+            FxNotify.notification("Version", version, Pos.CENTER, 10, "image/blue_flash_128.png", FlashMonkeyMain.getPrimaryWindow());
       }
 
 
@@ -655,8 +653,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "Oooph!" +
                       "\n I need to be connected to the cloud \n to create or change your account information.";
-                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
-                      emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
+                  FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
+                      emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
       }
 
@@ -715,8 +713,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             } else {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud.";
-                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
+                  FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
       }
 
@@ -735,8 +733,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             } else {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud.";
-                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
+                  FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
       }
 
@@ -758,8 +756,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             } else {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud to cancel your account.";
-                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
+                  FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
       }
 
@@ -781,8 +779,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             } else {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud to cancel your account.";
-                  FxNotify.notificationWarning("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow(), 15);
+                  FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
+                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
       }
 
@@ -903,7 +901,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                 "   version of FlashMonkey.\n " +
                 "   We're working on this, but for now we \n" +
                 "   are not able to process the file. \n\n";
-            FxNotify.notificationDark("OUCH!", msg, Pos.CENTER, 30,
+            FxNotify.notification("OUCH!", msg, Pos.CENTER, 30,
                 "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 

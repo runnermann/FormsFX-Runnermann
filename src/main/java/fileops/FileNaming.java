@@ -2,9 +2,12 @@ package fileops;
 
 
 import authcrypt.UserData;
-import brachtendorf.jimagehash.hash.Hash;
-import brachtendorf.jimagehash.hashAlgorithms.HashingAlgorithm;
-import brachtendorf.jimagehash.hashAlgorithms.PerceptiveHash;
+//import brachtendorf.jimagehash.hash.Hash;
+//import brachtendorf.jimagehash.hashAlgorithms.HashingAlgorithm;
+//import brachtendorf.jimagehash.hashAlgorithms.PerceptiveHash;
+import dev.brachtendorf.jimagehash.hash.Hash;
+import dev.brachtendorf.jimagehash.hashAlgorithms.HashingAlgorithm;
+import dev.brachtendorf.jimagehash.hashAlgorithms.PerceptiveHash;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -156,6 +159,7 @@ public class FileNaming {
        */
       public static String getImageHash(BufferedImage img) {
             LOGGER.debug("getImageHash called");
+
             HashingAlgorithm hasher = new PerceptiveHash(32);
             Hash hash = hasher.hash(img);
             LOGGER.debug("imagHash: {} ", bytesToHex(hash.toByteArray()));

@@ -76,7 +76,7 @@ public class AccountModel {
                   } else {
                         // set message that user does not exist,
                         String msg = "That didn't work.... \n If you continue to have problems, Try \nresetting your password.";
-                        FxNotify.notificationDark("", " Hmmmm! " + msg, Pos.CENTER, 8,
+                        FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 8,
                             "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
 
                         field1.setValue("");

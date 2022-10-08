@@ -224,7 +224,7 @@ public class S3PutObjs {
                               if (response != 1) {
                                     String message = "Deck failed to upload";
 
-                                    FxNotify.notificationDark("", " Ooops! " + message, Pos.CENTER, 3,
+                                    FxNotify.notification("", " Ooops! " + message, Pos.CENTER, 3,
                                     "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
 
                               }

@@ -73,7 +73,7 @@ public class SignUpModel {
                       "\nYou may reset the password by clicking\n on \"reset password\" on the sign-in page.";
                   String emojiPath = "image/Flash_hmm_75.png";
 
-                  FxNotify.notificationBlue("Ouch!", message, Pos.CENTER, 5,
+                  FxNotify.notification("Ouch!", message, Pos.CENTER, 5,
                       emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
             createForm();
