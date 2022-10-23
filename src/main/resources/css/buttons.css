@@ -89,15 +89,11 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-border-color: WHITE;
 }
 #clearButton {
-    /* -fx-background-color: #0C73C5; */
     -fx-border-radius: 0 3 3 0;
     -fx-background-radius: 0 3 3 0;
     -fx-border-width: 1;
     -fx-border-color: #0E89EC; /* Focus blue is .. 0096C9 */
 }
-/*#clrBtn:hover {*/
-/*    -fx-background-color: rgba(247,247,247,0.85);*/
-/*}*/
 #drawToolButton {
     -fx-background-color: #0C73C5;
     -fx-border-radius: 0 3 3 0;
@@ -113,7 +109,6 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-background-radius: 4;
     -fx-text-fill: FOCUS_BLUE;
     -fx-background-color: derive(-fx-base,80%);
-    /*-fx-background-color: derive(-fx-base,20%);*/
 }
 #navButtonLight:hover {
     -fx-base: FM_SETTINGS_BCKGND;
@@ -126,7 +121,6 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-background-radius: 0, 0, 0, 0;
     -fx-text-fill: ICON_BLUE;
     -fx-background-color: BUTTON_WHITE;
-    /*-fx-background-color: derive(-fx-base,20%);*/
 }
 #navButtonBlue:hover {
     -fx-base: FM_SETTINGS_BCKGND;

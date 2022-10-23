@@ -54,6 +54,7 @@ public class UIColors {
       public static final String ICON_GOLD = "rgb(242, 199, 68)"; // #F2C744
       public static final String ICON_ELEC_BLUE = "rgb(30, 164, 217)"; // #1EA4D9
       public static final String EVE_BLUE = "rgb(0, 100, 225)"; //#0064e1
+      public static final String CORRECT_GREEN = "rgb(58,255,102)"; // ##3AFF66
 
 
       /**

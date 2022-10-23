@@ -34,7 +34,6 @@ import flashmonkey.FlashCardMM;
 import type.sectiontype.GenericSection;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 /**
  * @author Lowell Stadelman
@@ -47,7 +46,7 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
        * Default constructor
        */
       private NoteTaker() {
-            super.setScore(0);
+            setScore(0);
       }
 
       /**
@@ -182,6 +181,4 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
       public void reset() {
             // stub
       }
-
-
 }

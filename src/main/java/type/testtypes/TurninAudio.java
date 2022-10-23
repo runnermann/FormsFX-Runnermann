@@ -9,13 +9,12 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 public class TurninAudio extends TestTypeBase implements GenericTestType<TurninAudio> {
 
 
       public TurninAudio() {
-            // no args constructor
+            setScore(2);
       }
 
 

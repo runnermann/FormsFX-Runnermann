@@ -345,7 +345,7 @@ public class SectionEditor {
             this.clearBtn.setOnAction((ActionEvent e) -> {
                   SoundEffects.PRESS_BUTTON_COMMON.play();
                   tCell.getTextArea().setText("");
-                  tCell.getTextArea().requestFocus();
+      //            tCell.getTextArea().requestFocus();
             });
 
             // SnapShot button
@@ -575,6 +575,10 @@ public class SectionEditor {
       private void deleteMMcellAction() {
             //SoundEffects.PRESS_BUTTON_COMMON.play();
             CreateFlash.getInstance().setFlashListChanged(true);
+            clearMMCell();
+      }
+
+      private void clearMMCell() {
             this.sectionType = 't';
             if (arrayOfFMShapes != null) {
                   arrayOfFMShapes.clear();
@@ -608,7 +612,7 @@ public class SectionEditor {
             setTextCellWidthFull();
             arrayOfFMShapes = new ArrayList<>();
 
-            deleteMMcellAction();
+            clearMMCell();
       }
 
 

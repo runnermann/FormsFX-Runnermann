@@ -1,7 +1,6 @@
 package metadata;
 
 import authcrypt.UserData;
-import campaign.Report;
 import fileops.DirectoryMgr;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
@@ -21,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.Stream;
 
 /**
  * <p>Contains the data describing a deck. Also contains the methods to store
@@ -551,7 +549,7 @@ public class DeckMetaData implements FormData {
 	}
 	public String calcLastScore() {
 		if(SCORES.size() < 1) {
-			addTestData(0, 0);
+			appendToScoresArry(0, 0);
 		}
 		return SCORES.get(SCORES.size() - 1);
 	}
@@ -621,20 +619,22 @@ public class DeckMetaData implements FormData {
 	public void setNumStars(int numStars) { this.numStars = numStars;};
 
 
-
-
 	// OTHER METHODS
 
-	
 
-	public void addTestData(int numAns, int score) {
+	/**
+	 * Appends a new ScoreNode to the SCORES array
+	 * @param numAns
+	 * @param score
+	 */
+	public void appendToScoresArry(int numAns, int score) {
 		SCORES.add(new ScoreNode(this.numCard, numAns, score).getScore());
 	}
 	
 
 	// ******* INNER CLASS ******** //
 
-	public class ScoreNode implements Serializable {
+	 class ScoreNode implements Serializable {
 		
 		/* VERSION */
 		public static final long VERSION = FlashMonkeyMain.VERSION;
@@ -642,7 +642,7 @@ public class DeckMetaData implements FormData {
 		long dateInMillis = 0;
 		int numQs = 0;
 		int numAns = 0;
-		int score = 0;
+		int score1 = 0;
 
 		/**
 		 * A node containing user scores and date.
@@ -656,7 +656,7 @@ public class DeckMetaData implements FormData {
 			this.dateInMillis = System.currentTimeMillis();
 			this.numQs = numQs;
 			this.numAns = numAns;
-			this.score = score;
+			this.score1 = score;
 		}
 
 		ScoreNode getScoreNode() {
@@ -676,10 +676,8 @@ public class DeckMetaData implements FormData {
 			LocalDateTime ldt = Instant.ofEpochMilli(dateInMillis)
 					.atZone(ZoneId.systemDefault()).toLocalDateTime();
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
 			String dtg = ldt.format(formatter);
-
-			return score + "/" + numAns + "/" + numQs + "  " + dtg;
+			return score1 + "/" + numAns + "/" + numQs + "  " + dtg;
 		}
 	}
 }

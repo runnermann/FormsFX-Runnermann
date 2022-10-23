@@ -112,7 +112,6 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
       public void start(Stage stage) {
             stage.setHeight(screenHt);
             stage.setWidth(screenWt);
-
             canvas = new Canvas();
             canvas.setHeight(screenHt);
             canvas.setWidth(screenWt);
@@ -124,14 +123,12 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
                   }
             });
 
-
             // Pane for taking the ScreenShot
             stackPane = new StackPane();
             stackPane.setStyle("-fx-background-color: TRANSPARENT");
             stackPane.getChildren().add(canvas);
 
             // Set the scene size to the screen size
-            // Work around for windows 10
             snapScene = new Scene(stackPane, screenWt - 8, screenHt - 8, new Color(0, 0, 0, 1d / 255d));
             // and cursor
             snapScene.setCursor(Cursor.CROSSHAIR);
@@ -272,26 +269,6 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
             }
       }
 
-
-      /**
-       * Creates the mediaName, and saves the file to the hard drive. Sets
-       * the mediaName in SectionEditor to the current fileName for this image.
-       * @param fileName ImageName
-       */
-    /*protected void saveImage(String fileName) {
-        try {
-            String path = DirectoryMgr.getMediaPath('c');
-            FileOpsUtil.folderExists(new File(path + fileName));
-            ImageIO.write(imageBuffer, "png", new File(path + fileName));
-        }
-        catch (IOException e) // for ImageIO.write errors
-        {
-           System.out.println("ERROR: IO Exception in snapShot while saving image to file" +
-                    "\n line 253");
-           e.printStackTrace();
-        }
-    }*/
-
       // ********** GETTERS ******** //
 
       /**
@@ -322,6 +299,5 @@ public class SnapShot //extends SectionEditor //implements FMMouseInterface
                   CreateFlash cfp = CreateFlash.getInstance();
                   cfp.enableButtons();
             }
-            //super.onClose();
       }
 }

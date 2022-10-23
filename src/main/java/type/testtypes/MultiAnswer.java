@@ -24,7 +24,7 @@ public class MultiAnswer extends TestTypeBase implements GenericTestType<MultiAn
       private Button selectAnsButton, nextAnsButton, prevAnsButton;
 
       public MultiAnswer() {
-            // no args constructor
+            super.setScore(2);
       }
 
 
@@ -144,6 +144,4 @@ public class MultiAnswer extends TestTypeBase implements GenericTestType<MultiAn
       public void reset() {
             // stub
       }
-
-
 }

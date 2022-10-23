@@ -15,7 +15,6 @@ import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import forms.DeckMetaModel;
 import forms.DeckMetaPane;
-//import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,6 +25,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import media.sound.SoundEffects;
 import metadata.DeckMetaData;
 import org.controlsfx.control.PrefixSelectionComboBox;
@@ -38,9 +39,6 @@ import type.testtypes.GenericTestType;
 import type.testtypes.MultiChoice;
 import type.testtypes.TestList;
 import uicontrols.*;
-//import uicontrols.api.ComboBoxAutoComplete;
-//import uicontrols.api.FMAutoCompleteBox;
-//import uicontrols.api.SerialAutoCompleteBox;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -180,7 +178,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       private Button nextQButton, prevQButton, deleteQButton, undoQButton;
       // resets all q's performance metrics to zero
       private Button resetDeckButton;
-      private VBox masterPane;
+      private BorderPane masterBPane;
       private VBox cfpCenter;
       private Stage metaWindow;
 
@@ -199,7 +197,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
       //*** VARIABLES ***
       private int startSize;
-
+      private int testTypeIdx;
 
       private DeckMetaData meta;// = new DeckMetaData();
 
@@ -217,10 +215,11 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * To select the test types in the ComboBox.
        */
       private final ObservableList<TestMapper> TESTS = FXCollections.observableArrayList(TestMapper.getTestList(TestList.TEST_TYPES));
-      private static PrefixSelectionComboBox<TestMapper> entryComboBox = new PrefixSelectionComboBox<TestMapper>();
+      private static PrefixSelectionComboBox<TestMapper> entryComboBox;
 
       /* ***** FOR TESTING ONLY ********/
       DeckMetaPane metaPane;
+
 
       // Editors
       private static Editors editors;
@@ -241,7 +240,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * no args constructor
        */
       private CreateFlash() {
-            LOGGER.setLevel(Level.ALL);
+            //init();
+            testTypeIdx = -0;
       }
 
       /* ------------------------------------------------------- **/
@@ -258,29 +258,61 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             if (CLASS_INSTANCE == null) {
                   CLASS_INSTANCE = new CreateFlash();
             }
-            FlashMonkeyMain.getPrimaryWindow().setResizable(true);
-            if (null != metaButton && Utility.isConnected()) {
-                  metaButton.setDisable(false);
-                  metaButton.setTooltip(new Tooltip("Please check the internet connection."));
-            }
             return CLASS_INSTANCE;
       }
+
+      /* ------------------------------------------------------- **/
+
+      private void initComboBox() {
+            //FlashMonkeyMain.getPrimaryWindow().setResizable(true);
+
+            /*
+             * ****  ComboBox selects the Test type. Default is no mode.  ****
+             * This is OBE.
+             * 0 = Default = multi-choice, multi-answer, T or F, and Write in.
+             * 1 = Multiple choice
+             * 2 = Multiple answer
+             * 3 = True or false
+             * 4 = Write it in
+             * 5 = FITB fill in the blank
+             * 6 = Turn in audio
+             * 7 = Turn in video
+             * 8 = Turn in Drawing
+             * 9 = Draw over image
+             * 10 = MathCard
+             * 11 = GraphCard
+             * 12 = NoteTaker
+             */
+            // Set the array of TESTS in comboList
+            entryComboBox = new PrefixSelectionComboBox<>();
+            entryComboBox.getItems().addAll(TESTS);
+            // Set tooltip
+            entryComboBox.setTooltip(new Tooltip("Select the test mode for this card." +
+                "\nEffects the card layout. " +
+                "\n** Type a card name in for rapid search"));
+            // Set prefered width and height of combo box
+            entryComboBox.setMaxWidth(Double.MAX_VALUE);
+            entryComboBox.setPrefHeight(24);
+            entryComboBox.setPromptText("CARD TYPE");
+
+            // set number of rows visible
+            entryComboBox.setVisibleRowCount(5);
+      }
+
 
       /* ------------------------------------------------------- **/
 
       /**
        * Scene CONSTRUCTOR
        */
-      public Scene createFlashScene() {
-
+      public BorderPane createFlashScene() {
+            initComboBox();
             flashListChanged = false;
             LOGGER.setLevel(Level.ALL);
-
             LOGGER.debug("called createFlashScene()");
-            //String name = FlashCardOps.getInstance().getDeckFileName();
             LOGGER.debug("deckName: {}", FlashCardOps.getInstance().getDeckLabelName());
-
-            metaWindow = new Stage();
+            // The metadata and allow sell window
+//            metaWindow = new Stage();
             meta = DeckMetaData.getInstance();
             // Label at top of window
             // Get deck name from readflash.
@@ -313,7 +345,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   creatorList = new ArrayList<>(10);
             }
 
-            // The index starts at the end
+            // In CreateFlash The index starts at the end
             // of the list.
             if (creatorList != null) {
                   listIdx = creatorList.size();
@@ -324,50 +356,12 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             cfpNorth.setPadding(new Insets(2, 4, 2, 4));
             // Contains the CardType
             cfpCenter = new VBox(2);
-            //cfpCenter.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             cfpCenter.setPadding(new Insets(0, 4, 0, 4));
             cfpCenter.setSpacing(2);
 
             // contains the buttons in a horizontal row
             VBox cfpSouth;
             cfpNorth.setId("cfpNorthPane");
-
-            /*
-             * ****  ComboBox selects the Test type. Default is no mode.  ****
-             * This is OBE.
-             * 0 = Default = multi-choice, multi-answer, T or F, and Write in.
-             * 1 = Multiple choice
-             * 2 = Multiple answer
-             * 3 = True or false
-             * 4 = Write it in
-             * 5 = FITB fill in the blank
-             * 6 = Turn in audio
-             * 7 = Turn in video
-             * 8 = Turn in Drawing
-             * 9 = Draw over image
-             * 10 = MathCard
-             * 11 = GraphCard
-             * 12 = NoteTaker
-             */
-            // Set the array of TESTS in comboList
-            // entryComboBox.editableProperty().setValue(true);
-            entryComboBox.getItems().addAll(TESTS);
-            // Set tooltip
-            entryComboBox.setTooltip(new Tooltip("Select the test mode for this card." +
-                //"\nAI: (Default) Intelligent selection mode, Intelligently selects top 4 modes." +
-                //"\nAll others are as stated. " +
-                "\nEffects the card layout. " +
-                "\n** Type a card name in for rapid search"));
-            // Set prefered width and height of combo box
-            entryComboBox.setMaxWidth(Double.MAX_VALUE);
-            entryComboBox.setPrefHeight(15);
-            entryComboBox.setPromptText("CARD TYPE");
-            // set number of rows visible
-            entryComboBox.setVisibleRowCount(5);
-
-
-            // For quick search of combobox items
-            // new SerialAutoCompleteBox(entryComboBox);
 
             // create blank card with new cID for the first card
             // and add it to creatorList. getCID from card in list.
@@ -405,53 +399,45 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             cfpNorth.getChildren().addAll(entryComboBox, mainLabel);
 
             //****         CFP SOUTH          ***
+
             // CFP south contains buttons gauges and non content control/information
-            masterPane = new VBox(2);
+            masterBPane = new BorderPane();
             getKeyboardShortcuts();
             cfpSouth = getCreatorButtons();
             navButtonDisplay(listIdx);
             cfpSouth.setPadding(new Insets(10, 4, 10, 4));
+
             // Create a master borderPane then add buttons to the scene
-            masterPane.setAlignment(Pos.CENTER);
-            masterPane.setId("cfMasterPane");
-            masterPane.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
-            masterPane.getChildren().addAll(cfpNorth, cfpCenter, cfpSouth);
-            // create the scene and set it's size and bind it so it is
-            // responsive to the window size
-            Scene masterScene = new Scene(masterPane, SceneCntl.getCreateFlashHt(), SceneCntl.getCreateFlashHt());
-            changeListenerBinding(masterScene);
+//            masterBPane.setAlignment(Pos.CENTER);
+            masterBPane.setId("cfMasterPane");
+            masterBPane.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
+            masterBPane.setTop(cfpNorth);
+            masterBPane.setCenter(cfpCenter);
+            masterBPane.setBottom(cfpSouth);
             // the initial displayed element "last in list" is empty. Other
             // cards are handled by nav buttons
             FMTWalker.getInstance().setCurrentNodeReferance(currentCard);
             fcOps.buildTree(creatorList);
             fcOps.refreshTreeWalker(creatorList);
-            if ( ! FlashMonkeyMain.getPrimaryWindow().isFullScreen() && ! FlashMonkeyMain.treeWindow.isShowing()) {
+            if ( SceneCntl.Dim.APP_MAXIMIZED.get() == 0 && ! FlashMonkeyMain.treeWindow.isShowing()) {
                   FlashMonkeyMain.buildTreeWindow();
                   FlashMonkeyMain.AVLT_PANE.displayTree();
-                  entryComboBox.show();
             }
 
-            return masterScene;
+            return masterBPane;
       }   /* END createFlashScene() ***/
 
-      /* ------------------------------------------------------- **/
+      /* ------------------------------------------ */
 
-      /**
-       * Binds the masterBPane to SceneCntl
-       */
-      private void changeListenerBinding(Scene masterScene) {
-            ChangeListener<Number> sceneBoxListener = (observable, oldVal, newVal) -> {
-                  SceneCntl.getReadFlashBox().setHt((int) masterScene.getHeight());
-                  SceneCntl.getReadFlashBox().setWd((int) masterScene.getWidth());
-                  SceneCntl.getReadFlashBox().setX((int) masterScene.getX());
-                  SceneCntl.getReadFlashBox().setY((int) masterScene.getY());
-            };
-
-            masterScene.widthProperty().addListener(sceneBoxListener);
-            masterScene.heightProperty().addListener(sceneBoxListener);
-            masterScene.xProperty().addListener(sceneBoxListener);
-            masterScene.yProperty().addListener(sceneBoxListener);
+      public void showComboBox() {
+            entryComboBox.show();
       }
+
+
+      private void onShowing(final WindowEvent event) {
+                        entryComboBox.show();
+      }
+
 
       /* ------------------------------------------------------- **/
 
@@ -480,8 +466,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
       /* ------------------------------------------------------- **/
 
-      protected boolean getFlashListChanged() {
-            return (this.flashListChanged);
+      protected boolean getFlashListChangedUnmodifiable() {
+            return flashListChanged == true;
       }
 
       /**
@@ -719,7 +705,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // Actions and buttons
             insertCardButton.setOnAction(e -> {
                   insertCardAction(listIdx);
-                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
+//                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
             });
 
             // Save button & Action.
@@ -762,6 +748,10 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             metaButton.setMaxWidth(Double.MAX_VALUE);
             metaButton.setMaxHeight(Double.MAX_VALUE);
             metaButton.setOnAction(e -> metaButtonAction());
+            if (! Utility.isConnected()) {
+                  metaButton.setDisable(true);
+                  metaButton.setTooltip(new Tooltip("Please check the internet connection."));
+            }
 
             // Organize the button boxes and sellButton into left and right
             GridPane navGrid = new GridPane();
@@ -838,14 +828,14 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                       "DELETE CHANGES",
                       "SAVE CHANGES");
                   if (res == 1) {
-                        FlashMonkeyMain.setWindowToMenu();
+                        FlashMonkeyMain.setWindowToModeMenu();
                         onClose();
                   } else {
                         // Send User back
                         return;
                   }
             }
-            FlashMonkeyMain.setWindowToMenu();
+            FlashMonkeyMain.setWindowToModeMenu();
             //return;
       }
 
@@ -857,21 +847,21 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        */
       @Override
       public void onClose() {
-//            if(HashTagEditorPopup.instanceExists()) {
-//                  HashTagEditorPopup.getInstance().onClose();
-//            }
             if( DrawTools.instanceExists() ) {
                   DrawTools.getInstance().onClose();
             }
-            if (metaWindow.isShowing()) {
+            if (metaWindow != null && metaWindow.isShowing()) {
                   closeMetaWindow();
             }
             FlashMonkeyMain.treeWindow.close();
+//            if(SceneCntl.Dim.APP_MAXIMIZED.get() == 0) {
+//                  SceneCntl.getAppBox().setX((int)FlashMonkeyMain.getPrimaryWindow().getX());
+//                  SceneCntl.getAppBox().setY((int)FlashMonkeyMain.getPrimaryWindow().getY());
+//            }
 
             Timer.getClassInstance().createTestTimeStop();
             LOGGER.info("createTestTime: {}", Timer.getClassInstance().getCreateTestsTime());
             creatorList.clear();
-            //return;
       }
 
       /* ------------------------------------------------------- **/
@@ -1003,7 +993,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             String msg = "Delete this card\n\nAre you sure?";
 
            return alert.choiceOnlyActionPopup(
-                "DELETE THIS CARD", msg,
+                "DELETE THIS CARD", null, msg,
                 "emojis/flashFaces_sunglasses_60.png",
                 UIColors.ICON_ELEC_BLUE,
                    null);
@@ -1019,7 +1009,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                 "\n\nAre you sure?";
 
             return alert.choiceOnlyActionPopup(
-                "CLEAR THIS CARD", msg,
+                "CLEAR THIS CARD", null, msg,
                 "image/Flash_hmm_75.png",
                 UIColors.ICON_ELEC_BLUE,
                     null);
@@ -1036,7 +1026,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             if (ret) {
                   return;
             }
-            editors.EDITOR_U.tCell.getTextArea().requestFocus();
+            //editors.EDITOR_U.tCell.getTextArea().requestFocus();
       }
 
       /* ------------------------------------------------------- **/
@@ -1057,10 +1047,11 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             LOGGER.debug("sellButtonAction clicked");
             // @TODO make metaPane local variable
             if(Utility.isConnected()) {
-                  if (metaWindow != null) {
+                  metaWindow = new Stage();
+//                  if (metaWindow != null) {
                         metaPane = new DeckMetaPane();
                         metaWindow = new Stage();
-                  }
+//                  }
                   if (!meta.getDataMap().isEmpty()) {
                         meta.getDataMap().clear();
                   }
@@ -1073,7 +1064,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   scene.getStylesheets().addAll("css/buttons.css", "css/fxformStyle.css");
 
                   metaWindow.setScene(scene);
-                  metaWindow.setAlwaysOnTop(true);
+                  metaWindow.initOwner(FlashMonkeyMain.getPrimaryWindow());
+            //      metaWindow.setAlwaysOnTop(true);
                   metaWindow.show();
             } else {
                   String msg = "I didn't connect to the ecosystem. " +
@@ -1266,16 +1258,19 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             });
       }
 
+
       /* ------------------------------------------------------- **/
 
       /**
-       * Returns this masterPane
-       *
-       * @return
+       * Provides an alert popup with the owner window from
+       * the metaWindow.
+       * @param errorMessage
        */
-      public VBox getMasterPane() {
-            return this.masterPane;
+      public void metaAlertPopup(String errorMessage) {
+            FxNotify.notification("Ooops!", errorMessage, Pos.CENTER, 6,
+                "image/flashFaces_sunglasses_60.png", metaWindow);
       }
+
 
 
       /* ------------------------------------------------------- **/
@@ -1382,9 +1377,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   ListIterator<FlashCardMM> iterator = creatorList.listIterator(fwdIdx);
                   iterator.next();
                   iterator.remove();
-                  //listIdx = fwdIdx - 1;
-                  //currentCard = creatorList.get(moveToIdx);
-                  //setSectionEditors(currentCard);
             }
 
             while (fwdIdx < creatorList.size() && revIdx > -1) {
@@ -1394,9 +1386,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         ListIterator<FlashCardMM> iterator = creatorList.listIterator(fwdIdx);
                         iterator.next();
                         iterator.remove();
-                        //listIdx = fwdIdx - 1;
-                        //currentCard = creatorList.get(listIdx);
-                        //setSectionEditors(currentCard);
 
                         break;
                   }
@@ -1404,9 +1393,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         ListIterator iterator = creatorList.listIterator(revIdx);
                         iterator.next();
                         iterator.remove();
-                        //listIdx = revIdx - 1;
-                        //currentCard = creatorList.get(listIdx);
-                        //setSectionEditors(currentCard);
 
                         break;
                   }
@@ -1487,6 +1473,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * next card.
        */
       public boolean cardOnExitActions(boolean fromTree, boolean moveForward) {
+            // Set the testTypeIdx for next question
+            testTypeIdx = currentCard.getTestType();
             // verify data completeness
             closeDrawToolsOnTreeClick( editors.EDITOR_U, editors.EDITOR_L);
             CardSaver cs = new CardSaver();
@@ -1534,7 +1522,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         LOGGER.debug("listIdx: {} is less than Ops FlashList.size: {} == {}",  listIdx, opsFlashSize, listIdx < opsFlashSize );
                         boolean inRange = listIdx < opsFlashSize && listIdx > -1;
                         if (inRange && 1 == cardEqualsOriginal(currentCard)) {
-                              System.out.println("no change detected. not saving\n ////////////////////////\n");
+                              System.out.println("no change detected. not saving");
                               // No changes, continue to next card
                               safeToMove = true;
                               break;
@@ -1606,7 +1594,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   // set the prompt
                   editors.EDITOR_U.styleToPrompt();
                   editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
-                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
+                  //editors.EDITOR_U.tCell.getTextArea().requestFocus();
 
                   insertCardButton.setText("New card");
 
@@ -1619,6 +1607,13 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         }
                         FlashMonkeyMain.AVLT_PANE.displayTree();
                   }
+                  entryComboBox.show();
+//                  if (testTypeIdx > -0) {
+//                        GenericTestType ga = TestList.selectTest(testTypeIdx);
+//                        entryComboBox.setValue(new TestMapper(ga.getName(), ga));
+//                  }
+                  //entryComboBox.setDisplayOnFocusedEnabled(true);
+                  entryComboBox.getSkin().getNode().requestFocus();
             }
 
             /**
@@ -1635,7 +1630,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   // set the prompt
                   editors.EDITOR_U.styleToPrompt();
                   editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
-                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
+//                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
                   insertCardButton.setText("New card");
                   navButtonDisplay(listIdx);
                   // display in the nav tree
@@ -1719,6 +1714,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   //if(checkContent(editors.EDITOR_U, editors.EDITOR_L) == 1) {
                   // Assign currentTest from combobox
                   GenericTestType gT = entryComboBox.getValue().getTestType();
+
                   // card at end of list, or ??
                   int cardNum = paramIdx;
                   // Create a new FlashCardMM
@@ -2004,7 +2000,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // if this has been called in the last 2 seconds, just ignore
             // the call.
             LOGGER.debug("lastSaveTime: {}", lastSaveTime);
-            if( ( lastSaveTime != 0 ) && System.currentTimeMillis() < lastSaveTime + 2000l ) {
+            if(( lastSaveTime != 0 ) && System.currentTimeMillis() < lastSaveTime + 2000l ) {
                   LOGGER.debug("Interrupted file save. It was already saved in the past 2 seconds");
                   return;
             }
@@ -2044,7 +2040,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         saveDeckActionHelper('+');
                   }
 
-                  FlashMonkeyMain.setWindowToMenu();
+                  FlashMonkeyMain.setWindowToModeMenu();
+
                   if (!FlashCardOps.getInstance().getMediaIsSynched()) {
                         LOGGER.debug("Calling MediaSync from CreateFlash.saveDeckAction()");
                         if (Utility.isConnected()) {
@@ -2056,11 +2053,12 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                                     // alert on another thread.
                                     alerts.sessionRestartPopup();
                               } else {
-                                    //@TODO Add to a common thread pool
-                                    new Thread(() -> {
-                                          LOGGER.info("Calling syncMedia from CreateFlash");
+                                    ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+                                    Runnable task = () -> {
                                           MediaSync.syncMedia(creatorList);
-                                    }).start();
+                                          scheduledExecutor.shutdown();
+                                    };
+                                    scheduledExecutor.execute(task);
                               }
                         }
                   }
@@ -2351,5 +2349,10 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       public Point2D getUndoCardBtnXY() {
             Bounds bounds = undoQButton.getLayoutBounds();
             return undoQButton.localToScreen(bounds.getMinX() + 10, bounds.getMinY() + 10);
+      }
+
+      @FMAnnotations.DoNotDeployMethod
+      public BorderPane getMasterPane() {
+            return this.masterBPane;
       }
 }

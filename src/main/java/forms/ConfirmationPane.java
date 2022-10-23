@@ -131,7 +131,7 @@ public class ConfirmationPane extends Pane implements ViewMixin {
             confirmPane.setAlignment(Pos.CENTER);
             confirmPane.setHgap(10);
             confirmPane.setVgap(12);
-            confirmPane.setId("fileSelectPane");
+            confirmPane.setId("opaqueMenuPaneDark");
             confirmPane.setPrefSize(325, 420);
             confirmPane.setOnKeyPressed(f -> {
                   if (f.getCode() == KeyCode.ENTER) {

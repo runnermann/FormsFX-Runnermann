@@ -150,7 +150,7 @@ public abstract class SimpleFormParentPane extends Pane implements ViewMixin {
         mainGridPane.setAlignment(Pos.CENTER);
         mainGridPane.setHgap(10);
         mainGridPane.setVgap(8);
-        mainGridPane.setId("fileSelectPane");
+        mainGridPane.setId("opaqueMenuPaneDark");
         mainGridPane.setPrefSize(325, 400);
 
 

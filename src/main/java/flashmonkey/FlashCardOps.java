@@ -17,8 +17,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import media.sound.SoundEffects;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -429,7 +427,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             if (!dontSaveDeck.contains(name) && !name.equals("default.dec")) {
                   try {
                         if (CreateFlash.getInstance() != null
-                            && CreateFlash.getInstance().getFlashListChanged()
+                            && CreateFlash.getInstance().getFlashListChangedUnmodifiable()
                             && (CreateFlash.getInstance().getCreatorList().size() != 0 )) {
 
                               CreateFlash.getInstance().saveOnExit();
@@ -714,7 +712,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                   alerts.sessionRestartPopup();
             } else {
                   LOGGER.debug("token is good or renewed");
-                  ReadFlash.getInstance().resetGuageValues();
+                  ReadFlash.getInstance().resetGaugeValues();
                   String lObjName = lObject.getDescrpt();
                   agrList.setLinkObj(lObject);
                   // if the deck is from the cloud
@@ -740,10 +738,9 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                         }).start();
                   }
                   if (flashListMM.size() > 0) {
-                        //FlashMonkeyMain.getWindow().getScene().setCursor(Cursor.DEFAULT);
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
                         // Send user to main menu
-                        FlashMonkeyMain.getPrimaryWindow().setScene(FlashMonkeyMain.getMenuScene());
-                        SoundEffects.GOTO_MENU.play();
+                        FlashMonkeyMain.setPaneToModeMenu();
                   }
             }
       }

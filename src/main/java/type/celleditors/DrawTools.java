@@ -1290,10 +1290,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
             CreateFlash cfp = CreateFlash.getInstance();
             cfp.enableButtons();
-
-            // paramEditor.setShapeFile(fileName);
-
-
       }
 
       /**

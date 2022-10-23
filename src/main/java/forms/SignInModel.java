@@ -2,23 +2,19 @@ package forms;
 
 import authcrypt.Auth;
 import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
 import com.dlsc.formsfx.model.util.ResourceBundleService;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
+
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.FirstDescriptor;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.geometry.Pos;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uicontrols.FxNotify;
 
 import java.util.Locale;
 import java.util.ResourceBundle;

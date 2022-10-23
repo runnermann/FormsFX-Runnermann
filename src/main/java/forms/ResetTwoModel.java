@@ -126,6 +126,9 @@ public class ResetTwoModel {
                 String msg = " Please check your connection to the internet";
                 FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 4,
                         "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
+//                FlashMonkeyMain.showResetTwoPane();
+                SimpleFormParentPane.resetDescriptor.clear();
+                this.clear();
                 break;
             }
             case 1: {
@@ -134,11 +137,10 @@ public class ResetTwoModel {
                         "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                 SimpleFormParentPane.resetDescriptor.clear();
                 this.clear();
+                FlashMonkeyMain.showSignInInnerPane();
                 break;
             }
         }
-        FlashMonkeyMain.showSignInPane();
-        return;
     }
 
 

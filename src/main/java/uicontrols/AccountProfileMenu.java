@@ -34,7 +34,7 @@ public class AccountProfileMenu {
             gridPane.setAlignment(Pos.CENTER);
             gridPane.setPadding(new Insets(20, 0, 0, 0));
 
-            Label label = new Label("My profile menu");
+            Label label = new Label("MY PROFILE MENU");
             String text = "Save on purchases and become eligible to earn money by subscribing.";
             Hyperlink howLink = new Hyperlink("How I can earn money on FlashMonkey");
             //howLink.setId("hyperlink14white");
@@ -74,7 +74,7 @@ public class AccountProfileMenu {
             gridPane.addRow(3, buttonBox);
             gridPane.addRow(5, howLink);
             gridPane.addRow(7, cancelLink);
-            gridPane.setId("fileSelectPane");
+            gridPane.setId("opaqueMenuPaneDark");
             return gridPane;
       }
 

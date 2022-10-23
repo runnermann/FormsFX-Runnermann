@@ -9,13 +9,12 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 public class TurninVideo extends TestTypeBase implements GenericTestType<TurninVideo> {
 
 
       public TurninVideo() {
-            // no args constructor
+            super.setScore(2);
       }
 
 

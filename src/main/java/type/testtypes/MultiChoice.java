@@ -58,7 +58,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
        * Default No-Args Constructor
        */
       private MultiChoice() {
-            super.setScore(2);
+            setScore(2);
       }
 
       /**
@@ -349,6 +349,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                   FMTransition.nodeFadeIn.play();
             }
       }
+
 
       /**
        * INNER CLASS:

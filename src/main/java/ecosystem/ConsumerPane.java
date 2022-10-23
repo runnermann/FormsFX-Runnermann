@@ -1,5 +1,6 @@
 package ecosystem;
 
+import flashmonkey.CreateFlash;
 import flashmonkey.FlashMonkeyMain;
 import forms.DeckSearchPane;
 import javafx.geometry.Pos;
@@ -107,9 +108,9 @@ public class ConsumerPane extends StackPane {
 
       public static class EcoPurchase {
             // Set on layer above visible layers.
-            private static void layoutWebView(EcoPane eco) {
+            private static void layoutWebView(WebEcoPane eco) {
                   LOGGER.debug("layoutWebView called");
-                  EcoPane ePane = eco;
+                  WebEcoPane ePane = eco;
 
                   BorderPane bp = ePane.getPurchasePane();
                   AnchorPane layer3 = new AnchorPane(bp);
@@ -124,14 +125,13 @@ public class ConsumerPane extends StackPane {
 
             public static void purchaseAction(ArrayList<HashMap<String, String>> cartList) {
                   if (cartList.size() > 0) {
-                        EcoPane ePane = new EcoPane();
+                        WebEcoPane ePane = new WebEcoPane();
                         ePane.setDeckIds(getDeckIds(cartList));
                         ePane.setCartList(cartList);
                         layoutWebView(ePane);
                   } else {
                         String errorMessage = " Please select a deck for your purchase";
-                        FxNotify.notification("Ooops!", errorMessage, Pos.CENTER, 4,
-                        "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
+                        CreateFlash.getInstance().metaAlertPopup(errorMessage);
                   }
             }
 
@@ -147,7 +147,7 @@ public class ConsumerPane extends StackPane {
       public static class EcoReqSubscription {
             private static void layoutWebView() {
                   LOGGER.debug("layoutWebView called");
-                  EcoPane ePane = new EcoPane();
+                  WebEcoPane ePane = new WebEcoPane();
                   mainStackPane.getChildren().add(ePane.getReqSubscribePane());
             }
 

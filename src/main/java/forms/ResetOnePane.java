@@ -25,7 +25,6 @@ public class ResetOnePane extends SimpleFormParentPane {
             super.initializeSelf();
       }
 
-
       /**
        * Returns the FormPane from the child class.
        *
@@ -53,6 +52,7 @@ public class ResetOnePane extends SimpleFormParentPane {
       public void initializeParts() {
             super.initializeParts();
             setFormTitle("Need a new password?");
+            setMessageLabelStyle("white14");
             setMessageLabel("No Worries!", "We will send you a link.");
             signInLink = new Hyperlink("Go back");
             signInLink.setId("signInHyp");
@@ -70,7 +70,6 @@ public class ResetOnePane extends SimpleFormParentPane {
       public void setupBindings() {
             LOGGER.info("setupBindings() called");
             actionButton.disableProperty().bind(model.getFormInstance().persistableProperty().not());
-            //reset.disableProperty().bind(model.getFormInstance().changedProperty().not());
             displayForm.prefWidthProperty().bind(mainGridPane.prefWidthProperty());
       }
 
@@ -79,7 +78,10 @@ public class ResetOnePane extends SimpleFormParentPane {
        */
       @Override
       public void setupEventHandlers() {
-            signInLink.setOnAction(e -> FlashMonkeyMain.showSignInPane());
+            signInLink.setOnAction(e -> {
+                  SimpleFormParentPane.resetDescriptor.clear();
+                  FlashMonkeyMain.showSignInInnerPane();
+            });
             actionButton.setOnAction(e -> model.formAction());
             mainGridPane.setOnKeyPressed(f -> {
                   if (f.getCode() == KeyCode.ENTER) {

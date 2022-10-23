@@ -18,7 +18,7 @@ public class EndGame {
       public static final char AVG = 'C';
       public static final char COMPLETE = 'Z';
 
-      private EndGame() {
+      public EndGame() {
             /* private no args constructor */
       }
 
@@ -31,35 +31,35 @@ public class EndGame {
        * @param treeLength
        * @param deckName
        */
-      public EndGame(double score, double possibleScore, int progress, int treeLength, String deckName, char level) {
+      public void buildAndDisplay(double score, double possibleScore, int progress, int treeLength, String deckName, char level) {
             String str = getStatsPane(score, possibleScore, progress, treeLength, deckName);
             StringBuilder sb = new StringBuilder(str);
-            String choice = "\n\n\n Validate your expertise to your peers and future employers." +
-                "       \n\n Click \"ok\" to start earning for your hard work";
+            String choice = "\n\n\nValidate your expertise to your peers and future employers." +
+                "       \n\nClick \"ok\" to start earning for your hard work";
             sb.append(choice);
             FMAlerts alert = new FMAlerts();
 
-            boolean b = false;
+            boolean b;
 
             switch(level) {
                   case 'A': {
-                        b = alert.choiceOnlyActionPopup("CONGRATULATIONS", sb.toString(),
+                        b = alert.choiceOnlyActionPopup("CONGRATULATIONS", null, sb.toString(),
                                 "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.DECK_END_HIGHSCORE);
                         break;
                   }
                   case 'B': {
-                        b = alert.choiceOnlyActionPopup("GOOD", sb.toString(),
+                        b = alert.choiceOnlyActionPopup("GOOD", null, sb.toString(),
                                 "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.GAME_OVER);
                         break;
                   }
                   case 'C': {
-                        b = alert.choiceOnlyActionPopup("COMPLETE", sb.toString(),
+                        b = alert.choiceOnlyActionPopup("COMPLETE", null, sb.toString(),
                                 "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.GAME_OVER);
                         break;
                   }
                   default:
                   case 'Z': {
-                        b = alert.choiceOnlyActionPopup("GAME OVER", sb.toString(),
+                        b = alert.choiceOnlyActionPopup("GAME OVER", null, sb.toString(),
                                 "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.GAME_OVER);
 
                   }
@@ -70,7 +70,7 @@ public class EndGame {
                   describeAndSellAction();
             } else {
                   // Send User back to main menu
-                  FlashMonkeyMain.getPrimaryWindow().setScene(FlashMonkeyMain.getMenuScene());
+                  FlashMonkeyMain.setWindowToModeMenu();
             }
             return;
       }
@@ -95,8 +95,8 @@ public class EndGame {
        */
       private String getStatsPane(double score, double possibleScore, int progress, int treeLength, String deckName) {
 
-            String endGameMessage = "\n\n" + deckName + "\n\n  Score: " + score + " out of " + possibleScore + " possible points"
-                + "\n  Completed: " + progress + " out of: " + treeLength + " questions";
+            String endGameMessage = "\n\n" + deckName + "\n\nScore: " + score + " out of " + possibleScore + " possible points"
+                + "\nCompleted: " + progress + " out of: " + treeLength + " questions";
 
 
             // set local percent score

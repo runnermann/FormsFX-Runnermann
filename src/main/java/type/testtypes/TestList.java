@@ -96,7 +96,6 @@ public final class TestList {
             if (map == null) {
                   createTable();
             }
-            LOGGER.setLevel(Level.DEBUG);
             if (n == 31) {
                   return TEST_TYPES[0];
             }

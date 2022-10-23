@@ -7,9 +7,6 @@ import com.dlsc.formsfx.view.util.ViewMixin;
 
 import flashmonkey.FlashMonkeyMain;
 import flashmonkey.Timer;
-import fmannotations.FMAnnotations;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -17,14 +14,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 
 public class SignUpPane extends Pane implements ViewMixin {
-
-      private static final Logger LOGGER = LoggerFactory.getLogger(SignUpPane.class);
-
+      //private static final Logger LOGGER = LoggerFactory.getLogger(SignUpPane.class);
       // NOTE: EntryFields are created in FormModel
 
       private GridPane signUpPane;
@@ -33,20 +28,19 @@ public class SignUpPane extends Pane implements ViewMixin {
       private HBox signInHBox;
       private HBox signUpHBox;
       private static VBox msgVBox;
-
       private Label msgLabel1;
       private Label msgLabel2;
       private Label msgLabel3;
       // Action related
       private Button signUpBtn;
       private Hyperlink signInLink;
-
       //FxForm related
       private FormRenderer displayForm;
       private final SignUpModel model;
 
+
+
       public SignUpPane(SignUpModel signUpModel) {
-            LOGGER.info("SignUpPane called. ");
             this.model = signUpModel;
             init();
       }
@@ -56,7 +50,7 @@ public class SignUpPane extends Pane implements ViewMixin {
        */
       @Override
       public void initializeSelf() {
-            getStylesheets().add(getClass().getResource("/css/fxformStyle.css").toExternalForm());
+            //getStylesheets().add(getClass().getResource("/css/fxformStyle.css").toExternalForm());
       }
 
       /**
@@ -84,7 +78,12 @@ public class SignUpPane extends Pane implements ViewMixin {
             // used for the first time.
             Timer.getClassInstance().setNote("p2 SignUpPane, user signing up");
             // EncryptedStudent is not used.
-            DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
+            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+            Runnable task = () -> {
+                  DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
+                  scheduledExecutor.shutdown();
+            };
+            scheduledExecutor.execute(task);
       }
 
       /**
@@ -111,15 +110,13 @@ public class SignUpPane extends Pane implements ViewMixin {
        */
       @Override
       public void setupEventHandlers() {
-
             signUpBtn.setOnAction(e -> {
                   model.formAction();
             });
 
             signInLink.setOnAction(e -> {
-                  FlashMonkeyMain.showSignInPane();
+                  FlashMonkeyMain.showSignInInnerPane();
             });
-
       }
 
 
@@ -128,13 +125,10 @@ public class SignUpPane extends Pane implements ViewMixin {
        */
       @Override
       public void layoutParts() {
-
-            LOGGER.info("*** create SIGN-UP called ***");
-
             signUpPane.setAlignment(Pos.CENTER);
             signUpPane.setHgap(10);
             signUpPane.setVgap(12);
-            signUpPane.setId("fileSelectPane");
+            signUpPane.setId("opaqueMenuPaneDark");
             signUpPane.setPrefSize(340, 420);
             signUpPane.setOnKeyPressed(f -> {
                   if (f.getCode() == KeyCode.ENTER) {
@@ -184,10 +178,10 @@ public class SignUpPane extends Pane implements ViewMixin {
        * TESTING
        **/
 
-      @FMAnnotations.DoNotDeployMethod
-      public Point2D getSignUpPaneMinXY() {
-            Bounds bounds = displayForm.getLayoutBounds();
-            return displayForm.localToScreen(bounds.getMinX(), bounds.getMinY());
-      }
+//      @FMAnnotations.DoNotDeployMethod
+//      public Point2D getSignUpPaneMinXY() {
+//            Bounds bounds = displayForm.getLayoutBounds();
+//            return displayForm.localToScreen(bounds.getMinX(), bounds.getMinY());
+//      }
 
 }

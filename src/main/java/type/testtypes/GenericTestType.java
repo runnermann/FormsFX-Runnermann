@@ -29,7 +29,6 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 //import java.util.LinkedList;
 
 /**
@@ -113,19 +112,20 @@ public interface GenericTestType<A extends GenericTestType> {
        * Returns a score. E.G. a note card
        * does not have an ability to be answered. It is just
        * viewed. Therefore it wouldn't be scored.
+       * @return an int value that is a multiple of 10. Thus for a
+       * score of 1.5 set to 15
        */
-      double score();
+      int score();
 
       /**
        * Sets the value of score for the implementing class.
        * Classes that implement this interface shall have a
        * score. If the class is a scoreless type, then its
-       * score should be set to 0. Operationally set to 2. It is
-       * intended that score is added or subtracted. IE in the
-       * case of a wrong answer, the card is inserted back
-       * into the deck with a different score.
+       * score should be set to 0. Operationally set to 20. It is
+       * intended that score is added or subtracted.
        *
-       * @param num
+       * @param num Set as an integer / 10. Example: For a score of 2 set to
+       *        20. For a score of 1.5 set to 15.
        */
       void setScore(double num);
 

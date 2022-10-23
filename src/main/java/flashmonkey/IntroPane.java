@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ public class IntroPane extends Pane {
     private Button infoBtn;
     private Label msgLabel0;
     private Label msgLabel1;
+    private Label msgLabel2;
 
     private GridPane mainGridPane;
     private Pane spacer;
@@ -55,10 +57,15 @@ public class IntroPane extends Pane {
         spacer = new Pane();
         spacer1 = new Pane();
 
-        Text text = new Text("Get better grades \nMake Money \nUse your analytics to \nget better jobs \n\n Make a selection.");
-        msgLabel0 = new Label("Welcome!");
-        msgLabel1 = new Label(text.getText());
-
+        Text text1 = new Text("\nWelcome");
+        String text2 =
+            "\n\t- Earn Money " +
+            "\n\t- Get Better Grades " +
+            "\n\t- Earn Credibility for Better Jobs";
+    //    text.setTextAlignment(TextAlignment.CENTER);
+        msgLabel0 = new Label("The advanced learning app.");
+        msgLabel1 = new Label(text1.getText());
+        msgLabel2 = new Label(text2);
 
         mainGridPane = new GridPane();
         // forgotHBox = new HBox();
@@ -68,8 +75,7 @@ public class IntroPane extends Pane {
         // used for the first time.
         Timer.getClassInstance().setNote("p1 introPane, new user");
         // EncryptedStudent is not used.
-        DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
-
+        //DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
     }
 
 
@@ -78,13 +84,14 @@ public class IntroPane extends Pane {
         mainGridPane.setAlignment(Pos.CENTER);
         mainGridPane.setHgap(10);
         mainGridPane.setVgap(12);
-        mainGridPane.setId("fileSelectPane");
-        mainGridPane.setPrefSize(325, 450);
+        mainGridPane.setId("opaqueMenuPaneDark");
+        mainGridPane.setPrefSize(428, 290);
         spacer.setMinHeight(20);
         spacer1.setMinHeight(20);
 
         msgLabel0.setId("label24WhiteBld");
-        msgLabel1.setId("label18White");
+        msgLabel1.setId("label18WhiteLeft");
+        msgLabel2.setId("label18WhiteLeft");
         signInBtn.setId("signInButton");
         signUpBtn.setId("signInButton");
         signUpBtn.setMaxWidth(Double.MAX_VALUE);
@@ -93,17 +100,15 @@ public class IntroPane extends Pane {
 
         buttonHBox.setAlignment(Pos.CENTER);
         buttonHBox.getChildren().addAll(signInBtn, signUpBtn);
-        buttonHBox.setPrefWidth(300);
+        buttonHBox.setPrefWidth(360);
         msgVBox.setAlignment(Pos.CENTER);
-        msgVBox.getChildren().addAll(msgLabel0, msgLabel1);
+        msgVBox.getChildren().addAll(msgLabel0, msgLabel1, msgLabel2);
 
-
-        //forgotHBox.getChildren().add(forgotLink);
-
-        mainGridPane.addRow(0, spacer);
-        mainGridPane.addRow(1, msgVBox);
-        mainGridPane.addRow(2, spacer1);
-        mainGridPane.addRow(3, buttonHBox);
+        mainGridPane.addRow(0, msgVBox);
+        mainGridPane.addRow(1, spacer);
+    //    mainGridPane.addRow(3, msgLabel1);
+    //    mainGridPane.addRow(0, spacer1);
+        mainGridPane.addRow(2, buttonHBox);
 
     }
 

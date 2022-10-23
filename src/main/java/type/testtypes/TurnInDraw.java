@@ -9,13 +9,12 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 public class TurnInDraw extends TestTypeBase implements GenericTestType<TurnInDraw> {
 
 
       public TurnInDraw() {
-            // no args constructor
+            setScore(2);
       }
 
 
@@ -103,5 +102,4 @@ public class TurnInDraw extends TestTypeBase implements GenericTestType<TurnInDr
       public void reset() {
             // stub
       }
-
 }

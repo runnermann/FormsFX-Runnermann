@@ -6,25 +6,19 @@
  */
 package flashmonkey;
 
-import gaugeLib.hansolo.medusa.*;
-import gaugeLib.hansolo.medusa.GaugeBuilder;
-//import gaugeLib.hansolo.medusa.skins.SlimSkin;
-//import javafx.application.Application;
-//import javafx.application.Application.launch;
+
+import eu.hansolo.medusa.Gauge;
+import eu.hansolo.medusa.GaugeBuilder;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-//import javafx.scene.Scene;
-//import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-//import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import uicontrols.UIColors;
-//import javafx.scene.shape.Rectangle;
-//import javafx.stage.Stage;
+
 
 /**
  * Provides the EncryptedUser.EncryptedUser interface for the Gauges.

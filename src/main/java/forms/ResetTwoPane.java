@@ -55,6 +55,7 @@ public class ResetTwoPane extends SimpleFormParentPane {
       public void initializeParts() {
             super.initializeParts();
             setFormTitle("PASSWORD RESET");
+            setMessageLabelStyle("white14");
             setMessageLabel("Use the code sent to your email", "and enter a new password.");
             signInLink = new Hyperlink("back to sign-in");
             signInLink.setId("signInHyp");
@@ -80,7 +81,10 @@ public class ResetTwoPane extends SimpleFormParentPane {
        */
       @Override
       public void setupEventHandlers() {
-            signInLink.setOnAction(e -> FlashMonkeyMain.showSignInPane());
+            signInLink.setOnAction(e -> {
+                  SimpleFormParentPane.resetDescriptor.clear();
+                  FlashMonkeyMain.showSignInInnerPane();
+            });
             actionButton.setOnAction(e -> model.formAction());
             mainGridPane.setOnKeyPressed(f -> {
                   if (f.getCode() == KeyCode.ENTER) {

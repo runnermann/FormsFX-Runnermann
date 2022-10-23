@@ -25,6 +25,8 @@ import uicontrols.FxNotify;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * This class is used to create the form and holds all the necessary data. This
@@ -171,7 +173,12 @@ public class SignUpModel {
                   // used for the first time.
                   Timer.getClassInstance().setNote("p4, user clicked submit btn on SignUpPane, Attempted to create their profile.");
                   // EncryptedStudent is not used.
-                  DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
+                  ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+                  Runnable task = () -> {
+                        DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
+                        scheduledExecutor.shutdown();
+                  };
+                  scheduledExecutor.execute(task);
             }
       }
 

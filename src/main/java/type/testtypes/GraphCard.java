@@ -94,7 +94,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
 
 
       private GraphCard() {
-            super.setScore(2);
+            setScore(2);
       }
 
       public static synchronized GraphCard getInstance() {
@@ -135,7 +135,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
             StackPane gridStack = new StackPane();
             init();
             //upperEditor = p;
-            double ht = SceneCntl.getCreateFlashHt() / 3;
+            double ht = SceneCntl.getAppBox().getHt() / 3;
             p.sectionHBox.setPrefHeight(ht);
             r.sectionHBox.setPrefHeight(ht);
 
@@ -510,6 +510,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
 
             return funcPane;
       }
+
 
       private static class FunctionLine extends Pane {
 

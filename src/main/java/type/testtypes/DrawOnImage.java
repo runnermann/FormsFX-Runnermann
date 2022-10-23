@@ -9,7 +9,6 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 public class DrawOnImage extends TestTypeBase implements GenericTestType<DrawOnImage> {
 
@@ -17,7 +16,7 @@ public class DrawOnImage extends TestTypeBase implements GenericTestType<DrawOnI
       //GenericCard gCard;
 
       public DrawOnImage() {
-            // no args constructor
+            super.setScore(2);
       }
 
 

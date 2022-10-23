@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
 
+//import com.github.sarxos.webcam.ds.openimaj.OpenImajDriver;
 import flashmonkey.CreateFlash;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -76,6 +77,15 @@ public class CameraCapture extends Application {
 
       private WebCamControl camControl;
 
+      /* NOTE: macOS Monterey, and several prev versions restrict the inclusion of
+      libraries written in C/C++. Thus the underlying dependencies for SARXOS as well
+      as JavaCV and Marvin do not work. For the time being, disable the camera button
+      and inform mac users.
+       */
+//      static {
+//            Webcam.setDriver(new OpenImajDriver());
+//      }
+
       /* *************** CONSTRUCTOR ****************/
 
       private CameraCapture() {/* no args constructor */}
@@ -86,6 +96,8 @@ public class CameraCapture extends Application {
             }
             return CLASS_INSTANCE;
       }
+
+
 
       /**
        * Creates the capture overlay stage. If there is no camera

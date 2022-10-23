@@ -15,10 +15,14 @@ import ecosystem.QrCode;
 import fileops.DirectoryMgr;
 import fileops.FileNaming;
 import fileops.utility.Utility;
+import flashmonkey.CreateFlash;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.MetaDescriptor;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import metadata.DeckMetaData;
 import org.controlsfx.control.ToggleSwitch;
 import org.slf4j.Logger;
@@ -124,7 +128,7 @@ public class DeckMetaModel extends ModelParent {
       @Override
       public void formAction(FormData data) {
             DeckMetaData metaData = buildMetaData(data);
-// ***** String institute = descriptor.getSelectedTut().getText();
+      // ***** String institute = descriptor.getSelectedTut().getText();
             // attempt to save to existing deck
             // if successful
 
@@ -216,8 +220,7 @@ public class DeckMetaModel extends ModelParent {
 
             if (bool) {
                   String msg = "You're updates have been saved to the cloud and should be viewable.";
-                  FxNotify.notification("Awesomeness!", msg, Pos.CENTER, 12,
-                      "image/flashFaces_stars_75.png", FlashMonkeyMain.getPrimaryWindow());
+                  CreateFlash.getInstance().metaAlertPopup(msg);
                   return true;
             } else {
                   // failed
@@ -227,9 +230,8 @@ public class DeckMetaModel extends ModelParent {
 
       public void sellSwitchAction(ToggleSwitch sellSwitch, ToggleSwitch shareSwitch) {
             if (!current()) {
-                  FMAlerts alerts = new FMAlerts();
-                  boolean b = alerts.choiceOnlyActionPopup(" Advanced FlashMonkey Alert ", FMAlerts.JOIN_OR_FAIL, "image/logo/vertical_logo_blue_480.png",
-                      UIColors.ICON_ELEC_BLUE, null);
+
+                  boolean b = getAlert();
                   if (b) {
                         // if true send to create subscription.
                         FlashMonkeyMain.getSubscribeWindow();
@@ -243,6 +245,18 @@ public class DeckMetaModel extends ModelParent {
                         sellSwitch.setSelected(false);
                   }
             }
+      }
+
+      private boolean getAlert() {
+            String str01 = "START EARNING\nFROM YOUR\nSTUDY MATERIALS";
+            String str2 = " - Make cash" +
+                "\n - Only minor credit card fees and taxes are subtracted";
+            String str3 = "Click OK to Begin";
+            FMAlerts alerts = new FMAlerts();
+            VBox box = alerts.alertPane(str01, str2, str3);
+            boolean b = alerts.choicePanePopup(" START EARNING ", " ", box, "image/logo/vertical_logo_blue_480.png",
+                null);
+            return b;
       }
 
       private boolean current() {

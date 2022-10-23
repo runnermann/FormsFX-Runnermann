@@ -5,17 +5,16 @@
 package uicontrols;
 
 import ch.qos.logback.classic.Level;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import com.sun.glass.ui.Screen;
 import javafx.geometry.Point2D;
-import javafx.stage.Screen;
+//import javafx.stage.Screen;
 
-import javafx.geometry.Rectangle2D;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.prefs.BackingStoreException;
 
 /**
@@ -31,15 +30,12 @@ public abstract class SceneCntl {
       // Set by app
       // = d.width;
       private static int screenWd;
-      //= d.height;
       private static int screenHt;
-
+      private static int screenX;
+      private static int screenY;
       private static final int defX = 0;
       private static final int defY = 0;
-
-      private static final Point2D XY = defaultStartXY();
-
-
+      private static final Point2D defaultXY = defaultStartXY();
       // Language
       private static ResourceBundle LANG_BUNDLE;
       // USER SETTINGS
@@ -47,7 +43,10 @@ public abstract class SceneCntl {
       private static final Properties userSettings = new Properties();
       private static final String propertiesFile = "/flashmonkey.properties";
 
-
+      /**
+       * Sets the app from the user's stored preferences.
+       * @throws BackingStoreException
+       */
       public static void setPref() throws BackingStoreException {
             // check that we are not larger than the screen.
             setScreenSize();
@@ -56,8 +55,6 @@ public abstract class SceneCntl {
             // set the user preferences from the file
             boolean load = loadUserSettings();
             setFromPreferences(load);
-            //defaultStartXY();
-
             setLangBundle();
       }
 
@@ -65,6 +62,7 @@ public abstract class SceneCntl {
       /**
        * Sets the user settings from the
        * fields.
+       * Called by this.onStop()
        */
       private static void buildUserSettings() {
             userSettings.setProperty("app-ht", Integer.toString(Box2D.APP_BOX.getHt()));
@@ -81,14 +79,17 @@ public abstract class SceneCntl {
             userSettings.setProperty("consumer-pane-wd", Integer.toString(Dim.CONSUMER_PANE_WD.get()));
             userSettings.setProperty("consumer-pane-ht", Integer.toString(Dim.CONSUMER_PANE_HT.get()));
             userSettings.setProperty("right-cell-wd", Integer.toString(Dim.RIGHT_CELL_WD.get()));
-            // sets if read and edit stages are maximized
-            //@TODO finish rw-stage-maxmized
-            userSettings.setProperty("rw-stage-maximized", Dim.RW_STAGE_MAXIMIZED.get() == 1 ? "1" : "0");
-            Box2D[] bx = {Box2D.READFLASH_BOX, Box2D.CREATEFLASH_BOX, Box2D.FORM_BOX};
+            // sets if app read & edit stages are maximized 1 = true, 0 = false
+            userSettings.setProperty("app-maximized", Dim.APP_MAXIMIZED.get() == 1 ? "1" : "0");
+            Box2D[] bx = {Box2D.APP_BOX, Box2D.FORM_BOX};
             // AppBox is always left at default
             buildSceneProperties(bx);
       }
 
+      /**
+       * helper method to buildUserSettings
+       * @param b
+       */
       private static void buildSceneProperties(Box2D[] b) {
             for (int i = 0; i < b.length; i++) {
                   userSettings.setProperty(b[i].getHtName(), b[i].getHtStr());
@@ -99,14 +100,12 @@ public abstract class SceneCntl {
       }
 
       /**
-       * Sets User Preferences from the stored user settings.
-       * True will load the boxes from settings, otherwise
-       * uses the default boxes.
+       * Sets preferences from the stored settings.
+       * @param load True will load the boxes from settings, otherwise
+       *          uses the default boxes.
        */
       private static void setFromPreferences(boolean load) {
             if (load) {
-                  //    Box2D.APP_BOX.setHt(Integer.parseInt(userSettings.getProperty("app-ht")));
-                  //    Box2D.APP_BOX.setWd(Integer.parseInt(userSettings.getProperty("app-wd")));
                   Dim.CELL_HT.set(Integer.parseInt(userSettings.getProperty("cell-ht")));
                   Dim.RIGHT_CELL_WD.set(Integer.parseInt(userSettings.getProperty("right-cell-wd")));
                   Dim.BUTTON_WD.set(Integer.parseInt(userSettings.getProperty("button-wd")));
@@ -117,11 +116,15 @@ public abstract class SceneCntl {
                   Dim.CONSUMER_PANE_WD.set(Integer.parseInt(userSettings.getProperty("consumer-pane-wd")));
                   Dim.CONSUMER_PANE_HT.set(Integer.parseInt(userSettings.getProperty("consumer-pane-ht")));
                   // AppBox is always left at default
-                  Box2D[] bx = {Box2D.READFLASH_BOX, Box2D.CREATEFLASH_BOX, Box2D.FORM_BOX};
+                  Box2D[] bx = {Box2D.APP_BOX, Box2D.FORM_BOX};
                   setFmScenePref(bx);
             }
       }
 
+      /**
+       * Helper method to setFromPreferences
+       * @param b
+       */
       private static void setFmScenePref(Box2D[] b) {
             for (int i = 0; i < b.length; i++) {
                   b[i].setWd(Integer.parseInt(userSettings.getProperty(b[i].getWdName())));
@@ -133,6 +136,7 @@ public abstract class SceneCntl {
 
       /**
        * Saves user settings to file.
+       * Called by onStop
        */
       private static void storeUserSettings() {
             String userDir = System.getProperty("user.home");
@@ -152,7 +156,7 @@ public abstract class SceneCntl {
 
       /**
        * Loads user settings from File.
-       *
+       * Called by setPref()
        * @return return true if the file exists, If
        * false then do not load boxes in array.
        */
@@ -192,9 +196,12 @@ public abstract class SceneCntl {
       }
 
       private static void setScreenSize() {
-            Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-            screenWd = d.width;
-            screenHt = d.height;
+            Screen s = Screen.getMainScreen();
+      //      Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+            screenWd = s.getWidth();  //d.width;
+            screenHt = s.getHeight(); //d.height;
+            screenX = s.getX();
+            screenY = s.getY();
       }
 
       private static void defaultAppSize() {
@@ -209,7 +216,7 @@ public abstract class SceneCntl {
 
       /**
        * Calculates the center width based on the
-       * CreateFlash or ReadFlash center.
+       * App center.
        *
        * @return
        */
@@ -223,7 +230,7 @@ public abstract class SceneCntl {
 
       /**
        * Calculates cell hieght based on
-       * the ReadFlash, or CreateFlash centerPaneHeight
+       * the App centerPaneHeight
        *
        * @return
        */
@@ -235,12 +242,14 @@ public abstract class SceneCntl {
             return Dim.CFP_CENTER_HT.get() / 2;
       }
 
+      public static Point2D getDefaultXY() {
+            return defaultXY;
+      }
 
       public static int getBottomHt() {
             return Dim.CONTROL_PANE_HT.get() + Dim.SOUTH_BPANE_HT.get();
       }
 
-      //public static int getControlPaneHt() { return Dim.CONTROL_PANE_HT.get(); }
       public static int getConsumerPaneWd() {
             return Dim.CONSUMER_PANE_WD.get();
       }
@@ -257,26 +266,27 @@ public abstract class SceneCntl {
             return Dim.BUTTON_WD.get();
       }
 
-      //public static int getMediaWidth() { return Dim.MEDIA_WD.get(); }
       public static int getFileSelectPaneWd() {
             return Dim.FILE_SELECT_WD.get();
       }
+
+      public static int getAppHt() {
+            return Box2D.APP_BOX.getHt();
+      }
+
 
       public static Box2D getAppBox() {
             return Box2D.APP_BOX;
       }
 
-      public static Box2D getReadFlashBox() {
-            return Box2D.READFLASH_BOX;
-      }
-
-      public static int getCreateFlashHt() {
-            return Box2D.CREATEFLASH_BOX.getHt();
-      }
+//      public static Box2D getReadFlashBox() {
+//            return Box2D.READFLASH_BOX;
+//      }
 
       public static Box2D getFormBox() {
             return Box2D.FORM_BOX;
       }
+
 
       /**
        * Ensure that setScreenSize() is called before using
@@ -298,12 +308,19 @@ public abstract class SceneCntl {
             return screenHt;
       }
 
-
+      /**
+       * Sets the default XY through detection of the screen.
+       * <p><b>NOTE: </b> Makes use of sun Screen not javaFX which is
+       * not accessible in a modular system. </p>
+       * @return Sets the
+       *        startXY in an atempt to set the app to the center of the
+       *        screen. From centerX - 250, from centerY - 406
+       */
       private static Point2D defaultStartXY() {
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+      //      Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
             // The default minXY for the app.
-            double screenX = (screenBounds.getWidth() / 2) - (250);
-            double screenY = (screenBounds.getHeight() / 2) - (406);
+            double screenX = Screen.getMainScreen().getPlatformWidth() / 2 -250;//(screenBounds.getWidth() / 2) - (250);
+            double screenY = Screen.getMainScreen().getPlatformHeight() / 2 -406;//(screenBounds.getHeight() / 2) - (406);
             return new Point2D(screenX, screenY);
       }
 
@@ -313,9 +330,9 @@ public abstract class SceneCntl {
             storeUserSettings();
       }
 
-    /* **************
+      /* **************
             ENUMS
-     **************** */
+      **************** */
 
       public enum Dim {
             CFP_CENTER_HT(600),
@@ -328,51 +345,47 @@ public abstract class SceneCntl {
             CONTROL_PANE_HT(160),
             CONSUMER_PANE_WD(1264),
             CONSUMER_PANE_HT(754),
-            RW_STAGE_MAXIMIZED(0);
+            APP_MAXIMIZED(0);
 
             private int value;
-
             Dim(int v) {
                   this.value = v;
             }
 
+            /**
+             * Delays setting the dimension by 300 milliseconds to avoid
+             * conflicts created by macOS. E.G. JavaFX Mac resets the Stage to
+             * non-maximized if the root scene is changed. The delay is needed
+             * to prevent setting the new scene to the minimized xy and size.
+             * @param v
+             */
             public void set(int v) {
-                  this.value = v;
+                        this.value = v;
             }
 
             public int get() {
                   return this.value;
             }
-
       }
 
       public enum Box2D {
-            READFLASH_BOX("readflash", 500, 810, defX, defY),
-            CREATEFLASH_BOX("createflash", 500, 810, defX, defY),
+//            READFLASH_BOX("readflash", 500, 800, 0, 0),
             APP_BOX("app", 500, 810, defX, defY),
             FORM_BOX("form", 500, 810, defX, defY);
-
-            private Box2D box;// = new Box2D();
-
-
-            public Box2D get() {
-                  return box;
-            }
 
             private int wd;
             private int ht;
             private int x;
             private int y;
             private final String name;// The read and edit stage
-            private static final BooleanProperty RW_STAGE_MAXIMIZED = new SimpleBooleanProperty(false);
 
             Box2D(String name, int wd, int ht, int x, int y) {
-                  boolean zero = x + y == 0;
+                  boolean zero = (x + y) == 0;
                   this.name = name;
                   this.wd = wd;
                   this.ht = ht;
-                  this.x = zero ? (int) XY.getX() : x;
-                  this.y = zero ? (int) XY.getY() : y;
+                  this.x = zero ? (int) defaultXY.getX() : x;
+                  this.y = zero ? (int) defaultXY.getY() : y;
             }
 
             Box2D(String name, String wd, String ht, String x, String y) {
@@ -385,12 +398,11 @@ public abstract class SceneCntl {
 
             public void setAll(int x, int y, int wd, int ht) {
                   boolean zero = x + y == 0;
-                  this.x = zero ? (int) XY.getX() : x;
-                  this.y = zero ? (int) XY.getY() : y;
+                  this.x = zero ? (int) defaultXY.getX() : x;
+                  this.y = zero ? (int) defaultXY.getY() : y;
                   this.wd = wd;
                   this.ht = ht;
             }
-
 
             // ** width ** //
             public int getWd() {
@@ -458,11 +470,6 @@ public abstract class SceneCntl {
 
             public String getYStr() {
                   return Integer.toString(y);
-            }
-
-            // ** EDIT and READ are Maximized ** //
-            public BooleanProperty rwStageIsMaximized() {
-                  return RW_STAGE_MAXIMIZED;
             }
       }
 }

@@ -4,11 +4,13 @@
 package flashmonkey;
 
 
+import authcrypt.user.EncryptedStud;
 import campaign.Report;
+import campaign.db.DBInsert;
 import ch.qos.logback.classic.Level;
 import ecosystem.ConsumerPane;
 
-import ecosystem.EcoPane;
+import ecosystem.WebEcoPane;
 import ecosystem.PayPane;
 import fileops.BaseInterface;
 import fileops.utility.Utility;
@@ -21,7 +23,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.*;
 import javafx.geometry.Insets;
-import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -38,6 +39,8 @@ import type.celltypes.VideoPlayerPopUp;
 import uicontrols.*;
 
 import java.awt.Toolkit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.prefs.BackingStoreException;
 
 import static flashmonkey.FlashCardOps.*;
@@ -66,7 +69,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       @SuppressWarnings("rawtypes")
 
       // The publicly known version
-      public static final String VERSION_STR = "1.3.0";
+      public static final String VERSION_STR = "1.4.0";
       // for serializing objects to file. The serial version.
       // Used with "serialVersionUID"
       public static final long VERSION = 20200612;
@@ -84,11 +87,11 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
       //protected static AVLTreePane avltPane = new AVLTreePane();
       protected static Scene sceneTree;
-      private static Scene searchScene;
+      private static Scene rootScene;
       private static BorderPane treePane;
       private static BorderPane firstPane;
       //    private static Button exitButton;
-      private static Button searchRscButton;
+      private static Button searchButton;
       private static Button menuButton;
       private static Button createButton;
       private static Button backButton;
@@ -100,6 +103,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       // FLAGS
       // if the account menu is showing. Used by
       // acct button.
+      private static boolean acctButtonRowShowing = false;
       private static boolean acctShowing = false;
       private static boolean isInEditMode;
       private static BooleanProperty returnToFullScreenProperty = new SimpleBooleanProperty(false);
@@ -115,7 +119,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       @Override
       public void start(Stage primaryStage) {
 
-            SoundEffects.APP_START.play();
+ //           SoundEffects.APP_START.play();
 
             // We control when the platform closes to ensure
             // any open stage/window saves its work before
@@ -123,7 +127,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             // to close the JVM.
             //Platform.setImplicitExit(false);
             try {
-                  // set the app to the users preferences
+                  // set the app to the users stored preferences
                   SceneCntl.setPref();
                   LOGGER.setLevel(Level.DEBUG);
                   // reporting app performace to DB
@@ -148,6 +152,9 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       //            flash = new Image(getClass().getResourceAsStream("/image/logo/vertical_logo_white_8per_120x325.png"));
                   Image icon = new Image(getClass().getResourceAsStream("/image/logo/blue_flash_128.png"));
                   primaryWindow.getIcons().add(icon);
+                  // -- EXPERIMENTAL --
+//                  rootScene = new Scene(new Pane());
+//                  primaryWindow.setScene(rootScene);
                   // Determine if FlashMonkey Data Directory
                   // exists and show signUp or signIn
                   if (flashmonkeyExists()) {
@@ -156,13 +163,26 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                         showIntroPane();
                   }
 
-//                  primaryWindow.fullScreenProperty().addListener((obs, oldval, newVal) -> {
-//                        returnToFullScreenProperty.setValue(true);
+
+                  // detect when user, or macOS changes the window from max to non-max
+//                  primaryWindow.fullScreenProperty().addListener((obs, oldVal, newVal) -> {
+//                        //SceneCntl.Dim.APP_MAXIMIZED.set( val );
+//                        if(unlocked) {
+//                              if (newVal) {
+//                                    SceneCntl.Dim.APP_MAXIMIZED.set(1);
+//                              } else {
+//                                    SceneCntl.Dim.APP_MAXIMIZED.set(0);
+//                              }
+//                        }
 //                  });
 
+
+                  rootScene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
+
                   primaryWindow.setTitle("FlashMonkey");
-                  primaryStage.setResizable(false);
+//                  primaryStage.setResizable(false);
                   primaryWindow.show();
+//                  primaryWindow.setMaximized(true);
             } catch (BackingStoreException e) {
                   LOGGER.warn(e.getMessage());
                   e.printStackTrace();
@@ -177,74 +197,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             return VERSION_STR;
       }
 
-      /**
-       * The first scene is the sign-in or signUp page. Then either
-       * fileSelectPane pane (study deck) or create authcrypt.user.
-       * IF fileSelectPane, also provides the ability to create a new deck.
-       *
-       * @return Returns the first scene or landing scene
-       */
-      public static Scene getFirstScene(GridPane focusPane) {
-            Scene firstScene;
-            firstPane = new BorderPane();
-            VBox spacer = new VBox();
-            spacer.setPrefHeight(40);
-            VBox spacerL = new VBox();
-            spacerL.setPrefHeight(40);
-
-            GridPane gridPane1 = new GridPane();
-
-            // Calculate logo fit height
-            int fitHeight = 128; //calcFitHeight((int) focusPane.getPrefHeight());
-            int gapHeight = (int) calcGapHeight(fitHeight);
-
-//            ImageView iconView = new ImageView(flash);
- //           //iconView.setFitHeight(fitHeight);
- //           iconView.setFitHeight(fitHeight);
- //           iconView.setPreserveRatio(true);
- //           iconView.setSmooth(true);
-            VBox imageBox = new VBox();
-            imageBox.setPrefHeight(fitHeight);
- //           imageBox.getChildren().add(iconView);
-            imageBox.setAlignment(Pos.CENTER);
-
-            gridPane1.setAlignment(Pos.TOP_CENTER);
-            gridPane1.setVgap(gapHeight);
-
-            // *** PLACE NODES IN PANE ***
-            gridPane1.getChildren().clear();
-            gridPane1.addRow(0, spacer);
-            gridPane1.addRow(1, imageBox); // column 0, row 1
-            gridPane1.addRow(2, spacerL);
-            gridPane1.addRow(3, focusPane);
-
-            // Set the account access button to the top
-            // always.
-            firstPane.setTop(getAccountBox());
-            firstPane.setCenter(gridPane1);
-            // grey #393E46  // #29AbE2
-            firstPane.setStyle("-fx-background-color:" + UIColors.FM_GREY); //#393E46"); //086ABF
-            // firstPane.setBottom(getExitBox());
-            menuButton = ButtoniKon.getMenuButton();
-            firstPane.setId("bckgnd_image"); // the background image
-            firstScene = new Scene(firstPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
-            firstScene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
-            //Sleep.storeOnDetected(firstScene, window);
-
-            ChangeListener<Number> stagePropsListener = (observable, oldVal, newVal) -> {
-                  SceneCntl.getAppBox().setHt((int) firstScene.getHeight());
-                  SceneCntl.getAppBox().setWd((int) firstScene.getWidth());
-                  SceneCntl.getAppBox().setX((int) firstScene.getX());
-                  SceneCntl.getAppBox().setY((int) firstScene.getY());
-            };
-
-            primaryWindow.widthProperty().addListener(stagePropsListener);
-            primaryWindow.heightProperty().addListener(stagePropsListener);
-            primaryWindow.xProperty().addListener(stagePropsListener);
-            primaryWindow.yProperty().addListener(stagePropsListener);
-
-            return firstScene;
-      }
 
       /**
        * Calculates the fitHeight of the
@@ -272,14 +224,35 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       }
 
       /**
+       * Sets the window to the ModeMenu. Use
+       * when app is in another section. E.G.
+       * ReadFlash or CreateFlash.
+       */
+      public static void setWindowToModeMenu() {
+            LOGGER.debug("setWindowToNav called");
+            isInEditMode = false;
+            acctButtonRowShowing = true;
+            InnerScene.setFirstScene(getModeMenuPane());
+      }
+
+      /**
+       * Sets the CenterPane to the ModeMenu. Use
+       * when the app is already in the first section.
+       * E.G. from FileSelectPane when a new file is
+       * selected.
+       */
+      public static void setPaneToModeMenu() {
+            isInEditMode = false;
+            InnerScene.setToModeMenuPane();
+      }
+
+      /**
        * Creates the Navigation/Menu stage. The Navigation/MenuStage provides the buttons
        * used to navigate to studying, back to the firstScene or deck selection, or to create/edit.
        *
        * @return Returns the Navigation Scene
        */
-      public static Scene getMenuScene() {
-            Scene mainScene;
-            BorderPane mainPane = new BorderPane();
+      private static GridPane getModeMenuPane() {
             GridPane gridPane = new GridPane();
             gridPane.setAlignment(Pos.CENTER);
             VBox buttonBox = new VBox(2);
@@ -291,7 +264,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             // *** CENTER MENU BUTTONS ***
             // go back to file select pane
             Button deckSelectButton = ButtoniKon.getDeckSelectButton();
-            deckSelectButton.setOnAction(e -> ReadFlash.getInstance().deckSelectButtonAction());
+            deckSelectButton.setOnAction(e -> InnerScene.setTofilePane());
             // go to study menu
             Button studyButton = ButtoniKon.getStudyButton();
             studyButton.setOnAction(e -> studyButtonAction());
@@ -303,22 +276,17 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   createButtonAction();
             });
 
-            ReadFlash.getInstance().resetScoreNProg();
+            //ReadFlash.getInstance().resetGaugeValues();
             buttonBox.getChildren().addAll(label, deckSelectButton, studyButton, createButton);
             gridPane.addRow(0, buttonBox);
 
-            buttonBox.setId("fileSelectPane");
+            buttonBox.setId("opaqueMenuPaneDark");
             buttonBox.setAlignment(Pos.TOP_CENTER);
             gridPane.setId("rightPaneTransp");
-            mainPane.setId("bckgnd_image"); // the background image
-            mainPane.setTop(getAccountBox());
-            mainPane.setCenter(gridPane);
-            mainPane.setBottom(getExitBox());
-            mainScene = new Scene(mainPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
-            mainScene.getStylesheets().addAll("css/mainStyle.css", "css/buttons.css");
+
             menuButton.setDisable(true);
 
-            return mainScene;
+            return gridPane;
       } // end Scene getNavigationScene
 
       protected static void createButtonAction() {
@@ -327,8 +295,58 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             Timer.getClassInstance().startTime();
             createFlash = CreateFlash.getInstance();
             menuButton.setDisable(false);
-            primaryWindow.setScene(createFlash.createFlashScene());   // called once
+            showCreatePane();
       }
+
+      public static void showCreatePane() {
+//            setPrimaryWindowDims(createFlash.createFlashScene());
+            //primaryWindow.setScene(createFlash.createFlashScene());   // called once
+            rootScene.setRoot(createFlash.createFlashScene());
+            createFlash = CreateFlash.getInstance();
+            createFlash.showComboBox();
+      }
+
+//      private static void setPrimaryWindowDims(BorderPane activePane) {
+//            unlocked = false;
+//            //primaryWindow.setScene(activeScene);
+//            rootScene.setRoot(activePane);
+//            if(SceneCntl.Dim.APP_MAXIMIZED.get() == 1) {
+//                  //primaryWindow.setX(SceneCntl.getDefaultXY().getX());
+//                  //primaryWindow.setY(SceneCntl.getDefaultXY().getY());
+//                  primaryWindow.setFullScreenExitHint("");
+//                  primaryWindow.setFullScreen(true);
+//
+////                  // ht & wd set in SceneCreator. EG ReadFlash or CreateFlash
+////                  primaryWindow.setX(0);
+////                  primaryWindow.setY(0);
+//            } else {
+//                  //primaryWindow.setX(SceneCntl.getAppBox().getX());
+//                  //primaryWindow.setY(SceneCntl.getAppBox().getY());
+//            }
+
+//            changeListenerBinding(rootScene);
+//            unlocked = true;
+//      }
+
+//      private static boolean unlocked = true;
+//      private static void changeListenerBinding(Scene activeScene) {
+//            if(unlocked) {
+//                  ChangeListener<Number> sceneBoxListener = (observable, oldVal, newVal) -> {
+//                        //if(SceneCntl.Dim.APP_MAXIMIZED.get() == 0) {
+//                        // ht & wd set by scene, x & y set by Stage/Window
+//                        SceneCntl.getAppBox().setHt((int) activeScene.getHeight());
+//                        SceneCntl.getAppBox().setWd((int) activeScene.getWidth());
+//                        SceneCntl.getAppBox().setX((int) primaryWindow.getX());
+//                        SceneCntl.getAppBox().setY((int) primaryWindow.getY());
+//                        //}
+//                  };
+//                  // h & w set by scene, x & y set by Stage/Window
+//                  activeScene.widthProperty().addListener(sceneBoxListener);
+//                  activeScene.heightProperty().addListener(sceneBoxListener);
+//                  primaryWindow.xProperty().addListener(sceneBoxListener);
+//                  primaryWindow.yProperty().addListener(sceneBoxListener);
+//            }
+ //     }
 
 
       /**
@@ -342,7 +360,11 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             LOGGER.debug("testTime: " + Timer.getClassInstance().getTakeTestTime());
             readFlash = ReadFlash.getInstance();
             menuButton.setDisable(false);
-            primaryWindow.setScene(readFlash.readScene());
+            ReadFlash.getInstance().resetGaugeValues();
+            rootScene.setRoot(readFlash.readScene());
+            //createFlash = CreateFlash.getInstance();
+//            setPrimaryWindowDims(readFlash.readScene());
+            //primaryWindow.setScene(readFlash.readScene());
       }
 
       /**
@@ -393,41 +415,29 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             HBox hBox = new HBox(2);
             hBox.setAlignment(Pos.CENTER_RIGHT);
             hBox.setPadding(new Insets(2, 2, 2, 2));
-//            String email = Alphabet.decrypt(UserData.getUserName());
-//            Label emailLabel = new Label("Email: " + email);
-//            emailLabel.setId("label14white");
             Button acctBtn = ButtoniKon.getAccountButton();
             Button iGotPdBtn = ButtoniKon.getIgotPdButton();
 
             acctBtn.setOnMousePressed(m -> {
-
                   System.out.println("acctBtn pressed and boolean is: " + acctShowing);
-
                   if (m.isSecondaryButtonDown()) {
-                      acctSecondaryAction();
-                  } else if( !acctShowing ){
-                      acctShowing = true;
-                      primaryWindow.setScene(getFirstScene(AccountProfileMenu.profileMenu()));
+                        acctSecondaryAction();
+                  } else if( !acctShowing) {
+                        acctShowing = true;
+                        InnerScene.setToAccountProfileMenu();
                       firstPane.setOnMouseClicked(f -> {
                             acctShowing = false;
-                            primaryWindow.setScene(getFirstScene(getFilePane()));
+                            InnerScene.setTofilePane();
                       });
-
                   } else {
-                      primaryWindow.setScene(getFirstScene(getFilePane()));
-                      acctShowing = false;
+                        acctShowing = false;
+                        InnerScene.setTofilePane();
                   }
             });
             // @TODO implement the getPaidPane with real data
             // and uncomment this page.
             // iGotPdBtn.setOnMouseClicked(e -> getPaidPane());
-            // cursors
-            acctBtn.setOnMouseEntered(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.HAND));
-            acctBtn.setOnMouseExited(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.DEFAULT));
-            iGotPdBtn.setOnMouseEntered(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.HAND));
-            iGotPdBtn.setOnMouseExited(e -> FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.DEFAULT));
-
-            //hBox.getChildren().addAll(emailLabel, acctBtn, iGotPdBtn);
+            // hBox.getChildren().addAll(emailLabel, acctBtn, iGotPdBtn);
             hBox.getChildren().addAll( acctBtn, iGotPdBtn);
 
             return hBox;
@@ -435,34 +445,35 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
       private static void acctSecondaryAction() {
             String version = VersionTimeStamp.getVersionBuildStamp();
-            FxNotify.notification("Version", version, Pos.CENTER, 10, "image/blue_flash_128.png", FlashMonkeyMain.getPrimaryWindow());
+            FxNotify.notification("Version", version, Pos.CENTER, 10, "image/blue_flash_128.png", primaryWindow);
       }
 
-
-
-      public static void setReturnToFullScreenProperty(boolean bool) {
-            LOGGER.debug("called");
-            returnToFullScreenProperty.setValue(bool);
-      }
-
+      /**
+       * For coordination on apple when user is using the app
+       * in maximized size.
+       */
       public static void wasMaximizedReset() {
             LOGGER.debug("called");
             if (returnToFullScreenProperty.get()) {
                   LOGGER.debug("isSetToFullScreen was set to TRUE. Now setting it to full screen");
-                  setReturnToFullScreenProperty(false);
-                  getPrimaryWindow().setFullScreenExitHint("");
-                  getPrimaryWindow().setIconified(false);
-                  getPrimaryWindow().setFullScreen(true);
+                  returnToFullScreenProperty.setValue(false);
+                  primaryWindow.setFullScreenExitHint("");
+                  primaryWindow.setIconified(false);
+                  primaryWindow.setFullScreen(true);
             }
       }
 
+      /**
+       * For coordination on apple when user is using the app
+       * in maximized size.
+       */
       public static void minimizeFullScreen() {
             LOGGER.debug("Called");
-            if (FlashMonkeyMain.getPrimaryWindow().isFullScreen()) {
+            if (primaryWindow.isFullScreen()) {
                   LOGGER.debug(" primaryWindow is set to Full screen. Now setting it to minimize");
-                  FlashMonkeyMain.getPrimaryWindow().setFullScreen(false);
-                  FlashMonkeyMain.getPrimaryWindow().setIconified(true);
-                  FlashMonkeyMain.setReturnToFullScreenProperty(true);
+                  primaryWindow.setFullScreen(false);
+                  primaryWindow.setIconified(true);
+                  returnToFullScreenProperty.setValue(true);
             }
       }
 
@@ -503,14 +514,13 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             ScrollPane scrollP = new ScrollPane();
             scrollP.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scrollP.setPrefWidth(width);
-            scrollP.setMaxHeight(446);
+            scrollP.setFitToHeight(true);
             scrollP.setStyle("-fx-background-color:transparent");
 
-            Label selectLabel = new Label("Select a study deck");
+            Label selectLabel = new Label("SELECT A STUDY DECK");
             selectLabel.setId("label24White");
-            gridPane1.setId("fileSelectPane");
+            gridPane1.setId("opaqueMenuPaneDark");
             gridPane1.setAlignment(Pos.TOP_CENTER);
-            gridPane1.setPrefHeight(width);
 
             // *** PLACE NODES IN PANE ***
             GridPane.setHalignment(selectLabel, HPos.CENTER);
@@ -521,7 +531,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             deckSelector.paneForFiles.setId("fileSelectPane");
 
             // The search for resources button
-            searchRscButton = ButtoniKon.getSearchRsc();
+            searchButton = ButtoniKon.getSearchRsc();
+
 
             // If there are files, display them in a ScrollPane  */
             // from import static FlashCardOps
@@ -531,41 +542,42 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   gridPane1.addRow(1, scrollP); // column 0, row 1
                   newDeckButton = ButtoniKon.getNewDeck();
 
+                  //newDeckButton.setMaxWidth(Double.MAX_VALUE);
+                  //searchButton.setMaxWidth(Double.MAX_VALUE);
                   HBox buttonBox = new HBox(25);
                   buttonBox.setPadding(new Insets(20, 0, 6, 0));
-                  buttonBox.getChildren().addAll(newDeckButton, searchRscButton);
+                  buttonBox.getChildren().addAll(newDeckButton, searchButton);
                   gridPane1.addRow(0, selectLabel);
                   gridPane1.addRow(3, buttonBox);
-
-                  backButton = ButtoniKon.getBackButton();
-                  backButton.setAlignment(Pos.CENTER);
-                  backButton.setOnAction(e -> {
-                        SoundEffects.PRESS_BUTTON_COMMON.play();
-                        deckSelector.paneForFiles.getChildren().clear();
-                        gridPane1.getChildren().clear();
-                        primaryWindow.setScene(getFirstScene(getFilePane()));
-                  });
 
                   // new file button action
                   newDeckButton.setOnAction(e -> {
                         SoundEffects.PRESS_BUTTON_COMMON.play();
+                        backButton = ButtoniKon.getBackButton();
+                        //backButton.setAlignment(Pos.CENTER);
+                        backButton.setOnAction(f -> {
+                              SoundEffects.PRESS_BUTTON_COMMON.play();
+                              deckSelector.paneForFiles.getChildren().clear();
+                              gridPane1.getChildren().clear();
+                              InnerScene.setTofilePane();
+                        });
                         gridPane1.getChildren().clear();
-                        HBox hb = new HBox(25);
-                        hb.setPadding(new Insets(20, 0, 6, 0));
-                        hb.getChildren().addAll(backButton, searchRscButton);
+                        HBox hbox = new HBox(25);
+                        hbox.setPadding(new Insets(20, 0, 6, 0));
+                        //hbox.setAlignment(Pos.CENTER);
+                        hbox.getChildren().addAll(backButton, searchButton);
                         // from flashmonkey.FlashCardOps.fileSelectPane()
                         deckSelector.paneForFiles.getChildren().clear();
                         gridPane1.addRow(0, deckSelector.newFile());
-                        gridPane1.addRow(2, hb);
+                        gridPane1.addRow(2, hbox);
                   });
-            } else // else display a new file pane
-            {
-                  searchRscButton.setPadding(new Insets(20, 0, 0, 0));
+            } else {// else display a new file pane
+                  searchButton.setPadding(new Insets(20, 0, 0, 0));
                   gridPane1.addRow(2, deckSelector.paneForFiles);
-                  gridPane1.addRow(4, searchRscButton);
+                  gridPane1.addRow(4, searchButton);
             }
 
-            searchRscButton.setOnAction(e -> {
+            searchButton.setOnAction(e -> {
                   SoundEffects.PRESS_BUTTON_COMMON.play();
                   getSearchWindow();
             });
@@ -574,64 +586,74 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             return gridPane1;
       }
 
-
+      /**
+       * Call when this is shown in the first scene.
+       */
       public static void showSignInPane() {
-            //LOGGER.debug("showSignInPane() called");
             SignInModel model = new SignInModel();
             SignInPane signInPane = new SignInPane(model);
             model.getFormInstance();
-            primaryWindow.setScene(getFirstScene(signInPane.getMainGridPane()));
+            InnerScene.setFirstScene(signInPane.getMainGridPane());
+            //primaryWindow.setScene(InnerScene.getFirstScene(signInPane.getMainGridPane()));
             signInPane.getMainGridPane().requestFocus();
       }
 
+      /**
+       * Call when this is shown in the first scene.
+       */
       public static void showSignUpPane() {
             SignUpModel model = new SignUpModel();
             SignUpPane signUpPane = new SignUpPane(model);
             model.getFormInstance();
-            primaryWindow.setScene(getFirstScene(signUpPane.getSignUpPane()));
+            InnerScene.setFirstScene(signUpPane.getSignUpPane());
             signUpPane.getSignUpPane().requestFocus();
       }
 
+      /**
+       * Call when in intro section. IE from a hyperlink.
+       */
+      public static void showSignUpInnerPane() {
+            InnerScene.setToSignUpPane();
+      }
+
+      public static void showSignInInnerPane() {
+            InnerScene.setToSignInPane();
+      }
+
       public static void showConfirmPane() {
-            ConfirmationModel model = new ConfirmationModel();
-            ConfirmationPane confirmPane = new ConfirmationPane(model);
-            model.getFormInstance();
-            primaryWindow.setScene(getFirstScene(confirmPane.getConfirmPane()));
-            confirmPane.requestFocus();
+            InnerScene.setToConfirmPane();
       }
 
       private static void showIntroPane() {
+            // Log user has opened the application for the first time.
+            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+            Runnable task = () -> {
+                  DBInsert.SESSION_NOTE.doInsert(new EncryptedStud());
+                  scheduledExecutor.shutdown();
+            };
+            scheduledExecutor.execute(task);
+
             IntroPane introPane = new IntroPane();
             introPane.getSignInBtn().setOnAction( e ->{
                   SoundEffects.PRESS_BUTTON_COMMON.play();
-                  showSignInPane();
+                  InnerScene.setToSignInPane();
             });
             introPane.getSignUpBtn().setOnAction(e -> {
                   SoundEffects.PRESS_BUTTON_COMMON.play();
-                  showSignUpPane();
+                  InnerScene.setToSignUpPane();
             });
-            primaryWindow.setScene(getFirstScene(introPane.getIntroPane()));
+            InnerScene.setFirstScene(introPane.getIntroPane());
             introPane.getIntroPane().requestFocus();
       }
 
       public static void showResetOnePane() {
-            // @TODO REmove model if not needed
-            // Do we need the model here?
-            //ResetOneModel model = new ResetOneModel();
-            ResetOnePane reset = new ResetOnePane();
-            //model.getFormInstance();
-            primaryWindow.setScene(getFirstScene(reset.getMainGridPane()));
-            reset.getMainGridPain().requestFocus();
+            SoundEffects.PRESS_BUTTON_COMMON.play();
+            InnerScene.setToResetOnePane();
       }
 
       public static void showResetTwoPane() {
-            // @TODO Remove model if not needed
-            // Do we need the model here?
-            //ResetTwoModel model = new ResetTwoModel();
-            ResetTwoPane reset = new ResetTwoPane();
-            //model.getFormInstance();
-            primaryWindow.setScene(getFirstScene(reset.getMainGridPane()));
-            reset.getMainGridPain().requestFocus();
+            SoundEffects.PRESS_BUTTON_COMMON.play();
+            InnerScene.setToResetTwoPane();
       }
 
 
@@ -654,7 +676,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   String message = "Oooph!" +
                       "\n I need to be connected to the cloud \n to create or change your account information.";
                   FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
-                      emojiPath, FlashMonkeyMain.getPrimaryWindow());
+                      emojiPath, primaryWindow);
             }
       }
 
@@ -714,13 +736,13 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud.";
                   FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
+                          emojiPath, primaryWindow);
             }
       }
 
       public static void getSubscribeWindow() {
             if (Utility.isConnected()) {
-                  EcoPane ePane = new EcoPane();
+                  WebEcoPane ePane = new WebEcoPane();
                   Scene scene = new Scene(ePane.getReqSubscribePane());
                   if (actionWindow != null && actionWindow.isShowing()) {
                         actionWindow.close();
@@ -734,7 +756,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud.";
                   FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
+                          emojiPath, primaryWindow);
             }
       }
 
@@ -757,7 +779,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud to cancel your account.";
                   FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
+                          emojiPath, primaryWindow);
             }
       }
 
@@ -766,7 +788,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
        */
       public static void getWebView(String page) {
             if(Utility.isConnected()) {
-                  EcoPane eco = new EcoPane();
+                  WebEcoPane eco = new WebEcoPane();
                   Scene scene = new Scene(eco.getWebViewPane(page, 400, 650));
                   if (actionWindow != null && actionWindow.isShowing()) {
                         actionWindow.close();
@@ -780,7 +802,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   String emojiPath = "image/flashFaces_sunglasses_60.png";
                   String message = "I need to be connected to the cloud to cancel your account.";
                   FxNotify.notification("Please Connect!", message, Pos.CENTER, 9,
-                          emojiPath, FlashMonkeyMain.getPrimaryWindow());
+                          emojiPath, primaryWindow);
             }
       }
 
@@ -842,7 +864,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       }
 
       public static void getFileSelectPane() {
-            primaryWindow.setScene(getFirstScene(getFilePane()));
+            InnerScene.setTofilePane();
       }
 
       public static Stage getPrimaryWindow() {
@@ -864,14 +886,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             firstPane.setTop(getAccountBox());
       }
 
-      /**
-       * Sets the window to nav
-       */
-      public static void setWindowToMenu() {
-            LOGGER.debug("setWindowToNav called");
-            isInEditMode = false;
-            primaryWindow.setScene(getMenuScene());
-      }
+
 
       /**
        * Returns if editor/creator mode is active.
@@ -902,7 +917,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                 "   We're working on this, but for now we \n" +
                 "   are not able to process the file. \n\n";
             FxNotify.notification("OUCH!", msg, Pos.CENTER, 30,
-                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
+                "emojis/Flash_headexplosion_60.png", primaryWindow);
       }
 
       /**
@@ -924,9 +939,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             return isLoggedinProperty.get();
       }
 
-      private void windowCloseListener() {
-
-      }
 
       @Override
       public void saveOnExit() {
@@ -946,8 +958,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   if (createFlash != null) {
                         createFlash.onClose();
                   }
-                  // checks if deck is compatible before saving
-                  //FlashCardOps.getInstance().safeSaveFlashList();
             }
       }
 
@@ -987,9 +997,148 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             System.exit(0);
       }
 
+      /* ***************************************** */
+
+      /////////         MAIN METHOD          ////////
+
+      /* ***************************************** */
 
       public static void main(String[] args) {
             launch(args);
+      }
+
+
+      /* ***************************************** */
+
+      /////////         INNER CLASS          ////////
+
+      /* ***************************************** */
+
+      private class InnerScene {
+
+            private static GridPane gridPaneFirstScene = new GridPane();
+            private static VBox spacerL = new VBox();
+            /**
+             * The first scene is the sign-in or signUp page. Then either
+             * fileSelectPane pane (study deck) or create authcrypt.user.
+             * IF fileSelectPane, also provides the ability to create a new deck.
+             *
+             * @return Returns the first scene or landing scene
+             */
+            public static void setFirstScene(GridPane focusPane) {
+                  Scene firstScene;
+                  firstPane = new BorderPane();
+                  setupFirstGrid();
+                  gridPaneFirstScene.addRow(3, focusPane);
+
+                  // Set the account access button to the top
+                  // always. If not the log in scene. HAHA
+                  if(acctButtonRowShowing) {
+                        firstPane.setTop(getAccountBox());
+                        firstPane.setPadding(new Insets(0, 0, 100, 0));
+                        spacerL.setMinHeight(280);
+                  }
+
+                  firstPane.setCenter(gridPaneFirstScene);
+                  // grey #393E46  // #29AbE2
+                  firstPane.setStyle("-fx-background-color:" + UIColors.FM_GREY); //#393E46"); //086ABF
+                  // firstPane.setBottom(getExitBox());
+                  menuButton = ButtoniKon.getMenuButton();
+                  firstPane.setId("bckgnd_image"); // the background image
+
+                  //setPrimaryWindowDims(firstPane);
+                  if(rootScene == null) {
+                        rootScene = new Scene(firstPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
+                        //rootScene = new Scene(firstPane, SceneCntl.getScreenWd(), SceneCntl.getScreenHt());
+                        primaryWindow.setScene(rootScene);
+                  } else {
+                        rootScene.setRoot(firstPane);
+                        primaryWindow.setScene(rootScene);
+                  }
+                  //rootScene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
+                  //setPrimaryWindowDims(firstPane);
+//                  rootScene.setRoot(firstPane);
+
+                  //return firstPane;
+            }
+
+            private static void setupFirstGrid() {
+                  VBox spacer = new VBox();
+                  spacer.setPrefHeight(116);
+                  spacerL.setPrefHeight(40);
+                  // Calculate logo fit height
+                  int fitHeight = 128; //calcFitHeight((int) focusPane.getPrefHeight());
+                  int gapHeight = (int) calcGapHeight(fitHeight);
+                  VBox imageBox = new VBox();
+                  imageBox.setPrefHeight(fitHeight);
+                  imageBox.setAlignment(Pos.CENTER);
+                  gridPaneFirstScene.setAlignment(Pos.TOP_CENTER);
+                  gridPaneFirstScene.setVgap(gapHeight);
+                  // *** PLACE NODES IN PANE ***
+                  gridPaneFirstScene.getChildren().clear();
+                  gridPaneFirstScene.addRow(0, spacer);
+                  gridPaneFirstScene.addRow(1, imageBox); // column 0, row 1
+                  gridPaneFirstScene.addRow(2, spacerL);
+            }
+
+            private static void setToModeMenuPane() {
+                  acctButtonRowShowing = true;
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, getModeMenuPane());
+            }
+
+            private static void setTofilePane() {
+                  acctButtonRowShowing = true;
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, getFilePane());
+                  firstPane.setOnMouseClicked(null);
+            }
+
+            private static void setToConfirmPane() {
+                  ConfirmationModel model = new ConfirmationModel();
+                  ConfirmationPane confirmPane = new ConfirmationPane(model);
+                  model.getFormInstance();
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, confirmPane.getConfirmPane());
+                  confirmPane.requestFocus();
+            }
+
+            private static void setToAccountProfileMenu() {
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, AccountProfileMenu.profileMenu());
+            }
+
+            private static void setToSignInPane() {
+                  SignInModel model = new SignInModel();
+                  SignInPane signInPane = new SignInPane(model);
+                  model.getFormInstance();
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, signInPane.getMainGridPane());
+                  signInPane.getMainGridPane().requestFocus();
+            }
+
+            private static void setToSignUpPane() {
+                  SignUpModel model = new SignUpModel();
+                  SignUpPane signUpPane = new SignUpPane(model);
+                  model.getFormInstance();
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, signUpPane.getSignUpPane());
+                  signUpPane.getSignUpPane().requestFocus();
+            }
+
+            private static void setToResetOnePane() {
+                  ResetOnePane reset = new ResetOnePane();
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, reset.getMainGridPain());
+                  reset.getMainGridPain().requestFocus();
+            }
+
+            private static void setToResetTwoPane() {
+                  ResetTwoPane reset = new ResetTwoPane();
+                  gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
+                  gridPaneFirstScene.addRow(3, reset.getMainGridPain());
+                  reset.getMainGridPain().requestFocus();
+            }
       }
 
 

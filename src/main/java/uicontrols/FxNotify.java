@@ -1,5 +1,6 @@
 package uicontrols;
 
+import flashmonkey.FlashMonkeyMain;
 import fmannotations.FMAnnotations;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
@@ -31,32 +32,34 @@ public class FxNotify {
 
       private static FMNotifications notificationBuilder;
 
-      public static synchronized void notification(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {
-            if (notificationBuilder == null || !notificationBuilder.isShowing()) {
+      /**
+       * The non-blocking notification pop-up. Should appear within the window of the owner stage.
+       * @param title Title if needed
+       * @param msg message
+       * @param pos position in the window
+       * @param seconds amount of time it is displayed
+       * @param graphicPath The path to the image to be displayed if any
+       * @param owner The stage/window that created the alert notification.
+       */
+      public static synchronized void notification(String title, String msg, Pos pos, int seconds, String graphicPath, Stage owner) {
+ //           if (notificationBuilder == null || !notificationBuilder.isShowing()) {
 
-                  Node graphic = new ImageView(iconPath);
+                  Node graphic = new ImageView(graphicPath);
                   Notifications.create()
                       .title(title)
                       .graphic(graphic)
                       .text(msg)
                       .threshold(1, Notifications.create().title("Collapsed Notification"))
-                      .hideAfter(Duration.seconds(duration))
+                      .hideAfter(Duration.seconds(seconds))
                       .position(pos)
+                      .owner(owner)
                       .showWarning();
-
-//                  notificationBuilder = FMNotifications.create()
-//                      .title(title)
-//                      .text(msg)
-//                      .graphic(graphic)
-//                      .hideAfter(Duration.seconds(duration))
-//                      .padding(padding)
-//                      .position(pos);
 
                   SoundEffects.NOTIFICATION_NORM.play();
 //                  notificationBuilder.owner(owner);
 //                  notificationBuilder.warningStyle();
 //                  notificationBuilder.show();
-            }
+//            }
       }
 
 //      public static synchronized void notificationBlue(String title, String msg, Pos pos, int duration, String iconPath, Stage owner) {

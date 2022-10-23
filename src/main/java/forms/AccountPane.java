@@ -10,13 +10,11 @@ import org.slf4j.LoggerFactory;
 
 public class AccountPane extends SimpleFormParentPane {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AccountPane.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AccountPane.class);
     //private static final Logger LOGGER = LoggerFactory.getLogger(DeckMetaModel.class);
 
     private AccountModel model;
-    //protected GridPane mainGridPain;
-    // cancel subscription
-    //    private Hyperlink cancelSubtLink;
+
 
     public AccountPane() {
         super();
@@ -73,7 +71,7 @@ public class AccountPane extends SimpleFormParentPane {
      */
     @Override
     public void setupBindings() {
-        LOGGER.info("setupBindings() called");
+ //       LOGGER.info("setupBindings() called");
         actionButton.disableProperty().bind(model.getFormInstance().persistableProperty().not());
         displayForm.prefWidthProperty().bind(mainGridPane.prefWidthProperty());
     }

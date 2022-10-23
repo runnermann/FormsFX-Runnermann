@@ -226,6 +226,7 @@ public enum ButtoniKon { //extends Button {
       // --------------------------------- --------------------------------- //
       //                               BUTTONS
       // --------------------------------- --------------------------------- //
+      private static int paneForFileBtnWd = 210;
 
       public static Button getBackButton() {
             Button button = BACK.get();
@@ -240,8 +241,17 @@ public enum ButtoniKon { //extends Button {
       public static Button getNewDeck() {
             Button button = NEW_DECK.get();
             button.setId("blueButtonSquare");
-            button.setMaxWidth(186.5);
-            button.setMinWidth(186.5);
+            button.setMaxWidth(paneForFileBtnWd);
+            button.setMinWidth(paneForFileBtnWd);
+            button.setMaxHeight(40);
+            return button;
+      }
+
+      public static Button getSearchRsc() {
+            Button button = SEARCH_RSC.get();
+            button.setId("blueButtonSquare");
+            button.setMaxWidth(paneForFileBtnWd);
+            button.setMinWidth(paneForFileBtnWd);
             button.setMaxHeight(40);
             return button;
       }
@@ -355,15 +365,6 @@ public enum ButtoniKon { //extends Button {
       public static Button getAnsPrev() {
             Button button = ANS_PREV.get();
             button.setId("navButtonLight");
-            return button;
-      }
-
-      public static Button getSearchRsc() {
-            Button button = SEARCH_RSC.get();
-            button.setId("blueButtonSquare");
-            button.setMaxWidth(186.5);
-            button.setMinWidth(186.5);
-            button.setMaxHeight(40);
             return button;
       }
 

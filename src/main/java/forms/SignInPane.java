@@ -4,9 +4,6 @@ import com.dlsc.formsfx.view.renderer.FormRenderer;
 import com.dlsc.formsfx.view.util.ViewMixin;
 
 import flashmonkey.FlashMonkeyMain;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.DoublePropertyBase;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -14,15 +11,15 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 /**
  * css uses buttons.css and
  */
 public class SignInPane extends Pane implements ViewMixin {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(SignInPane.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(SignInPane.class);
 
       private GridPane mainGridPane;
       private Pane spacer;
@@ -32,14 +29,13 @@ public class SignInPane extends Pane implements ViewMixin {
       private static VBox msgVBox;
       private Button actionButton;
       private Hyperlink signUpLink;
-      private Hyperlink forgotLink;
+      private Hyperlink resetLink;
 
       // FxForm related
       private FormRenderer displayForm;
       private final SignInModel model;
 
       public SignInPane(SignInModel signInModel) {
-            LOGGER.info("SignInPane constructor called");
             this.model = signInModel;
             init();
       }
@@ -49,7 +45,7 @@ public class SignInPane extends Pane implements ViewMixin {
        */
       @Override
       public void initializeSelf() {
-            LOGGER.info("initializeSelf called and it does nothing");
+            //getStylesheets().add(getClass().getResource("/css/fxformStyle.css").toExternalForm());
       }
 
       /**
@@ -57,8 +53,6 @@ public class SignInPane extends Pane implements ViewMixin {
        */
       @Override
       public void initializeParts() {
-
-            LOGGER.info("initializeParts called");
             mainGridPane = new GridPane();
             spacer = new Pane();
             newActHBox = new HBox();
@@ -67,7 +61,7 @@ public class SignInPane extends Pane implements ViewMixin {
             signInHBox = new HBox();
             actionButton = new Button("SIGN IN");
             signUpLink = new Hyperlink("Join now");
-            forgotLink = new Hyperlink("Reset password?");
+            resetLink = new Hyperlink("Reset password?");
 
             displayForm = new FormRenderer(model.getFormInstance());
       }
@@ -78,11 +72,7 @@ public class SignInPane extends Pane implements ViewMixin {
        */
       @Override
       public void setupBindings() {
-
-            LOGGER.info("setupBindings() called");
-
             actionButton.disableProperty().bind(model.getFormInstance().persistableProperty().not());
-            //reset.disableProperty().bind(model.getFormInstance().changedProperty().not());
             displayForm.prefWidthProperty().bind(mainGridPane.prefWidthProperty());
       }
 
@@ -91,11 +81,7 @@ public class SignInPane extends Pane implements ViewMixin {
        * labels.
        */
       @Override
-      public void setupValueChangedListeners() {
-
-            LOGGER.info("setupValueChangedListeners called");
-
-      }
+      public void setupValueChangedListeners() { /* empty */ }
 
       /**
        * This method sets up the handling for all the button clicks.
@@ -107,14 +93,12 @@ public class SignInPane extends Pane implements ViewMixin {
                   model.formAction();
             });
 
-            forgotLink.setOnAction(e -> {
+            resetLink.setOnAction(e -> {
                   FlashMonkeyMain.showResetOnePane();
-                  // TODO forgotLink Action
             });
 
             signUpLink.setOnAction(e -> {
-                  //LOGGER.info("signUpLink clicked.");
-                  FlashMonkeyMain.showSignUpPane();
+                  FlashMonkeyMain.showSignUpInnerPane();
             });
 
       }
@@ -124,11 +108,10 @@ public class SignInPane extends Pane implements ViewMixin {
        */
       @Override
       public void layoutParts() {
-
             mainGridPane.setAlignment(Pos.CENTER);
             mainGridPane.setHgap(10);
             mainGridPane.setVgap(12);
-            mainGridPane.setId("fileSelectPane");
+            mainGridPane.setId("opaqueMenuPaneDark");
             mainGridPane.setPrefSize(340, 400);
             mainGridPane.setOnKeyPressed(f -> {
                   if (f.getCode() == KeyCode.ENTER) {
@@ -149,11 +132,11 @@ public class SignInPane extends Pane implements ViewMixin {
             actionButton.setId("signInButton");
 
             signUpLink.setId("signInHyp");
-            forgotLink.setId("signInHyp");
+            resetLink.setId("signInHyp");
 
             msgVBox.setAlignment(Pos.CENTER);
             forgotHBox.setAlignment(Pos.CENTER);
-            forgotHBox.getChildren().add(forgotLink);
+            forgotHBox.getChildren().add(resetLink);
 
             msgVBox.getChildren().add(formTitle);
             newActHBox.getChildren().addAll(signUpLabel, signUpLink);
@@ -182,7 +165,6 @@ public class SignInPane extends Pane implements ViewMixin {
        * @param msg
        */
       public static void setErrorMsg(String msg) {
-
             msgVBox.getChildren().clear();
             int lineLength = 30;
             FormsUtility.setErrorMsg(msg, msgVBox, lineLength);

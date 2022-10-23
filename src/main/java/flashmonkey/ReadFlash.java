@@ -21,9 +21,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.TextAlignment;
+//import javafx.stage.StageStyle;
 import media.sound.SoundEffects;
 import metadata.DeckMetaData;
 import org.slf4j.Logger;
@@ -33,6 +32,8 @@ import type.testtypes.*;
 import type.tools.imagery.Fit;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.floor;
 
@@ -99,7 +100,7 @@ public final class ReadFlash implements BaseInterface {
       /**
        * The last score total
        **/
-      private static double score = 0.0;
+      private AtomicInteger score = new AtomicInteger(0);
 
       // *** BUTTONS *** //
       //private static Button exitButton;
@@ -174,10 +175,9 @@ public final class ReadFlash implements BaseInterface {
        * b) The Test session is the test mode. In test mode the
        * EncryptedUser is presented a question and one of the test cards.
        */
-      public Scene readScene() {
+      public BorderPane readScene() {
             LOGGER.info("\n\n **** createReadScene() called ****");
             //LOGGER.setLevel(Level.DEBUG);
-            LOGGER.debug("Set ReadFlash LOGGER to debug");
 
             // NORTH & CENTER PANES read fields
             rpNorth = new HBox(2);
@@ -191,13 +191,11 @@ public final class ReadFlash implements BaseInterface {
             nextQButton = ButtoniKon.getQNextButton();
             prevQButton = ButtoniKon.getQPrevButton();
             endQButton = ButtoniKon.getQLastButton();
-
             // menu buttons shown in the menu pane
             deckSelectButton = ButtoniKon.getDeckSelectButton();
 
             preRead();
 
-            //exitButton = ButtoniKon.getExitButton();
             menuButton = ButtoniKon.getMenuButton();
             exitBox = new GridPane(); // HBox with spacing provided
             exitBox.setHgap(2);
@@ -228,7 +226,7 @@ public final class ReadFlash implements BaseInterface {
             menuButton.setOnAction(e -> {
                   SoundEffects.GAME_OVER.play();
                   leaveAction();
-                  FlashMonkeyMain.setWindowToMenu();
+                  FlashMonkeyMain.setWindowToModeMenu();
             });
 
             qaButton.setOnAction((ActionEvent e) -> qaButtonAction());
@@ -245,28 +243,19 @@ public final class ReadFlash implements BaseInterface {
              * shortCut Key actions
              */
             masterBPane.setOnKeyPressed(this::shortcutKeyActions);
-            masterScene = new Scene(masterBPane, SceneCntl.getReadFlashBox().getWd(), SceneCntl.getReadFlashBox().getHt());
-            masterScene.getStylesheets().addAll("css/mainStyle.css", "css/buttons.css");
-            changeListenerBinding();
+//            if( SceneCntl.Dim.APP_MAXIMIZED.get() == 1) {
+//                  // note x & y are handled by the Stage/Window
+//                  // See setPrimaryWindow in FlashMonkeyMain
+//                  masterScene = new Scene(masterBPane, SceneCntl.getScreenWd(), SceneCntl.getScreenHt());
+//            } else {
+//                  // for x and y see note above
+//                  masterScene = new Scene(masterBPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
+//            }
+//            masterScene.getStylesheets().addAll("css/mainStyle.css", "css/buttons.css");
 
-            return masterScene;
+            return masterBPane;
       }    // ******** END OF READ SCENE ********
 
-      /**
-       * Binds the masterBPane to SceneCntl
-       */
-      private void changeListenerBinding() {
-            ChangeListener<Number> sceneBoxListener = (observable, oldVal, newVal) -> {
-                  SceneCntl.getReadFlashBox().setHt((int) masterScene.getHeight());
-                  SceneCntl.getReadFlashBox().setWd((int) masterScene.getWidth());
-                  SceneCntl.getReadFlashBox().setX((int) masterScene.getX());
-                  SceneCntl.getReadFlashBox().setY((int) masterScene.getY());
-            };
-            masterScene.widthProperty().addListener(sceneBoxListener);
-            masterScene.heightProperty().addListener(sceneBoxListener);
-            masterScene.xProperty().addListener(sceneBoxListener);
-            masterScene.yProperty().addListener(sceneBoxListener);
-      }
 
       private void preRead() {
             testButton = ButtoniKon.getTestButton();
@@ -341,13 +330,14 @@ public final class ReadFlash implements BaseInterface {
       private GridPane buildStudyModeMenuPane() {
             LOGGER.debug("listHasCardsAction() called");
 
-            int flSize;
-            flSize = FlashCardOps.getInstance().getFlashList().size();
+            int flSize = FlashCardOps.getInstance().getFlashList().size();
+            setTree();
+            int highestScore = FMTWalker.getInstance().highestPossibleScore() / 10;
 
-            progGauge = new MGauges(100, 100);
-            scoreGauge = new MGauges(100, 100);
-            pGaugePane = progGauge.makeGauge("COMPLETED", 0, (flSize - 1), 0);
-            sGaugePane = scoreGauge.makeGauge("SCORE", 0, flSize * 2, -1 * (flSize * 2));
+            progGauge = new MGauges(120, 120);
+            scoreGauge = new MGauges(120, 120);
+            pGaugePane = progGauge.makeGauge("COMPLETED", 0, flSize, 0);
+            sGaugePane = scoreGauge.makeGauge("SCORE", 0, highestScore, -1 * highestScore);
 
             Label label = new Label("Study Mode");
             label.setId("label24White");
@@ -631,15 +621,6 @@ public final class ReadFlash implements BaseInterface {
             return ++progress;
       }
 
-      /**
-       * Reset the score and progress counts
-       */
-      public void resetScoreNProg() {
-            LOGGER.debug("\n\n *** called resetScoreNProg() ***");
-            score = 0;
-            progress = 0;
-      }
-
       public MGauges getProgGauge() {
             return progGauge;
       }
@@ -782,7 +763,7 @@ public final class ReadFlash implements BaseInterface {
                   // May be an uneccessry call
                   // since we only update test score.
                   meta.setDataFmFile();
-                  meta.addTestData(progress, (int) score);
+                  meta.appendToScoresArry(progress, score.get() / 10);
                   // set metadata to
                   meta.updateDataMap();
                   FlashCardOps.getInstance().setMetaInFile(meta, FlashCardOps.getInstance().getDeckFileName());
@@ -820,6 +801,10 @@ public final class ReadFlash implements BaseInterface {
       @Override
       public void onClose() {
             FlashMonkeyMain.treeWindow.close();
+            if(SceneCntl.Dim.APP_MAXIMIZED.get() == 0) {
+                  SceneCntl.getAppBox().setX((int)FlashMonkeyMain.getPrimaryWindow().getX());
+                  SceneCntl.getAppBox().setY((int)FlashMonkeyMain.getPrimaryWindow().getY());
+            }
       }
 
 /*    public void onClose() {
@@ -829,24 +814,6 @@ public final class ReadFlash implements BaseInterface {
 
       // *** SETTERS *** //
 
-      /**
-       * Adds the value in the score to the value in the argument
-       *
-       * @param num
-       */
-      public void addScore(double num) {
-            score += num;
-      }
-
-      /**
-       * Subtracts the value in the arugement from the
-       * score.
-       *
-       * @param num
-       */
-      public void subtractScore(double num) {
-            score -= num;
-      }
 
       /**
        * Sets the progress to the value in the argument
@@ -884,16 +851,8 @@ public final class ReadFlash implements BaseInterface {
             hasChanged = true;
       }
 
-      public boolean hasChanged() {
-            return hasChanged;
-      }
-
       public Pane getMasterBPane() {
             return masterBPane;
-      }
-
-      public Pane getRPCenter() {
-            return rpCenter;
       }
 
       /**
@@ -911,12 +870,7 @@ public final class ReadFlash implements BaseInterface {
        * @return double score
        */
       public double getScore() {
-            return score;
-      }
-
-      public String getDeckTitle(String fileName) {
-            int start = fileName.indexOf('$' + 1);
-            return fileName.substring(start, fileName.length() - 4);
+            return score.doubleValue();
       }
 
 
@@ -926,19 +880,20 @@ public final class ReadFlash implements BaseInterface {
        * @return String score
        */
       public String printScore() {
-            return Double.toString(score);
+            return Double.toString(score.get() / 10);
       }
 
       /**
-       * Checks if an qNumber is occupied, If so, increments the qNumber until
+       * <p>Sets the next qNumber for inserted cards.</p>
+       * Checks if an qNumber is occupied/used, If so, increments the qNumber until
        * there is an available index.
        *
        * @param fc
        * @param newNum
        */
-      private static int addPlus(FlashCardMM fc, int newNum) {
+      private static int nextQNumber(FlashCardMM fc, int newNum) {
             int num = newNum % 2 == 0 ? newNum : newNum + 1;
-
+            // ensure always an odd integer to prevent n % 10 == 0
             for (int i = 1; i < 20; i += 2) {
                   newNum = num + i;
                   //newNum = newNum % 2 == 0 ? newNum++ : newNum;
@@ -1160,9 +1115,9 @@ public final class ReadFlash implements BaseInterface {
        * reset().
        * void method
        */
-      protected void resetGuageValues() {
+      protected void resetGaugeValues() {
             LOGGER.debug("\n\n *** called resetInd *** ");
-            score = 0.0;
+            score.set(0);
             progress = 0;
       }
 
@@ -1175,24 +1130,25 @@ public final class ReadFlash implements BaseInterface {
             int size = FlashCardOps.getInstance().getFlashList().size();
             int numTestCards = DeckMetaData.getInstance().numTestCards();
             int threshold = size / 4;
-            double scoreLimit = FMTWalker.getInstance().highestPossibleScore();
-
+            int scoreLimit = FMTWalker.getInstance().highestPossibleScore();
+            EndGame endGame = new EndGame();
             if(numTestCards > 20
                     && numTestCards > threshold
-                    && score == scoreLimit
+                    && score.get() >= scoreLimit
                     && mode == 't') {
-                  EndGame endGame = new EndGame(
-                          score,
-                          scoreLimit,
+
+                  endGame.buildAndDisplay(
+                          score.get() / 10,
+                          scoreLimit / 10,
                           progress,
                           FMTWalker.getInstance().getCount(),
                           FlashCardOps.getInstance().getDeckLabelName(),
                           EndGame.HONORABLE
                   );
             } else {
-                  EndGame endGame = new EndGame(
-                          score,
-                          scoreLimit,
+                  endGame.buildAndDisplay(
+                          score.get() / 10,
+                          scoreLimit / 10,
                           progress,
                           FMTWalker.getInstance().getCount(),
                           FlashCardOps.getInstance().getDeckLabelName(),
@@ -1258,8 +1214,13 @@ public final class ReadFlash implements BaseInterface {
 
                   SoundEffects.CORRECT_ANSWER.play();
                   LOGGER.debug("/n*** rightAns called ***");
-
-                  score += genTest.score();
+                  // add points if 1st visit or greater than
+                  // 1st visit.
+                  if(currentCard.getCNumber() %10 == 0) {
+                        score.addAndGet(genTest.score());
+                  } else {
+                        score.addAndGet(10);
+                  }
                   currentCard.setIsRight(1);
                   listCard.setNumRight(listCard.getNumRight() + 1);
 
@@ -1278,7 +1239,7 @@ public final class ReadFlash implements BaseInterface {
                   correctNodActions(genTest.getAnsButton());
                   // Score related
                   scoreTextF.setText(printScore());
-                  scoreGauge.moveNeedle(500, score);
+                  scoreGauge.moveNeedle(500, score.get() / 10);
 
                   FlashMonkeyMain.AVLT_PANE.displayTree();
                   masterBPane.setBottom(manageSouthPane(mode));
@@ -1332,7 +1293,7 @@ public final class ReadFlash implements BaseInterface {
              */
             public WrongAns(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
 
-                  /**    Thinking should animate the avlTreePane, the curent circle should fade to red or green depending on
+                  /**    Thinking should animate the avlTreePane, the current circle should fade to red or green depending on
                    if the answer is wright or wrong.
 
                    Working on setting the wrong answer actions. The selectAnswerButton and actions should be in the
@@ -1352,7 +1313,7 @@ public final class ReadFlash implements BaseInterface {
                   if (currentCard.getCNumber() % 10 == 0 && currentCard.getNumSeen() == 0) {
                         SoundEffects.WRONG_ANSWER_1.play();
                         // Score subtract card points
-                        score -= test.score();
+                        score.addAndGet(-test.score());
 
                         // Add 2 or 3 cards into the deck from tree
                         int newNum = (currentCard.getCNumber() + 1);
@@ -1366,21 +1327,20 @@ public final class ReadFlash implements BaseInterface {
                         FlashMonkeyMain.AVLT_PANE.displayTree(newWrongNums);
                         FMTWalker.getInstance().setHighLow();  // treeWalker.setHighLow();
                         progGauge.setMaxVal(500, FMTWalker.getInstance().getCount());
-                        //            scoreGauge.setMaxVal(500, (int) FMTWalker.getInstance().highestPossibleScore());
-                        scoreGauge.moveNeedle(500, score);
+//                        scoreGauge.setMaxVal(500, (int) FMTWalker.getInstance().highestPossibleScore());
+
                   } else {
                         SoundEffects.WRONG_ANSWER_2.play();
-                        // RemAction not used until after the card has been seen more than once for this session
-                        score -= test.score();
-                        //scoreGauge.moveNeedle(500, FMTWalker.getInstance().highestPossibleScore() * -1);
-                        scoreGauge.moveNeedle(500, score);
+                        score.addAndGet(-10);
+                        // RemAction not used until after the card
+                        // has been seen more than once for this session
                         remAction(currentCard, listCard);
                   }
 
                   // score related
                   scoreTextF.setText(printScore());
                   //        scoreGauge.moveNeedle(500, FMTWalker.getInstance().highestPossibleScore() * -1);
-                  scoreGauge.moveNeedle(500, score);
+                  scoreGauge.moveNeedle(500, score.get() / 10);
                   ButtoniKon.getWrongAns(test.getAnsButton(), "Ooops!");
                   wrongNodAction(test.getAnsButton());
 
@@ -1408,13 +1368,12 @@ public final class ReadFlash implements BaseInterface {
              * @param currentCard
              */
             private void firstWrong(int newNum, FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
-                  test.setScore(1);
                   listCard.setNumRight(0);
                   FlashCardMM iAdd = new FlashCardMM(currentCard);
                   iAdd.setNumSeen(1);
                   iAdd.setCNumber(newNum);
                   if (!FMTWalker.getInstance().add(iAdd)) {
-                        newWrongNums[0] = addPlus(iAdd, newNum);
+                        newWrongNums[0] = nextQNumber(iAdd, newNum);
                   } else {
                         newWrongNums[0] = newNum;
                   }
@@ -1427,19 +1386,18 @@ public final class ReadFlash implements BaseInterface {
              * the stack
              */
             private void secondWrong(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
-                  test.setScore(1);
                   // 2nd time card is added in, its + 25%,
                   // create the new card to be inserted into the stack
                   listCard.setNumRight(0);
                   FlashCardMM iAdd = new FlashCardMM(currentCard);
                   iAdd.setNumSeen(2);
                   int fcX10 = flashListSize * 10; // = 320
-                  int newNum = (((fcX10 - currentCard.getCNumber()) / 3)     // ((320 - 0) / 4) + 1 = 81
+                  int newNum = (((fcX10 - currentCard.getCNumber()) / 3)
                       + currentCard.getCNumber());
                   iAdd.setCNumber(newNum);
 
                   if (!FMTWalker.getInstance().add(iAdd) || newNum % 2 == 0) {
-                        newWrongNums[1] = addPlus(iAdd, newNum);
+                        newWrongNums[1] = nextQNumber(iAdd, newNum);
                   } else {
                         newWrongNums[1] = newNum;
                   }
@@ -1454,7 +1412,6 @@ public final class ReadFlash implements BaseInterface {
              * @param currentCard
              */
             private void thirdWrong(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
-                  test.setScore(2);
                   listCard.setNumRight(0);
                   // create the new card to be inserted into the stack
                   FlashCardMM iAdd = new FlashCardMM(currentCard);
@@ -1463,7 +1420,7 @@ public final class ReadFlash implements BaseInterface {
                   iAdd.setNumSeen(3);
                   iAdd.setIsRight(0);
                   if (!FMTWalker.getInstance().getInstance().add(iAdd) || newNum % 2 == 0) {
-                        newWrongNums[2] = addPlus(iAdd, newNum);
+                        newWrongNums[2] = nextQNumber(iAdd, newNum);
                   } else {
                         newWrongNums[2] = newNum;
                   }

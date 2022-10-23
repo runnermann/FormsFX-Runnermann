@@ -7,9 +7,7 @@ import flashmonkey.ReadFlash;
 
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
-import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -32,7 +30,7 @@ import java.util.ArrayList;
  *
  * @author Lowell Stadelman
  */
-public abstract class QandA implements GenericTestType<QandA> {
+public abstract class QandA extends TestTypeBase implements GenericTestType<QandA> {
 
       // The lower HBox used in TReadPane lambda
       private static HBox lowerHBox;
@@ -44,7 +42,9 @@ public abstract class QandA implements GenericTestType<QandA> {
       private static Button answerButton;
       //private static char mode = 't';
 
-      private QandA() {/* default constructor */}
+      private QandA() {
+            setScore(0);
+      }
 
       @Override
       public boolean isDisabled() {
@@ -248,27 +248,13 @@ public abstract class QandA implements GenericTestType<QandA> {
              * Returns a score. E.G. a note card
              * does not have an ability to be answered. It is just
              * viewed. Therefore it wouldn't be scored.
+             * @return
              */
             @Override
-            public double score() {
+            public int score() {
                   return 0;
             }
 
-            /**
-             * Sets the value of score for the implementing class.
-             * Classes that implement this interface shall have a
-             * score. If the class is a scoreless type, then its
-             * score should be set to 0. Operationally set to 2. It is
-             * intended that score is added or subtracted. IE in the
-             * case of a wrong answer, the card is inserted back
-             * into the deck with a different score.
-             *
-             * @param num
-             */
-            @Override
-            public void setScore(double num) {
-                  /* not used */
-            }
 
             @Override
             public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
@@ -366,26 +352,11 @@ public abstract class QandA implements GenericTestType<QandA> {
              * Returns a score. E.G. a note card
              * does not have an ability to be answered. It is just
              * viewed. Therefore it wouldn't be scored.
+             * @return
              */
             @Override
-            public double score() {
+            public int score() {
                   return 0;
-            }
-
-            /**
-             * Sets the value of score for the implementing class.
-             * Classes that implement this interface shall have a
-             * score. If the class is a scoreless type, then its
-             * score should be set to 0. Operationally set to 2. It is
-             * intended that score is added or subtracted. IE in the
-             * case of a wrong answer, the card is inserted back
-             * into the deck with a different score.
-             *
-             * @param num
-             */
-            @Override
-            public void setScore(double num) {
-                  /* not used */
             }
 
 

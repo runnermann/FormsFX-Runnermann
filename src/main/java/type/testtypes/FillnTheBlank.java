@@ -33,7 +33,7 @@ public class FillnTheBlank extends TestTypeBase implements GenericTestType<Filln
       /**
        * Default No-Args Constructor
        */
-      public FillnTheBlank() {/* empty constructor */}
+      public FillnTheBlank() { super.setScore(2);}
 
 
       @Override

@@ -49,10 +49,10 @@ public class DeckSelectorPane {
       protected void selectFilePane() {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("FileSelectPane called");
-            Label recLabel = new Label("Recent decks");
+            Label recLabel = new Label("RECENT DECKS");
             recLabel.setTextFill(Color.WHITE);
             recLabel.setId("deckNameLabel");
-            Label oldLabel = new Label("Previous decks");
+            Label oldLabel = new Label("\nPREVIOUS DECKS");
             oldLabel.setTextFill(Color.WHITE);
             oldLabel.setId("deckNameLabel");
             final AgrFileList agrList = FlashCardOps.getInstance().getAgrList();

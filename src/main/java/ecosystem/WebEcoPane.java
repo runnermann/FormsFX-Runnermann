@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class EcoPane extends BorderPane {
+public class WebEcoPane extends BorderPane {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(EcoPane.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(WebEcoPane.class);
     //private static final Logger LOGGER = LoggerFactory.getLogger(EcoPane.class);
 
     WebEngine engine = new WebEngine();

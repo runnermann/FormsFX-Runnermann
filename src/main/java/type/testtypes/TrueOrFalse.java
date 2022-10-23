@@ -38,7 +38,7 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
        * Singleton private constructor
        */
       private TrueOrFalse() {
-            super.setScore(2);
+            setScore(2);
       }
 
       public static synchronized TrueOrFalse getInstance() {

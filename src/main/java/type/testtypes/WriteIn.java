@@ -9,13 +9,12 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 public class WriteIn extends TestTypeBase implements GenericTestType<WriteIn> {
 
 
       public WriteIn() {
-            // no args constructor
+            setScore(2);
       }
 
       @Override
@@ -144,7 +143,4 @@ public class WriteIn extends TestTypeBase implements GenericTestType<WriteIn> {
             // stub
       }
 
-      //public abstract char getQLayout();
-
-      //public abstract char getALayout();
 }

@@ -1,18 +1,17 @@
 package forms;
 
 
-import campaign.Report;
+//import campaign.Report;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
-import flashmonkey.FlashMonkeyMain;
-import flashmonkey.Timer;
-import javafx.application.Platform;
+//import flashmonkey.FlashMonkeyMain;
+//import flashmonkey.Timer;
+//import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import metadata.DeckSearchData;
-import org.apache.http.MethodNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.ButtoniKon;
@@ -78,8 +77,8 @@ public class DeckSearchPane extends FormParentPane {
       @Override
       public ScrollPane getMainPane() {
             try {
-                  throw new MethodNotSupportedException("This method is not implemented. Use getMainGridPane()");
-            } catch (MethodNotSupportedException e) {
+                  throw new IllegalArgumentException("This method is not implemented. Use getMainGridPane()");
+            } catch (IllegalArgumentException e) {
                   e.getMessage();
             }
             return new ScrollPane();

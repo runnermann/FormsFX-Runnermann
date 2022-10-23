@@ -558,9 +558,9 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        * Type as well as if the FlashCardMM was
        * re-inserted into the deck.
        *
-       * @return
+       * @return double score
        */
-      public double highestPossibleScore() {
+      public int highestPossibleScore() {
             Score score = new Score();
             return score.highestPossible(root);
       }
@@ -571,7 +571,15 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
                   /* no args */
             }
 
-            public double highestPossible(Node root) {
+            /**
+             * Calculates the highest possible score from a deck. Some
+             * testTypes are not scorable. IE the NoteCard and some
+             * testTypes may have different values.
+             * @param root
+             * @return The highest possile score as a int * 10. To account for
+             * a double value total score of 20.5 would return a 205.
+             */
+            public int highestPossible(Node root) {
                   // traverse through the tree
                   // and get the score from the data
                   // in the node.
@@ -584,25 +592,25 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
                   //double no = num;
                   if (node == null) {
                         //return num;
-                        //return num;
                   } else {
-                        at.set(at.get() + (int) getValue(node.getData()));
+                        at.set(at.get() + getValue(node.getData()));
                         inorderTraverseForScore(node.left, at);
                         inorderTraverseForScore(node.right, at);
                   }
             }
 
             /**
-             * if a card can be scored then return a score.
-             * If the cardNumber is divisible by 10, score is
-             * 2 points, else it is .5 points.
+             * If the card is not an inserted card,
+             * Return the score as a multiple of 10. Else
+             * return 10 (represents 1)
              *
              * @param fc
-             * @return 0, .5, or 2
+             * @return integer as a multiple of 10 of the double equivalent of
+             * the desired score.
              */
-            private double getValue(FlashCardMM fc) {
+            private int getValue(FlashCardMM fc) {
                   GenericTestType t = TestList.selectTest(fc.getTestType());
-                  return t.score();
+                  return fc.getCNumber() % 10 == 0 ? t.score() : 0;
             }
       }
 }

@@ -82,6 +82,7 @@ public class DeckNameModel {
             if (getFormInstance().isPersistable()) {
                   getFormInstance().persist();
                   deckSaveAction();
+                  FlashMonkeyMain.showCreatePane();
             }
       }
 
@@ -115,7 +116,6 @@ public class DeckNameModel {
             descriptor.nameProperty().setValue("");
             formInstance = null;
             descriptor = null;
-            CreateFlash createFlash = CreateFlash.getInstance();
-            FlashMonkeyMain.getPrimaryWindow().setScene(createFlash.createFlashScene());
+            FlashMonkeyMain.showCreatePane();
       }
 }

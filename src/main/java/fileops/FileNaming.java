@@ -2,14 +2,11 @@ package fileops;
 
 
 import authcrypt.UserData;
-//import brachtendorf.jimagehash.hash.Hash;
-//import brachtendorf.jimagehash.hashAlgorithms.HashingAlgorithm;
-//import brachtendorf.jimagehash.hashAlgorithms.PerceptiveHash;
+
 import dev.brachtendorf.jimagehash.hash.Hash;
 import dev.brachtendorf.jimagehash.hashAlgorithms.HashingAlgorithm;
 import dev.brachtendorf.jimagehash.hashAlgorithms.PerceptiveHash;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +18,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.ExecutorService;
+
 
 /**
  * For media file names we are using a similar hash algorithm based on the images

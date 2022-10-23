@@ -95,7 +95,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
        * Default No-Args Constructor
        */
       private MathCard() {
-            super.setScore(2);
+            setScore(2);
       }
 
       public static synchronized MathCard getInstance() {
@@ -618,4 +618,5 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
             return expHBox;
       }
+
 }

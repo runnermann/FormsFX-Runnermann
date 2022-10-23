@@ -1,7 +1,6 @@
 package forms;
 
 import com.dlsc.formsfx.view.renderer.FormRenderer;
-import com.sun.glass.ui.Screen;
 import ecosystem.QrCode;
 import fileops.DirectoryMgr;
 import fileops.FileNaming;
@@ -21,6 +20,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 
 public class DeckMetaPane extends FormParentPane {
@@ -55,17 +57,15 @@ public class DeckMetaPane extends FormParentPane {
       private ToggleSwitch sellSwitch;
       private ToggleSwitch shareDistSwitch;
       private Button qrButton;
+      private static String vertxGet;// = VertxLink.QRCODE_DECK.getLink() + model.getDeckID();
+      private static Hyperlink link;
 
       private Label sellLabel;
       private Label shareLabel;
       private Label creatorLabel;
-      // private VBox statsBox;
-      private VBox switchBox1;
-      private VBox switchBox2;
       private ImageView qrView;
-      private TextArea showURLArea;
 
-      protected DeckMetaModel model;
+      protected static DeckMetaModel model;
       protected DeckMetaData meta;
 
 
@@ -96,6 +96,10 @@ public class DeckMetaPane extends FormParentPane {
       @Override
       public void initializeParts() {
             CreateFlash.getInstance().updateDeckInfo(meta); // seems to be clearing out the form after downloading from file or from DB???
+            link = new Hyperlink("not yet available.");
+            link.setDisable(true);
+
+            fetchIDAsync();
 
             creatorLabel = new Label("CREATOR: " + meta.getCreatorEmail());
             lastScoreLabel = new Label("LAST SCORE: " + meta.calcLastScore());//model.getDataModel().getLastScore());
@@ -136,11 +140,24 @@ public class DeckMetaPane extends FormParentPane {
             // is necessary to offset the control to the left, because we don't use the provided label
             sellSwitch.setId("sellSwitch");
             sellSwitch.getStyleClass().add("sellSwitch");
-
             shareDistSwitch.setId("sellSwitch");
             shareDistSwitch.getStyleClass().add("sellSwitch");
             // Builds the pane containing the form fields.
             super.formRenderer = new FormRenderer(model.getFormInstance());
+      }
+
+      public static void fetchIDAsync() {
+            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+            Runnable task = () -> {
+                  long deckID = model.getDeckID();
+                  if(deckID != -99) {
+                        vertxGet = VertxLink.QRCODE_DECK.getLink() + deckID;
+                        link = new Hyperlink(vertxGet);
+                        link.setDisable(false);
+                  }
+                  scheduledExecutor.shutdown();
+            };
+            scheduledExecutor.execute(task);
       }
 
 
@@ -198,9 +215,10 @@ public class DeckMetaPane extends FormParentPane {
             grid.add(aLbl, 0, 3, 1, 1);
             grid.add(aNum, 1, 3, 1, 1);
 
-            switchBox2 = new VBox(5);
+            VBox switchBox2 = new VBox(5);
             switchBox2.getChildren().addAll(shareLabel, shareDistSwitch);
-            switchBox1 = new VBox(5);
+            // private VBox statsBox;
+            VBox switchBox1 = new VBox(5);
             switchBox1.getChildren().addAll(sellLabel, sellSwitch);
             VBox switchBox = new VBox(20);
             switchBox.getChildren().addAll(switchBox1, switchBox2);
@@ -214,6 +232,8 @@ public class DeckMetaPane extends FormParentPane {
             // Temp QR code column 1
             innerGPane.add(qrView, 1, 1, 1, 4);
             innerGPane.add(qrButton, 1, 5, 1, 1);
+            // Link is in row 6
+
       }
 
       @Override
@@ -238,32 +258,12 @@ public class DeckMetaPane extends FormParentPane {
                   }
                   qrView.setImage(img);
                   // String fmVertx = "https://www.flashmonkey.xyz/Q52/FFG415/:" ;
-                  QrCode qrcode = new QrCode();
+                  //QrCode qrcode = new QrCode();
                   String vertxGet = VertxLink.QRCODE_DECK.getLink() + model.getDeckID();
                   LOGGER.debug("vertxGet: " + vertxGet);
-                  Hyperlink link = new Hyperlink(vertxGet);
-
-                  link.setOnMouseClicked(e -> {
-                        if (e.getButton().equals(MouseButton.SECONDARY)) {
-                              final Clipboard cb = Clipboard.getSystemClipboard();
-                              final ClipboardContent content = new ClipboardContent();
-                              content.putString(link.getText());
-                              cb.setContent(content);
-                        } else {
-                              Desktop desktop = Desktop.getDesktop();
-                              if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                                    try {
-                                          desktop.browse(new URI(link.getText()));
-                                    } catch (IOException exc) {
-                                          exc.printStackTrace();
-                                    } catch (URISyntaxException ex) {
-                                          ex.printStackTrace();
-                                    }
-                              }
-                        }
-                  });
-                  innerGPane.add(link, 0, 5, 2, 1);
-
+                  link = new Hyperlink(vertxGet);
+                  link.setOnMouseClicked(this::linkAction);
+                  innerGPane.add(link, 0, 6, 2, 1);
                   //qrButton.setDisable(false);
             } else {
                   // set to default
@@ -273,13 +273,6 @@ public class DeckMetaPane extends FormParentPane {
             return file;
       }
 
-      private void setQRPane(String qrFileString) {
-            qrView = new ImageView(new Image(qrFileString));
-      }
-
-      private ImageView getQRview() {
-            return qrView;
-      }
 
       private void saveQRImageStage(File imgFile, String suggestName) {
             Stage stage = new Stage();
@@ -292,6 +285,26 @@ public class DeckMetaPane extends FormParentPane {
                   Files.copy(imgFile.toPath(), dest.toPath());
             } catch (IOException e) {
                   e.printStackTrace();
+            }
+      }
+
+      private void linkAction(MouseEvent e) {
+            if (e.getButton().equals(MouseButton.SECONDARY)) {
+                  final Clipboard cb = Clipboard.getSystemClipboard();
+                  final ClipboardContent content = new ClipboardContent();
+                  content.putString(link.getText());
+                  cb.setContent(content);
+            } else {
+                  Desktop desktop = Desktop.getDesktop();
+                  if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                        try {
+                              desktop.browse(new URI(link.getText()));
+                        } catch (IOException exc) {
+                              exc.printStackTrace();
+                        } catch (URISyntaxException ex) {
+                              ex.printStackTrace();
+                        }
+                  }
             }
       }
 

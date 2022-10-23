@@ -28,7 +28,6 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 
 /**
@@ -47,7 +46,7 @@ public class AIMode extends TestTypeBase implements GenericTestType<AIMode> {
 
 
       public AIMode() {
-            // no args constructor
+            super.setScore(2);
       }
       // @todo complete AIMode class
 
@@ -98,7 +97,6 @@ public class AIMode extends TestTypeBase implements GenericTestType<AIMode> {
       public Button[] getAnsButtons() {
             return null;
       }
-
 
       @Override
       public Button getAnsButton() {
