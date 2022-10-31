@@ -1,6 +1,7 @@
 package type.testtypes;
 
 import flashmonkey.*;
+import org.apache.http.MethodNotSupportedException;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 import fmtree.FMTWalker;
@@ -90,11 +91,10 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             SingleCellSection l = new SingleCellSection();
             lowerHBox = l.sectionView(trueOrFalsePane(lowerHBoxHt));
             // set the upper section
-            upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(), 1, false, lowerHBoxHt, currentCard.getQFiles());
-
+            upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(),
+                1, false, lowerHBoxHt, currentCard.getQFiles());
             StackPane stackP = new StackPane();
             ReadFlash.getInstance().setShowAnsNavBtns(false);
-
             // T or F buttons do not have any visible actions. Select ansBtn
             // will provide feed back and save the answer, like MultiChoice actions.
             if (selectAnsButton == null) {
@@ -112,7 +112,6 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
 
             gPane.addRow(2, stackP);
             gPane.addRow(1, upperHBox);
-
 
             // Transition for Question, Right & end button click
             FMTransition.setQRight(FMTransition.transitionFmRight(upperHBox));
@@ -185,9 +184,9 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             double progress = rf.getProgress();
             if ((trueRdoBtn.isSelected() && currentCard.getAText().equals("T"))
                 || (falseRdoBtn.isSelected() && currentCard.getAText().equals("F"))) {
-                  rf.new RightAns(currentCard, listCard, this);
+                  rf.new RightAns(currentCard, this);
             } else {
-                  rf.new WrongAns(currentCard, listCard, this);
+                  rf.new WrongAns(currentCard, this);
                   selectAnsButton.setDisable(true);
             }
 
@@ -228,9 +227,6 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             tfBox.setMaxHeight(sectionHt);
             tfBox.setMinHeight(sectionHt);
 
-            // Set the style of the pane to appear the same as a TextArea
-            //tfBox.setStyle("-fx-background-color: #FFFFFFFF;"
-            //             + "-fx-padding: 20;");
             return tfBox;
       }
 
@@ -242,7 +238,6 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       private VBox trueOrFalsePane(SectionEditor editor) {
             // Set spacing between RdoButtons
             VBox tfBox = new VBox(10);
-            // tfBox.setMaxHeight(150);
             tfBox.setMinWidth(SceneCntl.getCenterWd());
 
             trueRdoBtn = new RadioButton("True");
@@ -265,15 +260,12 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
                   editor.tCell.getTextArea().setText("F");
             });
 
-            // Set the style of the pane to appear the same as a TextArea
-            //tfBox.setStyle("-fx-background-color: #FFFFFFFF;"
-            //        + "-fx-padding: 20;");
             tfBox.setId("tfBox");
             return tfBox;
       }
 
       public void onClose() {
-            //task = null;
+            throw new IllegalArgumentException("Method is just a stub. Not used");
       }
 
       @Override

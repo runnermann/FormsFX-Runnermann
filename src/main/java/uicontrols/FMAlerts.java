@@ -29,29 +29,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FMAlerts {
 
       private static Alert alert;
-      private static Button okBtn;
-      private static Button cancelBtn;
 
-      public final static String MISSING_DELETE = "It appears that the question or answer\n"
-          + "area's are incomplete. If you\n"
-          + "continue this card will be deleted.\n\n"
-          + "Are you sure you want to delete this card?";
+//      public final static String MISSING_DELETE = "It appears that the question or answer\n"
+//          + "area's are incomplete. If you\n"
+//          + "continue this card will be deleted.\n\n"
+//          + "Are you sure you want to delete this card?";
 
-      public final static String MISSING_ANSWER = "This card is missing content in the answer area.\n"
-          + " Do you wish to save it and return later?\n\n"
-          + "To go back and edit just close this message.";
+      public final static String MISSING_ANSWER = "There is no content in the answer.\n\n"
+          + "To save it anyway, click save.\n"
+          + "To go back, close this message X";
 
-      public final static String MISSING_QUESTION = "This card is missing content in the question area.\n"
-          + " Do you wish to save it and return later?\n\n"
-          + "To go back and edit just close this message.";
+      public final static String MISSING_QUESTION = "There is no content in the question.\n\n"
+          + "To save it anyway, click save.\n"
+          + "To go back, close this message";
 
-      public final static String MISSING_TESTTYPE = "Ooooph!\nThe Test Type has not been selected. "
-          + "\n  To go back and set the test type, press \"OK\"."
-          + "\n  To delete this card and continue, press \"Cancel\". ";
+      public final static String MISSING_TESTTYPE = "Ooooph!\nThe Test Type has not been set. "
+          + "\n  To go back press \"OK\"."
+          + "\n  To delete this card and continue, click \"Cancel\". ";
 
 
       public final static String NO_DATA = "There is no data to save.\n"
-          + " If you are finished, press quit.";
+          + " If you are finished, click quit.";
 
       public final static String CREATE_ONLINE = "Hey! \nYou are about to create an online account. "
           + "This will allow you to:  synchronize your learning materials, share with friends, " +
@@ -226,6 +224,7 @@ public class FMAlerts {
             dialogPane.getStyleClass().add("alert-nice");
 
             ((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/image/logo/blue_flash_128.png"));
+            ((Stage) alert.getDialogPane().getScene().getWindow()).initOwner(FlashMonkeyMain.getPrimaryWindow());
             AtomicBoolean bool = new AtomicBoolean(false);
             alert.setTitle(title);
             // null as a value will cause the section to not be displayed
@@ -261,38 +260,23 @@ public class FMAlerts {
       }
 
 
-      public VBox alertPane(String topStr, String message, String btmString) {
-            String topStyle = "-fx-font-family: Arial; -fx-font-size: 24px; -fx-font-weight: 800; -fx-padding: 0 0 0 0; -fx-text-alignment: CENTER;";
-            VBox box = new VBox(20);
-
-            Label top = new Label(topStr);
-            //top.setStyle(topStyle);
-            top.setId("label24BldCtr");
-
-            Label center = new Label(message);
-            center.setStyle("-fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: 600;");
-            Label bottom = new Label(btmString);
-            bottom.setId("label18CtrBld");
-            box.setAlignment(Pos.TOP_CENTER);
-            box.getChildren().addAll(top, center, bottom);
-
-            return box;
-      }
-
       public boolean choicePanePopup(String title, String headerText, Node node, String imagePath, SoundEffects effects) {
             alert = new Alert(Alert.AlertType.CONFIRMATION);
-            // set css
             DialogPane dialogPane = alert.getDialogPane();
             dialogPane.getStylesheets().addAll("css/alert-nice.css", "css/mainStyle.css");
-            dialogPane.getStylesheets().add(getClass().getResource("/css/alert-nice.css").toExternalForm());
-            dialogPane.getStyleClass().add("alert-nice");
+
+            //dialogPane.getStylesheets().add(getClass().getResource("/css/alert-nice.css").toExternalForm());
+            //dialogPane.getStyleClass().add("alert-nice");
 
             ((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/image/logo/blue_flash_128.png"));
+            ((Stage) alert.getDialogPane().getScene().getWindow()).initOwner(FlashMonkeyMain.getPrimaryWindow());
             AtomicBoolean bool = new AtomicBoolean(false);
             alert.setTitle(title);
             // null as a value will cause the section to not be displayed
             alert.setHeaderText(headerText);
+            // Set a pane into the dialogue
             alert.getDialogPane().setContent(node);
+            // set the sound effect.
             if(null == effects) {
                   SoundEffects.ERROR.play();
             } else {
@@ -307,6 +291,7 @@ public class FMAlerts {
             //alert.setHeight(290);
             alert.setWidth(180);
             //String idk = alert.getDialogPane().contentTextProperty().toString();
+            Optional<ButtonType> option = alert.showAndWait();
 
             alert.showAndWait().ifPresent((btnType) -> {
                   // if user clicks ok button
@@ -338,27 +323,35 @@ public class FMAlerts {
        */
       public int choiceOptionActionPopup(String title, String alertMsg, String emojiPath, String uiColor, String confirmName, String denyName) {
             alert = new Alert(Alert.AlertType.CONFIRMATION);
-            //AtomicInteger res = new AtomicInteger(0);
+            DialogPane dialogPane = alert.getDialogPane();
+            dialogPane.getStylesheets().addAll("css/alert-nice.css", "css/mainStyle.css");
+            ((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/image/logo/blue_flash_128.png"));
+            ((Stage) alert.getDialogPane().getScene().getWindow()).initOwner(FlashMonkeyMain.getPrimaryWindow());
+            dialogPane.getStylesheets().add(getClass().getResource("/css/alert-nice.css").toExternalForm());
+            dialogPane.getStyleClass().add("alert-nice");
 
             alert.setTitle(title);
             // null as a value will cause the header section to not be displayed
             alert.setHeaderText(null);
             alert.setContentText(alertMsg);
             // okButton Name
-            alert.getButtonTypes().clear();
-            alert.initOwner(FlashMonkeyMain.getPrimaryWindow());
 
+            alert.initOwner(FlashMonkeyMain.getPrimaryWindow());
+            // Set a pane into the dialogue
+            VBox node = setAlertNode(alertMsg);
+            alert.getDialogPane().setContent(node);
+            // Buttons with names
             ButtonType bt1 = new ButtonType(confirmName);
             ButtonType bt2 = new ButtonType(denyName);
             ButtonType escBtn = ButtonType.CANCEL;
-
-            alert.getButtonTypes().addAll(bt1, bt2, escBtn);
+            alert.getButtonTypes().clear();
+            alert.getButtonTypes().addAll(bt2, bt1, escBtn);
 
             Node cancelNode = alert.getDialogPane().lookupButton(ButtonType.CANCEL);
             cancelNode.managedProperty().bind(cancelNode.visibleProperty());
             cancelNode.setVisible(false);
 
-            SoundEffects.ATTENTION.play();
+            SoundEffects.ERROR.play();
 
             // set alert to trigger an escape on the escape key press.
             alert.getDialogPane().setOnKeyPressed(e -> {
@@ -379,7 +372,8 @@ public class FMAlerts {
             alert.setHeight(290);
             alert.setWidth(180);
             //alert.getDialogPane().contentTextProperty().toString();//   setStyle(" -fx-text-fill: #FFFFFF");
-            alert.getDialogPane().setStyle("-fx-font-family: Arial; -fx-font-size: 8pt");
+            // Sets style of buttons
+  //          alert.getDialogPane().setStyle("-fx-font-family: Arial; -fx-font-size: 10pt");
             Optional<ButtonType> option = alert.showAndWait();
 
             if (option.get() == ButtonType.CANCEL) {
@@ -389,6 +383,45 @@ public class FMAlerts {
             } else {
                   return -2;
             }
+      }
+
+      private VBox setAlertNode(String message) {
+            VBox box = new VBox();
+//            box.setStyle("-fx-padding: 36, 0, 0, 0");
+            Label center = new Label(message);
+            center.setId("label16CtrBld");
+            box.setAlignment(Pos.CENTER);
+            box.getChildren().add(center);
+
+            return box;
+      }
+
+      /**
+       * The Intro text string that has a heavier font weight. The
+       * Center message with a normal font and weight. The
+       * Call to action or lower message with a heavier font
+       * and larger size.
+       * @param topStr
+       * @param message
+       * @param btmString
+       * @return
+       */
+      public VBox alertPane(String topStr, String message, String btmString) {
+            //String topStyle = "-fx-font-family: Arial; -fx-font-size: 24px; -fx-font-weight: 800; -fx-padding: 0 0 0 0; -fx-text-alignment: CENTER;";
+            VBox box = new VBox(20);
+
+            Label top = new Label(topStr);
+            //top.setStyle(topStyle);
+            top.setId("label24BldCtr");
+
+            Label center = new Label(message);
+            center.setStyle("-fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: 600;");
+            Label bottom = new Label(btmString);
+            bottom.setId("label18CtrBld");
+            box.setAlignment(Pos.TOP_CENTER);
+            box.getChildren().addAll(top, center, bottom);
+
+            return box;
       }
 
       @FMAnnotations.DoNotDeployMethod

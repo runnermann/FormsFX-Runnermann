@@ -21,6 +21,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
        * VARIABLES
        **/
       private char qType;
+      // media files
       private String[] qFiles;
 
       /**

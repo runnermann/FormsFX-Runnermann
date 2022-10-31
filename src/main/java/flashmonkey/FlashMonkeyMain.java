@@ -18,6 +18,7 @@ import flashmonkey.utility.VersionTimeStamp;
 import fmannotations.FMAnnotations;
 import forms.*;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -69,7 +70,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       @SuppressWarnings("rawtypes")
 
       // The publicly known version
-      public static final String VERSION_STR = "1.4.0";
+      public static final String VERSION_STR = "1.4.1";
       // for serializing objects to file. The serial version.
       // Used with "serialVersionUID"
       public static final long VERSION = 20200612;
@@ -139,8 +140,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   // before closing.
                   isInEditMode = false;
                   primaryWindow = primaryStage;
-//            window.setAlwaysOnTop(true);
-                  // set to call stop() when stage is closed
+
+                  // set to call onClose() before stage is closed.
                   primaryWindow.setOnCloseRequest(e -> {
                         //saveOnExit();
                         onClose();
@@ -152,9 +153,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       //            flash = new Image(getClass().getResourceAsStream("/image/logo/vertical_logo_white_8per_120x325.png"));
                   Image icon = new Image(getClass().getResourceAsStream("/image/logo/blue_flash_128.png"));
                   primaryWindow.getIcons().add(icon);
-                  // -- EXPERIMENTAL --
-//                  rootScene = new Scene(new Pane());
-//                  primaryWindow.setScene(rootScene);
                   // Determine if FlashMonkey Data Directory
                   // exists and show signUp or signIn
                   if (flashmonkeyExists()) {
@@ -163,34 +161,17 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                         showIntroPane();
                   }
 
-
-                  // detect when user, or macOS changes the window from max to non-max
-//                  primaryWindow.fullScreenProperty().addListener((obs, oldVal, newVal) -> {
-//                        //SceneCntl.Dim.APP_MAXIMIZED.set( val );
-//                        if(unlocked) {
-//                              if (newVal) {
-//                                    SceneCntl.Dim.APP_MAXIMIZED.set(1);
-//                              } else {
-//                                    SceneCntl.Dim.APP_MAXIMIZED.set(0);
-//                              }
-//                        }
-//                  });
-
-
                   rootScene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
-
                   primaryWindow.setTitle("FlashMonkey");
-//                  primaryStage.setResizable(false);
+
                   primaryWindow.show();
-//                  primaryWindow.setMaximized(true);
+
             } catch (BackingStoreException e) {
                   LOGGER.warn(e.getMessage());
                   e.printStackTrace();
             } catch (Exception e) {
                   e.printStackTrace();
             }
-
-            //LOGGER.debug("in FlashMonkeyMain and window x = " + window.getX());
       } // ******** END START ******* //
 
       public static String getVersionStr() {
@@ -301,52 +282,11 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       public static void showCreatePane() {
 //            setPrimaryWindowDims(createFlash.createFlashScene());
             //primaryWindow.setScene(createFlash.createFlashScene());   // called once
-            rootScene.setRoot(createFlash.createFlashScene());
             createFlash = CreateFlash.getInstance();
+            createFlash = CreateFlash.getInstance();
+            rootScene.setRoot(createFlash.createFlashScene());
             createFlash.showComboBox();
       }
-
-//      private static void setPrimaryWindowDims(BorderPane activePane) {
-//            unlocked = false;
-//            //primaryWindow.setScene(activeScene);
-//            rootScene.setRoot(activePane);
-//            if(SceneCntl.Dim.APP_MAXIMIZED.get() == 1) {
-//                  //primaryWindow.setX(SceneCntl.getDefaultXY().getX());
-//                  //primaryWindow.setY(SceneCntl.getDefaultXY().getY());
-//                  primaryWindow.setFullScreenExitHint("");
-//                  primaryWindow.setFullScreen(true);
-//
-////                  // ht & wd set in SceneCreator. EG ReadFlash or CreateFlash
-////                  primaryWindow.setX(0);
-////                  primaryWindow.setY(0);
-//            } else {
-//                  //primaryWindow.setX(SceneCntl.getAppBox().getX());
-//                  //primaryWindow.setY(SceneCntl.getAppBox().getY());
-//            }
-
-//            changeListenerBinding(rootScene);
-//            unlocked = true;
-//      }
-
-//      private static boolean unlocked = true;
-//      private static void changeListenerBinding(Scene activeScene) {
-//            if(unlocked) {
-//                  ChangeListener<Number> sceneBoxListener = (observable, oldVal, newVal) -> {
-//                        //if(SceneCntl.Dim.APP_MAXIMIZED.get() == 0) {
-//                        // ht & wd set by scene, x & y set by Stage/Window
-//                        SceneCntl.getAppBox().setHt((int) activeScene.getHeight());
-//                        SceneCntl.getAppBox().setWd((int) activeScene.getWidth());
-//                        SceneCntl.getAppBox().setX((int) primaryWindow.getX());
-//                        SceneCntl.getAppBox().setY((int) primaryWindow.getY());
-//                        //}
-//                  };
-//                  // h & w set by scene, x & y set by Stage/Window
-//                  activeScene.widthProperty().addListener(sceneBoxListener);
-//                  activeScene.heightProperty().addListener(sceneBoxListener);
-//                  primaryWindow.xProperty().addListener(sceneBoxListener);
-//                  primaryWindow.yProperty().addListener(sceneBoxListener);
-//            }
- //     }
 
 
       /**
@@ -419,7 +359,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             Button iGotPdBtn = ButtoniKon.getIgotPdButton();
 
             acctBtn.setOnMousePressed(m -> {
-                  System.out.println("acctBtn pressed and boolean is: " + acctShowing);
                   if (m.isSecondaryButtonDown()) {
                         acctSecondaryAction();
                   } else if( !acctShowing) {
@@ -767,6 +706,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             if(Utility.isConnected()) {
                   SubscriptCancelPane cancelPane = new SubscriptCancelPane();
                   Scene scene = new Scene(cancelPane.getMainGridPain());
+                  scene.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
                   if (actionWindow != null && actionWindow.isShowing()) {
                         actionWindow.close();
                   }
@@ -941,22 +881,25 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
 
       @Override
-      public void saveOnExit() {
+      public boolean saveOnExit() {
             throw new UnsupportedOperationException("Called saveOnExit and saveOnExit in FlashMonkeyMain is not supported.");
       }
 
       @Override
       public void onClose() {
             if (isLoggedinProperty.get()) {
-                  if (readFlash != null) {
+                  if (null != readFlash) {
                         readFlash.leaveAction();
                   } else if (createFlash != null) {
                         createFlash.saveReturnAction();
+                        // called in stop()
+                        createFlash.saveOnExit();
+                        createFlash.onClose();
                   }
                   SceneCntl.onStop();
                   Report.getInstance().endSessionTime();
-                  if (createFlash != null) {
-                        createFlash.onClose();
+                  if (null != actionWindow && actionWindow.isShowing()) {
+                        actionWindow.close();
                   }
             }
       }
@@ -965,6 +908,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
        * Called by Application. When FlashMonkey is stopped by the OS or
        * by closing the main window.
        * Saves the current flashDeck to file.
+       * This stop action may be interupted if the user requests to stop
+       * in CreateFlash onSave();
        */
       private boolean notStopped = true;
       @Override
@@ -972,28 +917,15 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             if(notStopped ) {
                   notStopped = false;
                   LOGGER.debug("Called STOP in FlashMonkeyMain");
-                  SoundEffects.APP_END.play();
+                  //SoundEffects.APP_END.play();
 
                   if (isLoggedinProperty.get()) {
-                        if (readFlash != null) {
-                              readFlash.leaveAction();
-                        } else if (createFlash != null) {
-                              createFlash.saveReturnAction();
-                        }
-                        SceneCntl.onStop();
-                        Report.getInstance().endSessionTime();
-                        if (createFlash != null) {
-                              createFlash.onClose();
-                        }
-                        if (actionWindow != null && actionWindow.isShowing()) {
-                              actionWindow.close();
-                        }
                         // checks if deck is compatible before saving
                         FlashCardOps.getInstance().safeSaveFlashList();
                   }
             }
-
             //onClose();
+            Platform.exit();
             System.exit(0);
       }
 

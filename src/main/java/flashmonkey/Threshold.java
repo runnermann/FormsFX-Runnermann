@@ -58,7 +58,7 @@ public class Threshold {
        * Sets the date the card was answered correctly.
        * @return
        */
-      protected static ZonedDateTime getRightDate() {
+      public static ZonedDateTime getRightDate() {
             return ZonedDateTime.now(zID);
       }
     

@@ -4,6 +4,7 @@
 
 package flashmonkey;
 
+import ch.qos.logback.classic.Level;
 import fileops.*;
 import fileops.utility.Utility;
 import forms.searchables.CSVUtil;
@@ -19,8 +20,6 @@ import java.util.*;
 
 import media.sound.SoundEffects;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uicontrols.FMAlerts;
 
 
@@ -32,16 +31,14 @@ import uicontrols.FMAlerts;
  *
  * <p>CLASS DESCRIPTION: FlashCardOps contains variables and methods for the operation of the FlashCard class.</p>
  * <ul>
- * <li> This class contains methods and variables for input and output to file. For Output to cloud see CloudOps and
+ * <li> This class handles input and output to file. For Output to cloud see CloudOps and
  * S3 related operating classes. </li>
  *
- * <li>Outputs flashcards to a binary file, it contains an array that
- * is used to read the flashcards. This is done so that this class may
- * remain server side. The EncryptedUser.EncryptedUser will not have access to the correct answer
- * unless they are using it for study sessions. </li>
+ * <li>Outputs flashcards to a binary file, it contains the array of
+ * FLashCardMM's. </li>
  * </ul>
  *
- * @version iOOily FlashMonkeyMM Date: 2018/08/04
+ * @version Date: 2018/08/04
  * @author Lowell Stadelman
  * // @TODO deserialize files with restrictions. ValidatingObjectInputStream in = new ValidatingObjectInputStream(fileInput); in.accept(Foo.class);
  ******************************************************************************/
@@ -49,8 +46,8 @@ import uicontrols.FMAlerts;
 public class FlashCardOps extends FileOperations implements Serializable {//< T extends Comparable<T>> extends FlashCardMM<T> implements Comparable<T>
 
       // Logging reporting level is set in src/main/resources/logback.xml
-      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FlashCardOps.class);
-      private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FlashCardOps.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
 
       private static final ArrayList<String> dontSaveDeck = new ArrayList<>();
       private static final long serialVersionUID = FlashMonkeyMain.VERSION;
@@ -81,6 +78,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
       private FlashCardOps() {
             super();
             fileExists("default.dec", getUserFolder());
+            LOGGER.setLevel(Level.DEBUG);
       }
 
       public static synchronized FlashCardOps getInstance() {
@@ -105,7 +103,6 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        */
       public String setDeckFileName(@NotNull String name) throws IllegalStateException {
             String n = parseFileName(name);
-            System.out.println("FlashCardOps line 102 name: " + n);
             setFileName(n);
             return n;
       }
@@ -191,9 +188,9 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        * @return
        */
       @SuppressWarnings("unchecked")
-      public ArrayList<MediaSyncObj> getFlashListMedia() {
-            return getMediaHelper(flashListMM);
-      }
+//      public ArrayList<MediaSyncObj> getFlashListMedia() {
+//            return getMediaHelper(flashListMM);
+//      }
 
       /**
        * Returns a list of the media contained in the current flashList;
@@ -241,27 +238,12 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             return new ArrayList<>(mediaSyncObjs);
       }
 
-
-      /**
-       * Returns the current threshold determined when the tree was last built.
-       */
-      protected Threshold getThresh() {
-            return thresh;
-      }
-
       /**
        * getFlashList
        *
        * @return ArrayList of FlashCards
        */
-      public final ArrayList<FlashCardMM> getFlashList() {
-            try {
-                  RemoveThisTester.testFlashListObject(flashListMM);
-            } catch (Exception e) {
-                  LOGGER.warn("ERROR: line 211: flashlists are not the same\n{}", (Object) e.getStackTrace());
-                  System.exit(0);
-            }
-
+      public static final ArrayList<FlashCardMM> getFlashList() {
             return flashListMM;
       }
 
@@ -272,13 +254,13 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        * @param i
        * @return returns a new FlashCardMM object cloned from the ArrayList
        */
-      public FlashCardMM getElement(int i) {
-            try {
-                  return new FlashCardMM(flashListMM.get(i));
-            } catch (IndexOutOfBoundsException e) {
-                  return null;
-            }
-      }
+//      public FlashCardMM getElement(int i) {
+//            try {
+//                  return new FlashCardMM(flashListMM.get(i));
+//            } catch (IndexOutOfBoundsException e) {
+//                  return null;
+//            }
+//      }
 
       /**
        * Returns the tree_walker
@@ -322,10 +304,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                         return new ArrayList();
                   }
             } else {
-                  /** the file is remote and needs to be created
-                   * @todo create folder and file on local system???
-                   * according to name ...
-                   */
+                  //the file is remote and needs to be created.
                   LOGGER.warn("agrList is empty");
                   return null;
             }
@@ -368,13 +347,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                 " pulling it from saved file\n\n");
             //LOGGER.debug("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
             LOGGER.debug("DeckName: {}", getFileName());
-     //       flashListMM = new ArrayList<>();
-            // From new ArrayList<FlashCarddMM>
             flashListMM = getListFromFile();
-
-            // Testing flashList objects
-            //RemoveThisTester.setFlashListObject(flashListMM);
-
       }
 
       /**
@@ -385,21 +358,17 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             LOGGER.debug("*** FlashCardOps.refreshTreeWalker() ***");
 
             TREE_WALKER.clear();
-            RemoveThisTester.setTreeWalkerObj(TREE_WALKER);
-
             buildTree();
       }
 
       /**
-       * Clears andrebuilds the tree to the list provided in the paramter.
+       * Clears and rebuilds the tree to the list provided in the paramter.
        * Does not reset the highest and lowest child referances.
        *
        * @param cardList
        */
       public void refreshTreeWalker(ArrayList<FlashCardMM> cardList) {
             TREE_WALKER.clear();
-            RemoveThisTester.setTreeWalkerObj(TREE_WALKER);
-
             buildTree(cardList);
       }
 
@@ -462,11 +431,9 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             if (flashListMM.size() > 0) {
                   // keep the last element
                   setListinFile(flashListMM, '+');
-                  // @TODO change method name, saveFListToFile, to reflect saving to cloud as well
+
                   if (Utility.isConnected()) {
-                        // CloudOps co = new CloudOps();
                         CloudOps.putDeck(getFileName());
-                        //CO.connectCloudOut('t', authcrypt.UserData.getUserName(), ReadFlash.getInstance().getDeckName());
                   }
             }
             LOGGER.debug("in saveFlashList and flashListMM is size 0");
@@ -483,8 +450,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        * <p>Used during test sessions for prioritized cards</p>
        */
       private void buildTree() {
-            LOGGER.info(" ---- START BUILDTREE ---- ");
-
+            LOGGER.info(" ---- START BUILDTREE() ---- ");
             LOGGER.debug("\t number elements in flashList: {}", flashListMM.size());
             LOGGER.debug("\t is tree empty? should be: {}", TREE_WALKER.isEmpty());
 
@@ -503,7 +469,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             for (int i = 0; i < flashListMM.size(); i++) {
                   FlashCardMM localCard = flashListMM.get(i);
 
-                  // Dont show cards that have a high enough correct rate.
+                  // Don't show cards that have a high enough correct rate.
                   // If the flashcard is below the threshold, add the card to the tree
                   if (!thresh.boolHide(localCard)) {
                         // ANumber is the index number in flashList. It is used
@@ -516,9 +482,9 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                         localCard = setPriority(localCard, i, lastDate);
 
                         // set isRight to 0/unanswered for this session
-                        localCard.setIsRight(0);
-                        // set localCard numSeen to 0
-                        localCard.setNumSeen(0);
+                        localCard.setIsRightColor(0);
+                        // set localCard unseen for this session
+                        localCard.setSessionSeen(0);
 
                         // Add the card to the tree. The tree will use the comparitor
                         // to set the cards location in the tree based on it's QNumber.
@@ -538,19 +504,10 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        * @param cardList // @TODO check with older version, order is not correct!
        */
       protected void buildTree(ArrayList<FlashCardMM> cardList) {
-
             LOGGER.debug("in FlashCardOps.buildTree(ArrayList... list.size:{}", cardList.size());
-
-            ZonedDateTime lastDate;
-            lastDate = cardList.get(0).getRtDate();
-            lastDate = lastDate.minusSeconds(20);
-
             int count = 0;
             for (FlashCardMM cd : cardList) {
-                  cd.setANumber(count++);
-                  cd = setPriority(cd, count, lastDate);
-                  cd.setIsRight(0);
-                  cd.setNumSeen(0);
+                  cd.setCNumber(count++);
                   TREE_WALKER.add(cd);
             }
       }
@@ -558,43 +515,44 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
       /**
        * Prioritizes a card by setting it's qNumber. A card is prioritized according to it's last seen date.
        * Was it seen before the 1st card or after it. -The remember value is also a bias to assist
-       * with setting the priority. Remember is set during the EncryptedUser.EncryptedUser session or manually set by the EncryptedUser.EncryptedUser in
+       * with setting the priority. Remember is set during the EncryptedUser session or manually set by the EncryptedUser in
        * the EditFlashCard UI. Important notes during build tree:
        * * - Priority(remember) if it's greater than the threshold it is automatically hidden.
        * * - When added to the tree, a card number is multiplied by 10 leaving space for
-       * *    cards to be inserted for other non-permanent reasons.
+       * *    cards to be inserted for non-permanent reasons.
        * *    ie If the card was answered incorrectly during this session, the card is given a number that is
        * *    not a multiple of 10.
        * - Handled by a seperate method.
-       * <p>
-       * Cards are ordered
-       * Worst performance
-       * unseen
-       * correctly answered
-       * <p>
        * Cards that have been correctly answered more than meets the threshold are hidden.
        */
-      private final static FlashCardMM setPriority(FlashCardMM fc, int i, ZonedDateTime lastDate) {
+      private final static FlashCardMM setPriority(FlashCardMM fc, int idx, ZonedDateTime lastDate) {
             //LOGGER.debug("\n***in FlashCardOps.setPriority()***");
             int size = flashListMM.size();
             // If the flashcard is below the threshold, add the card to the tree
             // Set the QNumber for the flash card according to it's index
             // remember/priority, & date last right.
             try {
+//                  NoteCards
+//                  if(fc.getTestType() == 0b0010000000000000) {
+//                        fc.setCNumber(i * 10);
+//                        return fc;
+//                  }
                   //If the card has not been seen before,
-                  if (fc.getNumSeen() == 0) {
-                        fc.setCNumber(i * 10); // =  i * 10;
-                        return fc;
-                  }
-                  // if getRemember is less than 0 see it at the start
-                  else if (fc.getRemember() < 0) {
+//                  if (fc.getNumSeen() == 0) {
+//                        fc.setCNumber(i * 10 -100); // =  i * 10;
+//                        return fc;
+//                  }
+                  // if card has been answered wrong,
+                  // getRemember is less than 0.
+                  // Set it at the start
+                  if (fc.getRemember() < 0) {
                         //fc.setCNumber( i * -10 + (size * -1) );
-                        fc.setCNumber(10 * (i + fc.getRemember() + size) * -1);
+                        fc.setCNumber(10 * (fc.getRemember()));
                         return fc;
                   }
-                  // If card has been seen after card #1, qNumber = 10 * list.size()
+                  // If card has a seen date after card #1, qNumber = 10 * list.size()
                   else if (lastDate.compareTo(fc.getRtDate()) <= 0) {
-                        fc.setCNumber(10 * (i + fc.getRemember() + size));// = ( 10 * (i + fc.getRemember() + flashListMM.size()));
+                        fc.setCNumber(20 * (idx + fc.getRemember() + size));// = ( 10 * (i + fc.getRemember() + flashListMM.size()));
                         return fc;
                   }
                   // For the case where the card is stale, or has a last correct date
@@ -606,33 +564,16 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                   // set the qNum to the index number * 10 + flashList size.
                   else {
                         //fc.setQNumber( flashList.size() + (i + fc.getRemember()) * 10);
-                        fc.setCNumber((i + fc.getRemember()) * 10);
+                        fc.setCNumber(idx * 10);
                         return fc;
                   }
             } catch (NullPointerException e) {
-                  fc.setCNumber(10 * (fc.getRemember() + i));// = 10 * (fc.getRemember() + i);
+                  fc.setCNumber(10 * (fc.getRemember() + idx));// = 10 * (fc.getRemember() + i);
                   return fc;
             }
       }
 
-      /**
-       * Resets the deck so that all user performance variables are set to zero
-       */
-      public void resetPerformance() {
 
-            FlashCardMM resetCard;
-
-            for (int i = 0; i < flashListMM.size(); i++) {
-
-                  resetCard = flashListMM.get(i);
-                  resetCard.setNumSeen(0);
-                  resetCard.setNumRight(0);
-                  resetCard.setIsRight(0);
-                  resetCard.setRemember(0);
-                  resetCard.setSeconds(0);
-                  //resetCard.setRtDate(new ZonedDateTime().);
-            }
-      }
 
       /**
        * Checks if flashList is null or length is greater than 3
@@ -699,7 +640,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
 
     /**
       * Helper method to FileSelectPane. Provides
-      * the primary key action for field mouse click.
+      * the primary key action for mouse click.
       * @param lObject
       */
       void fieldPrimaryAction(LinkObj lObject, String deckName) {

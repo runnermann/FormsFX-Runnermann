@@ -17,12 +17,16 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 
 /**
- * This class provides a common layout for simple forms. Title is optional,
- * as well as the message. This should be extended if the form is just
- * a few entries, and the data requires little manipulation. IE for log ins
- * or for saving file names. Data that requires manipulation such as the
- * Student Description form, should not use this class. Instead, look at the
- * FormParentPane.
+ * <p>This class provides a common layout for simple forms. Title is optional,
+ *  as well as the message. This should be extended if the form is just
+ *  a few entries, and the data requires little manipulation. IE for log ins
+ *  or for saving file names. Data that requires manipulation such as the
+ *  Student Description form, should not use this class. Instead, look at the
+ *  FormParentPane.</p>
+ *  <p>Set the title to the form using setTitle.
+ *  Set the messageLabel to the form and its style. setMessage() and setMessageStyle.
+ *  messageLabelStyle choices are white14 or if left blank it is set at
+ *  white letter, font size 20 and bold. </p>
  */
 public abstract class SimpleFormParentPane extends Pane implements ViewMixin {
 
@@ -220,18 +224,17 @@ public abstract class SimpleFormParentPane extends Pane implements ViewMixin {
     }
 
     public void setMessageLabel(String ... msg) {
-        String style = msgLabelStyle != null ? msgLabelStyle : "label14white";
+        String style = msgLabelStyle;// != null ? msgLabelStyle : "label14white";
         for(String s : msg) {
                 msgLabel = new Label(s);
                 //msgLabel.setId(style);
                 msgVBox.getChildren().add(msgLabel);
                 if(style.equals("white14")) {
-                    msgLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 14px; -fx-text-alignment: CENTER;");
-                } else {
+                    msgLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 16px; -fx-text-alignment: CENTER;");
+                }else {
                     msgLabel.setStyle("-fx-font-size: 20px; -fx-text-alignment: CENTER;");
                 }
         }
-
     }
 
     /**
@@ -242,4 +245,5 @@ public abstract class SimpleFormParentPane extends Pane implements ViewMixin {
     public void setMessageLabelStyle(String style) {
         msgLabelStyle = style;
     }
+
 }

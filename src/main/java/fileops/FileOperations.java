@@ -183,18 +183,14 @@ public abstract class FileOperations implements Serializable {
      * @param pathName
      * @return Returns an arraylist of flashcardMM
      */
-    //protected ArrayList<FlashCardMM> connectFileIn(String fileName) {
      protected ArrayList<FlashCardMM> getListFmFile(String pathName) {
-        // String path = DirectoryMgr.getMediaPath('t') + fileName;
         LOGGER.info("\n\n~~~~  In connectBinaryIn  ~~~~");
         LOGGER.debug("Calling method. ???: " + Thread.currentThread().getStackTrace()[3].getMethodName());
 
         ArrayList<FlashCardMM> flashListMM = new ArrayList<>(4);
 
         try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(pathName)))) {
-
             while (flashListMM.add((FlashCardMM) input.readObject())) ;
-
         } catch (EOFException e) {
             // do nothing, this is expected
         } catch (ClassNotFoundException e) {
@@ -234,25 +230,30 @@ public abstract class FileOperations implements Serializable {
         folder.mkdirs();
         //Thread.dumpStack();
 
-            System.out.println(" output dir fileName: " + folder + "/" +fileName);
+        System.out.println(" output dir fileName: " + folder + "/" +fileName);
 
-            ObjectOutputStream output = null;
+        ObjectOutputStream output = null;
         // action
-            try {
+        try {
+            output = new ObjectOutputStream(new FileOutputStream(folder + "/" + fileName));
 
-                  output = new ObjectOutputStream(new FileOutputStream(folder + "/" + fileName));
-
+            System.out.println("\n\n----- Sending list to file: -----\n");
             if(minus == '-') {
                 for (int i = 0; i < arrayList.size() - 1; i++) {
+                    System.out.println((FlashCardMM)arrayList.get(i));
                     output.writeObject(arrayList.get(i));
                 }
             } else {
                 for (int i = 0; i < arrayList.size(); i++) {
+                    System.out.println((FlashCardMM)arrayList.get(i));
                     output.writeObject(arrayList.get(i));
                 }
             }
                   output.flush();
                   output.close();
+
+            System.out.println("----- List complete: -----\n\n");
+
             } catch (EOFException e) {
             /* do nothing */
         }
@@ -617,23 +618,13 @@ public abstract class FileOperations implements Serializable {
 
         try (ObjectInputStream input1 = new ObjectInputStream(new BufferedInputStream(new FileInputStream(pathName)))) {
             return input1.readObject();
-
         } catch(FileNotFoundException e) {
             LOGGER.warn("\tFile Not Found exception");
             LOGGER.warn(e.getMessage());
             e.printStackTrace();
-
         } catch(IOException e) {
             LOGGER.warn("\t****** IO Exception in FlashCard. getObjFmFile() *******");
-            //e.printStackTrace();
-
         } catch(Exception e) {
-            // Set errorMsg in FlashMonkeyMain and let the ReadFlash class
-            // handle the error in createReadScene()
-            //        FlashMonkeyMain.setErrorMsg(" --   Oooph my bad!!!   --\n" +
-            //                "The flash card deck you chose \n\"" + ReadFlash.getDeckName()
-            //                + "\"\n will not work with this version of FlashMonkey" );
-
             LOGGER.warn("\tUnknown Exception in connectBinaryIn: ");
         }
         return null;

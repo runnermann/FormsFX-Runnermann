@@ -342,14 +342,14 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                         if (Double.parseDouble(parts[0]) == Double.parseDouble(correctParts[1])
                             && Double.parseDouble(parts[1]) == Double.parseDouble(correctParts[3])) {
                               userAnsField.setId("right_border");
-                              rf.new RightAns(currentCard, listCard, this);
+                              rf.new RightAns(currentCard, this);
                         } else {
                               responseWrong(cc, lowerHt);
-                              rf.new WrongAns(currentCard, listCard, this);
+                              rf.new WrongAns(currentCard, this);
                         }
                   } catch (NumberFormatException e) {
                         responseWrong(cc, lowerHt);
-                        rf.new WrongAns(currentCard, listCard, this);
+                        rf.new WrongAns(currentCard, this);
                   }
             } else {
                   userAnsField.setEditable(false);
@@ -363,7 +363,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                         if((response.toLowerCase().equals("infinity") && correctAnsDbl == Double.POSITIVE_INFINITY)
                         || (response.toLowerCase().equals("-infinity") && correctAnsDbl == Double.NEGATIVE_INFINITY)) {
                               userAnsField.setId("right_border");
-                              rf.new RightAns(currentCard, listCard, this);
+                              rf.new RightAns(currentCard, this);
                         } else {
                               double num = round(correctAnsDbl, 4);
                               double responseDbl = Double.parseDouble(response);
@@ -371,16 +371,16 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
                               if (ans == num) {
                                     userAnsField.setId("right_border");
-                                    rf.new RightAns(currentCard, listCard, this);
+                                    rf.new RightAns(currentCard, this);
                                     //ansField.setStyle( "-fx-border-color: " + UIColors.HIGHLIGHT_GREEN + "; -fx-border-width: 5;");
                               } else { // Answer is wrong
                                     responseWrong(cc, lowerHt);
-                                    rf.new WrongAns(currentCard, listCard, this);
+                                    rf.new WrongAns(currentCard, this);
                               }
                         }
                   } catch (NumberFormatException e) {
                         responseWrong(cc, lowerHt);
-                        rf.new WrongAns(currentCard, listCard, this);
+                        rf.new WrongAns(currentCard, this);
                   }
             }
 

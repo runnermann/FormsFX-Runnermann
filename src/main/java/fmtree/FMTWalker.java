@@ -140,7 +140,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
 
       /**
        * Recursive add method. Inserts the given object into the tree.
-       * post-conditions addReturn is set true if the item is inserted,
+       * Note: post-conditions: addReturn is set true if the item is inserted,
        * false if the item is already in the tree.
        *
        * @param localRoot The local root of the subtree
@@ -537,7 +537,7 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             if (value.compareTo(node.data) < 0) {
                   return node;
             }
-            System.out.println("getting parent: " + ((FlashCardMM) node.parent.getData()).getCNumber());
+            //System.out.println("getting parent: " + ((FlashCardMM) node.parent.getData()).getCNumber());
             return getLgParent(node.parent, value);
       }
 
@@ -589,9 +589,8 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
             }
 
             private void inorderTraverseForScore(Node<FlashCardMM> node, AtomicInteger at) {
-                  //double no = num;
                   if (node == null) {
-                        //return num;
+                        // do nothing
                   } else {
                         at.set(at.get() + getValue(node.getData()));
                         inorderTraverseForScore(node.left, at);

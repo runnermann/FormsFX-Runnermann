@@ -49,12 +49,12 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
       public static final String C_ID = "0"; // Original card number. Never changes
       public static final int C_NUMBER = 777; // Card number this session
       public static final char CARD_LAYOUT = 'F'; // FlashCard, Top and Bottom
-      public static final int IS_RIGHT = 0; // was it answered correctly this session
+      public static final int IS_RIGHT_COLOR = 0; // was it answered correctly this session, controls color in tree.
       public static final int REMEMBER = 0; // The prioirty of this card is set based on this number.
       public static final int SECONDS = 0; // seconds to answer this session.
       public static final int NUM_RIGHT = 0; // total number times right in it's existence
       public static final ZonedDateTime RT_DATE = ZonedDateTime.parse("2017-09-25T10:00:00-07:00[America/Los_Angeles]");
-      public static final int NUM_SEEN = 0; // total number of times it's been seen in it's existence
+      public static final int SESSION_SEEN = 0; // total number of times it's been seen this session
       // Use a BitSet as a boolean array to indicate the tests
       // that are possible for this question.
       // Default is multiple choice, multiple answer
@@ -78,7 +78,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
       /* the answer */
       private AnswerMM answerMM; // contains its section layout type
       /* did the EncryptedUser.EncryptedUser get the question correct on this iteration -1 if wrong, 0 if unanswered, 1 if correct*/
-      private int isRight;
+      private int isRightColor;
       /* Priority/remember, Used to set this card towards the front, back, or hide from the tree. */
       private int remember;
       /* tracks how long it takes to answer this question */
@@ -88,7 +88,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
       /* Date last answered correctly */
       private ZonedDateTime rtDate;
       /* The total number of times a question has been seen. */
-      private int numSeen;
+      private int sessionSeen;
       /* BitArray used for testTypes */
       private int testType;
 
@@ -106,12 +106,12 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             // Card ID. Never changes after it's been created
             this.cID = createCardHash(FlashCardOps.getInstance().getDeckFileName() + authcrypt.UserData.getUserName()) + "_" + System.currentTimeMillis();
             this.cNumber = C_NUMBER;     // Card number former qNumber, it's priority in the tree
-            this.remember = REMEMBER;     // priority
-            this.isRight = IS_RIGHT;
-            this.numRight = NUM_RIGHT;    // number of times answered correctly
-            this.seconds = SECONDS;      // time it took to answer this quesiton
-            this.rtDate = RT_DATE;      // last time answered correctly
-            this.numSeen = NUM_SEEN;     // number of times seen
+            this.remember = REMEMBER;    // priority
+            this.isRightColor = IS_RIGHT_COLOR;     // Was it answered correctly this session?
+            this.numRight = NUM_RIGHT;   // number of times answered correctly
+            this.seconds = SECONDS;      // time it took to answer this question
+            this.rtDate = RT_DATE;       // last time answered correctly
+            this.sessionSeen = SESSION_SEEN;     // number of times seen
 
             LOGGER.info("\n\n*** Noargs constructor, cID: {} ***\n\n", cID);
       }
@@ -146,11 +146,11 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             this.cID = createCardHash(deckName); // may be created previously in the default constructor
             this.cNumber = cNum;
             this.remember = REMEMBER;
-            this.isRight = IS_RIGHT;
+            this.isRightColor = IS_RIGHT_COLOR;
             this.numRight = NUM_RIGHT;
             this.seconds = SECONDS;
             this.rtDate = RT_DATE;
-            this.numSeen = NUM_SEEN;
+            this.sessionSeen = SESSION_SEEN;
 
             LOGGER.info("\n\n ~~~ FlashCard full constructor ~~~\n \tcID: {}", cID);
       }
@@ -173,15 +173,15 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        * @param aFileNames The files associated with the answer. IE for an image, sound, or video
        * @param ansSt      The set of answers that would also be correct for this question
        * @param remember   Used when a question is answered, determins a cards priority (Should not change)
-       * @param isRight    If this card was answered correctly
+       * @param isRightColor    If this card was answered correctly
        * @param numRight   The number of times this card has been answerd correctly
        * @param sec        The amount of time it takes to answer the question
        * @param date       The date this question was last answered correctly
-       * @param numSeen    The number of times this card has been seen.
+       * @param sessionSeen    The number of times this card has been seen.
        */
       public FlashCardMM(final String cID, int cNum, int testType, char layout, String qTxt, char qType, String[] qFileNames, String aTxt, int aNum,
-                         char aType, String[] aFileNames, ArrayList<Integer> ansSt, int remember, int isRight, int numRight,
-                         int sec, ZonedDateTime date, int numSeen) {
+                         char aType, String[] aFileNames, ArrayList<Integer> ansSt, int remember, int isRightColor, int numRight,
+                         int sec, ZonedDateTime date, int sessionSeen) {
             this.answerMM = new AnswerMM(aTxt, aNum, aType, ansSt, aFileNames); // AnswerMM
             this.questionMM = new QuestionMM(qTxt, qType, qFileNames);
             this.testType = testType;
@@ -189,11 +189,11 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             this.cID = cID;
             this.cNumber = cNum;
             this.remember = remember;
-            this.isRight = isRight;
+            this.isRightColor = isRightColor;
             this.numRight = numRight;
             this.seconds = sec;
             this.rtDate = date;
-            this.numSeen = numSeen;
+            this.sessionSeen = sessionSeen;
 
             LOGGER.info("\n\n ~~~ FlashCard full constructor for editing card~~~\n \tcID: {}", cID);
       }
@@ -217,16 +217,16 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
                   this.cNumber = original.cNumber;
                   this.remember = original.remember;
                   this.numRight = original.numRight;
-                  this.numSeen = original.numSeen;
+                  this.sessionSeen = original.sessionSeen;
                   this.rtDate = original.rtDate;
-                  this.isRight = original.isRight;
+                  this.isRightColor = original.isRightColor;
                   this.seconds = original.seconds;
             }
       }
 
       /**
        * Clone constructor .. Creates a new FlashCardMM
-       * from the original in the parameter.
+       * from the original.
        * Creates a deep copy of the FlashCardMM object.
        */
       @Override
@@ -254,11 +254,11 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
                       this.getAFiles(),
                       this.answerMM.getAnswerSet(),
                       this.remember,
-                      this.isRight,
+                      this.isRightColor,
                       this.numRight,
                       this.seconds,
                       this.rtDate,
-                      this.numSeen);
+                      this.sessionSeen);
             }
       }
 
@@ -293,22 +293,26 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
       }
 
 
-      protected void setQText(String q) {
+      protected void set_Q_Text(String q) {
             this.questionMM.setQText(q);
       }
 
-      protected void setAText(String ans) {
+      protected void set_A_Text(String ans) {
             this.answerMM.setAText(ans);
       }
 
-      protected void setQType(char qType) {
+      protected void set_Q_Type(char qType) {
             this.questionMM.setQType(qType);
       }
 
-      protected void setAType(char aType) {
+      protected void set_A_Type(char aType) {
             this.answerMM.setAType(aType);
       }
 
+      /**
+       * The media files
+       * @param files
+       */
       protected void setQFiles(String[] files) {
             this.questionMM.setQFiles(files);
       }
@@ -361,8 +365,8 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        *
        * @param num
        */
-      public void setNumSeen(int num) {
-            this.numSeen = num;
+      public void setSessionSeen(int num) {
+            this.sessionSeen = num;
       }
 
 
@@ -374,8 +378,8 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        *
        * @param correct
        */
-      public void setIsRight(int correct) {
-            this.isRight = correct;
+      public void setIsRightColor(int correct) {
+            this.isRightColor = correct;
       }
 
       /**
@@ -515,8 +519,8 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        *
        * @return
        */
-      public int getIsRight() {
-            return this.isRight;
+      public int getIsRightColor() {
+            return this.isRightColor;
       }
 
       /**
@@ -533,8 +537,8 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        *
        * @return Returns the number of times this flashCard has been seen.
        */
-      public int getNumSeen() {
-            return this.numSeen;
+      public int getSessionSeen() {
+            return this.sessionSeen;
       }
 
       /**
@@ -807,12 +811,12 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
                 + "\n\t layout = " + this.cardLayout
                 + "\n\t QuestionMM = \n" + this.questionMM
                 + "\n\t AnswerMM  = \n" + this.answerMM
-                + "\nn\t isRight  = " + this.isRight
+                + "\nn\t isRight  = " + this.isRightColor
                 + "\n\t remember  = " + this.remember
                 + "\n\t seconds  = " + this.seconds
                 + "\n\t numRight  = " + this.numRight
                 + "\n\t rtDate  = " + this.rtDate
-                + "\n\t numSeen  = " + this.numSeen
+                + "\n\t numSeen  = " + this.sessionSeen
                 + "\n\t testType  = " + this.testType
                 ;
       }

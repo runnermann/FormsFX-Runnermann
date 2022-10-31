@@ -8,8 +8,10 @@ public interface BaseInterface {
        * that is always called when class stage is closed. Should be implemented
        * by any class that contains files to be saved to file or the cloud.
        * E.g. ReadFlash and CreateFlash.
+       * @return If there is a scene change depending on an answer from the user,
+       * true to continue, false to stop.
        */
-      void saveOnExit();
+      boolean saveOnExit();
 
       /**
        * To be called by the class on stage.onHidden()

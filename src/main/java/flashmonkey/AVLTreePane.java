@@ -1,6 +1,5 @@
 package flashmonkey;
 
-import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import fmannotations.FMAnnotations;
 import javafx.animation.Animation;
@@ -32,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import type.testtypes.GenericTestType;
 import type.testtypes.QandA;
 import type.testtypes.TestList;
-import uicontrols.UIColors;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -291,10 +289,14 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             circle.setOnMouseEntered((MouseEvent event) -> {
                   FlashCardMM currentCard = (FlashCardMM) node.getData();
                   String num = String.valueOf(circleArray.size());
-                  String text = currentCard.getQText() + " idx: " + num;
+ //                 String qTipText = currentCard.getQText() + " idx: " + num;
+                  String qTipText = currentCard.toString();
                   Tooltip qTip = new Tooltip();
-                  qTip.setPrefSize(200, 45);
+                  qTip.setPrefSize(400, 800);
                   qTip.setContentDisplay(ContentDisplay.RIGHT);
+                  qTip.setWrapText(true);
+                  qTip.setShowDuration(Duration.INDEFINITE);
+ //                 qTip.setTextOverrun(OverrunStyle.ELLIPSIS);
 
                   String[] imagePaths = currentCard.getQFiles();
                   char c = currentCard.getQType();
@@ -332,13 +334,13 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                         }
                   }
 
-                  if ( ! text.isEmpty()) {
-                        qTip.setText(text);
+                  if ( ! qTipText.isEmpty()) {
+                        qTip.setText(qTipText);
                   } else {
                         qTip.setText("This flashcard has no content");
                   }
-                  qTip.setWrapText(true);
-                  qTip.setTextOverrun(OverrunStyle.ELLIPSIS);
+//                  qTip.setWrapText(true);
+//                  qTip.setTextOverrun(OverrunStyle.ELLIPSIS);
                   Tooltip.install(circle, qTip);
             });
             // Actions on mouse click
@@ -350,8 +352,20 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                   }
             }); //   *** END SET ON MOUSE CLICK ***
 
-            circle.setFill(fillColor(node));
-            circle.setStroke(lineColor(node));
+            if(FlashMonkeyMain.isInEditorMode()) {
+                  circle.setFill(Color.web("#FEFFFE"));
+                  if (node == FMTWalker.getInstance().getCurrentNode()) // node currently viewed.
+                  {
+                        circle.setStroke(Color.web("#039ED3")); // blue
+                  }
+                  else {
+                        circle.setStroke(Color.web("#747474"));
+                  }
+            }
+            else {
+                  circle.setFill(fillColor(node));
+                  circle.setStroke(lineColor(node));
+            }
 
             return circle;
       }
@@ -373,7 +387,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             int idx = selectedCard.getANumber();
             // we do not want to move forward and add a node to the end of the tree.
             //    If there is a save event the tree should remain the same number of nodes.
-            boolean moveOK = cfp.cardOnExitActions(true,  false);
+            boolean moveOK = cfp.cardOnExitActions(true,  false, false);
             if ( moveOK ) {
     //              SoundEffects.TREE_PRESS_NODE.play();
                   // Set the treeWalker current node to the new reference for
@@ -408,7 +422,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             displayTree();
             FlashCardMM currentCard = (FlashCardMM) node.getData();
             GenericTestType test = TestList.selectTest(currentCard.getTestType());
-            ReadFlash.ansQButtonSet(currentCard.getIsRight(), test);
+            ReadFlash.ansQButtonSet(currentCard.getIsRightColor(), test);
             rf.buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             ReadFlash.rpCenter.getChildren().clear();
             SoundEffects.TREE_PRESS_NODE.play();
@@ -440,29 +454,25 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        */
       private Color lineColor(FMTWalker.Node node) {
             FlashCardMM currentCard = (FlashCardMM) node.getData();
-            int numSeen = currentCard.getNumSeen();
+            int numSeen = currentCard.getSessionSeen();
             int numRt = currentCard.getNumRight();
+            //ZonedDateTime rtDate = currentCard.getRtDate();
+            int remember = currentCard.getRemember();
 
-            // node is empty
-            if (currentCard.getQType() == 't' && currentCard.getQText().isEmpty()) {
-                  return Color.web(UIColors.HIGHLIGHT_YELLOW);
+//            if (node == FMTWalker.getInstance().getCurrentNode()) { // node currently viewed.
+//                  return Color.web("#039ED3"); // blue
+//            }
+//            if (numSeen == 0) {
+//                  return Color.web(UIColors.FM_WHITE);
+//            }
+            if (remember < 0) { // wrong
+                  return Color.web("#D80519"); // FM dark red #8D060A
             }
-            if (node == FMTWalker.getInstance().getCurrentNode()) // node currently viewed.
-            {
-                  return Color.web("#039ED3"); // blue
-            }
-            if (numSeen == 0) {
-                  return Color.web(UIColors.FM_WHITE);
-            }
-            if (numRt == numSeen) // answers are correct more than not
-            {
+            if (numRt >= numSeen) { // answers are correct more than not
                   return Color.web("#3AFF66"); // FM green  #188A07
             }
-            if ( numRt < numSeen )  // rarely answers correctly
-            {
-                  return Color.web("#D80519"); // FM dark red #8D060A
-            } else  // question is neither good nore bad.
-            {
+
+            else { // question is neither good nor bad.
                   return Color.web("#747474"); // grey
             }
       }
@@ -475,17 +485,14 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
       private Color fillColor(FMTWalker.Node node) {
             FlashCardMM currentCard = (FlashCardMM) node.getData();
 
-            LOGGER.debug("fillColor: is isRight() negitive for card/node <{}>, <{}> ", currentCard.getCNumber(), currentCard.getIsRight() < 0);
-
-            if (Float.floatToIntBits(currentCard.getIsRight()) >>> 32 == 1) // Optimized to check the MSB, if it is 1 it is negitive
-            {
+            LOGGER.debug("fillColor: is isRight() negitive for card/node <{}>, <{}> ", currentCard.getCNumber(), currentCard.getIsRightColor() < 0);
+            if (currentCard.getIsRightColor() == -1) {
                   return Color.web("#c0392b"); // FM red #D80519
-            } else if (currentCard.getIsRight() == 1) {
+            } else if (currentCard.getIsRightColor() == 1) {
                   return Color.web("#05D835"); // FM green 188A07
-            } else if (currentCard.getIsRight() == 3) {
+            } else if (currentCard.getIsRightColor() == 3) {
                   return Color.web("#E8E8E8"); // grey RGB 232 232 232
-            } else if (Integer.lowestOneBit(currentCard.getCNumber()) == 1)  // check the least significant bit for 1. It's less than 10
-            {
+            } else if (Integer.lowestOneBit(currentCard.getCNumber()) == 1) { // check the least significant bit for 1. It's less than 10
                   return Color.web("#D88F05"); // FM Orange #D88F05
             } else {
                   return Color.web("#FEFFFE");  // non selected unvisited -FM off white #F6EB79

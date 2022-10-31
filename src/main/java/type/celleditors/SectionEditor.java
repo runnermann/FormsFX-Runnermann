@@ -620,14 +620,6 @@ public class SectionEditor {
        GETTERS
        *****************************************************************************/
 
-/*      public boolean isDrawOpen() {
-            return drawPadOpen;
-      }*/
-
-
- /*     public HBox getSectionHBox() {
-            return this.sectionHBox;
-      }*/
 
       /**
        * Creates an array containing the mediaFileName, and shapesFileName,

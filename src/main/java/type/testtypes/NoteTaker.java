@@ -20,7 +20,6 @@
 package type.testtypes;
 
 import flashmonkey.FMTransition;
-import flashmonkey.FlashCardOps;
 import flashmonkey.ReadFlash;
 import fmtree.FMTWalker;
 import javafx.scene.control.Button;
@@ -56,9 +55,6 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
        * @return An instance of NoteTaker
        */
       public static NoteTaker getInstance() {
-
-            //LOGGER.info("\n\n**** NOTETAKER getInstance() called ****\n\n");
-
             if (CLASS_INSTANCE == null) {
                   CLASS_INSTANCE = new NoteTaker();
             }
@@ -86,11 +82,9 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
 
             final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
-            if (currentCard.getIsRight() == 0) {
-                  final FlashCardOps fo = FlashCardOps.getInstance();
+            if (currentCard.getIsRightColor() == 0) {
                   final ReadFlash rf = ReadFlash.getInstance();
-                  FlashCardMM listCard = fo.getFlashList().get(currentCard.getANumber());
-                  rf.new JustAns(currentCard, listCard, this);
+                  rf.new JustAns(currentCard);
                   rf.getProgGauge().moveNeedle(500, rf.incProg());
                   double progress = rf.getProgress();
                   if (progress >= FMTWalker.getInstance().getCount()) {
@@ -127,6 +121,7 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
       @Override
       public int getTestType() {
             // 8192
+            // if this is reset, also set this in FlashCardOps setPriority.
             return 0b0010000000000000;
       }
 

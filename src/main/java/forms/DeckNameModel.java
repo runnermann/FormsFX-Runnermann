@@ -116,6 +116,5 @@ public class DeckNameModel {
             descriptor.nameProperty().setValue("");
             formInstance = null;
             descriptor = null;
-            FlashMonkeyMain.showCreatePane();
       }
 }

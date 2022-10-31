@@ -22,6 +22,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static fileops.utility.ProcessingUtility.convert;
 
@@ -462,14 +464,27 @@ public abstract class CloudOps implements Serializable {
       }
 
 
+      /**
+       * An async call to uplaad the deck to S3. Ensure there are not other
+       * async calls to upload the deck.
+       * @param fileName
+       */
       public static void putDeck(String fileName) {
             timer.start();
             S3PutObjs putObjs = new S3PutObjs();
             String token = TokenStore.get();
             if (token != null) {
-                  putObjs.putDeck(fileName, token);
-                  timer.end();
-                  LOGGER.debug("\n\nputDeck running time: {}\n\n", timer.getTotalTimeString());
+                  ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+                  Runnable task = () -> {
+                        putObjs.putDeck(fileName, token);
+                        timer.end();
+                        LOGGER.debug("\n\nputDeck running time: {}\n\n", timer.getTotalTimeString());
+                        scheduledExecutor.shutdown();
+                  };
+                  scheduledExecutor.execute(task);
+
+
+
             } else {
                   LOGGER.warn("ERROR: Warning, Token is null when attempting putDeck. Expected the token to be set.");
             }

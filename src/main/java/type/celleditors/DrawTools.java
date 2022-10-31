@@ -1223,9 +1223,10 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        * not be correct.</P>
        * <p>Called by CreateFlash saveOnExit</p>
        * <p>Ensures that this class complies with BaseInterface.</p>
+       * @return Always returns true;
        */
       @Override
-      public void saveOnExit() {
+      public boolean saveOnExit() {
             /*LOGGER.debug("saveOnExit : classEditorRef. number of shapes: {}\n" +
                 "deckFileName: {}", classEditorRef.getArrayOfFMShapes().size(), FlashCardOps.getInstance().getDeckFileName());*/
             if(null != classEditorRef) {
@@ -1234,6 +1235,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                         saveOnExit(shapeFileName, classEditorRef);
                   }
             }
+            return true;
       }
 
       /**
@@ -1305,8 +1307,8 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                 "Hmmmmm!", msg,
                 "emojis/flashFaces_sunglasses_60.png",
                 UIColors.FM_RED_WRONG_OPAQUE,
-                "DELETE CHANGES",
-                "SAVE CHANGES");
+                "Delete",
+                "SAVE");
             if (b == 1) {
                   // do not save
                   onClose();

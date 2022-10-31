@@ -6,7 +6,6 @@ import fileops.BaseInterface;
 import fileops.DirectoryMgr;
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
-import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -22,7 +21,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
-//import javafx.stage.StageStyle;
 import media.sound.SoundEffects;
 import metadata.DeckMetaData;
 import org.slf4j.Logger;
@@ -103,13 +101,12 @@ public final class ReadFlash implements BaseInterface {
       private AtomicInteger score = new AtomicInteger(0);
 
       // *** BUTTONS *** //
-      //private static Button exitButton;
+
       // The beginning of the tree
       protected static Button firstQButton;
       private static Button endQButton;
       private static Button nextQButton;
       private static Button prevQButton;
-      // Back button .. returns to the QorA/Test menu
       protected static Button menuButton;
       // question and answer mode buttons
       private Button qaButton;
@@ -197,7 +194,7 @@ public final class ReadFlash implements BaseInterface {
             preRead();
 
             menuButton = ButtoniKon.getMenuButton();
-            exitBox = new GridPane(); // HBox with spacing provided
+            exitBox = new GridPane();
             exitBox.setHgap(2);
             // For the lower panel on modeSelectPane window */
             ColumnConstraints col0 = new ColumnConstraints();
@@ -206,7 +203,6 @@ public final class ReadFlash implements BaseInterface {
             exitBox.setVgap(2);
             exitBox.setPadding(new Insets(15, 15, 15, 15));
             exitBox.addColumn(1, menuButton);
-            //exitBox.addColumn(2, exitButton);
             exitBox.setId("buttonBox");
 
             deckNameLabel = new Label(FlashCardOps.getInstance().getDeckLabelName());
@@ -225,7 +221,9 @@ public final class ReadFlash implements BaseInterface {
             // *** BUTTON ACTIONS ***
             menuButton.setOnAction(e -> {
                   SoundEffects.GAME_OVER.play();
-                  leaveAction();
+                  //leaveAction();
+                  // calls leaveAction
+                  saveOnExit();
                   FlashMonkeyMain.setWindowToModeMenu();
             });
 
@@ -237,21 +235,12 @@ public final class ReadFlash implements BaseInterface {
              */
             nextQButton.setOnAction((ActionEvent e) -> nextQButtonAction());
             prevQButton.setOnAction((ActionEvent e) -> prevQButtonAction());
-            endQButton.setOnAction(this::endQButtonAction);
+            endQButton.setOnAction(this::lastQButtonAction);
             firstQButton.setOnAction(this::firstQButtonAction);
             /*
              * shortCut Key actions
              */
             masterBPane.setOnKeyPressed(this::shortcutKeyActions);
-//            if( SceneCntl.Dim.APP_MAXIMIZED.get() == 1) {
-//                  // note x & y are handled by the Stage/Window
-//                  // See setPrimaryWindow in FlashMonkeyMain
-//                  masterScene = new Scene(masterBPane, SceneCntl.getScreenWd(), SceneCntl.getScreenHt());
-//            } else {
-//                  // for x and y see note above
-//                  masterScene = new Scene(masterBPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
-//            }
-//            masterScene.getStylesheets().addAll("css/mainStyle.css", "css/buttons.css");
 
             return masterBPane;
       }    // ******** END OF READ SCENE ********
@@ -331,7 +320,8 @@ public final class ReadFlash implements BaseInterface {
             LOGGER.debug("listHasCardsAction() called");
 
             int flSize = FlashCardOps.getInstance().getFlashList().size();
-            setTree();
+            // Redundant. Done later from studyButtonAction
+//            setTree();
             int highestScore = FMTWalker.getInstance().highestPossibleScore() / 10;
 
             progGauge = new MGauges(120, 120);
@@ -429,24 +419,27 @@ public final class ReadFlash implements BaseInterface {
             }
             masterBPane.setBottom(manageSouthPane(mode));
 
-            if (test.getAnsButton() != null) {
+            if (null != test.getAnsButton()) {
                   test.getAnsButton().setDisable(false);
                   FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
                   FMTransition.nodeFadeIn.play();
-                  //test.getAnsButton().setText("");
             }
 
             // Set the status of the answer button. A question should only
             // be answered once
-            ansQButtonSet(currentCard.getIsRight(), test);
+            ansQButtonSet(currentCard.getIsRightColor(), test);
             //setAnsButtonStatus(currentCard.getIsRight(), test);
 
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashMonkeyMain.AVLT_PANE.displayTree();
             // The animation for this button
             FMTransition.getQLeft().play();
-            if (FMTransition.getAWaitTop() != null) {
-                  FMTransition.getAWaitTop().play();
+            if (null != FMTransition.getAWaitTop()) {
+                  try {
+                        FMTransition.getAWaitTop().play();
+                  } catch (NullPointerException e) {
+                        // if there is an error, do nothing here.
+                  }
             }
       }
 
@@ -476,7 +469,7 @@ public final class ReadFlash implements BaseInterface {
             }
             masterBPane.setBottom(manageSouthPane(mode));
 
-            if (test.getAnsButton() != null) {
+            if (null != test.getAnsButton()) {
                   test.getAnsButton().setDisable(false);
                   FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
                   FMTransition.nodeFadeIn.play();
@@ -484,16 +477,19 @@ public final class ReadFlash implements BaseInterface {
 
             // Set the status of the answer button. A question should only
             // be answered once
-            ansQButtonSet(currentCard.getIsRight(), test);
-
+            ansQButtonSet(currentCard.getIsRightColor(), test);
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
+            FlashMonkeyMain.AVLT_PANE.displayTree();
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             // The animation for this button
             FMTransition.getQRight().play();
-            if (FMTransition.getAWaitTop() != null) {
-                  FMTransition.getAWaitTop().play();
+            if (null != FMTransition.getAWaitTop()) {
+                  try {
+                        FMTransition.getAWaitTop().play();
+                  } catch (NullPointerException e) {
+                        // if there is an error, do nothing here.
+                  }
             }
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
       }
 
 
@@ -534,7 +530,7 @@ public final class ReadFlash implements BaseInterface {
             // Set the status of the answer button. A question should only
             // be answered once
             // setAnsButtonStatus(currentCard.getIsRight(), test);
-            ansQButtonSet(currentCard.getIsRight(), test);
+            ansQButtonSet(currentCard.getIsRightColor(), test);
 
             FlashMonkeyMain.AVLT_PANE.displayTree();
             // Animations
@@ -549,8 +545,7 @@ public final class ReadFlash implements BaseInterface {
        * sends the flashCard pane to the last flashCard that is displayed in the
        * tree. The firthest right card.
        */
-      private void endQButtonAction(ActionEvent e) {
-            //visIndex = FLASH_CARD_OPS.getFlashList().size();
+      private void lastQButtonAction(ActionEvent e) {
             SoundEffects.GOTO_END.play();
             FMTWalker.getInstance().setToLast(); // O(log(n))
 
@@ -579,7 +574,7 @@ public final class ReadFlash implements BaseInterface {
             // Set the status of the answer button. A question should only
             // be answered once
             //setAnsButtonStatus(currentCard.getIsRight(), test);
-            ansQButtonSet(currentCard.getIsRight(), test);
+            ansQButtonSet(currentCard.getIsRightColor(), test);
 
             FlashMonkeyMain.AVLT_PANE.displayTree();
             // Animations
@@ -598,17 +593,17 @@ public final class ReadFlash implements BaseInterface {
        * @param isRight The status of this question in this session
        * @param test    The TestType for this question.
        */
-      private void setAnsButtonStatus(int isRight, GenericTestType test) {
-            if (isRight == 0) {
-                  if (test.getAnsButton() != null) {
-                        test.getAnsButton().setDisable(false);
-                        FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
-                        FMTransition.nodeFadeIn.play();
-                  }
-            } else {
-                  test.getAnsButton().setDisable(true);
-            }
-      }
+//      private void setAnsButtonStatus(int isRight, GenericTestType test) {
+//            if (isRight == 0) {
+//                  if (test.getAnsButton() != null) {
+//                        test.getAnsButton().setDisable(false);
+//                        FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
+//                        FMTransition.nodeFadeIn.play();
+//                  }
+//            } else {
+//                  test.getAnsButton().setDisable(true);
+//            }
+//      }
 
       /**
        * Increment the progress count. Used by
@@ -692,7 +687,7 @@ public final class ReadFlash implements BaseInterface {
             GenericTestType test = TestList.selectTest(currentCard.getTestType());
             rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, rpCenter));
             // clear the answer button from previous tests
-            ansQButtonSet(currentCard.getIsRight(), test);
+            ansQButtonSet(currentCard.getIsRightColor(), test);
 
             VBox topVBox = new VBox();
 
@@ -753,6 +748,9 @@ public final class ReadFlash implements BaseInterface {
             FlashMonkeyMain.AVLT_PANE.displayTree();
       }
 
+      /**
+       * Actions taken when ReadFlash is closed.
+       */
       public void leaveAction() {
             DeckMetaData meta = DeckMetaData.getInstance();
             try {
@@ -786,12 +784,16 @@ public final class ReadFlash implements BaseInterface {
        * that is always called when class is closed. Should be implemented
        * by any class that contains files to be saved to file or the cloud.
        * E.g. ReadFlash and CreateFlash.
+       * @return Always returns true;
        */
       @Override
-      public void saveOnExit() {
+      public boolean saveOnExit() {
+            // Save the historical data in the original
+            // FlashList not the cloned copy.
             FlashCardOps.getInstance().unsafeSaveFlashList();
             FlashCardOps.getInstance().clearFlashList();
             leaveAction();
+            return true;
       }
 
       /**
@@ -807,10 +809,7 @@ public final class ReadFlash implements BaseInterface {
             }
       }
 
-/*    public void onClose() {
-        leaveAction();
-        System.exit(0);
-    }*/
+
 
       // *** SETTERS *** //
 
@@ -884,8 +883,11 @@ public final class ReadFlash implements BaseInterface {
       }
 
       /**
+       * <p>Usage: Used when a Question is answered
+       * incorrectly and the question is re-inserted into
+       * the tree. </p>
        * <p>Sets the next qNumber for inserted cards.</p>
-       * Checks if an qNumber is occupied/used, If so, increments the qNumber until
+       * Checks if a qNumber is occupied/used, If so, increments the qNumber until
        * there is an available index.
        *
        * @param fc
@@ -896,7 +898,6 @@ public final class ReadFlash implements BaseInterface {
             // ensure always an odd integer to prevent n % 10 == 0
             for (int i = 1; i < 20; i += 2) {
                   newNum = num + i;
-                  //newNum = newNum % 2 == 0 ? newNum++ : newNum;
                   fc.setCNumber(newNum);
                   if (FMTWalker.getInstance().add(fc)) {
                         break;
@@ -908,26 +909,25 @@ public final class ReadFlash implements BaseInterface {
 
 
       private static boolean showAnsNavBtns = false;
-      private static char mode = 'q';
-
+      private static char mode = 't';
       /**
-       * NOTE: Search is handled in 'Q' since it is only available
-       * in the Question and Answer mode. The search bar is added to the
+       * NOTE: Search is handled in 'a' since it is only available
+       * in the Question and Answer charM. The search bar is added to the
        * rpSouth section. The center section is replaced by the search results
        * with a hyperlink from the SearchPane class. When the EncryptedUser.EncryptedUser clicks on
        * the hyperlink, the linked card replaces the list of search results.
        * The majority of these actions are handled in SearchPane as the endpoint.
        * <p>
        * - manageMode: Manages the rpSouth gridPane where most of the buttons reside
-       * T is for Test pane. Q is for and qAndA pane, and E is for edit pane.
-       * Buttons and search are available depending on the mode entered in
+       * t is for Test pane. ais for and qAndA pane.
+       * Buttons and search are available depending on the charM entered in
        * the parameter. If the answer nav buttons should be displayed,
        * set showAnsNavBtns to true. else false.
        *
-       * @param mode char
+       * @param charMode char
        * @return Returns a BorderPane
        */
-      public VBox manageSouthPane(char mode) {
+      public VBox manageSouthPane(char charMode) {
             scoreTextF = new TextField();
             HBox navBtnHbox = new HBox();
             navBtnHbox.setSpacing(3);
@@ -939,9 +939,9 @@ public final class ReadFlash implements BaseInterface {
             BorderPane contrlsBPane = new BorderPane();
             contrlsBPane.setId("studyBtnPane");
 
-            switch (mode) {
-                  case 't': {// Test mode
-                        LOGGER.debug("\n ~^~^~^~ In ManageMode set mode to 'T' ~^~^~^~");
+            switch (charMode) {
+                  case 't': {// Test charM
+                        LOGGER.debug("\n ~^~^~^~ In ManageMode 't' for test ~^~^~^~");
 
                         navBtnHbox.getChildren().addAll(firstQButton, prevQButton, nextQButton, endQButton);
 
@@ -969,7 +969,7 @@ public final class ReadFlash implements BaseInterface {
                         return vBox;
                   }
                   default:
-                  case 'a': {// Q&A mode
+                  case 'a': {// Q&A charM
                         VBox v1Box = new VBox(10);
                         v1Box.setPadding(new Insets(20, 10, 20, 10));
                         SearchPane searchPane = SearchPane.getInstance(rpCenter.getHeight(), rpCenter.getWidth());
@@ -1164,21 +1164,27 @@ public final class ReadFlash implements BaseInterface {
 
       // *****************************************************************************
 
-
+      /**
+       * Used by TestTypes that do not require a prioritization, nor a right/wrong
+       * action. EG NoteTaker.
+       */
       public class JustAns {
             int flashListSize = FlashCardOps.getInstance().getFlashList().size();
 
-            public JustAns(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType genTest) {
-                  currentCard.setIsRight(1);
+            public JustAns(FlashCardMM currentCard) {
+                  FlashCardMM listCard = FlashCardOps.getFlashList().get(currentCard.getANumber());
+                  // Set is right in the current session,
+                  currentCard.setIsRightColor(1);
+                  // Update in permenent version.
                   listCard.setNumRight(listCard.getNumRight() + 1);
 
                   if (listCard.getNumRight() > 3) {
                         // set remember to a higher num = lower priority.
                         remAction(currentCard, listCard);
-                        currentCard.setIsRight(1);
+                        currentCard.setIsRightColor(1);
                         listCard.setRtDate(Threshold.getRightDate());
-                        listCard.setNumSeen(listCard.getNumSeen() + 1);
-                        currentCard.setNumSeen(currentCard.getNumSeen() + 1);
+                        listCard.setSessionSeen(listCard.getSessionSeen() + 1);
+                        currentCard.setSessionSeen(currentCard.getSessionSeen() + 1);
                   }
             }
 
@@ -1210,7 +1216,9 @@ public final class ReadFlash implements BaseInterface {
       public class RightAns {
             int flashListSize = FlashCardOps.getInstance().getFlashList().size();
 
-            public RightAns(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType genTest) {
+            public RightAns(FlashCardMM currentCard, GenericTestType genTest) {
+
+                  FlashCardMM listCard = FlashCardOps.getFlashList().get(currentCard.getANumber());
 
                   SoundEffects.CORRECT_ANSWER.play();
                   LOGGER.debug("/n*** rightAns called ***");
@@ -1221,19 +1229,19 @@ public final class ReadFlash implements BaseInterface {
                   } else {
                         score.addAndGet(10);
                   }
-                  currentCard.setIsRight(1);
-                  listCard.setNumRight(listCard.getNumRight() + 1);
+                  currentCard.setIsRightColor(1);
+                  currentCard.setNumRight(currentCard.getNumRight() + 1);
 
-                  if (listCard.getNumRight() > 3) {
-                        // set remember to a higher num = lower priority.
-                        remAction(currentCard, listCard);
+                  if (currentCard.getNumRight() > 3) {
+                        // set remember in the FlashList to a higher num = lower priority.
+                        // Using listCard in the case this is an inserted card from a
+                        // wrong answer.
+                        remAction(listCard);
                   }
 
-                  currentCard.setIsRight(1);
-
-                  listCard.setRtDate(Threshold.getRightDate());
-                  listCard.setNumSeen(listCard.getNumSeen() + 1);
-                  currentCard.setNumSeen(currentCard.getNumSeen() + 1);
+                  currentCard.setRtDate(Threshold.getRightDate());
+ //                 listCard.setNumSeen(listCard.getNumSeen() + 1);
+                  currentCard.setSessionSeen(currentCard.getSessionSeen() + 1);
                   ButtoniKon.getRightAns(genTest.getAnsButton(), "GOOD!");
                   // good nod
                   correctNodActions(genTest.getAnsButton());
@@ -1259,10 +1267,8 @@ public final class ReadFlash implements BaseInterface {
              * Helper method
              * Sets the remember setting in the flashList for this card.
              *
-             * @param currentCard
-             * @param listCard
              */
-            private void remAction(FlashCardMM currentCard, FlashCardMM listCard) {
+            private void remAction(FlashCardMM listCard) {
                   int rem = listCard.getRemember();
                   try {
                         rem += floor(flashListSize * .33);
@@ -1288,12 +1294,11 @@ public final class ReadFlash implements BaseInterface {
              * the list. The list is saved to file later . Tree cards are only for this session.
              *
              * @param currentCard
-             * @param listCard
              * @param test
              */
-            public WrongAns(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
+            public WrongAns(FlashCardMM currentCard, GenericTestType test) {
 
-                  /**    Thinking should animate the avlTreePane, the current circle should fade to red or green depending on
+                  /**  Should animate the avlTreePane, the current circle should fade to red or green depending on
                    if the answer is wright or wrong.
 
                    Working on setting the wrong answer actions. The selectAnswerButton and actions should be in the
@@ -1303,14 +1308,15 @@ public final class ReadFlash implements BaseInterface {
                    class should contain the buttons actionClass which will use the ReadFlash class right and wrong actions.
                    */
 
+                  FlashCardMM listCard = FlashCardOps.getFlashList().get(currentCard.getANumber());
                   /**
-                   * The first time the EncryptedUser.EncryptedUser gets the card wrong,
+                   * The first time the EncryptedUser gets the card wrong,
                    * a) subtract 2 points,
                    * b) add the card back to the tree two or three more times,
-                   * c) if the EncryptedUser.EncryptedUser gets it wrong the second or third time,
+                   * c) if the EncryptedUser gets it wrong the second or third time,
                    *    Set remember & make it a priority card.
                    */
-                  if (currentCard.getCNumber() % 10 == 0 && currentCard.getNumSeen() == 0) {
+                  if (currentCard.getCNumber() % 10 == 0 && currentCard.getSessionSeen() == 0) {
                         SoundEffects.WRONG_ANSWER_1.play();
                         // Score subtract card points
                         score.addAndGet(-test.score());
@@ -1327,7 +1333,6 @@ public final class ReadFlash implements BaseInterface {
                         FlashMonkeyMain.AVLT_PANE.displayTree(newWrongNums);
                         FMTWalker.getInstance().setHighLow();  // treeWalker.setHighLow();
                         progGauge.setMaxVal(500, FMTWalker.getInstance().getCount());
-//                        scoreGauge.setMaxVal(500, (int) FMTWalker.getInstance().highestPossibleScore());
 
                   } else {
                         SoundEffects.WRONG_ANSWER_2.play();
@@ -1337,16 +1342,15 @@ public final class ReadFlash implements BaseInterface {
                         remAction(currentCard, listCard);
                   }
 
+                  wrongNodAction(test.getAnsButton());
                   // score related
                   scoreTextF.setText(printScore());
-                  //        scoreGauge.moveNeedle(500, FMTWalker.getInstance().highestPossibleScore() * -1);
                   scoreGauge.moveNeedle(500, score.get() / 10);
                   ButtoniKon.getWrongAns(test.getAnsButton(), "Ooops!");
-                  wrongNodAction(test.getAnsButton());
 
-                  currentCard.setIsRight(-1);
-                  listCard.setNumSeen(listCard.getNumSeen() + 1);
-                  currentCard.setNumSeen(currentCard.getNumSeen() + 1);
+                  currentCard.setIsRightColor(-1);
+                  listCard.setSessionSeen(listCard.getSessionSeen() + 1);
+                  currentCard.setSessionSeen(currentCard.getSessionSeen() + 1);
             }
 
             /**
@@ -1369,44 +1373,44 @@ public final class ReadFlash implements BaseInterface {
              */
             private void firstWrong(int newNum, FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
                   listCard.setNumRight(0);
-                  FlashCardMM iAdd = new FlashCardMM(currentCard);
-                  iAdd.setNumSeen(1);
-                  iAdd.setCNumber(newNum);
-                  if (!FMTWalker.getInstance().add(iAdd)) {
-                        newWrongNums[0] = nextQNumber(iAdd, newNum);
+                  FlashCardMM clone = currentCard.clone();
+                  clone.setSessionSeen(1);
+                  clone.setCNumber(newNum);
+                  if (!FMTWalker.getInstance().add(clone)) {
+                        newWrongNums[0] = nextQNumber(clone, newNum);
                   } else {
                         newWrongNums[0] = newNum;
                   }
-                  iAdd.setIsRight(0);
+                  clone.setIsRightColor(0);
             }
 
             /**
              * Helper Methods for select Ans Button set on action
-             * This method adds 25% to the QNum of the card as it is added into
-             * the stack
+             * We add 25% to the QNum of the card when it is re-inserted to
+             * the stack.
              */
             private void secondWrong(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
                   // 2nd time card is added in, its + 25%,
                   // create the new card to be inserted into the stack
                   listCard.setNumRight(0);
-                  FlashCardMM iAdd = new FlashCardMM(currentCard);
-                  iAdd.setNumSeen(2);
+                  FlashCardMM clone = currentCard.clone();
+                  clone.setSessionSeen(2);
                   int fcX10 = flashListSize * 10; // = 320
                   int newNum = (((fcX10 - currentCard.getCNumber()) / 3)
                       + currentCard.getCNumber());
-                  iAdd.setCNumber(newNum);
+                  clone.setCNumber(newNum);
 
-                  if (!FMTWalker.getInstance().add(iAdd) || newNum % 2 == 0) {
-                        newWrongNums[1] = nextQNumber(iAdd, newNum);
+                  if (!FMTWalker.getInstance().add(clone) || newNum % 2 == 0) {
+                        newWrongNums[1] = nextQNumber(clone, newNum);
                   } else {
                         newWrongNums[1] = newNum;
                   }
-                  iAdd.setIsRight(0);
+                  clone.setIsRightColor(0);
             }
 
             /**
              * Helper method for select Ans Button Action
-             * This method adds the card at the end of the deck when the EncryptedUser.EncryptedUser answers a question
+             * This method adds the card at the end of the deck when the EncryptedUser answers a question
              * incorrectly.
              *
              * @param currentCard
@@ -1414,17 +1418,17 @@ public final class ReadFlash implements BaseInterface {
             private void thirdWrong(FlashCardMM currentCard, FlashCardMM listCard, GenericTestType test) {
                   listCard.setNumRight(0);
                   // create the new card to be inserted into the stack
-                  FlashCardMM iAdd = new FlashCardMM(currentCard);
+                  FlashCardMM clone = currentCard.clone();
                   int newNum = (FMTWalker.getInstance().getCount() * 10) + 1;
-                  iAdd.setCNumber(newNum);
-                  iAdd.setNumSeen(3);
-                  iAdd.setIsRight(0);
-                  if (!FMTWalker.getInstance().getInstance().add(iAdd) || newNum % 2 == 0) {
-                        newWrongNums[2] = nextQNumber(iAdd, newNum);
+                  clone.setCNumber(newNum);
+                  clone.setSessionSeen(3);
+                  clone.setIsRightColor(0);
+                  if (!FMTWalker.getInstance().getInstance().add(clone) || newNum % 2 == 0) {
+                        newWrongNums[2] = nextQNumber(clone, newNum);
                   } else {
                         newWrongNums[2] = newNum;
                   }
-                  iAdd.setIsRight(0);
+                  clone.setIsRightColor(0);
             }
 
             /**
@@ -1434,34 +1438,31 @@ public final class ReadFlash implements BaseInterface {
              * @param currentCard
              * @param listCard
              */
-            private void remAction(FlashCardMM currentCard, FlashCardMM listCard) {
-                  // @todo change remAction() to private
+            private void remAction(FlashCardMM currentCard, final FlashCardMM listCard) {
         	/*
-            Debate over should increase priority if gets the question wrong and
-            it has been seen in a previous session but this is the first time this
-            session. Response is if it is wrong the first time, it is added back
+            If it is wrong the first time, it is added back
             into the stack three more times.
 
             Is it neccessary to increase its priority?
-            - Only if the EncryptedUser continues to get it wrong during the
+            - When the EncryptedUser continues to get it wrong during the
             same session.
-            Solution: If this question continues to be a problem, it's remember should
-            progressively decrease until the EncryptedUser.EncryptedUser answers it correctly. This can be used
-            as an indicator during analysis of the types of questions the EncryptedUser.EncryptedUser is struggling
+            Solution: If this question continues to be a problem, it's remember/prioritization number should
+            progressively decrease until the EncryptedUser answers it correctly. This can be used
+            as an indicator during analysis of the types of questions the EncryptedUser is struggling
             with, if a classroom is having problems with this question... etc...
-            Once the EncryptedUser.EncryptedUser begins to answer the question correctly, RightAns will progressively
+            Once the EncryptedUser begins to answer the question correctly, RightAns will progressively
             move the remember back to the right.
             */
-                  int rem = listCard.getRemember();
+                  int listCardRem = listCard.getRemember();
 
                   // If the current card ( this card in the deck and not this card in the list )
-                  // has been seen twice > 1. Then set its priority.
-                  if (currentCard.getNumSeen() > 1) {
+                  // has been seen before. Then set its priority.
+                  if (currentCard.getSessionSeen() > 0) {
                         try {
-                              rem += floor(-1 * (flashListSize) * .33);
-                              listCard.setRemember(rem);
+                              listCardRem += floor(-1 * (flashListSize) * .33);
+                              listCard.setRemember(listCardRem);
                         } catch (NullPointerException f) {
-                              //LOGGER.debug("error: null pointer in setRemember");
+                              LOGGER.warn("error: null pointer in setRemember");
                         }
                   }
             }

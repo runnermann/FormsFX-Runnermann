@@ -5,6 +5,7 @@ import flashmonkey.FMTransition;
 import flashmonkey.FlashCardMM;
 import flashmonkey.ReadFlash;
 
+import flashmonkey.Threshold;
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import javafx.geometry.Bounds;
@@ -184,11 +185,14 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
             FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, false);
 
             lowerHBox.getChildren().add(genSection.sectionFactory(cc.getAText(), cc.getAType(), 2, true, 0, cc.getAFiles()));
-            if (cc.getIsRight() == 0) {
+            if (cc.getIsRightColor() == 0) {
                   rf.getProgGauge().moveNeedle(500, rf.incProg());
             }
             //  answerButton.setVisible(false);
-            cc.setIsRight(1);
+            cc.setIsRightColor(1);
+            //if(ReadFlash.getInstance().getMode() == 't') {
+            cc.setRtDate(Threshold.getRightDate());
+            //}
             FMTransition.nodeFadeIn.play();
       }
 
@@ -268,7 +272,7 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
 
                   StackPane stackP = new StackPane();
                   if (answerButton == null) {
-                        answerButton = ButtoniKon.getAnsSelect();
+                        answerButton = ButtoniKon.getQAAnsSelect();
                   } else {
                         answerButton = ButtoniKon.getJustAns(answerButton, "Show Answer");
                   }

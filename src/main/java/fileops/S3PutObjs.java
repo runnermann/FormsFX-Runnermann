@@ -49,9 +49,6 @@ public class S3PutObjs {
        * @param token
        */
       public boolean asyncPutMedia(ArrayList<MediaSyncObj> mediaObjs, String token) {
-            //LOGGER.setLevel(Level.DEBUG);
-            //Thread.dumpStack();
-
             LOGGER.debug("asyncPutMedia called");
             //long getTime = System.currentTimeMillis();
             boolean succeeded = false;
@@ -86,7 +83,7 @@ public class S3PutObjs {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("serialPutMedia called");
             boolean succeeded = false;
-            long getTime = System.currentTimeMillis();
+            //long getTime = System.currentTimeMillis();
 
             // 1st we request the signedURL's from our server
             ArrayList<String> signedUrls = getMediaPutURLsSerial(fileNames, token);
@@ -531,7 +528,7 @@ public class S3PutObjs {
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();
 
-            HttpRequest req = null;
+            HttpRequest req;
             if (type == 'm') {
                   req = mediaRequest(jsonArray);
                   LOGGER.debug("media S3put request built ... sending...");

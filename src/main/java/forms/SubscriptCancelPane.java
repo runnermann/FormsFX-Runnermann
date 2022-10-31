@@ -43,20 +43,28 @@ public class SubscriptCancelPane extends SimpleFormParentPane {
 
 
       /**
-       * This method is used to initializes all the properties of a class.
+       * This method is used to initialize all the properties of a class.
        */
       @Override
       public void initializeParts() {
             super.initializeParts();
+            // !Important! set the styles before setting the labels
+            //setTitleLabelStyle("20bold");
+            setMessageLabelStyle("white14");
             setFormTitle("CANCEL SUBSCRIPTION");
-            setMessageLabel("We are sorry to see you go.",
-                "What you should know:",
-                "You will lose your",
-                    "future sales to FlashMonkey or the " ,
-                    "next highest distributor." ,
-                "Early adopters lose " ,
-                    "their discounts.");
-
+            setMessageLabel("",
+                "We are sorry to see you go.",
+                "These are some important",
+                "considerations:",
+                "",
+                "1. You will lose any",
+                    "future profits from your",
+                " learning materials." ,
+                "",
+                "2. If you are an Early Adopter",
+                    "you will lose your discount.",
+                "",
+                "To cancel, submit your password.");
       }
 
       @Override

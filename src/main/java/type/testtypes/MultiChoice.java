@@ -118,7 +118,6 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
 
             // Each section is it's own object. Not using GenericCard
             genSection = GenericSection.getInstance();
-
             GridPane gPane = new GridPane();
             gPane.setVgap(2);
 
@@ -252,20 +251,14 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             FlashCardMM listCard = fo.getFlashList().get(currentCard.getANumber());
 
             rf.getProgGauge().moveNeedle(500, rf.incProg());
-            // end the timer
-            //test.time.end();
 
             listCard.setSeconds((int) (test.time.getTotalTime() / 1000));
-            //test.time = null;
-
-
-            //LOGGER.debug("in ansButtonAction and progress: " + progress + " | and treeWalkerCount: " + FMTWalker.getCount());
 
             /** if the reference to the currentCard.answer == the users choice, question was answered correctly */
             if (test.getTheseAns()[taIndex] == currentCard.getAnswerMM()) {
-                  rf.new RightAns(currentCard, listCard, this);
+                  rf.new RightAns(currentCard, this);
             } else {
-                  rf.new WrongAns(currentCard, listCard, this);
+                  rf.new WrongAns(currentCard, this);
             }
             selectAnsButton.setDisable(true);
 
@@ -455,8 +448,6 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
              * @return
              */
             private HashSet<AnswerMM> getQualifiedSet(ArrayList<FlashCardMM> flashList) {
-
-                  //if( (hashConstIDX += 1) > 4) { hashConstIDX = 0; }
                   // create hashset
                   HashSet<AnswerMM> qualified = new HashSet<>(20);
                   int odd;
@@ -464,11 +455,9 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                   // loop through the flashList and if the int (testType) is larger
                   // than 32768 then it is qualified for the list.
                   for (FlashCardMM card : flashList) {
-
-
                         // if larger than 2^16, 16th bit is set
                         // and it is qualified.
-                        if (getTestType() > 32768) {
+                        if (card.getTestType() > 32768) {
                               qualified.add(card.getAnswerMM());
                               LOGGER.debug("Qualified added " + card.getAnswerMM());
                         }
@@ -479,9 +468,6 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                   }
 
                   LOGGER.debug("qualified size: " + qualified.size());
-
-                  // remove the correct answer from the set
-                  // qualified.remove(rightAns);
                   return qualified;
             }
 

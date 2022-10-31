@@ -83,11 +83,9 @@ public class ImageTools implements BaseInterface {
      * class. Saves from Stage.onHidden()
      */
     @Override
-    public void saveOnExit() {
+    public boolean saveOnExit() {
         /* STUB */
-        System.out.println("WARNING. ImageTools.saveOnExit() is not a valid method. Use saveOnExit(SectionEditor)");
-        System.out.println("WARNING. ImageTools.saveOnExit() is not a valid method. Use saveOnExit(SectionEditor)");
-        System.out.println("WARNING. ImageTools.saveOnExit() is not a valid method. Use saveOnExit(SectionEditor)");
+        throw new UnsupportedOperationException("Called saveOnExit and saveOnExit in ImageTools is not supported.");
     }
 
     public void saveOnExit(SectionEditor editorRef) {

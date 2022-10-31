@@ -23,6 +23,7 @@ public enum ButtoniKon { //extends Button {
       // FlashMonkey Main Buttons
       BACK("BACK", "Select Files", FontAwesomeSolid.REPLY, UIColors.FM_WHITE, 16),
       // Answer Nav buttons for example Multi-choice Tests
+      QA_ANS_SELECT("SHOW ANSWER", "Show the answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE),
       ANS_SELECT("SELECT", "Select this answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE),
       ANS_PREV("", "Previous answer", FontAwesomeSolid.CHEVRON_LEFT, UIColors.FOCUS_BLUE_OPAQUE),
       ANS_NEXT("", "Next answer", FontAwesomeSolid.CHEVRON_RIGHT, UIColors.FOCUS_BLUE_OPAQUE),
@@ -352,6 +353,12 @@ public enum ButtoniKon { //extends Button {
 
       public static Button getAnsSelect() {
             Button button = ANS_SELECT.get();
+            button.setId("navButtonLight");
+            return button;
+      }
+
+      public static Button getQAAnsSelect() {
+            Button button = QA_ANS_SELECT.get();
             button.setId("navButtonLight");
             return button;
       }
