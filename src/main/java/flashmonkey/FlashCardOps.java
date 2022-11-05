@@ -88,6 +88,10 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             return CLASS_INSTANCE;
       }
 
+      public static boolean instanceExists() {
+            return CLASS_INSTANCE != null;
+      }
+
 
       // ************************************** ******* **************************************
       // ************************************** SETTERS **************************************

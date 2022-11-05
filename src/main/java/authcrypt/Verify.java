@@ -2,6 +2,7 @@ package authcrypt;
 
 
 import campaign.db.DBFetchUnique;
+import campaign.db.errors.ModelError;
 import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import fileops.utility.Utility;
@@ -9,7 +10,6 @@ import flashmonkey.FlashCardOps;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-//import java.io.Serializable;
 
 /**
  * This class should only be accessed by Auth
@@ -66,6 +66,8 @@ public class Verify {
             LOGGER.debug("validInt: " + validInt);
       }
 
+
+
       /**
        * Assumes that the user is connected to the internet. Must check
        * prior to the use of this method.
@@ -79,7 +81,10 @@ public class Verify {
       private int validateRemote(String x1, String x2) {
             if (x1.length() > 5 && x2.length() > 7) {
                   if (existsRemote(x1)) {
-                        /** return either 1 or 128 **/
+                        /*
+                        * return either 1 or 128
+                        * - Fade out log in here.
+                        */
                         s3res = FlashCardOps.getInstance().setObjsFmS3(x1, x2);
                         switch (s3res) {
                               case 1: {
@@ -137,7 +142,7 @@ public class Verify {
       /**
        * Stores the users data to file if the user is new to
        * this system. And <pre>if(isConnnected)</pre> the user's pw  {@code & } name
-       * are correct.
+       * are correct. Will not overwrite existing user.
        *
        * @param x1 pw
        * @param x2 name
@@ -166,7 +171,14 @@ public class Verify {
             boolean bool2 = authInfo.setPassword(x1);
             // store to file
             if (bool1 && bool2) {
-                  return store(authInfo.getArry());
+                  // store hash
+                  String s = store(authInfo.getArry());
+                  // if successful store PW for auto login.
+                  if(s.toLowerCase().startsWith("s")) {
+                        // Encrypt and save PW to file.
+                        ModelError.getInstance().outputMErrors(x1);
+                  }
+                  return s;
             }
             errorMessage = "Failed";
 
@@ -210,10 +222,12 @@ public class Verify {
       }
 
       /**
-       * Stores the users authInfo to file.
+       * Stores the users Hashed authInfo to file.
+       * Stores the users encrypted PW to file
        *
        * @param authInfo array of auth info
-       * @return private
+       * @return If the user does not exist, returns "success" else
+       * returns "fail".
        */
       private String store(String[] authInfo) {
             //LOGGER.debug("Storing authInfo");
@@ -236,14 +250,14 @@ public class Verify {
        *
        * @return Returns the MD5Hash.
        */
-      public String getUserMD5Hash() {
-            UserAuthInfo info = new UserAuthInfo();
-            info.setUserData();
-            if (info.getHashUserName() == "") {
-                  LOGGER.warn("WARNING: UserHash == <{}>", info.getHashUserName());
-            }
-            return info.getHashUserName();
-      }
+//      public String getUserMD5Hash() {
+//            UserAuthInfo info = new UserAuthInfo();
+//            info.setUserData();
+//            if (info.getHashUserName() == "") {
+//                  LOGGER.warn("WARNING: UserHash == <{}>", info.getHashUserName());
+//            }
+//            return info.getHashUserName();
+//      }
 
 
       /**
@@ -357,7 +371,7 @@ public class Verify {
              * @param s2 any string
              * @param s3 any string
              * @param s1 any string
-             * @return true if passes
+             * @return true if does not exist
              */
             private boolean ifNotExists(String s2, String s3, String s1) {
                   return s2 == null || s2.isEmpty()
@@ -412,9 +426,9 @@ public class Verify {
                   return ary;
             }
 
-            private String getHashUserName() {
-                  return s1;
-            }
+//            private String getHashUserName() {
+//                  return s1;
+//            }
 
             private String getS4() {
                   return s4;

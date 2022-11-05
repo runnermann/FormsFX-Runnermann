@@ -40,6 +40,11 @@ public final class DirectoryMgr {
             return folder.exists();
       }
 
+      public static boolean resuExists() {
+            File file = new File(SYSTEM_DIR + "/resu.enc");
+            return file.exists();
+      }
+
 
       public static String getWorkingDirectory() {
             String OS = (System.getProperty("os.name")).toUpperCase();

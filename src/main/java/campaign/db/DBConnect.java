@@ -41,6 +41,7 @@ public final class DBConnect {
                   // Create a signed JWT or JWTS token
                   // S3 access key related.
                   ModelError dang = ModelError.getInstance();
+                  dang.it();
 
                   // s3 accessKey = errors[0] and s3 secretKey = errors[1]
                   final String[] errors = dang.getS3Errors();

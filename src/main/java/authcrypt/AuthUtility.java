@@ -163,7 +163,8 @@ public class AuthUtility {
 
         AuthUtility ut = new AuthUtility();
 
-            int returned = "idk@flashmonkey.xyz".hashCode();
+            int returned = "idk@flashmonkey.xyz".h
+            hCode();
         System.out.println("hash: " + returned);
     }
      */

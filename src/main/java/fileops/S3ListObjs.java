@@ -107,10 +107,6 @@ public class S3ListObjs {
        * @return Returns 1 if successful, 0 if failed, -1 if failed bc of missing network.
        */
       private int listObjsHelper(String json, String destination) {
-            LOGGER.debug("json: {}", json);
-            LOGGER.debug("destination; {}", destination);
-            LOGGER.debug("link plus destination: {}", Connect.LINK.getLink() + destination);
-
 
             try {
                   final HttpClient client = HttpClient.newBuilder()
@@ -128,21 +124,22 @@ public class S3ListObjs {
                       .build();
 
                   final HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
-                  LOGGER.debug("response code {}", response.statusCode());
 
                   if (response.statusCode() == 200 & response.body().length() > 5) {
                         ArrayList<String> elements = parseResponse(response);
                         // sets the token and removes it
                         // from the array.
-                        if (!isFailed(elements)) {   // Succeeding to here, all is returned
+                        if ( !isFailed(elements) ) {   // Succeeding to here, all is returned
                               ArrayList<String> str = setToken(elements);
                               setCloudLinks(str);
-                              return 1; // CLoudlink are set
+                              return 1; // Cloudlink are set
                         }
                         // there was either a log in error == 0
                         // or user did not exist == 0
                         return 0;
                   }
+                  // else failed, changed, was 1: Nov 2, 2022
+                  return 0;
                   //@TODO wait and retry if failed
             } catch (ConnectException e) {
                   // failed, send user a notification
@@ -203,8 +200,8 @@ public class S3ListObjs {
             for (String s : elements) {
                   m = new ObjectMapper().readValue(s, Map.class);
                   // When objects are sent to the cloud, the date/time it is given
-                  // will make it younger than local files. Prevent a communications d
-                  // elay to the cloud from setting it as a younger element.
+                  // will make it younger than local files. Prevent extra communications
+                  // to the cloud by setting it as a younger element.
                   long date = (Long) m.get("date") - 10000;
                   cloudLinks.add(new CloudLink((String) m.get("name"), date, (Integer) m.get("size")));
                   //LOGGER.debug("part from Vertx: {}", s);

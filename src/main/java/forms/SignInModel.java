@@ -89,12 +89,11 @@ public class SignInModel {
 
             if (validate()) {
                   SoundEffects.ACCESS_GRANTED.play();
-
+                  // Does not affect log-in, only for stop.
                   FlashMonkeyMain.setLoggedinToTrue();
                   UserData.setFirstName(descriptor.getSiFirstName());
                   FlashMonkeyMain.getFileSelectPane();
                   FlashMonkeyMain.setTopPane();
-
             } else {
                   // set message that user does not exist,
                   // and send to create new user form
@@ -106,9 +105,9 @@ public class SignInModel {
 
       // validatorActionSwitch user information, if successful then return true
       // else we create a popup and return false.
-      // returns true if not connected and pw username passes. If connected, returns
-      // the response from Vert.x if the pw and username passes.
-      // ifConnected & ifSuccessful, gets deckList from s3 and synchronizes with local list if exists.
+      // -Returns true if not connected, and pw username passes locally.
+      // - If connected, returns
+      // the response from VertX. If ifConnected & ifSuccessful, gets deckList from s3 and synchronizes with local list if exists.
       private boolean validate() {
             LOGGER.info("validatorActionSwitch() called");
             // We interface with s3resources underneath to prevent storing unencrypted passwords.

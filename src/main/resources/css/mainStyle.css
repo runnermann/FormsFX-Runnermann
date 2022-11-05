@@ -1,4 +1,4 @@
-+/*
+/*
     Created on : Dec 26, 2016, 12:16:57 PM
     Author     : humanfriendlyfolder
 
@@ -189,6 +189,10 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     );
 
     -fx-border-color: -fx-color, -fx-inner-border, -fx-body-color, -fx-faint-focus-color, -fx-color;
+}
+
+#gradient {
+    -fx-background-color: linear-gradient(to right, #256C9B 0%, #256C9B60 28%, #256C9B20 30%, #256C9B20 40%, #256C9B60 45%, #256C9B 100%);
 }
 
 /* FONTS */

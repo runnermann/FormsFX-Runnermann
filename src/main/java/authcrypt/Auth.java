@@ -30,15 +30,25 @@ public class Auth {
       private boolean s3HasSet;
 
 
-      private Auth() {
+      Auth() {
             // no args
       }
 
+      /**
+       * Call when resetting PW.
+       * @param pw
+       * @param email
+       * @param notUsed
+       */
       public Auth(String pw, String email, int notUsed) {
-            // Used for resetting the password.
+            // Used when resetting the password.
             r = new R(email, pw);
       }
 
+      /*
+      * When used by SignUp Model, we must check if the user
+      * exists at remote before creating the user locally.
+       */
       public Auth(String pw, String email) {
             // check both local and remote
             r = new R(email, pw);
@@ -77,29 +87,25 @@ public class Auth {
 
       /**
        * Create LOCAL user programatically
-       *
+       * User logged-in and is correct for remote. User does
+       * not exist locally.
+       * if user does not exist at local,
+       * and user correctly logged in at remote,
+       * then set user PW and UserName
+       * locally.
        * @param x1 pw
        * @param x2 Name
        */
       private void createUserLocalConnected(String x1, String x2) {
-            //LOGGER.debug("createUserLocalConnected called");
-            // if user does not exist at local,
-            // and user correctly logged in at remote,
-            // get user PW from remote and set
-            // locally.
-            // Download the decks from S3, it sets a token
+            // Download the decks from S3. also sends a token
             S3ListObjs s3ListObjs = new S3ListObjs();
             int res = s3ListObjs.listDecks(x2, x1);
             if (res == 1) {
                   // set userData to the entered data
                   saveAction(x1, x2);
-
-                  // then request the user to enter their first name with a first name form. :)
-                  //@TODO have user enter first name in form
-
-            } else {
-                  // its an error
             }
+            // else
+            // it's an error. Do nothing.
       }
 
       /**
@@ -145,10 +151,7 @@ public class Auth {
                               break;
                         }
                         case 1: {
-                    /*String msg = " Success!";
-                    FxNotify.notificationDark("", " Awesomeness! " + msg, Pos.CENTER, 6,
-                            "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());*/
-
+                              // Succeeded, email has been sent
                               FlashMonkeyMain.showConfirmPane();
                               break;
                         }
@@ -217,6 +220,7 @@ public class Auth {
             return false;
       }
 
+      // Used by forms.AccountModel
       public boolean validateLocalOnly(String pw, String email) {
             Verify vi = new Verify(pw, email, 'l');
             return vi.succeeded() == 64;
@@ -258,20 +262,22 @@ public class Auth {
                               return false;
                         }
                   }
-                  // User does not exist on this machine nor on remote.
+                  // Handles User does not exist on this machine nor
+                  // at remote.
                   case 20: {
                         if (formName.equals("signup")) {
                               saveAction(pw, email);
                               // Sets userCreated
                               createUserRemote(email);
-
                               return false;
                         } else {
-                              String errorMessage = "Your user does not exist. Please create an account.";
+                              // Attempted to sign-in and user does
+                              // not exist.
+                              String errorMessage = "We didn't find your user. Please create an account.";
                               notifyError(errorMessage);
                               showCreateUserLocal();
+                              return false;
                         }
-                        return false;
                   }
                   case 64: {
                         // Disconnected state: PW amd USER combo Passed: Local operations enabled
@@ -320,18 +326,18 @@ public class Auth {
                 "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 
-      /**
-       * @param x1      pw
-       * @param x2      email
-       * @param notUsed ..
-       * @return true if succeeded
-       */
-      public boolean saveAction(String x1, String x2, int notUsed) {
-            if (x1.length() == 0 || x1.isBlank() || x2.length() == 0 || x2.isBlank()) {
-                  return false;
-            }
-            return saveAction(x1, x2);
-      }
+//      /**
+//       * @param x1      pw
+//       * @param x2      email
+//       * @param notUsed ..
+//       * @return true if succeeded
+//       */
+//      public boolean saveAction(String x1, String x2, int notUsed) {
+//            if (x1.length() == 0 || x1.isBlank() || x2.length() == 0 || x2.isBlank()) {
+//                  return false;
+//            }
+//            return saveAction(x1, x2);
+//      }
 
       /**
        * Saves user data to file
@@ -352,7 +358,7 @@ public class Auth {
                   return true;
             } else {
                   // Prevent bug issue #0001
-                  //LOGGER.debug("Clearing user data");
+                  // LOGGER.debug("Clearing user data");
                   UserData.clear();
                   notifyError(msg);
                   return false;
@@ -387,6 +393,7 @@ public class Auth {
             }
 
             private boolean resetPWLocal() {
+                  // Sent as x3, used in tkm.digest(...) in Vert.X
                   if (resetLocal.equals("TexasA&M")) {
                         UserData.setUserName(x1);
                         resetPWLocal(x2, x1);

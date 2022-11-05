@@ -46,7 +46,6 @@ public abstract class FMTransition {
       protected static FadeTransition createFadeIn;
       //protected static FadeTransition ansButtonFadeIn;
 
-
       public static void setQRight(TranslateTransition rightQTransition) {
             qRight = rightQTransition;
       }

@@ -6,6 +6,7 @@ import fileops.BaseInterface;
 import fileops.DirectoryMgr;
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
+import javafx.animation.ScaleTransition;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -262,6 +263,8 @@ public final class ReadFlash implements BaseInterface {
                   emptyListAction();
             } else {
                   studyModeMenuPane = buildStudyModeMenuPane();
+                  ScaleTransition animate = FlashMonkeyMain.animateScaleV(studyModeMenuPane);
+                  animate.play();
                   origNumCards = fcOps.getFlashList().size();
                   setTree();
             }
@@ -1240,7 +1243,6 @@ public final class ReadFlash implements BaseInterface {
                   }
 
                   currentCard.setRtDate(Threshold.getRightDate());
- //                 listCard.setNumSeen(listCard.getNumSeen() + 1);
                   currentCard.setSessionSeen(currentCard.getSessionSeen() + 1);
                   ButtoniKon.getRightAns(genTest.getAnsButton(), "GOOD!");
                   // good nod

@@ -4,9 +4,12 @@ package flashmonkey;
 import fileops.*;
 import forms.DeckNameModel;
 import forms.DeckNamePane;
+import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 
@@ -14,6 +17,7 @@ import java.util.*;
 
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
@@ -75,6 +79,72 @@ public class DeckSelectorPane {
                   paneForFiles.getChildren().add(newFile());
             }
       } // END PANE FOR FILES
+
+      protected void selectPrePane() {
+   //         Label recLabel = new Label("RECENT DECKS");
+  //          recLabel.setTextFill(Color.WHITE);
+  //          recLabel.setId("deckNameLabel");
+  //          final AgrFileList agrList = FlashCardOps.getInstance().getAgrList();
+
+            ArrayList<LinkObj> list = new ArrayList<>(3);
+            LinkObj l1 = new LinkObj("$Downloading deck1.", new CloudLink("$Downloading Deck1.", System.currentTimeMillis(), 10), 10);
+            LinkObj l2 = new LinkObj("$Downloading deck2.", new CloudLink("$Downloading Deck2.", System.currentTimeMillis(), 10), 10);
+            LinkObj l3 = new LinkObj("$Downloading deck3.", new CloudLink("$Downloading Deck3.", System.currentTimeMillis(), 10), 10);
+            list.add(l1);
+            list.add(l2);
+            list.add(l3);
+
+            addPreChildren(list);
+      }
+
+      private void addPreChildren(ArrayList<LinkObj> list) {
+            SelectableRdoField rdoField = new SelectableRdoField();
+            Label loadLbl = new Label("LOADING");
+            loadLbl.setTextFill(Color.WHITE);
+            loadLbl.setId("deckNameLabel");
+            paneForFiles.getChildren().add(loadLbl);
+
+            for (LinkObj lObject : list) {
+                  Pane gradientPane = new Pane();
+                  gradientPane.setId("gradient");
+                  gradientPane.setMinWidth(820);
+                  gradientPane.setMinHeight(20);
+
+                  // animation
+                  transitionFmLeft(gradientPane);
+                  setTextLeft(transitionFmLeft(gradientPane));
+                  // The deck element
+                  HBox fieldBox = rdoField.buildField(lObject);
+                  // Deck element action
+
+                  GaussianBlur blur = new GaussianBlur();
+                  blur.setRadius(7);
+                  fieldBox.setEffect(blur);
+
+                  StackPane stack = new StackPane();
+                  stack.getChildren().addAll(fieldBox, gradientPane);
+
+                  paneForFiles.getChildren().add(stack);
+                  textLeft.play();
+            }
+      }
+
+      protected TranslateTransition textLeft;
+
+      public void setTextLeft(TranslateTransition trx) {
+            textLeft = trx;
+      }
+
+      public static TranslateTransition transitionFmLeft(Node node) {
+            // Transition the textframe
+            TranslateTransition trans = new TranslateTransition(Duration.millis(1400), node);
+            trans.setFromX(-200f);
+            trans.setToX(320);
+            trans.setCycleCount(TranslateTransition.INDEFINITE);
+            trans.setAutoReverse(false);
+
+            return trans;
+      }
 
       private void addChildren(ArrayList<LinkObj> list, Label label) {
 

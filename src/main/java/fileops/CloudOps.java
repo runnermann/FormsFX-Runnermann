@@ -248,7 +248,6 @@ public abstract class CloudOps implements Serializable {
 
  */
 
-
       // ************************* Deck RELATED ************************* //
 
       /**

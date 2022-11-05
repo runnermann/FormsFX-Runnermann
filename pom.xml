@@ -6,7 +6,7 @@
 
     <groupId>app.flashmonkey</groupId>
     <artifactId>flashmonkey-deploy</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
 
     <!--> for SARXOS 0.3.13 and macOS PIA -->
     <repositories>
@@ -189,12 +189,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.8</version>
+            <version>1.2.9</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.2.8</version>
+            <version>1.2.9</version>
         </dependency>
 
         <!-- postgresql logging reporting -->
@@ -212,13 +212,13 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.9</version>
+            <version>42.2.26</version>
         </dependency>
         <!-- JSON conversion -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.11.3</version>
+            <version>2.12.7.1</version>
         </dependency>
 
         <!-- JAXB -->
@@ -313,23 +313,6 @@
 
     <build>
         <plugins>
-        <!-- check vulnerabilities -->
-        <!--<plugin>
-            <groupId>org.owasp</groupId>
-            <artifactId>dependency-check-maven</artifactId>
-            <version>6.0.2</version>
-            <configuration>
-                <failBuildOnCVSS>8</failBuildOnCVSS>
-            </configuration>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>check</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin> -->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -382,7 +365,6 @@
                     <mainClass>flashmonkey.FlashMonkeyMain</mainClass>
                 </configuration>
             </plugin>
-
             <!-- build a single executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

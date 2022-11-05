@@ -447,7 +447,7 @@ public abstract class FileOperations implements Serializable {
 
         boolean bool = verifyHelper(sb.toString(), "verifyData.met", true);
         if (bool) {
-            return "Success: New user created";
+            return "Success: user updated";
         }
         return "Failed: User was not created.";
     }
@@ -485,11 +485,7 @@ public abstract class FileOperations implements Serializable {
         File folder = new File(DirectoryMgr.getMediaPath('z'));
         createZFolder(folder, isReset);
         boolean bool = false;
-//        if(!bool) {
-//            return false;
-//        }
 
-        //boolean bool = false;
         String fullPathName = folder + "/" + fileName;
         try (DataOutputStream dataOut = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullPathName), 512))) {
             LOGGER.debug("\tAttempting to set the encrypted file to disk.");
