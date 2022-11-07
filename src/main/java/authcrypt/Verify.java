@@ -7,6 +7,7 @@ import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import fileops.utility.Utility;
 import flashmonkey.FlashCardOps;
+import forms.utility.Alphabet;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -108,13 +109,13 @@ public class Verify {
       }
 
       /**
-       * @param x1 email
+       * @param email email
        * @param x2 pw
        * @return 64 if the email {@code &} pw are correct. 2 if incorrect but exists,
        * 4 if the email does not exist locally, and 0 if there is a problem
        * with the pw or email entry.
        */
-      private int validateLocal(String x1, String x2) {
+      private int validateLocal(String email, String x2) {
             // save user auth info
             //LOGGER.info("validateLocal(...) ");
             if (DirectoryMgr.getWorkingDirectory() != null) {
@@ -127,7 +128,7 @@ public class Verify {
                   // if the user exists on this system
                   // then validatorActionSwitch their info.
                   // Sets the response to validInt.
-                  userAuthInfo.validateUserInfo(x2, x1);
+                  userAuthInfo.validateUserInfo(x2, email);
                   // returns, see chart in notes
                   return userAuthInfo.result();
             } else {
@@ -176,7 +177,7 @@ public class Verify {
                   // if successful store PW for auto login.
                   if(s.toLowerCase().startsWith("s")) {
                         // Encrypt and save PW to file.
-                        ModelError.getInstance().outputMErrors(x1);
+                        ModelError.getInstance().outputMErrors(x1, x2);
                   }
                   return s;
             }

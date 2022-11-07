@@ -268,8 +268,8 @@ public class FMRectangle extends GenericShape<FMRectangle> implements Serializab
 
             // Using JavaFX Rectangle
             Rectangle r = new Rectangle(
-                this.getX() * scaleY - 1,
-                this.getY() * scaleY - 1,
+                this.getX() * scaleY,
+                this.getY() * scaleY,
                 this.wd * scaleY,
                 this.ht * scaleY);
 

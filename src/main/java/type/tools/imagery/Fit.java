@@ -134,16 +134,9 @@ public abstract class Fit {
        * @return boolean as stated above.
        */
       private static boolean mediaFit(double mediaW, double mediaH, double paneW, double paneH) {
-
             //
             //     Image width will change its size. this scales to media width, but does not
             //             work for height.
-
-
-            //System.out.println("*~*~* IN Fit.viewResize(), for media *~*~*");
-            //double scale;
-            //System.out.println("pane ht: " + paneH);
-            //System.out.println("media ht: " + mediaW);
 
             // if image width is >= image height
             // use the smaller of image or pane width. otherwise,
@@ -165,10 +158,7 @@ public abstract class Fit {
        * @return
        */
       private static boolean sizeByWidth(double mediaW, double paneW, double mediaH, double paneH) {
-            //System.out.println(" paneW: " + paneW);
-            //System.out.println(" mediaW: " + mediaW);
-
-            // Set width to the narrower of iether the pane
+            // Set width to the narrower of either the pane
             // or the image.
             w = Math.min(paneW, mediaW);
             //System.out.println("Fitting by media wd: " + w);

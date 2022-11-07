@@ -50,20 +50,20 @@ public class IntroPane extends Pane {
 
     private void initializeParts() {
         //forgotLink = new Hyperlink("Forgot password?");
-        signInBtn = new Button("I've already signed up");
-        signUpBtn = new Button("I need a new account");
+        signInBtn = new Button("I have an account");
+        signUpBtn = new Button("I need an account");
         infoBtn = new Button("I need info");
 
         spacer = new Pane();
         spacer1 = new Pane();
 
-        Text text1 = new Text("\nWelcome");
+        Text text1 = new Text("\nOn our app you can:");
         String text2 =
             "\n\t- Earn Money " +
             "\n\t- Get Better Grades " +
             "\n\t- Earn Credibility for Better Jobs";
     //    text.setTextAlignment(TextAlignment.CENTER);
-        msgLabel0 = new Label("The advanced learning app.");
+        msgLabel0 = new Label("WELCOME");
         msgLabel1 = new Label(text1.getText());
         msgLabel2 = new Label(text2);
 

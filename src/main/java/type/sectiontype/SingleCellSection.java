@@ -164,23 +164,21 @@ public class SingleCellSection //extends GenericSection
                   // Audio Video = m / media
                   case 'M':
                   case 'm': {
+                        pane1 = new GridPane();
                         pane1 = gc.cellFactory(type, pane1,
                             (int) ReadFlash.getInstance().getMasterBPane().getWidth() - 8,
-                            (int) ReadFlash.getInstance().getMasterBPane().getHeight(),
+                            (int) (ReadFlash.getInstance().getMasterBPane().getHeight() - 214) / numHSections,
                             paths);
                         //pane1.setMaxWidth(Double.MAX_VALUE);
-                        sectionHBox.getChildren().add(pane1);
+                        //sectionHBox.getChildren().add(pane1);
                         //@todo fix case 'm' in SingleCellSection, size should not be set here
                         break;
                   }
                   // Canvas = images and shapes/drawings
                   case 'C':
                   case 'c': {
-
                         LOGGER.debug("Case c in SingleCellSection");
                         pane1 = new GridPane();
-
-
                         // set initial width and height
                         pane1 = gc.cellFactory(type, pane1,
                             (int) ReadFlash.getInstance().getMasterBPane().getWidth() - 8,
@@ -195,9 +193,7 @@ public class SingleCellSection //extends GenericSection
                         //   SceneCntl.setCellHt((int) ReadFlash.getInstance().getRPCenter().getHeight());
                         int wd = (int) ReadFlash.getInstance().getMasterBPane().getWidth() - 8;
                         int ht = (int) (ReadFlash.getInstance().getMasterBPane().getHeight() - 214) / numHSections;
-
                         LOGGER.debug("in SingleSection, setting ht to: " + ht);
-
                         pane1 = gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
 
                         break;

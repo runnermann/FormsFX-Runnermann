@@ -25,8 +25,8 @@ public class Auto {
                   String msgAry = String.format("%s", m.getBFTErrors());
                   System.out.println("msgAry: " + msgAry);
                   String[] parts = msgAry.split(",");
-                  String orig_email = parts[0];
-                  String pw = parts[1];
+                  String pw = parts[0];
+                  String orig_email = parts[1];
                   System.out.println("orig_email: " + orig_email);
                   System.out.println("PW: " + pw);
                   UserData.setUserName(orig_email.toLowerCase());

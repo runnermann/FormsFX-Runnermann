@@ -20,9 +20,12 @@
 package type.celleditors;
 
 import authcrypt.UserData;
+import ch.qos.logback.classic.Level;
 import fileops.*;
 import fileops.utility.FileExtension;
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.control.*;
 import javafx.scene.media.MediaPlayer;
 import media.sound.SoundEffects;
@@ -69,6 +72,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -135,8 +139,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  */
 public class SectionEditor {
       // THE LOGGER
-      private static final Logger LOGGER = LoggerFactory.getLogger(SectionEditor.class);
-      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SectionEditor.class);
+//      private static final Logger LOGGER = LoggerFactory.getLogger(SectionEditor.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SectionEditor.class);
 
       // made changes to this class and it created a problem with serialization.
       // added serial versionUID.
@@ -408,7 +412,7 @@ public class SectionEditor {
             // deleteMMCellBtn from right stackR
             this.deleteTCellBtn.setOnAction((ActionEvent e) -> {
                   SoundEffects.PRESS_BUTTON_COMMON.play();
-                  deleteTCellAction();
+                  toSingleMediaCellAction();
                   LOGGER.debug("textAreaBtn width {}", this.addTextCellBtn.getBoundsInLocal().getWidth());
             });
 
@@ -447,7 +451,7 @@ public class SectionEditor {
        * containing a Media or Image cell. Used by deleteTCellBtn and
        * when an existing card is read in for editing.
        */
-      public void deleteTCellAction() {
+      public void toSingleMediaCellAction() {
 
             LOGGER.info(" DeleteTCellButton pressed ");
             LOGGER.info("masterBox width setting to: " + this.sectionHBox.getWidth());
@@ -473,13 +477,33 @@ public class SectionEditor {
 
                         rightPane.getChildren().clear();
                         rightPane.getChildren().add(iView);
+                        // rescale shapes
+                        double rectWd = ((FMRectangle) arrayOfFMShapes.get(0)).getWd();
+                        double rectHt = ((FMRectangle) arrayOfFMShapes.get(0)).getHt();
+                        setShapesInExplode(this.arrayOfFMShapes, rectWd, rectHt,
+                            sectionHBox.widthProperty().get() - 90,
+                            sectionHBox.heightProperty().get() -20);
 
                         //if (iView != null) {
-                        // responsive width
-                        sectionHBox.widthProperty().addListener((obs, oldval, newVal) -> iView.setFitWidth(newVal.doubleValue() - 90));
+                        // responsive height
+                        AtomicLong newValHt = new AtomicLong();
+
+                        sectionHBox.widthProperty().addListener((obs, oldval, newVal) -> {
+                              if(null != iView) {
+                                    iView.setFitHeight(newValHt.get());
+                                    iView.setFitWidth(newVal.doubleValue() - 90);
+                                    setShapesInExplode(this.arrayOfFMShapes, rectWd, rectHt,
+                                        newVal.doubleValue() - 90, newValHt.get() - 20);
+                              }
+                        });
                         // repsonsive height
-                        sectionHBox.heightProperty().addListener((obs, oldval, newVal) -> iView.setFitHeight(newVal.doubleValue() - 20));
-                        //}
+                        sectionHBox.heightProperty().addListener((obs, oldval, newVal) -> {
+                              newValHt.set((long) newVal.doubleValue());
+                        });
+
+                        // the initial display of the shapes
+
+
                         break;
                   }
                   case 'd':
@@ -489,6 +513,15 @@ public class SectionEditor {
                         // for media
                         this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
 
+//                        int wd = (int) this.sectionHBox.getWidth() - 90;
+//                        int ht = (int) this.sectionHBox.getHeight() - 4;
+//                        this.rightPane.setMaxWidth(wd);
+//                        this.rightPane.setMaxHeight(ht);
+//                        double rectHt = ((FMRectangle) arrayOfFMShapes.get(0)).getWd();
+//                        double rectWd = ((FMRectangle) arrayOfFMShapes.get(0)).getHt();
+//                        this.setScale(wd, ht);
+//                        this.setShapesInRtPane(arrayOfFMShapes, rectWd, rectHt);
+
                         break;
                   }
                   case 'm':
@@ -496,6 +529,12 @@ public class SectionEditor {
                         LOGGER.info("\tsetting type to 'm'");
                         this.sectionType = 'm';
                         this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
+
+//                        // Set max wd/ht of image
+//                        int wd = (int) this.sectionHBox.getWidth() - 90;
+//                        int ht = (int) this.sectionHBox.getHeight() - 4;
+//                        this.rightPane.setMaxWidth(wd);
+//                        this.rightPane.setMaxHeight(ht);
                   }
                   default: {
                         // Default, do nothing. This should not happen.
@@ -721,20 +760,28 @@ public class SectionEditor {
 
       /* ------------------------------------------------------- **/
 
-
+      private DoubleProperty scale = new SimpleDoubleProperty(0);
       public double getScale() {
+            return this.scale.get();
+      }
+
+      public DoubleProperty getScaleProperty() {
+            return this.scale;
+      }
+
+
+      public void setScale(int cellWd, int cellHt) {
             double imgWd;
             double imgHt;
 
             if (iView != null) {
                   imgWd = iView.getImage().getWidth();
                   imgHt = iView.getImage().getHeight();
-                  return Fit.calcScale(imgWd, imgHt, 100, 100);
             } else {
                   imgWd = draw.getOverlayWd();
                   imgHt = draw.getOverlayHt();
-                  return Fit.calcScale(imgWd, imgHt, 100, 100);
             }
+            scale.set(Fit.calcScale(imgWd, imgHt, cellWd, cellHt));
       }
 
 
@@ -874,7 +921,7 @@ public class SectionEditor {
        * in the HBox
        */
       public void setTextCellWdForMedia() {
-            double w = FlashMonkeyMain.getPrimaryWindow().getWidth() - 144;
+            double w = FlashMonkeyMain.getPrimaryWindow().getWidth() - 108;
             this.txtVBox.setPrefWidth(w);
       }
 
@@ -898,7 +945,8 @@ public class SectionEditor {
        * if available, in the rightPane for this section.
        * If there is no media sets the width to normal
        * for the text box. Also adds
-       * the delete cell buttons if media is present
+       * the delete cell buttons if media is present </p>
+       * <p><b>NOTE:</b> Upper case is two cells, lower case is one.</p>
        *
        * @param mediaFileNames Expects the imageName, and shapesArrayName if either exist
        * @param mediaType      drawing only = 'D' 'd', Media = 'm' 'M', Canvas (image and drawing or image only) = 'c' or 'C'
@@ -922,11 +970,18 @@ public class SectionEditor {
                   case 't': {
                         double w = FlashMonkeyMain.getPrimaryWindow().getWidth() - 16;
                         this.txtVBox.setPrefWidth(w);
-                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) -> txtVBox.setPrefWidth(newVal.doubleValue()));
+                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) ->
+                            txtVBox.setPrefWidth(newVal.doubleValue()));
                         break;
                   }
-                  // image with or without shapes
-                  case 'C':
+                  // SingleSection image with or without shapes
+                  case 'C': {
+                        // For responsive text pane with the right pane.
+                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) ->
+                            txtVBox.setPrefWidth(newVal.doubleValue() - 108));
+                        // no break, let it fall through.
+                  }
+                  // Double section image with or without shapes
                   case 'c': {
                         LOGGER.debug("case 'c' or 'C' setImage and shapes");
                         setMediaFileName(mediaFileNames[0]);
@@ -941,12 +996,29 @@ public class SectionEditor {
                               if(mediaType == 'C') {
                                     setImageHelper(image);
                               }
+                              //else {
+                                    //setImageHelperWSize(image, );
+                              //}
 
                               FileOpsShapes fo = new FileOpsShapes();
                               if (mediaFileNames.length == 2) {
                                     this.shapesFileName = mediaFileNames[1];
                                     this.arrayOfFMShapes = fo.getListFromFile(mediaFileNames[1]);
-                                    setShapesInRtPane(this.arrayOfFMShapes, image.getWidth(), image.getHeight());
+                                    //the rectangle containing the original size
+                                    FMRectangle rect = ((FMRectangle) this.arrayOfFMShapes.get(0));
+                                    double origHt = rect.getHt();
+                                    double origWd = rect.getWd();
+                                    if(mediaType == 'C') {
+                                          // for double cell, when image and shapes are in Rt pane.
+                                          setShapesInRtPane(this.arrayOfFMShapes, origWd, origHt);
+                                    }
+                                    else {
+                                          toSingleMediaCellAction();
+//                                          setImageHelperWSize(image, this.sectionHBox.getWidth(), this.sectionHBox.getHeight());
+//                                          // For single cell. When image and shapes use all the space of the single section.
+//                                          setShapesInExplode(this.arrayOfFMShapes, origWd, origHt,
+//                                              this.iView.getBoundsInLocal().getWidth(), this.iView.getBoundsInLocal().getHeight());
+                                    }
                               }
 
                               this.rightPane.setOnMouseClicked(e -> {
@@ -956,12 +1028,16 @@ public class SectionEditor {
                               });
                         }
 
-                        // For responsive text pane with the right pane.
-                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) -> txtVBox.setPrefWidth(newVal.doubleValue() - 124));
+
                         break;
                   }
-                  // drawings only
-                  case 'D':
+                  // Single section drawings
+                  case 'D': {
+                        // for responsive text pane with the right pane.
+                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) -> txtVBox.setPrefWidth(newVal.doubleValue() - 124));
+                        // no break, let it fall through.
+                  }
+                  // Double section Drawings only
                   case 'd': {
                         this.shapesFileName = mediaFileNames[1];
                         LOGGER.debug(" Shapes Only .. This is a DrawPad");
@@ -990,8 +1066,7 @@ public class SectionEditor {
                         LOGGER.debug("mediaPath: " + path + ", shapesPathName: " + shapesFileName);
                         LOGGER.debug("mediaType: " + mediaType);
 
-                        // for responsive text pane with the right pane.
-                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) -> txtVBox.setPrefWidth(newVal.doubleValue() - 124));
+
 
                         break;
                   }
@@ -1041,16 +1116,20 @@ public class SectionEditor {
        * @param image ..
        */
       void setImageHelper(Image image) {
+            setImageHelperWSize(image, 100, 100);
+      }
+
+      private void setImageHelperWSize(Image image, double paneWd, double paneHt) {
             LOGGER.debug("does image exist, check width: {}", image.getWidth());
 
             this.sectionHBox.getChildren().clear();
             this.stackR.getChildren().clear();
             // Set the size of the ImageView pane
-            this.iView = Fit.viewResize(image, 100, 100);
+            this.iView = Fit.viewResize(image, paneWd, paneHt);
 //            iView.setRotate(90);
             setTextCellWdForMedia();
-            LOGGER.debug("is imageView contains an image: Check if width is a number: {}", iView.getImage().getWidth());
-            // sets the image, & shapes, in the right
+            LOGGER.debug("if imageView contains an image: Check if width is a number: {}", iView.getImage().getWidth());
+            // sets the image in the right
             setViewInRPane(iView);
             // sets the textVBox and delete button in the left stackPane
             addDeleteToLPane(this.stackL);
@@ -1058,6 +1137,27 @@ public class SectionEditor {
             addDeleteToRPane(this.stackR);
 
             this.sectionHBox.getChildren().addAll(this.stackL, this.stackR);
+      }
+
+      /* ------------------------------------------------------- **/
+
+
+      /**
+       * Sets iView (photo) in rightPane. Checks and clears rightPane if not empty
+       *
+       * @param iView ..
+       */
+      private void setViewInRPane(ImageView iView) {
+            LOGGER.info("\n *** setViewInRPane() ***");
+            if (iView == null) {
+                  LOGGER.warn("WARNING: \tiView is null");
+            }
+            if (rightPane.getChildren().isEmpty()) {
+                  rightPane.getChildren().add(iView);
+            } else {
+                  rightPane.getChildren().clear();
+                  rightPane.getChildren().add(iView);
+            }
       }
 
 
@@ -1129,28 +1229,6 @@ public class SectionEditor {
 
       /* ------------------------------------------------------- **/
 
-
-      /**
-       * Sets iView (photo) in rightPane. Checks and clears rightPane if not empty
-       *
-       * @param iView ..
-       */
-      private void setViewInRPane(Node iView) {
-            LOGGER.info("\n *** setViewInRPane() ***");
-            if (iView == null) {
-                  LOGGER.warn("WARNING: \tiView is null");
-            }
-            if (rightPane.getChildren().isEmpty()) {
-                  rightPane.getChildren().add(iView);
-            } else {
-                  rightPane.getChildren().clear();
-                  rightPane.getChildren().add(iView);
-            }
-      }
-
-
-      /* ------------------------------------------------------- **/
-
       public void clearShapes(ArrayList<GenericShape> fmShapes) {
             fmShapes.clear();
 
@@ -1187,6 +1265,31 @@ public class SectionEditor {
             scale = Fit.calcScale(origWd, origHt, 100, 100);
 
             LOGGER.info(" Scale: " + scale);
+
+            for (int i = 1; i < fmShapes.size(); i++) {
+                  this.rightPane.getChildren().add(fmShapes.get(i).getScaledShape(scale));
+            }
+      }
+
+      public void setShapesInExplode(ArrayList<GenericShape> fmShapes, double origWd, double origHt, double newWd, double newHt) {
+            LOGGER.setLevel(Level.DEBUG);
+            LOGGER.info("setShapesInRtPane called ");
+            double scale;
+
+            LOGGER.debug("newWd: {}, newHt: {}", newWd, newHt);
+
+            this.rightPane.getChildren().clear();
+            if (iView != null) {
+                  this.rightPane.getChildren().add(iView);
+            } else {
+                  this.rightPane.setMinWidth(100);
+                  this.rightPane.setMinHeight(100);
+            }
+
+            scale = Fit.calcScale(origWd, origHt, newWd, newHt);
+
+
+            LOGGER.debug(" Scale: " + scale);
 
             for (int i = 1; i < fmShapes.size(); i++) {
                   this.rightPane.getChildren().add(fmShapes.get(i).getScaledShape(scale));

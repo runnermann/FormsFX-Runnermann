@@ -508,11 +508,19 @@ hyperlink14white {
 
 /* File selection panel on  */
 #fileSelectPane {
-    -fx-border-color: TRANSPARENT;
     -fx-background-color: #0064e195;
+}
+
+#fileSelectPane,
+#fileSelectNoColr {
+    -fx-border-color: TRANSPARENT;
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #37A1E8;
 }
 
 #opaqueMenuPaneDark {

@@ -35,14 +35,14 @@ import javax.print.DocFlavor;
 public class GenericCell//  extends GenericSection
 {
       /**
-       * Returns the cell containing a media that is sized according to the scale givein in the
+       * Returns the cell containing a media that is sized according to the scale given in the
        * parameters.
        *
        * @param cellType  Media (video or audio) = 'M'/'m' or Canvas / Image Drawing = 'C' 'c' 'D' 'd'
        * @param pane
        * @param paneWd
        * @param paneHt
-       * @param fileNames Files as an array. Expects the image or media to be at idx [0]
+       * @param fileNames Files as an array. Expects the image or media to be at idx [0], shapes array idx [1]
        * @return Returns the cell containing a media
        */
       public Pane cellFactory(char cellType, Pane pane, int paneWd, int paneHt, String... fileNames) {
@@ -57,9 +57,9 @@ public class GenericCell//  extends GenericSection
                         return mCell.buildCell(paneWd, paneHt, MEDIA + fileNames[0]);
                   }
                   case 'c': // image or both. for singleCell section
-                  case 'd': // drawing only. singleCell
+                  case 'd': // drawing no image. singleCell
                   case 'C': // image, or both. for doubleCell section
-                  case 'D': // drawing only. doubleCell
+                  case 'D': // drawing, no image. doubleCell
                   default: {
                         String[] canvasPaths = new String[2];
                         int i = 0;

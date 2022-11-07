@@ -469,16 +469,22 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       }
 
       /**
-       * Checks if the currentCard is equal with it's index in the FLashCardOps.FlashList
+       * Checks if the currentCard is equal with its index in the FLashCardOps.FlashList
        * Uses the underlying equals methods from FlashCardMM and sub-classes to
        * verify if the content: e.g. media, shapes, and text;  are the same.
-       * <p><b>NOTE:</b> Bypssses the check if this is the last card in the deck.</p>
        *
        * @param currentCard
        * @return 1 if true,  0 if it is false, and -1 if currentCard is out of range,
        */
       private int cardEqualsOriginal(FlashCardMM currentCard) {
-            if (listIdx > FlashCardOps.getInstance().getFlashList().size() -1) {
+            // if it is the last added card, it does not exist in the FlashCardList.
+            // check the editorU and editorL content.
+            if(listIdx == FlashCardOps.getInstance().getFlashList().size() && 2 > CardSaver.checkEditorsContent()) {
+                  return 1;
+            }
+            // if the listIdx is on the last card of the creatorList, it will be on the
+            // list size +1. Thus allow one extra card beyond the deck length.
+            if (listIdx > FlashCardOps.getInstance().getFlashList().size()) {
                   return -1;
             }
 
@@ -566,14 +572,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             if ( currentCard.getAType() != 't' ) {
                   editors.EDITOR_L.setSectionMedia( currentCard.getAFiles(), currentCard.getAType(), 'L', currentCard.getCID() );
             }
-            // remove the text areas and set up media
-            if ( ! editors.EDITOR_U.hasTextCell(currentCard.getQType())) {
-                  editors.EDITOR_U.deleteTCellAction();
-            }
-            if ( ! editors.EDITOR_L.hasTextCell(currentCard.getAType())) {
-                  editors.EDITOR_L.deleteTCellAction();
 
-            }
             // Set the text for key words
             editors.EDITOR_U.setText(currentCard.getQText());
             editors.EDITOR_L.setText(currentCard.getAText());
@@ -1480,10 +1479,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * @param currentCard
        */
       private void undoQButtonAction(FlashCardMM currentCard) {
-
             LOGGER.debug("undoQButtonAction called");
-
-            //FlashCardOps fcOps = FlashCardOps.getInstance();
             // The closest reliable number to this cards
             // location in the current deck.
             final ArrayList<FlashCardMM> copyFlashList = FlashCardOps.getInstance().getFlashList();
@@ -1540,8 +1536,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             // verify data completeness
             CardSaver cs = new CardSaver();
             // Sets bits from little indian.
-            int result = CardSaver.checkContent();
-            if(exiting) {
+            int result = CardSaver.checkEditorsContent();
+            if(result != 0 && exiting) {
                   result += 10;
             }
             // Check response. Popup error with buttons, return
@@ -1662,8 +1658,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   // set the prompt
                   editors.EDITOR_U.styleToPrompt();
                   editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
-                  //editors.EDITOR_U.tCell.getTextArea().requestFocus();
-
                   insertCardButton.setText("New card");
 
                   navButtonDisplay(listIdx);
@@ -1676,11 +1670,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         FlashMonkeyMain.AVLT_PANE.displayTree();
                   }
                   entryComboBox.show();
-//                  if (testTypeIdx > -0) {
-//                        GenericTestType ga = TestList.selectTest(testTypeIdx);
-//                        entryComboBox.setValue(new TestMapper(ga.getName(), ga));
-//                  }
-                  //entryComboBox.setDisplayOnFocusedEnabled(true);
                   entryComboBox.getSkin().getNode().requestFocus();
             }
 
@@ -1698,7 +1687,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   // set the prompt
                   editors.EDITOR_U.styleToPrompt();
                   editors.EDITOR_U.setPrompt(makeQPrompt(listIdx));
-//                  editors.EDITOR_U.tCell.getTextArea().requestFocus();
                   insertCardButton.setText("New card");
                   navButtonDisplay(listIdx);
                   // display in the nav tree
@@ -1971,7 +1959,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
              */
             private static int noTestTypeChoicePopUp() {
                   FMAlerts alerts = new FMAlerts();
-                  boolean stop = alerts.saveAlertAction(FMAlerts.MISSING_TESTTYPE, "DELETE", "emojis/flash_mustache_75.png");
+                  boolean stop = alerts.choiceOnlyActionPopup("ERROR", "", FMAlerts.MISSING_TESTTYPE, "emojis/flash_mustache_75.png", UIColors.AXIS_GREY, SoundEffects.ERROR);
                   if (stop) {
                         // user requested to delete the card
                         return -2;
@@ -1994,7 +1982,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
              * data and editorL does not, and 7 if everything has data and it is not a single card. and returns
              * 4 or 5 if editorL has data but editorU does not.
              */
-            private static final int checkContent() {
+            private static final int checkEditorsContent() {
                    //LOGGER.debug("checkContent: is text empty? editors.EDITOR_U: {}, editorL {} \nis there an image?: {} ", editors.EDITOR_U.getText().isEmpty(), editorL.getText().isEmpty(), (editorL.getMediaFileNames()[0] != null));
 
                   int stat = 0;

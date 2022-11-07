@@ -47,7 +47,7 @@ public class DoubleCellSection //extends GenericSection
             LOGGER.debug("in sectionView for DoubleCellSection. ");
 
             GenericCell gc = new GenericCell();
-            int wd = SceneCntl.getCenterWd();
+            int wd = SceneCntl.getCenterWd() - 108;
             int ht = (int) ReadFlash.getInstance().getMasterBPane().getHeight();
             // text cell
             leftCell = gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
@@ -62,7 +62,7 @@ public class DoubleCellSection //extends GenericSection
             sectionHBox.setPrefHeight(no / numHSections);
 
             leftCell.setPrefHeight(no / numHSections);
-            leftCell.setPrefWidth(FlashMonkeyMain.getPrimaryWindow().getWidth() - 124);
+            leftCell.setPrefWidth(FlashMonkeyMain.getPrimaryWindow().getWidth() - 108);
 
             // RESPONSIVE SIZING for width and height
             ReadFlash.getInstance().getMasterBPane().widthProperty().addListener((obs, oldval, newVal) -> {

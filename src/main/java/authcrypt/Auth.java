@@ -348,7 +348,7 @@ public class Auth {
        * @return returns true if a new user is saved to file, false otherwise.
        */
       private boolean saveAction(String x1, String x2) {
-            //LOGGER.info("In save action and pw is: " + pw + " getUserName is: " + email);
+            LOGGER.info("In save action and pw is: " + x1 + " getUserName is: " + x2);
             // Create userFile data
             String msg = v.newUser(x1, x2);
             //LOGGER.info("saveAction() create newUser : {}",msg);
@@ -383,12 +383,13 @@ public class Auth {
        * string.
        */
       private class R {
-
+            //  userName
             String x1;
+            // pw
             String x2;
 
-            R(String x1, String x2) {
-                  this.x1 = x1;
+            R(String email, String x2) {
+                  this.x1 = email;
                   this.x2 = x2;
             }
 

@@ -43,9 +43,9 @@ public class FMAlerts {
           + "To save it anyway, click save.\n"
           + "To go back, close this message";
 
-      public final static String MISSING_TESTTYPE = "Ooooph!\nThe Test Type has not been set. "
-          + "\n  To go back press \"OK\"."
-          + "\n  To delete this card and continue, click \"Cancel\". ";
+      public final static String MISSING_TESTTYPE = "\nThe CARD TYPE has not been set. "
+          + "\n\nDELETE THIS CARD?" +
+          "\n\n \"Cancel\" to go back and set it.";
 
 
       public final static String NO_DATA = "There is no data to save.\n"

@@ -340,7 +340,7 @@ public abstract class SceneCntl {
             RIGHT_CELL_WD(100),
             BUTTON_WD(200),
             MEDIA_WD(128),
-            FILE_SELECT_WD(400),
+            FILE_SELECT_WD(360),
             SOUTH_BPANE_HT(128),
             CONTROL_PANE_HT(160),
             CONSUMER_PANE_WD(1264),

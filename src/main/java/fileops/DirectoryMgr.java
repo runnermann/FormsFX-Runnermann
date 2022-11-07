@@ -20,6 +20,7 @@ public final class DirectoryMgr {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DirectoryMgr.class);
 
       public static final String SYSTEM_DIR = getWorkingDirectory() + "/FlashMonkeyData/";
+      public static final String CPR_DIR = getWorkingDirectory() + "/.cpr/FM/FlashMonkey/";
       public static final String EMOJI = "image/emojis/";
 
 
@@ -41,7 +42,7 @@ public final class DirectoryMgr {
       }
 
       public static boolean resuExists() {
-            File file = new File(SYSTEM_DIR + "/resu.enc");
+            File file = new File(CPR_DIR + "/resuone.enc");
             return file.exists();
       }
 

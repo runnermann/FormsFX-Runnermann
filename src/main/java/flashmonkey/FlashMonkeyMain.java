@@ -181,12 +181,10 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                               } // else is connected
                               else {
                                     // 3a. Ifexists == true && isConnected():
-                                    // 3a1. Show security prePane over fileSelectPre
-                                    //    - SecurityPre is circle-dot spinner
-                                    //InnerScene.setFirstScene(getFilePane(true));
-                                    InnerScene.setFirstScene(getPreFilePane());
-                                    // allow graphics to work while waiting for
+                                    // 3a1. allow graphics to work and show pre while waiting for
                                     // access from VertX and deckList from S3.
+                                    InnerScene.setFirstScene(getPreFilePane());
+                                    // login and show file pane from another thread.
                                     ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
                                     Runnable task = () -> {
                                           auto.login();
@@ -294,7 +292,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             // go to study menu
             Button studyButton = ButtoniKon.getStudyButton();
             studyButton.setOnAction(e -> studyButtonAction());
-
             // go to create pane
             createButton = ButtoniKon.getCreateButton();
             createButton.setOnAction(e -> {
@@ -302,7 +299,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   createButtonAction();
             });
 
-            //ReadFlash.getInstance().resetGaugeValues();
             buttonBox.getChildren().addAll(label, deckSelectButton, studyButton, createButton);
             gridPane.addRow(0, buttonBox);
 
@@ -498,8 +494,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             int width = SceneCntl.getFileSelectPaneWd();
             DeckSelectorPane deckSelector = new DeckSelectorPane();
             deckSelector.selectFilePane();
-            deckSelector.paneForFiles.setPrefWidth(width);
-            deckSelector.paneForFiles.setId("fileSelectPane");
+            deckSelector.paneForFiles.setId("fileSelectNoColr");
 
             ScrollPane scrollP = getFileScroll(width);
             GridPane fileGridPane;
@@ -512,13 +507,12 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   fileGridPane = getGridPane(newDeckButton);
                   disableButtons(false);
                   scrollP.setContent(deckSelector.paneForFiles);
+                  scrollP.setId("fileSelectNoColr");
                   fileGridPane.addRow(1, scrollP); // column 0, row 1
 
                   // new file button action
                   newDeckButton.setOnAction(e -> {
                         SoundEffects.PRESS_BUTTON_COMMON.play();
-
-                        //backButton.setAlignment(Pos.CENTER);
                         backButton.setOnAction(f -> {
                               SoundEffects.PRESS_BUTTON_COMMON.play();
                               deckSelector.paneForFiles.getChildren().clear();
@@ -528,12 +522,9 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                         fileGridPane.getChildren().clear();
                         HBox hbox = new HBox(25);
                         hbox.setPadding(new Insets(20, 0, 6, 0));
-                        //hbox.setAlignment(Pos.CENTER);
                         hbox.getChildren().addAll(backButton, searchButton);
-                        // from flashmonkey.FlashCardOps.fileSelectPane()
                         deckSelector.paneForFiles.getChildren().clear();
                         // Animate
-                        //GridPane gp = deckSelector.newFile();
                         ScaleTransition animate = new ScaleTransition(Duration.seconds(0.3), fileGridPane);
                         animate.setFromY(0.3);
                         animate.setToY(1.0);
@@ -541,12 +532,21 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                         fileGridPane.addRow(2, hbox);
                         animate.play();
                   });
-            } else {// else display a new file pane
+            }
+            else {// else display a new file pane
                   fileGridPane = new GridPane();
+                  searchButton = ButtoniKon.getSearchRsc();
+                  searchButton.setOnAction(e -> {
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
+                        getSearchWindow();
+                  });
                   searchButton.setPadding(new Insets(20, 0, 0, 0));
                   searchButton.setDisable(false);
                   fileGridPane.addRow(2, deckSelector.paneForFiles);
                   fileGridPane.addRow(4, searchButton);
+                  ScaleTransition animate = new ScaleTransition(Duration.seconds(0.3), fileGridPane);
+                  animate.setFromY(0.3);
+                  animate.setToY(1.0);
             }
 
             menuButton.setDisable(true);
@@ -561,7 +561,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             DeckSelectorPane deckSelector = new DeckSelectorPane();
             deckSelector.selectPrePane();
             deckSelector.paneForFiles.setPrefWidth(width);
-            deckSelector.paneForFiles.setId("fileSelectPane");
+            deckSelector.paneForFiles.setId("fileSelectNoColr");
             ScrollPane scrollP = getFileScroll(width);
 
             Button newDeckButton = ButtoniKon.getNewDeck();
@@ -617,7 +617,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             scrollP.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scrollP.setPrefWidth(width);
             scrollP.setFitToHeight(true);
-            scrollP.setStyle("-fx-background-color:transparent");
+ //           scrollP.setStyle("-fx-background-color:transparent");
             return scrollP;
       }
 
@@ -677,8 +677,15 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   SoundEffects.PRESS_BUTTON_COMMON.play();
                   InnerScene.setToSignUpPane();
             });
-            InnerScene.setFirstScene(introPane.getIntroPane());
-            introPane.getIntroPane().requestFocus();
+
+            GridPane gp = introPane.getIntroPane();
+            ScaleTransition scaler = new ScaleTransition(Duration.seconds(1.2), gp);
+            scaler.setFromY(0.3);
+            scaler.setToY(1.0);
+            InnerScene.setFirstScene(gp);
+
+            scaler.play();
+            
       }
 
       public static void showResetOnePane() {
@@ -1084,8 +1091,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   // grey #393E46  // #29AbE2
                   firstPane.setStyle("-fx-background-color:" + UIColors.FM_GREY); //#393E46"); //086ABF
                   firstPane.setId("bckgnd_image"); // the background image
-
-                  //setPrimaryWindowDims(firstPane);
                   if(rootScene == null) {
                         rootScene = new Scene(firstPane, SceneCntl.getAppBox().getWd(), SceneCntl.getAppBox().getHt());
                         //rootScene = new Scene(firstPane, SceneCntl.getScreenWd(), SceneCntl.getScreenHt());
@@ -1094,16 +1099,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                         rootScene.setRoot(firstPane);
                         primaryWindow.setScene(rootScene);
                   }
-            }
-
-            private void setOverPre(GridPane focusPane) {
-                  firstPane = new BorderPane();
-                  setupFirstGrid();
-                  gridPaneFirstScene.addRow(3, focusPane);
-
-
-
-
             }
 
             private static void setupFirstGrid() {
@@ -1144,8 +1139,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   animate.play();
             }
 
-
-
             private static void setToConfirmPane() {
                   ConfirmationModel model = new ConfirmationModel();
                   ConfirmationPane confirmPane = new ConfirmationPane(model);
@@ -1168,7 +1161,10 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   SignInPane signInPane = new SignInPane(model);
                   model.getFormInstance();
                   gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
-                  gridPaneFirstScene.addRow(3, signInPane.getMainGridPane());
+                  GridPane gp = signInPane.getMainGridPane();
+                  ScaleTransition animate = animateScaleV(gp);
+                  gridPaneFirstScene.addRow(3, gp);
+                  animate.play();
                   signInPane.getMainGridPane().requestFocus();
             }
 
@@ -1177,21 +1173,31 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   SignUpPane signUpPane = new SignUpPane(model);
                   model.getFormInstance();
                   gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
-                  gridPaneFirstScene.addRow(3, signUpPane.getSignUpPane());
+                  GridPane gp = signUpPane.getSignUpPane();
+                  ScaleTransition animate = animateScaleV(gp);
+                  gridPaneFirstScene.addRow(3, gp);
+                  animate.play();
                   signUpPane.getSignUpPane().requestFocus();
+
             }
 
             private static void setToResetOnePane() {
                   ResetOnePane reset = new ResetOnePane();
                   gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
-                  gridPaneFirstScene.addRow(3, reset.getMainGridPain());
+                  GridPane gp = reset.getMainGridPane();
+                  ScaleTransition animate = animateScaleV(gp);
+                  gridPaneFirstScene.addRow(3, gp);
+                  animate.play();
                   reset.getMainGridPain().requestFocus();
             }
 
             private static void setToResetTwoPane() {
                   ResetTwoPane reset = new ResetTwoPane();
                   gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
-                  gridPaneFirstScene.addRow(3, reset.getMainGridPain());
+                  GridPane gp = reset.getMainGridPane();
+                  ScaleTransition animate = animateScaleV(gp);
+                  gridPaneFirstScene.addRow(3, gp);
+                  animate.play();
                   reset.getMainGridPain().requestFocus();
             }
       }

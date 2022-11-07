@@ -43,14 +43,15 @@ public class ModelError {
 
       private static final int IV_LENGTH_BYTE = 12;
       private static final int AES_KEY_BIT = 256;
-      // stores the SecretKey and nonce used to decrypt the
-      // s3 keys, and user file.
+      // stores the SecretKey and nonce used for encrypt & decrypt
       private final File cypherKeyFile = new File("zero.cpr");
-      // stores the encrypted S3 keys
+      private final File userCypherKeyFile = new File("resuzero.cpr");
+
+      // stores the encrypted DB keys
       private final File keysFile = new File("one.enc");
       // store the user pw and orig_email
-      private final File userFile = new File("resu.enc");
-      private final File userCypherKeyFile = new File("resuzero.cpr");
+      private final File userKeyFile = new File("resuone.enc");
+
 
 
       private Dec dec;
@@ -107,7 +108,7 @@ public class ModelError {
       public String[] getBFTErrors() throws Exception {
             //return getMError();
             String[] sArr = new String[2];
-            sArr[0] = dec.arr[0];
+            sArr[0] = dec.arr[1];
             return sArr;
       }
 
@@ -116,12 +117,16 @@ public class ModelError {
             this.dec.arr[0] = null;
       }
 
-      // Encrypt and save the PW string to file.
-      public void outputMErrors(String errod) {
+      // Encrypt and save the PW and userName strings to file.
+      public void outputMErrors(String errorp, String errorm) {
             try {
-                  ModelError m = ModelError.getInstance();
+                  // PW and Email String to encrypt
+                  String seperator = ",";
                   final String[] arr = new String[1];
-                  arr[0] = errod;
+                  arr[0] = errorp + seperator + errorm;
+
+                  ModelError m = ModelError.getInstance();
+
                   // 1. create SecretKey
                   // encrypt and decrypt need the same key.
                   // get AES 256 bits (32 bytes) key
@@ -133,13 +138,13 @@ public class ModelError {
                   byte[] iv = Util.getRandomNonce(IV_LENGTH_BYTE);
                   // 3. save secretKey and IV to file
                   InnerOps<Syekic> innoEnc1 = new InnerOps<>();
-                  innoEnc1.createSyekFile(secretKey, m.userCypherKeyFile);
-                  // 4. encrypt S3 & Stripe keys with Secret key & iv
+                  innoEnc1.createResuSyekFile(secretKey, m.userCypherKeyFile);
+                  // 4. encrypt keys with Secret key & iv
                   Syek syekEnc = new Syek();
                   syekEnc.arr[0] = Util.encryptWithPrefixIV(arr[0].getBytes(UTF_8), secretKey.one, iv);
                   // 5. save PW to file
                   InnerOps<Syek> inno2 = new InnerOps<>();
-                  inno2.output(syekEnc);
+                  inno2.createResuSyekFile(syekEnc, m.userKeyFile);
 
             } catch (Exception e) {
                   System.out.println("Error in Model Error line 119.");
@@ -159,28 +164,29 @@ public class ModelError {
             dec = new Dec();
             //LOGGER.debug("syekDec == null: " + (syekDec == null));
             //LOGGER.debug("icDec == null: " + (icDec == null));
-            for (int i = 0; i < dec.arr.length; i++) {
-                  dec.arr[i] = Util.decryptWithPrefixIV(syekDec.arr[i], icDec.one);
-            }
+            System.out.println("setModelError() dec length: " + dec.arr.length);
+ //           for (int i = 0; i < dec.arr.length; i++) {
+                  dec.arr[0] = Util.decryptWithPrefixIV(syekDec.arr[0], icDec.one);
+ //           }
       }
 
       private void setMError() throws Exception {
             // The decipher key
-            Syekic secretKey = new Syekic();
+            Syekic encodedFile = new Syekic();
             InnerOps<Syekic> innoDec1 = new InnerOps<Syekic>();
-            secretKey = innoDec1.getSyekFile(userCypherKeyFile.getName());
+            encodedFile = innoDec1.getResuSyekFile(userCypherKeyFile.getName());
 
             // 1. Retrieve PW and store in memory
             InnerOps<Syek> innoDec2 = new InnerOps<Syek>();
             // double byte array
-            Syek syekDec = innoDec2.getMFile();
+            Syek syekDec = innoDec2.getResuSyekFile(userKeyFile.getName());
             String OUTPUT_FORMAT = "%s";
-            String encyptedPW = String.format(OUTPUT_FORMAT, Util.hex(syekDec.arr[0]));
-            System.out.println("encryptedPW: " + encyptedPW);
+            String encyptedPWEm = String.format(OUTPUT_FORMAT, Util.hex(syekDec.arr[0]));
+            System.out.println("encryptedPW,email: " + encyptedPWEm);
             //return encyptedPW;
             // 2.a. The decrypted keys stored in memory.
             dec = new Dec();
-            dec.arr[0] = Util.decryptWithPrefixIV(syekDec.arr[0], secretKey.one);
+            dec.arr[1] = Util.decryptWithPrefixIV(syekDec.arr[0], encodedFile.one);
       }
 
 
@@ -208,7 +214,7 @@ public class ModelError {
 
       // Stores the unencrypted key in memory. 0 is db Access String
       private static class Dec {
-            String[] arr = new String[1];
+            String[] arr = new String[2];
       }
 
 
@@ -230,9 +236,13 @@ public class ModelError {
              * Save the users PW
              * @param error
              */
-            void output(T error) {
-                  String filePath = DirectoryMgr.SYSTEM_DIR + ModelError.getInstance().userFile;
-                  try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filePath)))) {
+            void createResuSyekFile(T error, File m) {
+                  String filePath = DirectoryMgr.CPR_DIR;
+                  File f = new File(filePath);
+                  if( ! f.exists() ) {
+                        f.mkdirs();
+                  }
+                  try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filePath + m.getName())))) {
                         out.writeObject(error);
                   } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -241,8 +251,8 @@ public class ModelError {
                   }
             }
 
-            T getMFile() {
-                  String filePath = DirectoryMgr.SYSTEM_DIR + ModelError.getInstance().userFile;
+            T getResuSyekFile(String fileName) {
+                  String filePath = DirectoryMgr.CPR_DIR + fileName;
                   T t = null;
                   try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filePath)))) {
                         //System.out.println("input length" + input.toString());
@@ -412,13 +422,12 @@ public class ModelError {
 //        // encrypt and decrypt need the same IV.
 //        // AES-GCM needs IV 96-bit (12 bytes)
 //        byte[] iv = Util.getRandomNonce(IV_LENGTH_BYTE);
-//
 //        // 3. save secretKey and IV to file
 //        InnerOps<Syekic> innoEnc1 = new InnerOps<>();
 //        innoEnc1.createSyekFile(secretKey, m.cypherKeyFile);
 //        // 4. encrypt S3 & Stripe keys with Secret key & iv
 //        Syek syekEnc = new Syek();
-//        // s3 and Stripe accessKey, Cipher SecretKey and Cipher IV
+//        // DB accessKey
 //        Error error = new Error();
 //        for(int i = 0; i < syekEnc.arr.length; i++) {
 //            syekEnc.arr[i] = Util.encryptWithPrefixIV(error.arr[i].getBytes(UTF_8), secretKey.one, iv);
@@ -453,10 +462,10 @@ public class ModelError {
             ModelError m = ModelError.getInstance();
             String pw = "bangBang#01";
             String orig_email = "lowell.stadelman@gmail.com";
-            String seperator = ",";
+
 // Uncomment to create the file and comment out everything in try catch
 // m.itM() to decrypt and print will not work while the file is being written.
-            m.outputMErrors(orig_email + seperator + pw);
+//            m.outputMErrors(pw, orig_email);
             try {
                   m.itM();
                   System.out.println("user (hex): " + String.format("%s", m.getBFTErrors()));

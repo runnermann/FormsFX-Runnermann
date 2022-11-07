@@ -81,11 +81,6 @@ public class DeckSelectorPane {
       } // END PANE FOR FILES
 
       protected void selectPrePane() {
-   //         Label recLabel = new Label("RECENT DECKS");
-  //          recLabel.setTextFill(Color.WHITE);
-  //          recLabel.setId("deckNameLabel");
-  //          final AgrFileList agrList = FlashCardOps.getInstance().getAgrList();
-
             ArrayList<LinkObj> list = new ArrayList<>(3);
             LinkObj l1 = new LinkObj("$Downloading deck1.", new CloudLink("$Downloading Deck1.", System.currentTimeMillis(), 10), 10);
             LinkObj l2 = new LinkObj("$Downloading deck2.", new CloudLink("$Downloading Deck2.", System.currentTimeMillis(), 10), 10);
@@ -107,7 +102,7 @@ public class DeckSelectorPane {
             for (LinkObj lObject : list) {
                   Pane gradientPane = new Pane();
                   gradientPane.setId("gradient");
-                  gradientPane.setMinWidth(820);
+                  gradientPane.setMinWidth(1500);
                   gradientPane.setMinHeight(20);
 
                   // animation
@@ -118,12 +113,14 @@ public class DeckSelectorPane {
                   // Deck element action
 
                   GaussianBlur blur = new GaussianBlur();
-                  blur.setRadius(7);
+                  blur.setRadius(5);
                   fieldBox.setEffect(blur);
+                  //fieldBox.setPadding(new Insets(12));
 
                   StackPane stack = new StackPane();
                   stack.getChildren().addAll(fieldBox, gradientPane);
 
+                  //paneForFiles.setPadding(new Insets(0, 10, 0, 10));
                   paneForFiles.getChildren().add(stack);
                   textLeft.play();
             }
@@ -138,8 +135,8 @@ public class DeckSelectorPane {
       public static TranslateTransition transitionFmLeft(Node node) {
             // Transition the textframe
             TranslateTransition trans = new TranslateTransition(Duration.millis(1400), node);
-            trans.setFromX(-200f);
-            trans.setToX(320);
+            trans.setFromX(-500f);
+            trans.setToX(500);
             trans.setCycleCount(TranslateTransition.INDEFINITE);
             trans.setAutoReverse(false);
 
