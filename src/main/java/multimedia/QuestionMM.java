@@ -48,7 +48,13 @@ public class QuestionMM extends Question implements Serializable, Comparable {
             if (original != null) {
                   this.setQText(original.getQText());
                   this.qType = original.qType;
-                  this.qFiles = new String[]{original.qFiles[0], original.qFiles[1]};
+                  if(original.qFiles != null) {
+                        if(original.qFiles.length > 1) {
+                              this.qFiles = new String[]{original.qFiles[0], original.qFiles[1]};
+                        } else {
+                              this.qFiles = new String[]{original.qFiles[0]};
+                        }
+                  }
             } else {
                   throw new IllegalStateException("questionMM is null in shallow copy constructor");
                   //System.exit(0);

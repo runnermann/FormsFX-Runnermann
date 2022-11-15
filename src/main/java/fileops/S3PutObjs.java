@@ -209,9 +209,7 @@ public class S3PutObjs {
        */
       public void putDeck(String key, String token) {
             LOGGER.debug("putDeck called");
-            //Thread.dumpStack();
             // get the file directory
-
             String toDiskDir = DirectoryMgr.getMediaPath('t');
             deckDir = new File(toDiskDir);
             if (!deckDir.exists()) {
@@ -289,8 +287,6 @@ public class S3PutObjs {
        * @throws IOException
        */
       private int outWriterUploader(String localURL, String signedUrl, String contentType) throws IOException {
-            //Thread.dumpStack();
-
             int timeoutValue = 4000;
             try {
                   LOGGER.debug("signedUrl: {}", signedUrl);

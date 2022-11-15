@@ -10,8 +10,9 @@ import flashmonkey.CreateFlash;
 import flashmonkey.FlashCardOps;
 import fmannotations.FMAnnotations;
 //import javafx.geometry.Point2D;
+import javafx.scene.text.Text;
 import metadata.DeckMetaData;
-import type.tools.imagery.ImageUploader;
+import type.tools.imagery.ImageUploaderBox;
 import uicontrols.FMHyperlink;
 import uicontrols.SceneCntl;
 
@@ -48,8 +49,10 @@ public class DeckMetaPane extends FormParentPane {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckMetaPane.class);
 
       private HBox containerHBox;
+      private VBox msgContainer;
       private GridPane leftGPane;
       private GridPane rightGPane;
+      private Pane spacer2;
       private Label cLbl;
       private Label cNum;
       private Label iLbl;
@@ -70,7 +73,7 @@ public class DeckMetaPane extends FormParentPane {
       private Label creatorLabel;
       private ImageView qrView;
       //private ImageView deckView;
-      private ImageUploader imgUp;
+      private ImageUploaderBox imgUp;
 
 
       private static DeckMetaModel model;
@@ -92,6 +95,7 @@ public class DeckMetaPane extends FormParentPane {
        */
       @Override
       public void initializeSelf() {
+            getStylesheets().add(getClass().getResource("/css/fxformStyle.css").toExternalForm());
             model = new DeckMetaModel();
             meta = DeckMetaData.getInstance();
             this.initialize(model, meta);
@@ -106,7 +110,7 @@ public class DeckMetaPane extends FormParentPane {
 
             leftGPane = getGrid();
             rightGPane = getGrid();
-            imgUp = new ImageUploader();
+            imgUp = new ImageUploaderBox();
             containerHBox = new HBox(4);
             deckLink = new FMHyperlink("Not yet available.", "");
             deckLink.setDisable(true);
@@ -120,7 +124,7 @@ public class DeckMetaPane extends FormParentPane {
             creatorLabel.setId("label-bold-grey-emph");
             sellLabel = new Label("Sell this deck");
             sellLabel.setId("label-bold-grey-emph");
-            shareLabel = new Label("Allow others to earn and share");
+            shareLabel = new Label("Earn Reoccurring Revenue. \nAllow others to earn and share.");
             shareLabel.setId("label-bold-grey-emph");
             leftGPane.setId("formPane");
             rightGPane.setId("formPane");
@@ -215,6 +219,8 @@ public class DeckMetaPane extends FormParentPane {
        * a two column form.
        */
       private void setParentParts() {
+            // Size the pane for users with small screens and
+            // screen scale larger than 1:1.
             double scale = Screen.getMainScreen().getPlatformScaleY();
             if( scale != 1.0) {
                   double ht = Screen.getMainScreen().getVisibleHeight() * (int) (scale / 2);
@@ -236,9 +242,44 @@ public class DeckMetaPane extends FormParentPane {
 
             buttonHBox.setAlignment(Pos.CENTER);
             buttonHBox.getChildren().add(submitButton);
-            spacer.setMinHeight(20);
+            spacer.setMinHeight(2);
             spacer1.setMinHeight(20);
-
+            spacer2 = new Pane();
+            spacer2.setMinHeight(30);
+            HBox msgBox = new HBox(24);
+            msgContainer = new VBox(24);
+            String intro = "You are already creating study materials. By selling them you earn " +
+                "\ncash and gain credibility.";
+            Text introTxt = new Text(intro);
+            introTxt.setId("infoPane-label");
+            String msgl =
+                "\tEarning from your learning materials is easy. Here's a few tips to get better results." +
+                    "\n\n1. Fill in the form accurately. The fields with red bars are required. " +
+                    "\n\n2. Rate your deck." +
+                    "\n\n3. Price your deck in even dollars." +
+                    "\n\n4. Provide an eye catching image. To set the image. Just drag in a file. You may zoom in or out. And can drag them image to the desired" +
+                    "location." +
+                    "\n\nFYI The decks information is not visible in searches unless you've set it to sell. You must be" +
+                    " subscribed to sell.";
+            String msgr = "5. Share the QR Code around campus. You can also share the link in social media or forums." +
+                " Once you've submitted the information you can view it by clicking the link or scanning the QR code.\";" +
+                "\n\n   If you select to allow others to share, when they sell your decks, they" +
+                " will earn 40% and you will earn 60%. To learn more, check out your profile area by clicking the gears" +
+                " in the menu and file select areas. Look under \"How can I Earn...\"." +
+                "\n\n   To earn, set your profile and be sure to provide an Avatar Name. Select the advanced button" +
+                " and subscribe. After subscribing, the following screen will be for Stripe so you can get paid. Stripe is our partner" +
+                " for our payment services. ";
+            Text txtl = new Text(msgl);
+            Text txtr = new Text(msgr);
+            txtl.setWrappingWidth(400);
+            txtr.setWrappingWidth(400);
+            msgBox.getChildren().addAll(txtl, txtr);
+            msgBox.setMaxSize(814, 400);
+            msgContainer.getChildren().addAll(introTxt, msgBox);
+            msgContainer.setAlignment(Pos.CENTER);
+            txtl.setId("infoPane-message");
+            txtr.setId("infoPane-message");
+            //super.setInfoPane("Deck Information", msg, "");
       }
 
       private GridPane getGrid() {
@@ -292,17 +333,19 @@ public class DeckMetaPane extends FormParentPane {
 
             // column 0, row 0 , column span 1, row span 1
       //      leftGPane.setGridLinesVisible(true);
-            leftGPane.add(creatorLabel, 0, 0, 1, 1);
+            Pane spc = new Pane();
+            spc.setMinHeight(20);
+            leftGPane.add(spc, 0, 0, 2, 1 );
+            leftGPane.add(creatorLabel, 0, 1, 1, 1);
             // add the deck details grid to the left grid
-            leftGPane.add(detailsGrid, 0, 1, 1, 1);
-      //      leftGPane.add(lastScoreLabel, 0, 2, 1, 1);
+            leftGPane.add(detailsGrid, 0, 2, 1, 1);
             leftGPane.add(switchBox, 0, 4, 1, 1);
 
             // Temp QR code column 1, set in method.
-            leftGPane.add(qrView, 1, 0, 1, 3);
+            leftGPane.add(qrView, 1, 1, 1, 3);
 
             leftGPane.add(linkBox, 1, 4, 1, 1);
-            // Row 6 is empty
+            // Row 6 & 7 are empty
 
             VBox deckImgUploaderBox = imgUp.getVBox();
             deckImgUploaderBox.setAlignment(Pos.CENTER);
@@ -312,7 +355,7 @@ public class DeckMetaPane extends FormParentPane {
             deckImgStack.getChildren().addAll(deckImgUploaderBox);
             deckImgStack.setPrefSize(480, 270);
 
-            leftGPane.add(deckImgStack, 0, 7, 2,1);
+            leftGPane.add(deckImgStack, 0, 8, 2,1);
             // Add the form to the right pane
             rightGPane.addRow(0, formRenderer);
 
@@ -320,7 +363,7 @@ public class DeckMetaPane extends FormParentPane {
             rightGPane.setPrefWidth(SceneCntl.getFormBox().getWd());
 
             containerHBox.getChildren().addAll(leftGPane, rightGPane);
-            mainVBox.getChildren().addAll(spacer, containerHBox, buttonHBox, spacer1);
+            mainVBox.getChildren().addAll(spacer, containerHBox, buttonHBox, spacer1, msgContainer, spacer2);
             scrollPane.setContent(mainVBox);
 
             int wd = SceneCntl.getFormBox().getWd() * 2 + 12;
@@ -346,7 +389,7 @@ public class DeckMetaPane extends FormParentPane {
             String deckQRfile = FileNaming.getQRFileName(FlashCardOps.getInstance().getDeckFileName());
             File file = new File(DirectoryMgr.getMediaPath('q') + "/" + deckQRfile);
             if (file.exists()) {
-                  Image img = new Image("file:" + file.getPath());
+                  Image img = new Image("file:" + file.getPath(), true);
                   if(qrView == null) {
                         qrView = new ImageView();
                   }

@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -265,10 +266,18 @@ public abstract class CloudOps implements Serializable {
                   int res = 0;
                   if (s3ListObjs == null || token == null) {
                         s3ListObjs = new S3ListObjs();
-                        res = s3ListObjs.listDecks(name, pw);
+                        try {
+                              res = s3ListObjs.listDecks(name, pw);
+                        } catch (HttpConnectTimeoutException e) {
+                              LOGGER.warn(e.getMessage());
+                        }
                   } else {
                         LOGGER.debug("attempting to use token ");
-                        res = s3ListObjs.listDecks(token);
+                        try {
+                              res = s3ListObjs.listDecks(token);
+                        } catch (HttpConnectTimeoutException e) {
+                              LOGGER.warn(e.getMessage());
+                        }
                   }
                   // get list of decks from s3
                   if (s3ListObjs.getCloudLinksObj() != null && res == 1) {
@@ -309,18 +318,21 @@ public abstract class CloudOps implements Serializable {
        * @return
        */
       public static ArrayList<CloudLink> getS3MediaList(String deckFileName) {
-
             String token = TokenStore.get();
             if (token != null) {
                   if (s3ListObjs == null) {
                         s3ListObjs = new S3ListObjs();
                   }
                   //The user's name is include in the token
-                  return s3ListObjs.listMedia(token, deckFileName);
+                  try {
+                        return s3ListObjs.listMedia(token, deckFileName);
+                  } catch (HttpConnectTimeoutException e) {
+                        LOGGER.warn(e.getMessage());
+                  }
             } else {
                   LOGGER.warn("NullTokenException when calling getS3MediaList");
-                  return null;
             }
+            return null;
       }
 
       /**

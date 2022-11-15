@@ -1571,7 +1571,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                                    safeToMove = clearQButtonAction();
                              }
                         }
-
                         break;
                   }
                   // user requests to edit the card

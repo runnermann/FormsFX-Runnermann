@@ -73,7 +73,6 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
             msgVBox = new VBox();
             // Action related
             submitButton = new Button("SUBMIT");
-
             mainVBox = new VBox(10);
             innerGPane = new GridPane();
             this.model = model;
@@ -113,8 +112,6 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
             innerGPane.setPadding(new Insets(4, 2, 4, 2));
 
             mainVBox.setAlignment(Pos.CENTER);
-//            mainVBox.setHgap(10);
-//            mainVBox.setVgap(12);
             double scale = Screen.getMainScreen().getPlatformScaleY();
             if( scale != 1.0) {
                   double ht = Screen.getMainScreen().getVisibleHeight() * (int) (scale / 2);
@@ -165,10 +162,6 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
        * @param imageFullPath the relitive path to the image and name.
        */
       protected void setInfoPane(String lbl, String msg, String imageFullPath) {
-
-            ImageView img = new ImageView(imageFullPath);
-            img.setPreserveRatio(true);
-            img.setFitHeight(100);
             Label l = new Label(lbl);
             l.setId("infoPane-label");
             Label m = new Label(msg);
@@ -176,7 +169,12 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
             // column, row, col-span, row-span
             innerGPane.add(l, 0, 0, 1, 1);
             innerGPane.add(m, 0, 1, 1, 1);
-            innerGPane.add(img, 1, 0, 1, 2);
+            if(! imageFullPath.isEmpty()) {
+                  ImageView img = new ImageView(imageFullPath);
+                  img.setPreserveRatio(true);
+                  img.setFitHeight(100);
+                  innerGPane.add(img, 1, 0, 1, 2);
+            }
       }
 
       public void setSubmitButtonTitle(String title) {

@@ -11,6 +11,8 @@ import uicontrols.FMAlerts;
 import uicontrols.FxNotify;
 import uicontrols.UIColors;
 
+import java.net.http.HttpConnectTimeoutException;
+
 /**
  * This class provides the actions neccessary to coordinate
  * between remote and local authorizations.
@@ -100,10 +102,14 @@ public class Auth {
       private void createUserLocalConnected(String x1, String x2) {
             // Download the decks from S3. also sends a token
             S3ListObjs s3ListObjs = new S3ListObjs();
-            int res = s3ListObjs.listDecks(x2, x1);
-            if (res == 1) {
-                  // set userData to the entered data
-                  saveAction(x1, x2);
+            try {
+                  int res = s3ListObjs.listDecks(x2, x1);
+                  if (res == 1) {
+                        // set userData to the entered data
+                        saveAction(x1, x2);
+                  }
+            } catch (HttpConnectTimeoutException e) {
+                  LOGGER.warn(e.getMessage());
             }
             // else
             // it's an error. Do nothing.

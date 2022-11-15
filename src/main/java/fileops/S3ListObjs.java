@@ -14,10 +14,7 @@ import uicontrols.FxNotify;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpTimeoutException;
+import java.net.http.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +55,7 @@ public class S3ListObjs {
        * @param pw
        * @return an int depending on if user exists and pw failed = 0, if password succeeded == 1, or user does not exist -1
        */
-      public int listDecks(String name, String pw) {
+      public int listDecks(String name, String pw) throws HttpConnectTimeoutException {
 
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("S3Creds constructor called.");
@@ -78,7 +75,7 @@ public class S3ListObjs {
        * @param token
        * @return
        */
-      public int listDecks(String token) {
+      public int listDecks(String token) throws HttpConnectTimeoutException {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("S3Creds constructor called for token.");
             String json = "{\"token\":\"" + token + "\"}";
@@ -87,7 +84,7 @@ public class S3ListObjs {
       }
 
 
-      public ArrayList<CloudLink> listMedia(String token, String deckFileName) {
+      public ArrayList<CloudLink> listMedia(String token, String deckFileName) throws HttpConnectTimeoutException {
             LOGGER.debug("listMedia called");
             String json = "{" +
                 "\"token\":\"" + token + "\"" +
@@ -106,7 +103,7 @@ public class S3ListObjs {
        * @param destination
        * @return Returns 1 if successful, 0 if failed, -1 if failed bc of missing network.
        */
-      private int listObjsHelper(String json, String destination) {
+      private int listObjsHelper(String json, String destination) throws HttpConnectTimeoutException {
 
             try {
                   final HttpClient client = HttpClient.newBuilder()

@@ -1,5 +1,6 @@
 package type.testtypes;
 
+import ch.qos.logback.classic.Level;
 import flashmonkey.Timer;
 import flashmonkey.*;
 import fmannotations.FMAnnotations;
@@ -22,7 +23,9 @@ import type.sectiontype.GenericSection;
 import uicontrols.ButtoniKon;
 import uicontrols.FxNotify;
 
+import java.security.SecureRandom;
 import java.util.*;
+import java.util.stream.Collectors;
 
 //import static flashmonkey.ReadFlash.FLASH_CARD_OPS;
 
@@ -34,7 +37,8 @@ import java.util.*;
  * @author Lowell Stadelman
  */
 public class MultiChoice extends TestTypeBase implements GenericTestType<MultiChoice> {
-      private static final Logger LOGGER = LoggerFactory.getLogger(MultiChoice.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(MultiChoice.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MultiChoice.class);
       // The singleton instance of this class
       private static MultiChoice CLASS_INSTANCE;
 
@@ -384,7 +388,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
        * <p>
        * c. Make the referance to the correct answer available.
        */
-      class Test //extends FlashCardOps
+      class Test
       {
             private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
@@ -420,7 +424,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                   if (flashList.size() > 3) {
                         time = Timer.getClassInstance();
                         // build the arrayOfAnswers
-                        ansAry = buildAnswerAry(cc.getAnswerMM(), getQualifiedSet(flashList));
+                        ansAry = buildAnswerAry(cc.getAnswerMM(), buildQualifiedSet(flashList));
                   } else {
                         ReadFlash.getInstance().emptyListAction();
                   }
@@ -452,33 +456,34 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
              * @param flashList
              * @return
              */
-            private HashSet<AnswerMM> getQualifiedSet(ArrayList<FlashCardMM> flashList) {
+            private HashSet<AnswerMM> buildQualifiedSet(ArrayList<FlashCardMM> flashList) {
                   // create hashset
-                  HashSet<AnswerMM> qualified = new HashSet<>(20);
+                  HashSet<AnswerMM> qualifiedHashSet = new HashSet<>(20);
                   int odd;
 
                   // loop through the flashList and if the int (testType) is larger
-                  // than 32768 then it is qualified for the list.
+                  // than 32768 then it is qualifiedHashSet for the list.
                   for (FlashCardMM card : flashList) {
                         // if larger than 2^16, 16th bit is set
                         // and it is qualified.
                         if (card.getTestType() > 32768) {
-                              qualified.add(card.getAnswerMM());
+                              qualifiedHashSet.add(card.getAnswerMM());
                               LOGGER.debug("Qualified added " + card.getAnswerMM());
                         }
                   }
 
-                  if (qualified.size() < 4) {
+                  if (qualifiedHashSet.size() < 4) {
                         ReadFlash.getInstance().emptyListAction();
                   }
 
-                  LOGGER.debug("qualified size: " + qualified.size());
-                  return qualified;
+                  LOGGER.debug("qualified size: " + qualifiedHashSet.size());
+                  return qualifiedHashSet;
             }
 
 
+            SecureRandom secRandom = new SecureRandom();
             /**
-             * Description:  Creates a set of random answers
+             * Creates a set of random answers
              * including the correctAnswer. Randomly
              * selects other answers from flashList.
              * post-condition Builds an array of random ANumbers from flashList,
@@ -492,8 +497,14 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
              * test and selected randomly.
              */
             private AnswerMM[] buildAnswerAry(final AnswerMM correctAnswer, Set<AnswerMM> qualifiedSet) {
-
+                  LOGGER.setLevel(Level.ALL);
                   LOGGER.debug("\n\n *** in buildAnswerAry *** \n");
+                  LOGGER.debug("qualifiedSet length: {}", qualifiedSet.size());
+
+                  ArrayList<AnswerMM> altSet = new ArrayList<>(qualifiedSet.size());
+                  for(AnswerMM a : qualifiedSet) {
+                        altSet.add(new AnswerMM(a));
+                  }
 
                   // Create a set of all qualified answers and give them a
                   // unique hash-number to this iteration/Object of Test
@@ -503,17 +514,18 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
 
                   LOGGER.debug("correctAnswer [ " + ho.answerMM + " ] and hashCode [ " + ho.hashCode() + " ]");
 
-                  Iterator it = qualifiedSet.iterator();
-
                   int i = 0;
                   // Build the answer set by adding qualified
-                  // 3 more answers or until set reaches 4
+                  // 3 additional answers fo make a total of 4
                   try {
                         while (ansHashSet.size() < 4 && i < 4) {
-                              AnswerMM answerMM = (AnswerMM) it.next();
+                              int num = secRandom.nextInt(altSet.size() -1);
+                              AnswerMM answerMM = altSet.remove(num);
                               LOGGER.debug("\tPrinting in while loop " + answerMM);
-                              ansHashSet.add(new HashObj(answerMM));
-                              i++;
+                             boolean b = ansHashSet.add(new HashObj(answerMM));
+                             if(b) {
+                                   i++;
+                             }
                         }
                   } catch (NoSuchElementException e) {
                         if (ansHashSet.size() < 4) {
@@ -586,10 +598,9 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                   // a consistent means to hash.
                   @Override
                   public int hashCode() {
-                        hash = FMHashCode.getHashCode(answerMM, hashConstIDX);
-                        return hash;
+                        //answerMM.hashCode()
+                        return answerMM.hashCode();
                   }
-
             }
 
             /*** INNER INNER CLASS for testing REMOVE before deployement ***/

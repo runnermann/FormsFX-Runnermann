@@ -27,6 +27,8 @@ import core.RobotUtility;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import org.junit.Test;
+
+import java.net.http.HttpConnectTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
@@ -164,8 +166,11 @@ public class MediaTransferTester extends ApplicationTest {
         FlashCardOps.getInstance().setDeckFileName(TEST_DECK);
         int res = 0;
             s3ListObjs = new S3ListObjs();
-            s3ListObjs.listDecks(TEST_EMAIL, "bangBang#01");
-
+            try {
+                s3ListObjs.listDecks(TEST_EMAIL, "bangBang#01");
+            } catch (HttpConnectTimeoutException e) {
+                LOGGER.warn(e.getMessage());
+            }
             token = s3ListObjs.getToken();
     }
 

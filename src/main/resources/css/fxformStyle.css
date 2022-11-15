@@ -146,6 +146,21 @@
     -fx-margin-top: 20;
     -fx-margin-bottom: 20;
     -fx-padding: 10,10,10,10;
+    -fx-alignment: center;
+}
+
+#infoPane-label {
+    -fx-font-family: "Times New Roman";
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #05C7F2;
+}
+
+#infoPane-message {
+    -fx-font-family: "Times New Roman";
+    -fx-font-size: 16px;
+    -fx-wrap-text: true;
+    -fx-text-fill: #393E46; /* fm grey */
 }
 
 #topBar {
@@ -187,6 +202,8 @@
     -fx-text-fill: #ffffff;
     -fx-font-weight: 600;
 }
+
+
 
 .sellSwitch {
     base-color: ICON_ELEC_BLUE;

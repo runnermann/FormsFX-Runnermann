@@ -2,7 +2,9 @@ package forms;
 
 import authcrypt.UserData;
 import authcrypt.user.EncryptedAcct;
+import authcrypt.user.EncryptedStud;
 import campaign.Report;
+import campaign.db.DBInsert;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -19,6 +21,7 @@ import flashmonkey.CreateFlash;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.MetaDescriptor;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.layout.VBox;
 import metadata.DeckMetaData;
@@ -29,6 +32,8 @@ import uicontrols.FMAlerts;
 import uicontrols.FxNotify;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * This class is used for the deck meta data form and holds all the necessary data. This
@@ -119,16 +124,21 @@ public class DeckMetaModel extends ModelParent {
       }
 
       /**
-       * Save user information or fail . If the user has not been created before,
-       * after success sends the user to fileSelectPane, otherwise fail.
+       * Asynchronously save deck metadata or fail.
        */
       @Override
       public void formAction(FormData data) {
             DeckMetaData metaData = buildMetaData(data);
-      // ***** String institute = descriptor.getSelectedTut().getText();
-            // attempt to save to existing deck
-            // if successful
 
+            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+            Runnable task = () -> {
+                  formActionAsyncHelper(metaData);
+                  scheduledExecutor.shutdown();
+            };
+            scheduledExecutor.execute(task);
+      }
+
+      private void formActionAsyncHelper(DeckMetaData metaData) {
             if (doAction(metaData)) {
                   LOGGER.info("formAction() User created, closing form");
                   // CreateFlash.getInstance().closeMetaWindow();
@@ -142,21 +152,21 @@ public class DeckMetaModel extends ModelParent {
                   } catch (WriterException e) {
                         LOGGER.warn("ERROR: WriterException caused by {} ", e.getMessage());
                         e.printStackTrace();
-                        System.exit(1);
+                        //System.exit(1);
                   } catch (IOException e) {
                         LOGGER.warn("ERROR: IOException message: {}", e.getMessage());
                         e.printStackTrace();
-                        System.exit(1);
+                        //System.exit(1);
                   }
             } else {
                   // failed, send user a message
                   LOGGER.warn("formAction() set deckMetaData failed ???");
                   String msg = "That didn't get updated in the ecosystem. " +
-                          "\nTo update so others may access " +
-                          "\nand purchase your deck, please check your"  +
-                          "\nconnection and try again.";
+                      "\nTo update so others may access " +
+                      "\nand purchase your deck, please check your"  +
+                      "\nconnection and try again.";
                   FxNotify.notification("Ooops", msg, Pos.CENTER, 15,
-                          "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
+                      "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
             }
       }
 
@@ -191,37 +201,31 @@ public class DeckMetaModel extends ModelParent {
       public boolean doAction(final FormData data) {
             DeckMetaData metaData = (DeckMetaData) data;
             String path = DirectoryMgr.getMediaPath('z') + FlashCardOps.getInstance().getMetaFileName();
-
             // Update File with this metadata
             // metaData.saveDeckMetaData();
             // Update database
             boolean bool = false;
             // update the metaDataAry
-            if( ! Utility.isConnected()) {
-                  return false;
-            } else {
+            // Save the metadata to file.
+            FlashCardOps.getInstance().setMetaInFile(metaData, path);
+            // Save it to the cloud.
+
+            if( Utility.isConnected()) {
                   try {
-                        FlashCardOps.getInstance().setMetaInFile(metaData, path);
                         // send to database
                         deck_id = Report.getInstance().reportDeckMetadata(metaData);
                         if (deck_id > 0) {
-                              bool = true;
+                              String msg = "You're updates have been saved to the cloud and should be viewable.";
+                              Platform.runLater(() -> CreateFlash.getInstance().metaAlertPopup(msg));
+                              return true;
                         }
                   } catch (Exception e) {
                         LOGGER.warn("WARNING: {} StackTrace: {} ", e.getMessage(), e.getStackTrace());
                         e.printStackTrace();
-                        bool = false;
                   }
             }
 
-            if (bool) {
-                  String msg = "You're updates have been saved to the cloud and should be viewable.";
-                  CreateFlash.getInstance().metaAlertPopup(msg);
-                  return true;
-            } else {
-                  // failed
-                  return false;
-            }
+            return false;
       }
 
       public void sellSwitchAction(ToggleSwitch sellSwitch, ToggleSwitch shareSwitch) {
@@ -276,21 +280,6 @@ public class DeckMetaModel extends ModelParent {
             DeckMetaData metaData = (DeckMetaData) data;
             getFormInstance().persist();
             // set user information for file system access
-//            LOGGER.info("formAction() values " +
-//                    "\ndata.Descript(): {} " +
-//                    "\ndata.getSchool: {} " +
-//                    "\ndata.getBook: {} " +
-//                    "\ndata.getDeckProf: {} " +
-//                    "\ndata.getDeckLang: {}" +
-//                    "\ndata.getSubjCat: {}" +
-//                    "\ndata.getSubjSubCat: {}" +
-//                    "\ndata.getNumCard: {}" +
-//                    "\ndata.getCourseCode: {}" +
-//                    "\ndata.isSellDeck: {}" +
-//                    "\ndata.isShareDeck: {}",
-//                descriptor.getDeckDescript(), descriptor.getSelectedTut(), descriptor.getDeckBook(), descriptor.getDeckProf(), descriptor.getDeckLanguage(),
-//                descriptor.getSubj(), descriptor.getSubjSubCat(), descriptor.getNumCards(), descriptor.getCourseCode(), descriptor.getSellDeck(),
-//                descriptor.getShareDeck());
             metaData.setDeckImgName(descriptor.getDeckImgName());
             metaData.setDescript(descriptor.getDeckDescript());
             metaData.setDeckSchool(descriptor.getSelectedTut().getName());

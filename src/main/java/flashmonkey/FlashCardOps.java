@@ -17,6 +17,8 @@ import java.io.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import media.sound.SoundEffects;
 import org.jetbrains.annotations.NotNull;
@@ -677,10 +679,13 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                   LOGGER.debug("has flashlist been downloaded yet? flashlist size: {}", flashListMM.size());
                   if (flashListMM.size() > 0 && Utility.isConnected()) {
                         // @TODO move thread to MediaSync for async download. Not here
-                        new Thread(() -> {
+                        ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+                        Runnable task = () -> {
                               LOGGER.info("Calling syncMedia from FlashCardOps primaryAction");
                               MediaSync.syncMedia(flashListMM);
-                        }).start();
+                              scheduledExecutor.shutdown();
+                        };
+                        scheduledExecutor.execute(task);
                   }
                   if (flashListMM.size() > 0) {
                         SoundEffects.PRESS_BUTTON_COMMON.play();
