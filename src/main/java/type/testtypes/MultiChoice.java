@@ -192,6 +192,11 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             // not used
       }
 
+      @Override
+      public void resetSelectAnsButton() {
+            selectAnsButton = ButtoniKon.getAnsSelect();
+      }
+
       /**
        * Sets bit 1 for Multi-Choice to true
        * All other bits set to 0
@@ -260,7 +265,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             } else {
                   rf.new WrongAns(currentCard, this);
             }
-            selectAnsButton.setDisable(true);
+//            selectAnsButton.setDisable(true);
 
             double progress = ReadFlash.getInstance().getProgress();
             if (progress >= FMTWalker.getInstance().getCount()) {
@@ -304,7 +309,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             aRight.play();
 
             if (!selectAnsButton.isDisabled()) {
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsButton, 1, 750, false);
+                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsButton, 1, 750, 0, false);
                   FMTransition.nodeFadeIn.play();
             }
             prevAnsButton.setDisable(false);
@@ -338,7 +343,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             TranslateTransition aLeft = FMTransition.transitionFmLeft(lowerHBox);
             aLeft.play();
             if (!selectAnsButton.isDisabled()) {
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsButton, 1, 750, false);
+                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsButton, 1, 750, 0, false);
                   FMTransition.nodeFadeIn.play();
             }
       }

@@ -1,7 +1,6 @@
 package type.testtypes;
 
 import flashmonkey.*;
-import org.apache.http.MethodNotSupportedException;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 import fmtree.FMTWalker;
@@ -120,6 +119,9 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             // Transition for Answer for all navigation
             FMTransition.setAWaitTop(FMTransition.waitTransFmTop(lowerHBox, 0, 300, 350));
 
+            FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsButton, 1, 750, 320,false);
+            FMTransition.nodeFadeIn.play();
+
             return gPane;
       }
 
@@ -164,6 +166,11 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       }
 
       @Override
+      public void resetSelectAnsButton() {
+            selectAnsButton = ButtoniKon.getAnsSelect();
+      }
+
+      @Override
       public String getName() {
             return "True or False";
       }
@@ -176,10 +183,10 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       @Override
       public void ansButtonAction() {
             changed();
-            FlashCardOps fcOps = FlashCardOps.getInstance();
+//            FlashCardOps fcOps = FlashCardOps.getInstance();
             ReadFlash rf = ReadFlash.getInstance();
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
-            FlashCardMM listCard = fcOps.getFlashList().get(currentCard.getANumber());
+//            FlashCardMM listCard = fcOps.getFlashList().get(currentCard.getANumber());
             rf.getProgGauge().moveNeedle(500, rf.incProg());
             double progress = rf.getProgress();
             if ((trueRdoBtn.isSelected() && currentCard.getAText().equals("T"))
@@ -207,15 +214,19 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
 
 
       /**
-       * The True or False pane for the Read Pane
+       * The True or False pane used for the Read Pane
        *
        * @return VBox containing the TrueOrFalsePane
        */
       private VBox trueOrFalsePane(double sectionHt) {
             // Set spacing between RdoButtons
             VBox tfBox = new VBox(10);
-            tfBox.setMinWidth(SceneCntl.getCenterWd());
+            tfBox.setMinWidth(ReadFlash.getInstance().getMasterBPane().getBoundsInLocal().getWidth() - 8);
 
+            return buildTFBox(tfBox);
+      }
+
+      private VBox buildTFBox(VBox tfBox) {
             trueRdoBtn = new RadioButton("True");
             falseRdoBtn = new RadioButton("False");
 
@@ -224,9 +235,10 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
 
             tfBox.getChildren().addAll(trueRdoBtn, falseRdoBtn);
             tfBox.setId("tfBox");
-            tfBox.setMaxHeight(sectionHt);
-            tfBox.setMinHeight(sectionHt);
 
+            tfBox.setMaxHeight(100);
+            tfBox.setMinHeight(100);
+            tfBox.setMaxWidth(Double.MAX_VALUE);
             return tfBox;
       }
 
@@ -240,16 +252,7 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             VBox tfBox = new VBox(10);
             tfBox.setMinWidth(SceneCntl.getCenterWd());
 
-            trueRdoBtn = new RadioButton("True");
-            falseRdoBtn = new RadioButton("False");
-
-            ToggleGroup grp = new ToggleGroup();
-            grp.getToggles().addAll(trueRdoBtn, falseRdoBtn);
-
-            tfBox.getChildren().addAll(trueRdoBtn, falseRdoBtn);
-            tfBox.setSpacing(10);
-            tfBox.setMaxWidth(Double.MAX_VALUE);
-
+            tfBox = buildTFBox(tfBox);
             // Set the default value.
             editor.tCell.getTextArea().setText("F");
             trueRdoBtn.setOnAction(e -> {
@@ -260,7 +263,7 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
                   editor.tCell.getTextArea().setText("F");
             });
 
-            tfBox.setId("tfBox");
+
             return tfBox;
       }
 

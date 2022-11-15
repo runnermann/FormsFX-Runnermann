@@ -20,8 +20,6 @@ import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.MetaDescriptor;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import metadata.DeckMetaData;
 import org.controlsfx.control.ToggleSwitch;
@@ -29,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FMAlerts;
 import uicontrols.FxNotify;
-import uicontrols.UIColors;
 
 import java.io.IOException;
 
@@ -46,7 +43,7 @@ public class DeckMetaModel extends ModelParent {
       private static final Logger LOGGER = LoggerFactory.getLogger(DeckMetaModel.class);
       private final MetaDescriptor descriptor = new MetaDescriptor();
       private long deck_id;
-      private String vertxGetDeckURL;
+      private static String deckImgName;
 
 
       /**
@@ -76,15 +73,15 @@ public class DeckMetaModel extends ModelParent {
                             .multiline(true)
                             .required("required_error_message")
                             .validate(StringLengthValidator.between(10, 1000, "descript_error_message")),
-                        Field.ofSingleSelectionType(descriptor.tutsProperty(), descriptor.selectedTutProperty())
-                            .label("label_school")
-                            .tooltip("tuts_tooltip")
-                            .required("required_error_message"),
-                        //.validate(StringLengthValidator.between(5, 120, "between_length_error")),
-                        Field.ofStringType(descriptor.deckProfProperty())
-                            .label("label_prof")
-                            .placeholder("prof_placeholder")
-                            .required("required_error_message")
+                            Field.ofSingleSelectionType(descriptor.tutsProperty(), descriptor.selectedTutProperty())
+                                .label("label_school")
+                                .tooltip("tuts_tooltip")
+                                .required("required_error_message"),
+                            //.validate(StringLengthValidator.between(5, 120, "between_length_error")),
+                            Field.ofStringType(descriptor.deckProfProperty())
+                                .label("label_prof")
+                                .placeholder("prof_placeholder")
+                                .required("required_error_message")
                             .validate(StringLengthValidator.between(2, 120, "between_length_error"))
                         ),
                         Section.of(
@@ -172,9 +169,9 @@ public class DeckMetaModel extends ModelParent {
        *
        * @return Returns the URL to fetch the deck from VERTX server.
        */
-      String getVertxGetDeckURL() {
-            return vertxGetDeckURL;
-      }
+ //     String getVertxGetDeckURL() {
+ //           return vertxGetDeckURL;
+ //     }
 
       long getDeckID() {
             if(deck_id == -99 || deck_id == 0) {
@@ -200,7 +197,6 @@ public class DeckMetaModel extends ModelParent {
             // Update database
             boolean bool = false;
             // update the metaDataAry
-
             if( ! Utility.isConnected()) {
                   return false;
             } else {
@@ -264,7 +260,18 @@ public class DeckMetaModel extends ModelParent {
             return acct.isCurrent();
       }
 
+      // package private
+      void setDeckImgName(String imgName) {
+            deckImgName = imgName;
+      }
 
+
+      /**
+       * Called when the formm is initially created. Sets the data in
+       * the form.
+       * @param data
+       * @return
+       */
       private DeckMetaData buildMetaData(FormData data) {
             DeckMetaData metaData = (DeckMetaData) data;
             getFormInstance().persist();
@@ -284,7 +291,7 @@ public class DeckMetaModel extends ModelParent {
 //                descriptor.getDeckDescript(), descriptor.getSelectedTut(), descriptor.getDeckBook(), descriptor.getDeckProf(), descriptor.getDeckLanguage(),
 //                descriptor.getSubj(), descriptor.getSubjSubCat(), descriptor.getNumCards(), descriptor.getCourseCode(), descriptor.getSellDeck(),
 //                descriptor.getShareDeck());
-
+            metaData.setDeckImgName(descriptor.getDeckImgName());
             metaData.setDescript(descriptor.getDeckDescript());
             metaData.setDeckSchool(descriptor.getSelectedTut().getName());
             metaData.setDeckBook(descriptor.getDeckBook());
@@ -296,7 +303,7 @@ public class DeckMetaModel extends ModelParent {
             metaData.setCourseCode(descriptor.getCourseCode());
             metaData.setPrice(Integer.parseInt(descriptor.getPrice()));
             metaData.setNumStars(Integer.parseInt(descriptor.getNumStars()));
-            metaData.setDeckImgName(descriptor.getDeckImgName());
+            //metaData.setDeckImgName(descriptor.getDeckImgName());
             // NOTE: shareDeck and sellDeck are switches in DeckMetaPane
             metaData.setShareDistro(descriptor.getShareDeck());
             metaData.setSellDeck(descriptor.getSellDeck());

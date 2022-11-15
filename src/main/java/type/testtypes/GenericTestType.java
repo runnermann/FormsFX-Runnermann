@@ -138,6 +138,13 @@ public interface GenericTestType<A extends GenericTestType> {
        */
       Button getAnsButton();
 
+      /**
+       * Resets the selectAnswer button to "SELECT" and
+       * the buttonIKon circle.
+       * @return
+       */
+      void resetSelectAnsButton();
+
       String getName();
 
       void ansButtonAction();
@@ -153,6 +160,8 @@ public interface GenericTestType<A extends GenericTestType> {
        * that should be cleared.
        */
       void reset();
+
+
 
 
       //public abstract void nextQButtonAction();  THESE ARE IN READFLASH not in tests

@@ -3,6 +3,7 @@ package authcrypt;
 import fileops.CloudOps;
 import fileops.S3ListObjs;
 import flashmonkey.FlashMonkeyMain;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -309,7 +310,7 @@ public class Auth {
                               createUserRemote(email);
                               return false;
                         } else {
-                              resetPasswordRemote();
+                              Platform.runLater(this::resetPasswordRemote);
                               return false;
                         }
                   }

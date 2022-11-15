@@ -58,6 +58,16 @@ public enum VertxLink {
         final String endpoint = "/Q52/A017BA/:";
         public String getEndPoint() { return endpoint; }
         public String getLink() { return DOMAIN + endpoint; }
+    },
+    USER_AVATAR() {
+        final String endpoint = "https://flashmonkey-avatar.s3.us-west-2.amazonaws.com/";
+        public String getEndPoint() { return endpoint; }
+        public String getLink() { return endpoint; }
+    },
+    DECK_DESCRIPT_PHOTO() {
+        final String endpoint = "https://flashmonkey-deck-photo.s3.us-west-2.amazonaws.com/";
+        public String getEndPoint() { return endpoint; }
+        public String getLink() { return endpoint; }
     };
 
 

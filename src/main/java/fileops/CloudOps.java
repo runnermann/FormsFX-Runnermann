@@ -45,11 +45,6 @@ public abstract class CloudOps implements Serializable {
       // list of deckLinks returned from S3GetList
       private static ArrayList<CloudLink> cloudLinks = new ArrayList<>(4);
       // list of mediaLinks returned from s3
-      // The token for communications with S3 after
-      // initial contact with VertX
-      //private TokenStore String token;
-
-
       private static S3ListObjs s3ListObjs;
 
       /**
@@ -178,7 +173,6 @@ public abstract class CloudOps implements Serializable {
        */
       private String getToken() {
             isInValid();
-
             return TokenStore.get();
       }
 
@@ -366,7 +360,7 @@ public abstract class CloudOps implements Serializable {
        * @return retuns null if size is 0. Otherwise returns a list of items
        * that do not exist in s3.
        */
-      public static String[] checkExistsInS3(String[] objectList, String deckFileName) {
+      public static String[] checkCardMediaExistsInS3(String[] objectList, String deckFileName) {
             // get list of objects from S3
             ArrayList<CloudLink> s3List = getS3MediaList(deckFileName);
             ArrayList<String> fmS3Names = extractNames(s3List);
@@ -381,6 +375,48 @@ public abstract class CloudOps implements Serializable {
             }
             // return a list of objects that do not exist in s3.
             return getList.size() == 0 ? null : convert(getList);
+      }
+
+      /**
+       *
+       * @param objectFileName The object fileName to check
+       * @param bucket either 'p' for "public" for
+       *               deck descript photo, or 'a' for avatar
+       * @return true if the object exists in S3
+       */
+      public static boolean checkImgIsInS3(String objectFileName, char bucket) throws IOException, InterruptedException {
+            String link;
+
+            if(bucket == 'p') {
+                  link =  VertxLink.DECK_DESCRIPT_PHOTO.getLink() + objectFileName;;
+            }
+            else {
+                  link =  VertxLink.USER_AVATAR.getLink() + objectFileName;
+            }
+
+            boolean bool = true;
+            // Request the URL by making a http request to s3 deck image bucket.
+            // If it returns the item then we were successful. Return true. Else
+            // return false.
+            final HttpRequest req = HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create(link))
+                //@TODO set S3Creds to HTTPS
+                .header("Content-Type", "application/json")
+                .build();
+
+            final HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .connectTimeout(Duration.ofSeconds(2))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            bool = response.statusCode() == 200;
+
+            LOGGER.debug("response code {}", response.statusCode());
+
+
+            return bool;
       }
 
       /**
@@ -413,11 +449,13 @@ public abstract class CloudOps implements Serializable {
       /**
        * upload media to S3 from CreateFlash when there are only a few uploads
        * and the overhead of async is not advantageous.
-       * Used by CreateFlash as media is created, card by card.
+       * Used by CreateFlash, and ImageUploader as media is created, card by card, or image by image.
        *
        * @param uploads
+       * @param bucket 'i' for cards or deck images aka the images in decks. 'p' for public or the deck descript images.
+       *               'a' for avatar image.
        */
-      public static void putMedia(String[] uploads) {
+      public static void putMedia(String[] uploads, char bucket) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("putMedia for serial called");
             timer.start();
@@ -425,7 +463,7 @@ public abstract class CloudOps implements Serializable {
             String token = TokenStore.get();
             if (token != null) {
                   ArrayList<String> l = new ArrayList<>(Arrays.asList(uploads));
-                  putObjs.serialPutMedia(l, token);
+                  putObjs.serialPutMedia(l, token, bucket);
             } else {
                   LOGGER.warn("ERROR: Warning, Token is null when attempting to put media. Expected the token to be set.");
             }

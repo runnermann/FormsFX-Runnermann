@@ -10,10 +10,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.*;
-import org.slf4j.LoggerFactory;
+
+
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -46,6 +48,7 @@ public class MetaDataTester extends ApplicationTest {
 	private long lastDate = System.currentTimeMillis();
 	private String createDate = "10101";
 	private String origAuthor = "The original author";
+	private String avatarName = "The Avatar Robot";
 	//private String deckFileName = "testDeckMetaData";
 	// This decks metaData
 	//private String[] deckMetaDataAry;
@@ -162,7 +165,7 @@ public class MetaDataTester extends ApplicationTest {
 	 * prior to this test.
 	 */
 	@Test
-	@Order(1)
+	@Order(0)
 	public void saveDeckMetaDataTest() {
 		//read.setDeckName(deckName);
 		setMetaInFile(this.metaMapOne, "testDeckMetaData");
@@ -172,7 +175,7 @@ public class MetaDataTester extends ApplicationTest {
 		String path = folder + fileName;
 		File file = new File(path);
 		
-		assertTrue(file.exists(), "File " + fileName + " does not exist.");
+		Assert.assertTrue( file.exists());
 	}
 	
 	/**
@@ -414,9 +417,10 @@ public class MetaDataTester extends ApplicationTest {
 		metaInstance = DeckMetaData.getInstance();
 		
 		this.metaMapTwo = getMetaFromFile(path);
-		boolean succeded = false;
-		succeded =  metaMapTwo.get("deck_descript").equals(descript) &
-					metaMapTwo.get("creator_email").equals(origAuthor);
+		boolean succeeded = false;
+		succeeded =  metaMapTwo.get("deck_descript").equals(descript) &
+					metaMapTwo.get("creator_email").equals(origAuthor) &
+					metaMapTwo.get("avatar_name").equals(avatarName);
 		
 		
 	}
@@ -488,6 +492,7 @@ public class MetaDataTester extends ApplicationTest {
 		meta1.setLastDate(lastDate);
 		meta1.setCreateDate(createDate);
 		meta1.setCreatorEmail(origAuthor);
+		meta1.setCreatorAvatarName(avatarName);
 		meta1.setDeckFileName("testDeckMetaData");
 		meta1.setDescript(descript);
 		meta1.setNumImg(numImg);
@@ -501,7 +506,7 @@ public class MetaDataTester extends ApplicationTest {
 		meta1.setSubj(subjSubCat);
 		meta1.setLang(lang);
 		meta1.setCourseCode(courseCode);
-		meta1.setDeckPhotoURL(photoUrl);
+		meta1.setDeckPhotoName(photoUrl);
 		meta1.setPrice(price);
 	}
 	

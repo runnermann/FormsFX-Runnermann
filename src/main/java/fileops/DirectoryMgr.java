@@ -9,7 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
- * This class creates and manages media directories
+ * This class creates and manages media directories.
+ *
+ * It privides the naming for the directories and files used
+ * by flashmonkey.
  *
  * @author Lowell Stadelman
  */
@@ -74,6 +77,9 @@ public final class DirectoryMgr {
        *                         t = text, C = Canvas, for Image, Shapes or Both,
        *                         M = Media (video or audio), q = qr code, d = ????
        *                         z = user and verification data,
+       *                         q = qr image
+       *                         a = user avatar
+       *                         p = public used for a decks marketplace image.
        *                         </pre>
        * @return Returns the path to the directory. Note that there is not a trailing
        * forward slash "/". It would be removed by {@code File()}
@@ -86,6 +92,7 @@ public final class DirectoryMgr {
                   case 'D':
                   case 'c':
                   case 'd':
+                  case 'i':
                   case 'M':
                   case 'm': {
                         String folderStr = FlashCardOps.getInstance().getDeckLabelName();
@@ -106,16 +113,16 @@ public final class DirectoryMgr {
                   case 'q': {
                         return SYSTEM_DIR + getUserNameHash() + "/decks/qr/";
                   }
-
+                  case 'p': {
+                        return SYSTEM_DIR + getUserNameHash() + "/decks/image/";
+                  }
+                  case 'a': {
+                        // user avatar image stored in the usernames top level directory
+                        return SYSTEM_DIR + getUserNameHash();
+                  }
                   case 't':
                   case 'T':
                   default: {
-                        // commented out on 09-10-2021: 01-03-2022 causing errors?... checked. did not see a problem
-                        // Being inconsistent due to older file retrieval in agrFiles. Removed trailing "/"
-//                if(folderStr == null) {
-//                    return SYSTEM_DIR + getUserNameHash() + "/decks";
-//                }
-
                         return SYSTEM_DIR + getUserNameHash() + "/decks/";
                   }
             }

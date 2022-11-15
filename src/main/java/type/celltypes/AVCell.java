@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 //import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.LoggerFactory;
+import type.tools.imagery.Fit;
 //import uicontrols.UIColors;
 
 //import static javafx.application.Platform.runLater;
@@ -71,29 +72,22 @@ public class AVCell implements MediaPlayerInterface {
       /**
        * Builds the mediaCell from the data provided in the parameters
        *
-       * @param mediaWd      ..
-       * @param mediaHt      ..
+       * @param toWd  The width used if this is not displayed in the right pane.
+       * @param toHt  The height used if this is not displayed in the right pane.
        * @param mediaPathStr The mediaPath
        * @return the pane containing the cell
        */
-      public Pane buildCell(double mediaWd, double mediaHt, String mediaPathStr) {
+      public Pane buildCell(double toWd, double toHt, String mediaPathStr) {
 
             LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("\n***in first AVCell.buildCell() ***");
-
             // Create file from media path
             mediaFile = new File(mediaPathStr);
             rightPane = new Pane();
 
-
             if (mediaFile.exists()) {
-                  Media media = new Media(mediaFile.toURI().toString());
-                  this.origWd = media.getWidth();
-                  this.origHt = media.getHeight();
-                  // create media from file
-                  //if(ok.get()) {
                   LOGGER.info("file: " + mediaFile.toURI() + " exists");
-                  rightPane = buildRightCell(mediaPathStr, mediaWd, mediaHt);
+                  rightPane = buildRightCell(toWd, toHt);
                   rightPane.setId("rightPaneWhite");
                   rightPane.setPadding(new Insets(4, 0, 0, 0));
                   rightPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -104,7 +98,6 @@ public class AVCell implements MediaPlayerInterface {
                   });
 
                   return rightPane;
-
             } else { // media file cannot be found, show problem img currently poop img.
                   LOGGER.warn("media/audio does not exist, calling oops.png: filePath: ", mediaFile.toURI());
                   String imagePath = "File:" + "src/image/poop_img_problem.png";
@@ -131,9 +124,9 @@ public class AVCell implements MediaPlayerInterface {
        * @return
        */
       private int count = 0; // increased to 5, for bad networks.
-      private boolean isShowing = false;
+//      private boolean isShowing = false;
 
-      private synchronized Pane buildRightCell(String mediaPathStr, Double prefWd, Double prefHt) {
+      private synchronized Pane buildRightCell(Double toWd, Double toHt) {
             System.out.println("\n*** buildRightCell called in AVCell ***");
             // temp fix for Java-Bug ??? for windows. Video does not always load in win 10/11
 
@@ -148,7 +141,7 @@ public class AVCell implements MediaPlayerInterface {
             playIconImgView.setFitWidth(50);
             mediaVBox.setAlignment(Pos.CENTER);
             mediaVBox.getChildren().add(playIconImgView);
-            mediaVBox.setMinSize(prefWd, 100);
+            mediaVBox.setMinSize(toWd, toHt);
             mediaVBox.setAlignment(Pos.CENTER);
 
             Runnable task = () -> {
@@ -164,9 +157,9 @@ public class AVCell implements MediaPlayerInterface {
                         System.out.println("in listener, mediaPlayer statusProperty is: " + nv);
                         if (nv == MediaPlayer.Status.READY) {
                               scheduledExecutor.shutdownNow();
-                              isShowing = true;
-                              mediaViewer.setFitWidth(prefWd);
-                              mediaViewer.setFitHeight(prefHt);
+                              //isShowing = true;
+                              mediaViewer.setFitWidth(toWd);
+                              mediaViewer.setFitHeight(toHt);
                               StackPane viewerPane = new StackPane(mediaViewer);
                               viewerPane.setAlignment(Pos.CENTER);
                               playIconImgView.setImage(playIcon);
@@ -182,7 +175,7 @@ public class AVCell implements MediaPlayerInterface {
                   if (count++ > 9) {
                         scheduledExecutor.shutdownNow();
                         //this.rightPane.getChildren().clear();
-                        //this.rightPane.getChildren().add(buildRightCell(mediaPathStr, prefWd, prefHt));
+                        //this.rightPane.getChildren().add(buildRightCell(mediaPathStr, toWd, toHt));
                   }
             };
             //if(scheduledExecutor.isTerminated())

@@ -14,12 +14,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
+import org.apache.http.MethodNotSupportedException;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import type.tools.calculator.DijkstraParser;
 import type.tools.calculator.ExpNode;
 import type.tools.calculator.Graph;
 import type.tools.calculator.OperatorInterface;
+import uicontrols.ButtoniKon;
 import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
 import uicontrols.UIColors;
@@ -365,6 +367,12 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
       @Override
       public void reset() {
             //graphPane = buildGraph(200, 200, graphPane);
+      }
+
+      @Override
+      public void resetSelectAnsButton() {
+            //answerButton = ButtoniKon.getAnsSelect();
+            throw new UnsupportedOperationException("This method is not implemented for GraphCard");
       }
 
 

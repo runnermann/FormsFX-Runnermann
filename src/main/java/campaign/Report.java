@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * NOTE: Information about users, ie names and email address are stored in an encrypted state.
@@ -321,8 +324,8 @@ public final class Report {
                       ", share_distro = '" + metaObj.isShareDistro() + "'" +
                       ", sell_deck = '" + metaObj.isSellDeck() + "'" +
                       ", price = '" + metaObj.getPrice() + "'" +
-                    ", deck_numstars = '" +metaObj.getNumStars() + "'" +
-                    ", deck_photo = '" +   metaObj.getDeckImgName() + "'" +
+                      ", deck_numstars = '" +metaObj.getNumStars() + "'" +
+                      ", deck_photo = '" +   metaObj.getDeckImgName() + "'" +
                       ", session_count = session_count+1 " +
                       " WHERE deck_id = " + id + ";";
 
@@ -359,7 +362,7 @@ public final class Report {
        * @return true if successful
        */
       private boolean updateTestMetaData(HashMap<String, String> map, long id) {
-            boolean bool = false;
+            AtomicBoolean bool = new AtomicBoolean(false);
 
             LOGGER.info("updateDeckMetadata sending, ID: {}" + id);
             if (connect != null && Utility.isConnected()) {
@@ -374,22 +377,29 @@ public final class Report {
 
                   DBConnect db = DBConnect.getInstance();
 
-                  try {
+
+                  ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+                  Runnable task = () -> {
                         CompletableFuture<QueryResult> future = db.getConnection()
                             .sendPreparedStatement(updateDB);
-                        future.get();
-                        bool = true;
-                  } catch (ExecutionException e) {
-                        LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
-                        e.printStackTrace();
-                  } catch (InterruptedException e) {
-                        LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
-                        e.printStackTrace();
-                  }
+                        try {
+                              future.get();
+                        } catch (InterruptedException e) {
+                              LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
+                              e.printStackTrace();
+                        } catch (ExecutionException e) {
+                              LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
+                              e.printStackTrace();
+                        }
+                        bool.set(true);
+                        scheduledExecutor.shutdown();
+                  };
+                  scheduledExecutor.execute(task);
+
             } else {
                   LOGGER.info(" updateDeckMetadata() DB is not connected. Check network connection.");
             }
-            return bool;
+            return bool.get();
       }
 
       /**

@@ -384,7 +384,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <!-- use the launcher here -->
-                                        <mainClass>flashmonkey.AppLauncher</mainClass>
+                                    <mainClass>flashmonkey.AppLauncher</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

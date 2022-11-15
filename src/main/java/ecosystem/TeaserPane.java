@@ -1,5 +1,7 @@
 package ecosystem;
 
+import ch.qos.logback.classic.Level;
+import fileops.VertxLink;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.Alphabet;
 import javafx.css.StyleableProperty;
@@ -21,8 +23,8 @@ import java.util.HashMap;
 
 public class TeaserPane extends ToggleButton {
 
-      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TeaserPane.class);
-      private static final Logger LOGGER = LoggerFactory.getLogger(TeaserPane.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TeaserPane.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(TeaserPane.class);
 
 
       public TeaserPane() {
@@ -44,6 +46,7 @@ public class TeaserPane extends ToggleButton {
       private GridPane teaserGrid;
 
       public HBox build(HashMap<String, String> map, int idx) {
+            LOGGER.setLevel(Level.ALL);
             LOGGER.debug("getPane() called");
 
             HBox rdoBox = new HBox(6);
@@ -64,25 +67,40 @@ public class TeaserPane extends ToggleButton {
             // section descript
             teaserGrid.add(new Label("section3"), 0, 1);
             // media
-            //      if(hasMedia(map.get("num_imgs"), map.get("num_video"), map.get("num_audio"))) {
             LOGGER.debug("teaserPane has media");
             teaserGrid.add(new Label("Media"), 0, 2);
-            //      }
 
+            String s3link = VertxLink.DECK_DESCRIPT_PHOTO.getEndPoint() + map.get("deck_photo");
+            LOGGER.debug("s3link: {}", s3link );
+            Image image;
+            ImageView imgView = new ImageView("/image/profDemoMktImg.png");
             // column two
-            Image image = new Image(getClass().getResourceAsStream("/image/profDemoMktImg.png"));
-            ImageView img = new ImageView(image); //new ImageView(DeckMarketPane.getInstance().getDeckImg(idx));
+            try {
+                  image = new Image(s3link, true);
+                  if(image != null) {
+                        imgView = new ImageView(image); //new ImageView(DeckMarketPane.getInstance().getDeckImg(idx));
+                  }
+                  // listen for the error.
+                  image.errorProperty().addListener((obs, old, changed) -> {
+                        System.out.println("error: " + changed);
+                  });
 
-            img.setFitWidth(128);
-            img.setPreserveRatio(true);
-            img.setSmooth(true);
+            } catch (NullPointerException e) {
+                  LOGGER.error("ERROR NULL POINTER EXCEPTION: when attempting to display an image from the net.");
+                  e.printStackTrace();
+            } catch (Exception e) {
+                  LOGGER.error("EXCEPTION: When attempting to display an image from the net.");
+                  e.printStackTrace();
+            }
+            imgView.setFitWidth(128);
+            imgView.setPreserveRatio(true);
+            imgView.setSmooth(true);
             // columnNum, rowNum, num cols, num rows
-            teaserGrid.add(img, 1, 0, 1, 3);
-
+            teaserGrid.add(imgView, 1, 0, 1, 3);
             // stars
             // columnNum, rowNum, num cols, num rows
             //gridP.add(DeckMarketPane.getInstance().getStars(map.get("deck_numstars"), 80), 0, 4, 2, 1);
-             teaserGrid.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("avatar_name")), 0, 4, 2, 1);
+            teaserGrid.add(getStarPane(map.get("deck_numstars"), map.get("num_users"), map.get("avatar_name")), 0, 4, 2, 1);
             //rdoBox.setId("#teaser" + idx);
             rdoBox.getChildren().add(teaserGrid);
 

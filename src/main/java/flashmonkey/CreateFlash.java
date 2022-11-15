@@ -15,6 +15,16 @@ import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import forms.DeckMetaModel;
 import forms.DeckMetaPane;
+import media.sound.SoundEffects;
+import metadata.DeckMetaData;
+
+import type.celleditors.DrawTools;
+import type.celleditors.SectionEditor;
+import type.testtypes.GenericTestType;
+import type.testtypes.MultiChoice;
+import type.testtypes.TestList;
+import uicontrols.*;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.*;
@@ -25,24 +35,16 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import media.sound.SoundEffects;
-import metadata.DeckMetaData;
+
 import org.controlsfx.control.PrefixSelectionComboBox;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import type.cardtypes.GenericCard;
-import type.celleditors.DrawTools;
-import type.celleditors.SectionEditor;
-import type.testtypes.GenericTestType;
-import type.testtypes.MultiChoice;
-import type.testtypes.TestList;
-import uicontrols.*;
 
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -350,7 +352,11 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             }
 
             // NORTH & CENTER PANES entry fields
+            HBox northContainer = new HBox();
+            northContainer.setId("CreateNorthCtnr");
             HBox cfpNorth = new HBox(4);
+
+
             cfpNorth.setPadding(new Insets(2, 4, 2, 4));
             // Contains the CardType
             cfpCenter = new VBox(2);
@@ -395,6 +401,9 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
             // Add comboBox to buttonBox
             cfpNorth.getChildren().addAll(entryComboBox, mainLabel);
+            northContainer.getChildren().add(cfpNorth);
+            HBox.setHgrow(cfpNorth, Priority.ALWAYS);
+            HBox.setHgrow(northContainer, Priority.ALWAYS);
 
             //****         CFP SOUTH          ***
 
@@ -409,7 +418,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 //            masterBPane.setAlignment(Pos.CENTER);
             masterBPane.setId("cfMasterPane");
             masterBPane.getStylesheets().addAll("css/buttons.css", "css/mainStyle.css");
-            masterBPane.setTop(cfpNorth);
+            masterBPane.setTop(northContainer);
             masterBPane.setCenter(cfpCenter);
             masterBPane.setBottom(cfpSouth);
             // the initial displayed element "last in list" is empty. Other
@@ -1707,35 +1716,36 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   //Thread.dumpStack();
                   ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(3);
                   AtomicInteger count = new AtomicInteger(); // increased to 5, for bad networks.
-                  AtomicBoolean bool = new AtomicBoolean(false);
+             //     AtomicBoolean bool = new AtomicBoolean(false);
                   if (Utility.isConnected()) {
                         String[] uploads = mediaMergeUnique(editors.EDITOR_U.getMediaNameArray(), editors.EDITOR_L.getMediaNameArray());
                         Runnable task = () -> {
-                              count.getAndIncrement();
                               if (!sendMedia(uploads) || count.get() >= 5) {
                                     scheduledExecutor.shutdownNow();
-                        /*if (count.get() >= 5) {
-                            String errorMessage = " Not all media was uploaded. \nPlease check if your connected to the internet.";
-                            FxNotify.notificationDark("Ooops!", errorMessage, Pos.CENTER, 6,
-                                    "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getWindow());
-                        }*/
                               }
+                              count.getAndIncrement();
                         };
-                        scheduledExecutor.scheduleWithFixedDelay(task, 0, 3, TimeUnit.SECONDS);
+                        scheduledExecutor.scheduleWithFixedDelay(task, 1, 5, TimeUnit.SECONDS);
                   }
             }
 
+            /**
+             * If the media does not exist in s3, sends it. Then checks to ensure
+             * it exists. If not, returns false.
+             * @param uploads
+             * @return
+             */
             private boolean sendMedia(String[] uploads) {
                   // upload
                   if (uploads.length == 0) {
                         return true;
                   }
-                  CloudOps.putMedia(uploads);
+                  // bucket 'i' for cards images
+                  CloudOps.putMedia(uploads, 'i');
                   // check
-                  String[] tryAgain = CloudOps.checkExistsInS3(uploads, FlashCardOps.getInstance().getDeckFileName());
+                  String[] tryAgain = CloudOps.checkCardMediaExistsInS3(uploads, FlashCardOps.getInstance().getDeckFileName());
                   // if list is not 0 try to upload 5 more times,
                   // if fails, send message to user.
-                  int tries = 0;
                 return tryAgain == null || tryAgain[0] == null;
             }
 

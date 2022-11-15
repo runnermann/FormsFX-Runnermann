@@ -14,6 +14,7 @@ import type.tools.calculator.*;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import type.sectiontype.GenericSection;
+import uicontrols.ButtoniKon;
 import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
 import uicontrols.UIColors;
@@ -82,7 +83,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
       // The GenericSection object
       private GenericSection genSection;
       // Answer Button
-      private Button answerButton;
+      private Button selectAnsButton;
       // The Mathmatical expression from/for the question
       protected String expression;
       // Problem as executed by DijkstraParser
@@ -166,8 +167,8 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             uPane.setMinHeight(SceneCntl.calcCellHt());
             uPane.setMaxHeight(SceneCntl.calcCellHt());
             // Answer button in Test Mode
-            answerButton = new Button("answer");
-            answerButton.setOnAction(e -> ansButtonAction(cc, parentPane));
+            selectAnsButton = ButtoniKon.getAnsSelect();
+            selectAnsButton.setOnAction(e -> ansButtonAction(cc, parentPane));
 
             // The String expression displayed to the EncryptedUser.EncryptedUser
             // Stored in the currentCard.
@@ -264,12 +265,12 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
       @Override
       public Button[] getAnsButtons() {
-            return new Button[]{answerButton};
+            return new Button[]{selectAnsButton};
       }
 
       @Override
       public Button getAnsButton() {
-            return answerButton;
+            return selectAnsButton;
       }
 
       @Override
@@ -293,6 +294,11 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             if (parser != null) {
                   parser.clearStructures();
             }
+      }
+
+      @Override
+      public void resetSelectAnsButton() {
+            selectAnsButton = ButtoniKon.getAnsSelect();
       }
 
 
@@ -333,7 +339,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                   // It's a fraction
 
                   userAnsField.setEditable(false);
-                  answerButton.setDisable(true);
+                  selectAnsButton.setDisable(true);
                   ExpNode exp = Operator.getLast();
                   String[] parts = response.split("/");
                   String answer = exp.getExpSolved();
@@ -353,7 +359,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                   }
             } else {
                   userAnsField.setEditable(false);
-                  answerButton.setDisable(true);
+                  selectAnsButton.setDisable(true);
                   // Get the correct answer from the expression
                   double correctAnsDbl = parser.getResult();
                   // Display a colored border around the users answer box.
@@ -490,7 +496,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             userAnsField = new TextField();
             userAnsField.setEditable(true);
             userAnsField.setPrefColumnCount(20);
-            box.getChildren().addAll(userAnsField, answerButton);
+            box.getChildren().addAll(userAnsField, selectAnsButton);
 
             box.setPadding(new Insets(80, 0, 0, 0));
             VBox vB = new VBox(2);

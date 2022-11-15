@@ -26,6 +26,7 @@ import javafx.scene.layout.VBox;
 import flashmonkey.FlashCardMM;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
+import uicontrols.ButtoniKon;
 
 import java.util.ArrayList;
 
@@ -132,6 +133,11 @@ public class AIMode extends TestTypeBase implements GenericTestType<AIMode> {
       @Override
       public void reset() {
             // stub
+      }
+
+      @Override
+      public void resetSelectAnsButton() {
+            // STUB // selectAnsButton = ButtoniKon.getAnsSelect();
       }
 
 

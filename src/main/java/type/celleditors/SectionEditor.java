@@ -411,13 +411,14 @@ public class SectionEditor {
             // Clear stackL from sectionHBox & remove
             // deleteMMCellBtn from right stackR
             this.deleteTCellBtn.setOnAction((ActionEvent e) -> {
+                  CreateFlash.getInstance().setFlashListChanged(true);
                   SoundEffects.PRESS_BUTTON_COMMON.play();
                   toSingleMediaCellAction();
-                  LOGGER.debug("textAreaBtn width {}", this.addTextCellBtn.getBoundsInLocal().getWidth());
             });
 
             // Clear stackR from sectionHBox & remove
             this.deleteMMCellBtn.setOnAction((ActionEvent e) -> {
+                  CreateFlash.getInstance().setFlashListChanged(true);
                   SoundEffects.PRESS_BUTTON_COMMON.play();
                   CreateFlash.getInstance().setFlashListChanged(true);
                   deleteMMcellAction();
@@ -456,14 +457,14 @@ public class SectionEditor {
             LOGGER.info(" DeleteTCellButton pressed ");
             LOGGER.info("masterBox width setting to: " + this.sectionHBox.getWidth());
 
-            CreateFlash.getInstance().setFlashListChanged(true);
+            //CreateFlash.getInstance().setFlashListChanged(true);
 
             this.sectionHBox.getChildren().clear();
             stackR.getChildren().clear();
 
             switch (this.sectionType) {
-                  case 'c':
-                  case 'C': {
+                  case 'C':
+                  case 'c': {
                         this.sectionType = 'c';
                         if (this.iView == null) {
                               this.iView = new ImageView(image);
@@ -477,6 +478,7 @@ public class SectionEditor {
 
                         rightPane.getChildren().clear();
                         rightPane.getChildren().add(iView);
+
                         // rescale shapes
                         double rectWd = ((FMRectangle) arrayOfFMShapes.get(0)).getWd();
                         double rectHt = ((FMRectangle) arrayOfFMShapes.get(0)).getHt();
@@ -496,45 +498,29 @@ public class SectionEditor {
                                         newVal.doubleValue() - 90, newValHt.get() - 20);
                               }
                         });
-                        // repsonsive height
+                        // responsive height
                         sectionHBox.heightProperty().addListener((obs, oldval, newVal) -> {
                               newValHt.set((long) newVal.doubleValue());
                         });
 
                         // the initial display of the shapes
-
-
                         break;
                   }
-                  case 'd':
-                  case 'D': {
+                  case 'D':
+                  case 'd': {
                         LOGGER.info("\tsetting type to 'd'");
                         this.sectionType = 'd';
                         // for media
-                        this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
-
-//                        int wd = (int) this.sectionHBox.getWidth() - 90;
-//                        int ht = (int) this.sectionHBox.getHeight() - 4;
-//                        this.rightPane.setMaxWidth(wd);
-//                        this.rightPane.setMaxHeight(ht);
-//                        double rectHt = ((FMRectangle) arrayOfFMShapes.get(0)).getWd();
-//                        double rectWd = ((FMRectangle) arrayOfFMShapes.get(0)).getHt();
-//                        this.setScale(wd, ht);
-//                        this.setShapesInRtPane(arrayOfFMShapes, rectWd, rectHt);
+                        this.rightPane.setMaxWidth(200);
 
                         break;
                   }
-                  case 'm':
-                  case 'M': {
+                  case 'M':
+                  case 'm': {
+                        this.sectionType = 'm';
                         LOGGER.info("\tsetting type to 'm'");
                         this.sectionType = 'm';
                         this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
-
-//                        // Set max wd/ht of image
-//                        int wd = (int) this.sectionHBox.getWidth() - 90;
-//                        int ht = (int) this.sectionHBox.getHeight() - 4;
-//                        this.rightPane.setMaxWidth(wd);
-//                        this.rightPane.setMaxHeight(ht);
                   }
                   default: {
                         // Default, do nothing. This should not happen.
@@ -974,14 +960,14 @@ public class SectionEditor {
                             txtVBox.setPrefWidth(newVal.doubleValue()));
                         break;
                   }
-                  // SingleSection image with or without shapes
+                  // Double Section image with or without shapes
                   case 'C': {
                         // For responsive text pane with the right pane.
                         CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) ->
                             txtVBox.setPrefWidth(newVal.doubleValue() - 108));
                         // no break, let it fall through.
                   }
-                  // Double section image with or without shapes
+                  // Single section image with or without shapes
                   case 'c': {
                         LOGGER.debug("case 'c' or 'C' setImage and shapes");
                         setMediaFileName(mediaFileNames[0]);
@@ -1010,14 +996,11 @@ public class SectionEditor {
                                     double origWd = rect.getWd();
                                     if(mediaType == 'C') {
                                           // for double cell, when image and shapes are in Rt pane.
+                                          // Note uses the original pane width for ratio.
                                           setShapesInRtPane(this.arrayOfFMShapes, origWd, origHt);
                                     }
                                     else {
                                           toSingleMediaCellAction();
-//                                          setImageHelperWSize(image, this.sectionHBox.getWidth(), this.sectionHBox.getHeight());
-//                                          // For single cell. When image and shapes use all the space of the single section.
-//                                          setShapesInExplode(this.arrayOfFMShapes, origWd, origHt,
-//                                              this.iView.getBoundsInLocal().getWidth(), this.iView.getBoundsInLocal().getHeight());
                                     }
                               }
 
@@ -1031,13 +1014,13 @@ public class SectionEditor {
 
                         break;
                   }
-                  // Single section drawings
+                  // Double section drawings
                   case 'D': {
                         // for responsive text pane with the right pane.
                         CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) -> txtVBox.setPrefWidth(newVal.doubleValue() - 124));
                         // no break, let it fall through.
                   }
-                  // Double section Drawings only
+                  // single section Drawings only
                   case 'd': {
                         this.shapesFileName = mediaFileNames[1];
                         LOGGER.debug(" Shapes Only .. This is a DrawPad");
@@ -1070,15 +1053,25 @@ public class SectionEditor {
 
                         break;
                   }
-                  // media Video and Sound
-                  case 'M':
+                  // Double section media Video and Sound
+                  case 'M': {
+                        // For responsive text pane with the right pane.
+                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) ->
+                            txtVBox.setPrefWidth(newVal.doubleValue() - 108));
+                  }
+                  // Single section media
                   case 'm': {
                         String path = DirectoryMgr.getMediaPath('c');
                         String relativeImgPath = path + mediaFileNames[0];
                         LOGGER.debug("relativeImgPath: " + relativeImgPath + ", & mediaType: " + mediaType);
                         setMediaFileName(mediaFileNames[0]);
-                        //this.mediaFileName = mediaFileNames[0];
-                        setVideoHelper(relativeImgPath);
+                        if(mediaType == 'M') {
+                              setVideoHelper(relativeImgPath, 100, 100);
+                        }
+                        else {
+                              setVideoHelper(relativeImgPath, 200, 200);
+                              toSingleMediaCellAction();
+                        }
                         LOGGER.debug("media rightPane has content: " + rightPane.getChildren().isEmpty());
 
                         break;
@@ -1171,12 +1164,12 @@ public class SectionEditor {
        *
        * @param relativePath ..
        */
-      private void setVideoHelper(String relativePath) {
+      private void setVideoHelper(String relativePath, double wd, double ht) {
             this.sectionHBox.getChildren().clear();
             this.stackR.getChildren().clear();
 
             AVCell avCell = new AVCell();
-            rightPane = avCell.buildCell(100, 100, relativePath);
+            rightPane = avCell.buildCell(wd, ht, relativePath);
             setTextCellWdForMedia();
 
             // sets the textVBox and delete button in the left stackPane
@@ -1238,8 +1231,8 @@ public class SectionEditor {
             }
       }
 
-      /* ------------------------------------------------------- **/
 
+      /* ------------------------------------------------------- **/
 
       /**
        * Adds Shapes to the rightPane.
@@ -1270,6 +1263,10 @@ public class SectionEditor {
                   this.rightPane.getChildren().add(fmShapes.get(i).getScaledShape(scale));
             }
       }
+
+
+      /* ------------------------------------------------------- **/
+
 
       public void setShapesInExplode(ArrayList<GenericShape> fmShapes, double origWd, double origHt, double newWd, double newHt) {
             LOGGER.setLevel(Level.DEBUG);
@@ -1743,7 +1740,7 @@ public class SectionEditor {
                               if (isCompleted) {
                                     // sets the video in the rPane
                                     // to the dragboard file
-                                    setVideoHelper(dragboard.getUrl());
+                                    setVideoHelper(dragboard.getUrl(), 100, 100);
                               }
                         } else {
                               LOGGER.warn("\nDragboard does not contain an image or media \nin the expected format: Image, File, URL");
@@ -1895,7 +1892,7 @@ public class SectionEditor {
                         // creates the video and insert
                         // into the right pane, add
                         // delete buttons
-                        setVideoHelper(fromPath);
+                        setVideoHelper(fromPath, 100, 100);
                         return true;
                         // Video is not a format that JavaFX handles, use
                         // JAVE for video
@@ -1938,7 +1935,7 @@ public class SectionEditor {
 
                         LOGGER.debug("Video ends with .mov. output pathName: {}", outputFile.getPath());
                         // sets right pane
-                        setVideoHelper(outputPathName);
+                        setVideoHelper(outputPathName, 100, 100);
                         rightPane.getChildren().add(progressIndicator);
                         rightPane.setMinSize(100, 50);
                         return true;
@@ -1948,7 +1945,7 @@ public class SectionEditor {
 
             public void runVideoHelper(String outputPathName) {
                   progressIndicator = null;
-                  setVideoHelper(outputPathName);
+                  setVideoHelper(outputPathName, 100, 100);
             }
 
             /**

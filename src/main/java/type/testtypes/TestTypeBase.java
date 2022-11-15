@@ -1,5 +1,8 @@
 package type.testtypes;
 
+import javafx.scene.control.Button;
+import uicontrols.ButtoniKon;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,5 +32,6 @@ public abstract class TestTypeBase {
       public void setScore(double num) {
             this.atomicScore.set((int) num * 10);
       };
+
 
 }

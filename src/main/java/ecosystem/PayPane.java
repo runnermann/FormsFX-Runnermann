@@ -6,9 +6,14 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.effect.Light;
+import javafx.scene.effect.Lighting;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.*;
+import javafx.scene.transform.Rotate;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 
@@ -21,14 +26,17 @@ public class PayPane {
 
       public static StackPane getPayPane() {
             Pane lowerPane = new Pane();
-            //BorderPane bp = new BorderPane();
-            //VBox v = comingSoonPane();
-            //v.setTranslateX(120);
-            //v.setTranslateY(200);
+            BorderPane bp = new BorderPane();
+            VBox v = comingSoonPane();
+            v.setTranslateX(120);
+            v.setTranslateY(200);
             lowerPane.getChildren().add(getMainPane());
             Pane anchor = new Pane();
-            //anchor.getChildren().add(v);
-            StackPane s = new StackPane(lowerPane);
+            bp.setCenter(v);
+            anchor.getChildren().add(bp);
+            AnchorPane.setLeftAnchor(bp, 10.0);
+            AnchorPane.setBottomAnchor(bp, 100.0);
+            StackPane s = new StackPane(lowerPane, anchor);
 
             return s;
       }
@@ -74,7 +82,7 @@ public class PayPane {
             return gPane;
       }
 
-	/*private static VBox comingSoonPane() {
+	private static VBox comingSoonPane() {
 		// Light source
 		Light.Distant light = new Light.Distant(45.0, 80.0, Color.ORANGERED);
 		// Light effect
@@ -99,20 +107,20 @@ public class PayPane {
 		VBox b = new VBox(10);
 		b.getChildren().addAll(t, t1);
 		b.setStyle("-fx-background-color: #ffffff95");
-		//b.setOpacity(60);
+		b.setOpacity(60);
 		b.setPadding(new Insets(20,20,20,20));
 		b.setAlignment(Pos.CENTER);
 
 		//Creating the rotation transformation
 		Rotate rotate = new Rotate();
 		//Setting pivot points for the rotation
-		//rotate.setPivotX(120);
-		//rotate.setPivotY(100);
+		rotate.setPivotX(120);
+		rotate.setPivotY(100);
 		rotate.setAngle(30);
 		//Adding the transformation
 		b.getTransforms().addAll(rotate);
 		return b;
-	}*/
+	}
 
 
 }

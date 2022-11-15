@@ -43,7 +43,7 @@ public class TextCell {
             textCellVbox = new VBox();
             textArea = new TextArea();
             textCellVbox.setPadding(new Insets(6, 6, 6, 6));
-            textCellVbox.setStyle("-fx-background-color: white");
+//            textCellVbox.setStyle("-fx-background-color: white; -fx-border-radius: 3; -fx-background-radius: 3");
             textCellVbox.setAlignment(Pos.BOTTOM_LEFT);
             textArea.setWrapText(true);
             textArea.setEditable(false);
@@ -64,13 +64,13 @@ public class TextCell {
       public final VBox buildCell(String txt, String prompt, int cellWd, int cellHt, int numSections, boolean isEqual, double otherHt) {
             textCellVbox = new VBox();
             textArea = new TextArea();
-
             // The starting size of this pane which will adapt to the settings
             // of the (parent) single or double section containers due to their responsive
             // settings.
             textArea.setPrefSize(cellWd, cellHt);
             textCellVbox.setPrefSize(cellWd, cellHt);
-            textCellVbox.setStyle("-fx-background-color: white");
+            textCellVbox.setStyle("-fx-background-color: white; -fx-border-radius: 2; -fx-background-radius: 2");
+//            textArea.setStyle("-fx-background-color: white; -fx-border-radius: 3; -fx-background-radius: 3");
             textArea.setWrapText(true);
             textArea.setEditable(false);
             if ( txt.isEmpty() ) {

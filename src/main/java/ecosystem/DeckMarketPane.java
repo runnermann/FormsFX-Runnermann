@@ -3,7 +3,7 @@ package ecosystem;
 import authcrypt.UserData;
 import authcrypt.user.EncryptedAcct;
 
-import fileops.CloudOps;
+import fileops.VertxLink;
 import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -15,7 +15,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.ButtoniKon;
@@ -24,6 +23,10 @@ import uicontrols.SceneCntl;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
+/**
+ * ContainerPane for all of the ecosystem.
+ */
 public class DeckMarketPane {
 
     //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckMarketPane.class);
@@ -37,7 +40,7 @@ public class DeckMarketPane {
     private GridPane mainGP;
     private boolean isBuilt = false;
     // arraylist of DeckMetaData from query
-    private static ArrayList<HashMap<String, String>> mapArray;
+    private static ArrayList<HashMap<String, String>> metaDataMapArray;
     // private String[] acctStatus; / in EncrypytedAcct
     // private boolean userExists = false;
     private EncryptedAcct acct;// = new EncryptedAcct();
@@ -63,7 +66,7 @@ public class DeckMarketPane {
         centerPane.onClose();// = null;
         teaserPaneList = null;
         acct = null;
-        mapArray = null;
+        metaDataMapArray = null;
         teaserVBox = null;
         imageAry = null;
         cartList = null;
@@ -99,7 +102,7 @@ public class DeckMarketPane {
         // gp.setGridLinesVisible(true);
 
         // Data is set by formAction in DeckSearchModel
-        mapArray = new ArrayList<>();
+        metaDataMapArray = new ArrayList<>();
         teaserPaneList = new ArrayList<>();
         teaserScroll = new ScrollPane();
         cartList = new ArrayList<>();
@@ -125,7 +128,7 @@ public class DeckMarketPane {
     // ******* GETTERS *********
 
     ArrayList<HashMap<String, String>> getMapArray() {
-        return mapArray;
+        return metaDataMapArray;
     }
 
     // ******* SETTERS ********
@@ -141,15 +144,15 @@ public class DeckMarketPane {
             // get media for decks.
             // should be limited to reduce
             // delay.
-            ArrayList<String> strAry = setImgNames(mapArray);
-            // @TODO get and put thumbs in public s3
-        //    imageAry = clops.getMediaFmS3(strAry);
+            ArrayList<String> strAry = setImgNames(metaDataMapArray);
             imageAry = new ArrayList<>(1);
-            for(int i = 0; i < 12; i++) {
-                imageAry.add(new Image(getClass().getResourceAsStream("/image/professorLg.png")));
+            String s3link;
+            for(int i = 0; i < metaDataMapArray.size(); i++) {
+                s3link = VertxLink.DECK_DESCRIPT_PHOTO.getEndPoint() + metaDataMapArray.get(i).get("deck_photo");
+                imageAry.add(new Image(s3link, true));
             }
             setTeaserPanes();
-            int width = SceneCntl.getFileSelectPaneWd();
+            //int width = SceneCntl.getFileSelectPaneWd();
             teaserScroll.setId("teaser");
 
             teaserScroll.setStyle("-fx-background-color: TRANSPARENT");
@@ -184,9 +187,9 @@ public class DeckMarketPane {
         HashMap<String, String> map;// : mapArray
         TeaserPane tPane = new TeaserPane();
 
-        for(int i = 0; i < mapArray.size(); i++) {
+        for(int i = 0; i < metaDataMapArray.size(); i++) {
             int idx = i;
-            map = mapArray.get(idx);
+            map = metaDataMapArray.get(idx);
             // Set the map to the entries in the teaserPane
 
             HBox h = tPane.build(map, i);
@@ -324,12 +327,12 @@ public class DeckMarketPane {
 
 
     protected ImageView getStars(String numStars, int width) {
-        // @TODO finish getStars
         Image stars = new Image(getClass().getResourceAsStream("/icon/24/stars/stars" + numStars + ".png")); //new Image("File:/icon/24/stars/stars" + numStars + ".png");
         ImageView img = new ImageView(stars);
         img.setFitWidth(width);
         img.setPreserveRatio(true);
         img.setSmooth(true);
+        img.setId("pad6bottom");
 
         return img;
     }
@@ -352,7 +355,7 @@ public class DeckMarketPane {
 
     public void setMapArray(ArrayList<HashMap<String, String>> mapAry) {
         LOGGER.debug("setMapArray called");
-        mapArray = mapAry;
+        metaDataMapArray = mapAry;
     }
 
     /**
@@ -360,7 +363,7 @@ public class DeckMarketPane {
      * @return true if there is not any data stored in the map.
      */
     public boolean isEmpty() {
-        return (mapArray.size() == 0 || ! mapArray.get(0).get("empty").equals("false"));
+        return (metaDataMapArray.size() == 0 || ! metaDataMapArray.get(0).get("empty").equals("false"));
     }
 
     // ***** Cart or Account related ***** //
@@ -375,7 +378,7 @@ public class DeckMarketPane {
 
     protected void addToCart(HashMap<String, String> deckMap, int idx) {
         cartList.add(deckMap);
-        HashMap<String, String> map = mapArray.get(idx);
+        HashMap<String, String> map = metaDataMapArray.get(idx);
         calcTotal();
         setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"), cartList.size(), total);
     }

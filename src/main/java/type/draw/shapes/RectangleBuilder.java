@@ -125,7 +125,6 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
             anchorY = mouse.getSceneY();
       }
 
-
       /**
        * As the mouse is dragged, create the shape of the
        * rectangle.
@@ -134,7 +133,6 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
        */
       @Override
       public void mouseDragged(MouseEvent e) {
-
             Canvas can = getCanvas();
             GraphicsContext gC = getGc();
 
@@ -361,7 +359,6 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
 
             draw.getFillProperty().addListener(this::fillChanged);
             draw.getStrokeProperty().addListener(this::strokeChanged);
-
 
             /* If shape right mouse click create resize nodes **/
             if (mouse.isSecondaryButtonDown()) {

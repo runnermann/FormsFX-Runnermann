@@ -67,7 +67,7 @@ public class CanvasCell extends GenericCell implements Serializable {
        * files. The first element is a rectangle that is the size of
        * the original pane.
        */
-      public Pane buildCell(Pane canvasPane, double imgWd, double imgHt, String... canvasPaths) {
+      public Pane buildCell(Pane canvasPane, double toWd, double toHt, String... canvasPaths) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("called, img and canvasPath: {}", canvasPaths);
             canvasPane.setId("rightPaneWhite");
@@ -80,14 +80,14 @@ public class CanvasCell extends GenericCell implements Serializable {
             // in canvasPaths.
             if (canvasPaths.length > 0) {
                   shapesPath = canvasPaths[1];
-
+                  // Shapes only
                   if (imagePath.endsWith("null")) {
                         LOGGER.debug("imageBool is false, processing shape with -NO- image");
 
-                        canvasPane = InnerShapesClass.getShapesPane(shapesPath, true, true);
+                        canvasPane = InnerShapesClass.getShapesPane(shapesPath, true, true, toWd, toHt);
                         canvasPane.setOnMouseClicked(e -> {
                               LOGGER.info("mouse clicked on Media popup with image. shapesPath: " + shapesPath);
-                              MediaPopUp.getInstance().popUpScene(InnerShapesClass.getShapesPane(shapesPath, false, false));
+                              MediaPopUp.getInstance().popUpScene(InnerShapesClass.getShapesPane(shapesPath, false, false, toWd, toHt));
                         });
 
                   } else {
@@ -99,14 +99,14 @@ public class CanvasCell extends GenericCell implements Serializable {
 
                         image.progressProperty().addListener((observable, oldValue, progress) -> {
                               if ((Double) progress == 1.0 && !image.isError()) {
-                                    scaledView[0] = processImage(image, imgWd, imgHt);
+                                    scaledView[0] = processImage(image, toWd, toHt);
                                     finalCanvasPane.getChildren().clear();
                                     finalCanvasPane.getChildren().addAll(scaledView[0]);
-                                    finalCanvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false));
+                                    finalCanvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false, toWd, toHt));
                                     finalCanvasPane.setOnMouseClicked(e -> {
                                           LOGGER.info("mouse clicked on Media popup with image. imageFilePath: " + imagePath + ", shapesPath: " + shapesPath);
                                           MediaPopUp.getInstance().popUpScene(imagePath,
-                                              InnerShapesClass.getShapesPane(shapesPath, false, false));
+                                              InnerShapesClass.getShapesPane(shapesPath, false, false, toWd, toHt));
                                     });
                               } else {
 
@@ -124,32 +124,16 @@ public class CanvasCell extends GenericCell implements Serializable {
        * size of it's container. Checks if media files are synchronized.
        *
        * @param image The path to the image
-       * @param imgWd
-       * @param imgHt
+       * @param toWd
+       * @param toHt
        * @return Returns an ImageView containing a scaled
        * image that was provided in the parameter. Resizes if scalable is true
-       * else it  does not rescale if it's container is resized after its initial
+       * else it does not rescale if it's container is resized after its initial
        * size.
        */
-      private static ImageView processImage(Image image, double imgWd, double imgHt) {
-            ImageView iView;
-//        Image image;
+      private static ImageView processImage(Image image, double toWd, double toHt) {
 
-//        File check = new File(imgPath);
-//        if (check.exists()) {
-//            LOGGER.info("\t imagePath: " + imgPath);
-
-            //           image = new Image("File:" + imgPath);
-            //       } else {
-            //           image = new Image("emojis/concentrating-poop-emoji.png");
-            //System.out.println("\t Martians don't exist");
-            //           LOGGER.warn("\t imagePath: {}", imgPath);
-            // If the image is missing,
-            // check if files are synchronized,
-            // and attempt to download missing files.
-//        }
-
-            iView = Fit.viewResize(image, imgWd, imgHt);
+            ImageView iView = Fit.viewResize(image, toWd, toHt);
             iView.setPreserveRatio(true);
             iView.setSmooth(true);
 
@@ -197,7 +181,7 @@ public class CanvasCell extends GenericCell implements Serializable {
              * @param drawingPath Path to the shapes, includes shapes file name.
              * @return
              */
-            public static Pane getShapesPane(String drawingPath, boolean scaled, boolean drawingOnly) {
+            public static Pane getShapesPane(String drawingPath, boolean scaled, boolean drawingOnly, double toWd, double toHt) {
 
                   LOGGER.debug("getShapesPane called");
                   Pane shapesPane = new Pane();
@@ -228,7 +212,7 @@ public class CanvasCell extends GenericCell implements Serializable {
                               double origHt = ((FMRectangle) fmShapesAry.get(0)).getHt();
                               if (scaled) {
                                     double scale;
-                                    scale = Fit.calcScale(origWd, origHt, 100, 100);
+                                    scale = Fit.calcScale(origWd, origHt, toWd, toHt);
                                     for (int i = 1; i < fmShapesAry.size(); i++) {
                                           shapesPane.getChildren().add(fmShapesAry.get(i).getScaledShape(scale));
                                     }

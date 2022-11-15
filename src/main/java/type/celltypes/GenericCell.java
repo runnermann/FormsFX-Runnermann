@@ -21,7 +21,9 @@ package type.celltypes;
 
 import fileops.DirectoryMgr;
 import flashmonkey.ReadFlash;
+import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
 import javax.print.DocFlavor;
@@ -38,7 +40,8 @@ public class GenericCell//  extends GenericSection
        * Returns the cell containing a media that is sized according to the scale given in the
        * parameters.
        *
-       * @param cellType  Media (video or audio) = 'M'/'m' or Canvas / Image Drawing = 'C' 'c' 'D' 'd'
+       * @param cellType  Media (video or audio) = 'M'/'m' or Canvas / Image Drawing = 'C' 'c' 'D' 'd'. Note:
+       *                  Upper case is a double section. Lower case is a single section.
        * @param pane
        * @param paneWd
        * @param paneHt
@@ -48,16 +51,40 @@ public class GenericCell//  extends GenericSection
       public Pane cellFactory(char cellType, Pane pane, int paneWd, int paneHt, String... fileNames) {
             final String CANVAS = DirectoryMgr.getMediaPath('C');//"../flashMonkeyFile/media/";
             final String MEDIA = DirectoryMgr.getMediaPath('M');//  ../flashMonkeyFile/media/";
-
+            // Upper case is double section, lower case single section
             switch (cellType) {
-                  case 'M': // Audio or Video doubleCell section
+                  case 'M': {// Audio or Video doubleCell section
+
+                        AVCell mCell = new AVCell();
+                        return mCell.buildCell(100, 100, MEDIA + fileNames[0]);
+                  }
                   case 'm': // Audio or video for singleCell section
                   {
+                        HBox containerHBox = new HBox();
+                        containerHBox.setPrefSize(paneWd, paneHt);
+                        containerHBox.setId("whiteCurvedContainer");
+                        containerHBox.setAlignment(Pos.CENTER);
                         AVCell mCell = new AVCell();
-                        return mCell.buildCell(paneWd, paneHt, MEDIA + fileNames[0]);
+                        containerHBox.getChildren().add(mCell.buildCell(200, 200, MEDIA + fileNames[0]));
+                        return containerHBox;
                   }
                   case 'c': // image or both. for singleCell section
                   case 'd': // drawing no image. singleCell
+                  {
+                        HBox containerHBox = new HBox();
+                        containerHBox.setPrefSize(paneWd, paneHt);
+                        containerHBox.setId("whiteCurvedContainer");
+                        containerHBox.setAlignment(Pos.CENTER);
+                        String[] canvasPaths = new String[2];
+                        int i = 0;
+                        CanvasCell cCell = new CanvasCell();
+
+                        for (String s : fileNames) {
+                              canvasPaths[i++] = CANVAS + s;
+                        }
+                        containerHBox.getChildren().add(cCell.buildCell(pane, paneWd, paneHt, canvasPaths));
+                        return containerHBox;
+                  }
                   case 'C': // image, or both. for doubleCell section
                   case 'D': // drawing, no image. doubleCell
                   default: {

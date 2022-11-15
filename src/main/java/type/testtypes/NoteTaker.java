@@ -31,6 +31,7 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import flashmonkey.FlashCardMM;
 import type.sectiontype.GenericSection;
+import uicontrols.ButtoniKon;
 
 import java.util.ArrayList;
 
@@ -86,10 +87,10 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
                   final ReadFlash rf = ReadFlash.getInstance();
                   rf.new JustAns(currentCard);
                   rf.getProgGauge().moveNeedle(500, rf.incProg());
-                  double progress = rf.getProgress();
-                  if (progress >= FMTWalker.getInstance().getCount()) {
-                        ReadFlash.getInstance().endGame();
-                  }
+//                  double progress = rf.getProgress();
+//                  if (progress >= FMTWalker.getInstance().getCount()) {
+//                        ReadFlash.getInstance().endGame();
+//                  }
             }
 
             ReadFlash.getInstance().setShowAnsNavBtns(false);
@@ -175,5 +176,10 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
       @Override
       public void reset() {
             // stub
+      }
+
+      @Override
+      public void resetSelectAnsButton() {
+            // STUB // selectAnsButton = ButtoniKon.getAnsSelect();
       }
 }

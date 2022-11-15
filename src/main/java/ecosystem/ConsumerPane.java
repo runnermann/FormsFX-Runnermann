@@ -9,7 +9,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uicontrols.FxNotify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,9 +27,9 @@ public class ConsumerPane extends StackPane {
       private static ConsumerPane CLASS_INSTANCE = null;
 
       static StackPane mainStackPane;
-      private AnchorPane layer1; // Search
+      private AnchorPane layer2Anchor; // Search
       private DeckSearchPane searchPane;
-      private DeckMarketPane layer0; // everything else
+      private DeckMarketPane layer1; // everything else
 
 
       /**
@@ -40,10 +39,10 @@ public class ConsumerPane extends StackPane {
       public void onClose() {
             searchPane.onClose();
             LOGGER.debug("ConsumerPane.onClose() called");
-            if (layer0 != null) {
-                  layer0.onClose();
-                  layer0 = null;
+            if (layer1 != null) {
+                  layer1.onClose();
                   layer1 = null;
+                  layer2Anchor = null;
             }
             mainStackPane.getChildren().clear();
             mainStackPane = null;
@@ -72,7 +71,6 @@ public class ConsumerPane extends StackPane {
             //LOGGER.setLevel(Level.DEBUG);
             mainStackPane = new StackPane();
             searchPane = new DeckSearchPane();
-            layer1 = new AnchorPane(searchPane.getMainGridPane());
             layoutSearch();
       }
 
@@ -80,22 +78,26 @@ public class ConsumerPane extends StackPane {
       private void layoutSearch() {
             LOGGER.debug("layoutSearch called");
             mainStackPane.getChildren().clear();
-            AnchorPane.setTopAnchor(searchPane.getMainPane(), 0.0);
-            AnchorPane.setLeftAnchor(searchPane.getMainPane(), 0.0);
+            //AnchorPane.setTopAnchor(searchPane.getMainPane(), 0.0);
+            //AnchorPane.setLeftAnchor(searchPane.getMainPane(), 0.0);
             // set 20 from left and 50 from top
             //layer1.getFormPane().setPadding(new Insets(20,0,0,50));
-            mainStackPane.getChildren().add(layer1);
+            //mainStackPane.getChildren().add(layer2Anchor);
+            mainStackPane.getChildren().add(searchPane.getMainGridPane());
       }
 
 
       public void layoutConsumer() {
             LOGGER.debug("layoutConsumer called");
+
             mainStackPane.setAlignment(Pos.TOP_LEFT);
-            AnchorPane.setTopAnchor(searchPane.getMainPane(), 20.0);
-            AnchorPane.setLeftAnchor(searchPane.getMainPane(), 50.0);
-            layer1.setMaxWidth(600);
+            BorderPane bp = new BorderPane(searchPane.getMainGridPane());
+            layer2Anchor = new AnchorPane(bp);
+            AnchorPane.setTopAnchor(bp, 28.0);
+            AnchorPane.setLeftAnchor(bp, 42.0);
+            layer2Anchor.setMaxWidth(600);
             // EcoPurchase ep = new EcoPurchase();
-            layer0 = DeckMarketPane.getInstance(); // everything else
+            layer1 = DeckMarketPane.getInstance(); // everything else
             //layer0.getMarketPane().setAlignment((Pos.TOP_LEFT));
             //layer1.getFormPane().setAlignment(Pos.CENTER_LEFT);
             //layer1.getFormPane().setPadding(new Insets(0,0,0,50));
@@ -103,7 +105,7 @@ public class ConsumerPane extends StackPane {
             //
             // mainPane.setAlignment(Pos.TOP_LEFT);
             // StackPane contains layer0 & layer1 that are Objects, need to use getPane().
-            mainStackPane.getChildren().addAll(layer0.getMarketPane(), layer1);
+            mainStackPane.getChildren().addAll(layer1.getMarketPane(), layer2Anchor);
       }
 
       public static class EcoPurchase {

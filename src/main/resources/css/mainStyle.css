@@ -218,11 +218,13 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 }
 
 .scroll-pane {
-    -fx-background-insets: 0;
+    -fx-background-insets: 4;
     -fx-background-color: transparent;
+    /*-fx-background-radius: 4;*/
     -fx-control-inner-background: transparent;
     -fx-border-style: none;
     -fx-border-width: 0;
+    /*-fx-border-radius: 4;*/
     -fx-border-insets: 0;
     -fx-padding: 4,0,4,0;
 }
@@ -235,13 +237,71 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-background-insets: 0;
 }
 
-.ScrollPane {
-    -fx-background-color: transparent;
-    -fx-control-inner-background: transparent;
-    -fx-border-style: none;
-    -fx-border-width: 0;
-    -fx-border-insets: 0px;
-    -fx-padding: 4,0,4,0;
+/*.ScrollPane {*/
+/*    -fx-background-color: transparent;*/
+/*    -fx-background-radius: 4;*/
+/*    -fx-control-inner-background: transparent;*/
+/*    -fx-border-style: none;*/
+/*    -fx-border-width: 0;*/
+/*    -fx-border-insets: 0px;*/
+/*    -fx-padding: 4,0,4,0;*/
+/*}*/
+
+/* File selection panel on  */
+#fileSelectPane {
+    -fx-background-color: #0064e195;
+    /*-fx-border-radius: 3;*/
+    /*-fx-background-radius: 3;*/
+}
+
+#fileSelectPane,
+#fileSelectNoColr {
+    -fx-border-color: TRANSPARENT;
+    -fx-margin-top: 20;
+    -fx-margin-bottom: 20;
+    -fx-padding: 10,10,10,10;
+    /*-fx-border-radius: 3;*/
+    /*-fx-background-radius: 3;*/
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #37A1E8;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    /*-fx-padding: 4;*/
+}
+
+.combo-box > .list-cell,
+.combo-box-base > .arrow-button {
+    -fx-background-color: #F8FBFF;
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
+    -fx-font-family: Arial;
+    -fx-font-size: 11pt;
+}
+
+/* combobox button*/
+.combo-box-base:hover {
+    -fx-background-color: #37A1E8;
+}
+.combo-box > .list-cell:hover,
+.combo-box-base > .arrow-button:hover {
+    -fx-background-color: #E3F4FF;
+}
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 4 0 4 5;
+    /* No alternate highlighting */
+    -fx-background-color: #F8FBFF;
+    -fx-font-family: Arial;
+    -fx-font-size: 11pt;
+}
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background-color: #37A1E8;
+}
+.combo-box-base:focused,
+.slider:focused .thumb {
+    -fx-background-color: -fx-focus-color, -fx-inner-border, -fx-body-color, -fx-faint-focus-color, -fx-body-color;
+    -fx-background-insets: -0.2, 1, 2, -1.4, 2.6;
+    -fx-background-radius: 3, 2, 1, 4, 1;
 }
 
 .VBox {
@@ -274,7 +334,6 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-font-size: 13pt;
     -fx-background-insets: 2;
     -fx-background-color: transparent, white, transparent, white;
-    -fx-background-radius: 0, 0, 0, 0;
     -fx-border-width: -1;
 }
 
@@ -306,10 +365,11 @@ Line spacing in text area.
     -fx-background-color: FM_GREEN_RIGHT;
 }
 
-/*.progress-bar .track {*/
-/*    -fx-background-color: FM_GREEN_RIGHT;*/
-/*}*/
-
+#whiteCurvedContainer {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 2;
+    -fx-border-radius: 2;
+}
 
 #deckNameLabel {
     -fx-font-size: 16px;
@@ -404,7 +464,6 @@ label14white {
     -fx-text-fill: FLASH_WHITE;
 }
 
-
 #label16 {
     -fx-font-size: 16px;
     -fx-text-fill: FM_TEXT_LABEL;
@@ -430,13 +489,15 @@ hyperlink14white {
     -fx-text-fill: derive(-fx-base, 86%);
 }
 
-
 #errorLabel {
     -fx-font-size: 16px;
     -fx-text-fill: "rgba(204, 255, 0, 0.9)";
 }
 
-
+#borderBlue {
+    -fx-border-color: #37A1E8;
+    -fx-border-width: 3;
+}
 
 #menuPane {
     -fx-background-color: #393E46;
@@ -450,9 +511,16 @@ hyperlink14white {
     -fx-background-color: #393E46;
 }
 
+#CreateNorthCtnr {
+    -fx-padding: 2 4 4 4;
+}
+
 /* the CreateFlash cfpNorthPanel where the label is placed */
 #cfpNorthPane {
     -fx-background-color: #3498db;
+    -fx-padding: 4;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
 }
 
 #graphTextField {
@@ -504,23 +572,6 @@ hyperlink14white {
 #roundCorners {
     -fx-border-radius: 10 10 10 10;
     -fx-background-radius: 10 10 10 10;
-}
-
-/* File selection panel on  */
-#fileSelectPane {
-    -fx-background-color: #0064e195;
-}
-
-#fileSelectPane,
-#fileSelectNoColr {
-    -fx-border-color: TRANSPARENT;
-    -fx-margin-top: 20;
-    -fx-margin-bottom: 20;
-    -fx-padding: 10,10,10,10;
-}
-
-.scroll-pane > .viewport {
-    -fx-background-color: #37A1E8;
 }
 
 #opaqueMenuPaneDark {

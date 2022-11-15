@@ -247,7 +247,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        *
        * @return ArrayList of FlashCards
        */
-      public static final ArrayList<FlashCardMM> getFlashList() {
+      public final ArrayList<FlashCardMM> getFlashList() {
             return flashListMM;
       }
 

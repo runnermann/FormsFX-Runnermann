@@ -52,13 +52,20 @@ public class FileNaming {
        * fileName. Does not include the path.</p>
        *
        * @param hash   either the imageHash or prefered unique information for video and audio
-       * @param bckt   The the file type, 'd' for deck, 'i' for image, 'v' video or audio.
+       * @param bckt   The file type, 'd' for deck, 'i' for image, 'v' video or audio, 'p' for public
+       *               used for marketplace or user/avatar images.
        * @param ending The file type ending including the leading "."
        */
       public FileNaming(String hash, char bckt, String ending) {
             // if file is an image
 
             switch (bckt) {
+                  // a  for user/avatar Images
+                  case 'a': {
+                        // setAvatarFileName(idk + bckt + ".png");
+                  }
+                  // p for public, stores deck images used in MKTplace,
+                  case 'p':
                   case 'i':
                   case 'v': {
                         setMediaFileName(hash + bckt, ending);
@@ -109,14 +116,14 @@ public class FileNaming {
        * Ref s3 media storage: A decks media is always stored in the original hash
        * subdirectory. The parent deck, and the child decks share the same s3 Dir
        * allowing us to conserve memory and transfers when a deck is shared between
-       * users. Decks do not share the same s3 location. The first hash is the
+       * users. Decks and Media do not share the same s3 buckets. The first hash is the
        * original deck hash, and the second hash is this child's hash. Media in s3 is stored
        * using the first hash in the deck file name.
        *
        * @param deckFileName
        * @return The common s3 media directory name
        */
-      public static final String getMediaSubDir(String deckFileName) {
+      public static final String getDeckMediaSubDir(String deckFileName) {
             String hash = deckFileName.substring(0, deckFileName.indexOf('_'));
             String deckName = deckFileName.substring(deckFileName.indexOf('$'), deckFileName.length() - 4);
             return hash + "_0" + deckName;
@@ -187,7 +194,8 @@ public class FileNaming {
        * @return Returns the media file Name
        */
       public final String getMediaFileName() {
-            return fileName;
+            String temp = fileName.replaceAll(" ", "_");
+            return temp;
       }
 
       /**

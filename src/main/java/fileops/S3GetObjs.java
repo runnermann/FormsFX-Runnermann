@@ -390,7 +390,7 @@ public class S3GetObjs {
        */
       private String getMediaKeys(ArrayList<MediaSyncObj> mediaObjs) {
             StringBuilder keyBuilder = new StringBuilder();
-            String s3mediaSubDir = FileNaming.getMediaSubDir(FlashCardOps.getInstance().getFileName());
+            String s3mediaSubDir = FileNaming.getDeckMediaSubDir(FlashCardOps.getInstance().getFileName());
             // We do not add a comma on the last element
             for (int i = 0; i < mediaObjs.size() - 1; i++) {
                   keyBuilder.append(s3mediaSubDir + "/" + mediaObjs.get(i).getFileName() + ",");

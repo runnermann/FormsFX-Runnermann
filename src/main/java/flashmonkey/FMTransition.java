@@ -192,7 +192,6 @@ public abstract class FMTransition {
             fTrans.setCycleCount(1);
             fTrans.setAutoReverse(true);
 
-
             return new SequentialTransition(node, aTrans, trans, fTrans);
       }
     
@@ -241,17 +240,21 @@ public abstract class FMTransition {
 
       /**
        * lbFadeIn answer Button fade in. Button fades from 1% to
-       * 100%. Used on transition from left.
+       *        00%. Used on transition from left.
        *
-       * @param node,       the node object
-       * @param cycle       count
-       * @param autoReverse true or not
+       * @param node
+       * @param cycle number of cycles
+       * @param duration The time for the transition in millis
+       * @param delay The delay tot he start in millis
+       * @param autoReverse as stated.
+       * @return returns a FadeTransition with the properties specified in the params.
        */
-      public static FadeTransition ansFadePlay(Node node, int cycle, double duration,
+      public static FadeTransition ansFadePlay(Node node, int cycle, double duration, double delay,
                                                boolean autoReverse) {
             FadeTransition fTrans = new FadeTransition(Duration.millis(duration), node);
             fTrans.setFromValue(.1);
             fTrans.setToValue(1.0);
+            fTrans.setDelay(Duration.millis(delay));
             fTrans.setCycleCount(cycle);
             fTrans.setAutoReverse(autoReverse);
 

@@ -10,6 +10,7 @@ import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import flashmonkey.FlashCardMM;
 import type.sectiontype.GenericSection;
+import uicontrols.ButtoniKon;
 
 import java.util.ArrayList;
 
@@ -178,5 +179,10 @@ public class FillnTheBlank extends TestTypeBase implements GenericTestType<Filln
       @Override
       public void reset() {
             // stub
+      }
+
+      @Override
+      public void resetSelectAnsButton() {
+            answerButton = ButtoniKon.getAnsSelect();
       }
 }

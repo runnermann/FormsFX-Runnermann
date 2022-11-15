@@ -68,6 +68,7 @@ public class MGauges {
                 CornerRadii.EMPTY, Insets.EMPTY)));
             pane.setPrefSize(width, height);
             pane.setAlignment(Pos.CENTER);
+            pane.setId("whiteCurvedContainer");
             gauge.setValue(initialV);
             gauge.setMaxValue(high);
             gauge.setMinValue(low);
@@ -117,7 +118,8 @@ public class MGauges {
             GAUGE.setUnit("");
             VBox vBox = new VBox(GAUGE);
             vBox.setMinSize(width, height);
-            vBox.setStyle("-fx-background-color: white");
+            //vBox.setStyle("-fx-background-color: white");
+ //           vBox.setId("whiteCurvedContainer");
             vBox.setAlignment(Pos.CENTER);
             return vBox;
       }

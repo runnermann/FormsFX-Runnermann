@@ -21,6 +21,7 @@ package type.tools.imagery;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 
@@ -82,6 +83,31 @@ public abstract class Fit {
             return view;
       }
 
+
+//      public static MediaView VideoResize(Media video, double paneW, double paneH) {
+//
+//            MediaPlayer mediaPlayer = new MediaPlayer(video);
+//            MediaView mediaViewer = new MediaView(mediaPlayer);
+//
+//            mediaViewer.setPreserveRatio(true);
+//            mediaViewer.setSmooth(true);
+//
+//            double vidW = video.getWidth();
+//            double vidH = video.getHeight();
+//
+//            boolean widthLarger = mediaFit(vidW, vidH, paneW, paneH);
+//
+//            if (widthLarger) {
+//                  //System.out.println("media resize() setting media by wd");
+//                  mediaViewer.setFitWidth(w);
+//            } else {
+//                  //System.out.println("media resize() setting media by ht");
+//                  mediaViewer.setFitHeight(h);
+//            }
+//
+//            return mediaPlayer;
+//      }
+
       public static Image imageResize(Image image, double wd, double ht) {
             return viewResize(image, wd, ht).getImage();
       }
@@ -98,24 +124,24 @@ public abstract class Fit {
        * @return Mediaview with a preserved ratio, containing the player with sized to fit in
        * the deminsions provided.
        */
-      public static MediaView mediaResize(MediaPlayer player, double paneW, double paneH) {
+      public static MediaView mediaResize(MediaPlayer player, double paneW, double paneH, double origWd, double origHt) {
 
-            double mediaW = player.getMedia().getHeight();
-            double mediaH = player.getMedia().getHeight();
+//            double mediaW = player.getMedia().getHeight();
+//            double mediaH = player.getMedia().getHeight();
 
             MediaView view = new MediaView(player);
 
-            //System.out.println("in Fit.MediaResize");
-            //System.out.println("mediaW: " + mediaW);
-            //System.out.println("mediaH: " + mediaH);
+            System.out.println("in Fit.MediaResize");
+            System.out.println("mediaW: " + origWd);
+            System.out.println("mediaH: " + origHt);
 
-            boolean widthIsLarger = mediaFit(mediaW, mediaH, paneW, paneH);
+            boolean widthIsLarger = mediaFit(origWd, origHt, paneW, paneH);
 
             if (widthIsLarger) {
-                  //System.out.println("media resize() setting media by wd");
+                  System.out.println("media resize() setting media by wd " + w);
                   view.setFitWidth(w);
             } else {
-                  //System.out.println("media resize() setting media by ht: " + h);
+                  System.out.println("media resize() setting media by ht: " + h);
                   view.setFitHeight(h);
             }
             return view;

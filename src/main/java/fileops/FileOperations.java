@@ -6,6 +6,7 @@ import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import metadata.DeckMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import static javafx.embed.swing.SwingFXUtils.fromFXImage;
 
 /***************************************************************************
  * <P><B>Do not use this class. Use FlashCard Ops to interact with
@@ -310,6 +313,7 @@ public abstract class FileOperations implements Serializable {
             dataOut.writeUTF(m.getPrice());                         // 20
             dataOut.writeUTF(Boolean.toString(m.isSellDeck()));     // 21
             dataOut.writeUTF(Boolean.toString(m.isShareDistro()));  // 22
+            dataOut.writeUTF(m.getCreatorAvatarName());             // 23
         }
         catch(EOFException e) {
             /* do nothing */
@@ -336,7 +340,6 @@ public abstract class FileOperations implements Serializable {
     private String scoresToArray(ArrayList<String> scores) {
         StringBuilder scoreStr = new StringBuilder("0/0/0");
         if(scores.size() > 0) {
-
             for (int i = 0; i < scores.size(); i++) {
                 scoreStr.append(scores.get(i) + ",");
             }
@@ -380,7 +383,8 @@ public abstract class FileOperations implements Serializable {
 //                    "19. setScores " +dataIn.readUTF()  + "\n" +
 //                    "20. setPrice " +dataIn.readUTF() +"\n" +
 //                    "21. setSellDeck " +dataIn.readUTF() +"\n" +
-//                    "22. setShareDist " +dataIn.readUTF());
+//                    "22. setShareDist " +dataIn.readUTF() +"\n" +
+//                    "23. setCreatorAvatarName " +dataIn.readUTF());
 
 
             data.setLastDate(dataIn.readLong());                            // 1
@@ -405,6 +409,7 @@ public abstract class FileOperations implements Serializable {
             data.setPrice(Integer.parseInt(dataIn.readUTF()));              // 20
             data.setSellDeck(Boolean.parseBoolean(dataIn.readUTF()));       // 21
             data.setShareDistro(Boolean.parseBoolean(dataIn.readUTF()));    // 22
+            data.setCreatorAvatarName(dataIn.readUTF());                    // 23
 
         } catch (EOFException e) {
             // end of file exception. Do nothing. this is expected.
@@ -637,7 +642,7 @@ public abstract class FileOperations implements Serializable {
      */
     public boolean saveImage(String imgFileName, Image image, String mime, char type) {
         LOGGER.info("saving image to file, fileName: {}", imgFileName);
-        final DirectoryMgr dirMgr = new DirectoryMgr();
+        // final DirectoryMgr dirMgr = new DirectoryMgr();
         final String path = DirectoryMgr.getMediaPath(type);
         final String fullPath = path + imgFileName;
         final File mediaFile = new File(path);

@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import metadata.DeckSearchData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ public class DeckSearchPane extends FormParentPane {
       // Button box contained in southpane
       GridPane exitBox;
       //private static Button exitButton;
-      protected static Button menuButton;// = MENU.get();
+//      protected static Button menuButton;// = MENU.get();
 
       public DeckSearchPane() {
             super(); // FormParent
@@ -54,7 +55,7 @@ public class DeckSearchPane extends FormParentPane {
             super.formRenderer = new FormRenderer(model.getFormInstance());
             super.setSubmitButtonTitle("find");
             super.setFormPainHeight(674);
-            super.addExitBox(getExitBox());
+//            super.addExitBox(getExitBox());
       }
 
       @Override
@@ -84,27 +85,27 @@ public class DeckSearchPane extends FormParentPane {
             return new ScrollPane();
       }
 
-      public GridPane getMainGridPane() {
-            this.mainGridPain.setMaxHeight(600);
-            this.mainGridPain.setMaxWidth(400);
-            this.mainGridPain.setStyle("-fx-background-radius: 15 15 15 15; -fx-border-radius: 15 15 15 15; ");
-            return this.mainGridPain;
+      public VBox getMainGridPane() {
+            this.mainVBox.setMaxHeight(600);
+            this.mainVBox.setMaxWidth(400);
+            this.mainVBox.setStyle("-fx-background-radius: 15 15 15 15; -fx-border-radius: 15 15 15 15; ");
+            return this.mainVBox;
       }
 
-      private GridPane getExitBox() {
-            //exitButton = ButtoniKon.getExitButton();
-            menuButton = ButtoniKon.getMenuButton();
-            exitBox = new GridPane(); // HBox with spacing provided
-            exitBox.setHgap(2);
-            /* For the lower panel on modeSelectPane window */
-            ColumnConstraints col0 = new ColumnConstraints();
-            col0.setPercentWidth(50);
-            exitBox.getColumnConstraints().add(col0);
-            exitBox.setVgap(2);
-            exitBox.setPadding(new Insets(15, 15, 15, 15));
-            exitBox.addColumn(1, menuButton);
-            return exitBox;
-      }
+//      private GridPane getExitBox() {
+//            //exitButton = ButtoniKon.getExitButton();
+//      //      menuButton = ButtoniKon.getMenuButton();
+//            exitBox = new GridPane(); // HBox with spacing provided
+//            exitBox.setHgap(2);
+//            /* For the lower panel on modeSelectPane window */
+//            ColumnConstraints col0 = new ColumnConstraints();
+//            col0.setPercentWidth(50);
+//            exitBox.getColumnConstraints().add(col0);
+//            exitBox.setVgap(2);
+//            exitBox.setPadding(new Insets(15, 15, 15, 15));
+//      //      exitBox.addColumn(1, menuButton);
+//            return exitBox;
+//      }
 
       @Override
       public void paneAction() { /* do nothing */}

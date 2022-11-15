@@ -14,9 +14,10 @@ import forms.utility.StudentDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.*;
+import org.testfx.framework.junit5.ApplicationTest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testfx.framework.junit5.ApplicationTest;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;

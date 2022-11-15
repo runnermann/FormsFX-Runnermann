@@ -52,6 +52,7 @@ public class DeckMetaData implements FormData {
 	private long lastDate = 0;
 	private String createDate;
 	private String creatorEmail;
+	private String creatorAvatarName;
 	private String deckFileName;
 	private String descript;
 	private String deckImgName;
@@ -70,7 +71,7 @@ public class DeckMetaData implements FormData {
 	private String lastScore;
 	private String testTypes;
 	private String courseCode;
-	private String deckPhotoURL;
+	private String deckPhotoName;
 	// Ecosystem related
 	private boolean sellDeck;
 	private boolean shareDistro;
@@ -92,6 +93,7 @@ public class DeckMetaData implements FormData {
 		lastDate = System.currentTimeMillis();
 		createDate = ""; // the beginning of time
 		creatorEmail = "";
+		creatorAvatarName = "";
 		deckFileName = "";
 		descript = "";
 		deckImgName = "";
@@ -111,7 +113,7 @@ public class DeckMetaData implements FormData {
 		//scores.add(0, new ScoreNode());
 		lastScore = "";
 		courseCode = "";
-		deckPhotoURL = "";
+		deckPhotoName = "";
 
 		// Ecosystem related
 
@@ -129,6 +131,7 @@ public class DeckMetaData implements FormData {
 		StringBuilder sb = new StringBuilder(" lastDate: " + lastDate +
 				"\n createDate: " + createDate +
 				"\n creatorEmail: " + creatorEmail +
+				"\n creatorAvatarName: " + creatorAvatarName +
 				"\n deckFileName: " + deckFileName +
 				"\n descript: " + descript +
 				"\n deckImgName: " + deckImgName +
@@ -146,7 +149,7 @@ public class DeckMetaData implements FormData {
 				"\n lastScore: " + lastScore +
 				"\n testTypes: " + testTypes +
 				"\n courseCode: " + courseCode +
-				"\n deckPhotoURL: " + deckPhotoURL +
+				"\n deckPhotoURL: " + deckPhotoName +
 				"\n sellDeck: " + sellDeck +
 				"\n shareDistro: " + shareDistro +
 				"\n price: " + price +
@@ -228,6 +231,7 @@ public class DeckMetaData implements FormData {
 		setLang(map.get("deck_language"));
 		setLastScore(map.get("session_score"));
 		setCreatorEmail(Alphabet.decrypt(map.get("creator_email"))); // if the file name first hash == fileName second hash, use this name, else: retrieve from DB.
+		setCreatorAvatarName(map.get("avatar_name"));
 		// TODO set ecosystem variables
 		setSellDeck(map.get("sell_deck") == "true");
 		setShareDistro(map.get("share_distro") == "true");
@@ -283,6 +287,7 @@ public class DeckMetaData implements FormData {
 		deckMetaDataMap.put("last_date", Long.toString(this.lastDate));
 		deckMetaDataMap.put("deck_descript", getDescript());
 		deckMetaDataMap.put("creator_email", getCreatorEmail());
+		deckMetaDataMap.put("avatar_name", getCreatorAvatarName());
 		deckMetaDataMap.put("user_email", UserData.getUserName());
 		deckMetaDataMap.put("deck_school", getDeckSchool());
 		deckMetaDataMap.put("deck_book", getDeckBook());
@@ -298,7 +303,7 @@ public class DeckMetaData implements FormData {
 		deckMetaDataMap.put("num_video", Integer.toString(numVideo));
 		deckMetaDataMap.put("num_audio", Integer.toString(numAudio));
 		deckMetaDataMap.put("session_score", calcLastScore());
-		deckMetaDataMap.put("deck_photoid", getDeckPhotoURL());
+		deckMetaDataMap.put("deck_photoid", getDeckPhotoName());
 		deckMetaDataMap.put("course_code", getCourseCode());
 		// ecosystem related
 		deckMetaDataMap.put("share_distro", Boolean.toString(isShareDistro()));
@@ -458,11 +463,11 @@ public class DeckMetaData implements FormData {
 		this.lang = lang;
 	}
 
-	public String getDeckPhotoURL() {
-		return this.deckPhotoURL;
+	public String getDeckPhotoName() {
+		return this.deckPhotoName;
 	}
-	public void setDeckPhotoURL(String photoURL) {
-		deckPhotoURL = photoURL;
+	public void setDeckPhotoName(String photoName) {
+		deckPhotoName = photoName;
 	}
 
 	public String getCourseCode() {
@@ -599,12 +604,13 @@ public class DeckMetaData implements FormData {
 		this.createDate = createDate;
 	}
 
-	public String getCreatorEmail() {
-		return this.creatorEmail;
-	}
+	public String getCreatorEmail() { return this.creatorEmail; }
 	public void setCreatorEmail(String creatorEmail) {
 		this.creatorEmail = creatorEmail;
 	}
+
+	public String getCreatorAvatarName() { return this.creatorAvatarName; }
+	public void setCreatorAvatarName(String avatarName) { this.creatorAvatarName = avatarName; }
 
 	public boolean isSellDeck() { return sellDeck; }
 	public void setSellDeck(boolean sellDeck) { this.sellDeck = sellDeck; }

@@ -277,7 +277,7 @@ public class MediaTransferTester extends ApplicationTest {
 
     @Test
     @Order(1)
-    public void checkImageUploadtos3() throws Exception {
+    public void checkCardsImageUploadtos3() throws Exception {
         // USING REFLECTION TO TEST PRIVATE METHOD
         //Method method = SectionEditor.class.getDeclaredMethod("saveImage", Image.class, String.class, String.class);
         //method.setAccessible(true);
@@ -305,7 +305,7 @@ public class MediaTransferTester extends ApplicationTest {
             strs[0] = fileNaming.getMediaFileName();
             S3PutObjs putObjs = new S3PutObjs();
             ArrayList<String> l = new ArrayList<>(Arrays.asList(strs));
-            putObjs.serialPutMedia(l, token);
+            putObjs.serialPutMedia(l, token, 'i');
         }
     }
 

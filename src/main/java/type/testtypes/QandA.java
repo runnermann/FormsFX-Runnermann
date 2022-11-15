@@ -128,6 +128,9 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
             // Transition for Answer for all navigation
             FMTransition.setAWaitTop(FMTransition.waitTransFmTop(lowerHBox, 0, 300, 350));
 
+            FMTransition.nodeFadeIn = FMTransition.ansFadePlay(answerButton, 1, 750, 500, false);
+            FMTransition.nodeFadeIn.play();
+
             return gPane;
       }
 
@@ -182,7 +185,7 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
             GenericSection genSection = GenericSection.getInstance();
             final FlashCardMM cc = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             final ReadFlash rf = ReadFlash.getInstance();
-            FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, false);
+            FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, 0, false);
 
             lowerHBox.getChildren().add(genSection.sectionFactory(cc.getAText(), cc.getAType(), 2, true, 0, cc.getAFiles()));
             if (cc.getIsRightColor() == 0) {
@@ -216,6 +219,11 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
       public void reset() {
             lowerHBox = null;
             answerButton = null;
+      }
+
+      @Override
+      public void resetSelectAnsButton() {
+            answerButton = ButtoniKon.getAnsSelect();
       }
 
 
@@ -302,6 +310,9 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
                   FMTransition.setQLeft(FMTransition.transitionFmLeft(upperHBox));
                   // Transition for Answer for all navigation
                   FMTransition.setAWaitTop(FMTransition.waitTransFmTop(lowerHBox, 0, 300, 350));
+
+                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(answerButton, 1, 750, 500, false);
+                  FMTransition.nodeFadeIn.play();
 
                   return gPane;
             }

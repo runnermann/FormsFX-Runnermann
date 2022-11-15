@@ -29,23 +29,22 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
       private static final Logger LOGGER = LoggerFactory.getLogger(MetaDescriptor.class);
 
       // The deck description
-      private StringProperty price;
-      private StringProperty numStars;
-      private StringProperty deckDescript;
-      private StringProperty deckSchool;
-      private StringProperty deckBook;
-      private StringProperty deckProf;
-      private StringProperty deckClass;
-      private StringProperty subjCat;
-      private StringProperty subjSubCat;
-      private StringProperty deckLanguage;
-      private StringProperty courseCode;
-      private StringProperty deckImgName;
-      private IntegerProperty numCards;
+      private final StringProperty price = new SimpleStringProperty("0");
+      private final StringProperty numStars = new SimpleStringProperty("0");
+      private final StringProperty deckDescript = new SimpleStringProperty("");
+      private final StringProperty deckSchool = new SimpleStringProperty("");
+      private final StringProperty deckBook = new SimpleStringProperty("");
+      private final StringProperty deckProf = new SimpleStringProperty("");
+      private final StringProperty deckClass = new SimpleStringProperty("");
+      private final StringProperty subjCat = new SimpleStringProperty("");
+      private final StringProperty subjSubCat = new SimpleStringProperty("");
+      private final StringProperty deckLanguage = new SimpleStringProperty("");
+      private final StringProperty courseCode = new SimpleStringProperty("");
+      private final StringProperty deckImgNameProperty = new SimpleStringProperty("");
+      private final IntegerProperty numCards = new SimpleIntegerProperty(0);
       // slider switches in deckMetaPane
-      private BooleanProperty shareDeck;
-      private BooleanProperty sellDeck;
-
+      private final BooleanProperty shareDeck = new SimpleBooleanProperty(false);
+      private final BooleanProperty sellDeck = new SimpleBooleanProperty(false);
       // Institutions - Professors - Course Codes
       private ObjectProperty<CSVUtil.SchoolObj> selectedTut;
       private ListProperty<CSVUtil.SchoolObj> allTuts;
@@ -130,7 +129,11 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
       }
 
       public String getDeckImgName() {
-            return deckImgName.get();
+            return deckImgNameProperty.get();
+      }
+
+      public void setDeckImgNameProperty(String imgName) {
+            deckImgNameProperty.set(imgName);
       }
 
       public Integer getNumCards() {
@@ -218,8 +221,8 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             return courseCode;
       }
 
-      public StringProperty deckPhotoURLProperty() {
-            return deckImgName;
+      public StringProperty deckPhotoNameProperty() {
+            return deckImgNameProperty;
       }
 
       public BooleanProperty shareDeckProperty() {
@@ -235,25 +238,11 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
       public void setProperitesDefault() {
 
             LOGGER.debug("setPropertiesDefault()");
-            price = new SimpleStringProperty("0");
-            numStars = new SimpleStringProperty("0");
-            deckDescript = new SimpleStringProperty("");
-            deckSchool = new SimpleStringProperty("");
-            deckBook = new SimpleStringProperty("");
-            deckProf = new SimpleStringProperty("");
-            deckClass = new SimpleStringProperty("");
-            subjCat = new SimpleStringProperty("");
-            subjSubCat = new SimpleStringProperty("");
-            deckLanguage = new SimpleStringProperty("");
-            courseCode = new SimpleStringProperty("");
-            deckImgName = new SimpleStringProperty("");
-            numCards = new SimpleIntegerProperty(0);
-            shareDeck = new SimpleBooleanProperty(false);
-            sellDeck = new SimpleBooleanProperty(false);
             // Institution selector
             allTuts = new SimpleListProperty<>(FXCollections.observableArrayList());
             allTuts.setAll(FlashCardOps.getInstance().getSchoolObjs());
             selectedTut = new SimpleObjectProperty<>();
+
       }
 
       /**
@@ -267,21 +256,21 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
       public void setProperties(final DeckMetaData m) {
             LOGGER.debug("Called setProperties() \n Printing meta: " + m.toString());
 
-            deckDescript = new SimpleStringProperty(m.getDescript());
-            deckSchool = new SimpleStringProperty(m.getDeckSchool());
-            deckBook = new SimpleStringProperty(m.getDeckBook());
-            deckProf = new SimpleStringProperty(m.getDeckProf());
-            deckClass = new SimpleStringProperty(m.getDeckClass());
-            subjCat = new SimpleStringProperty(m.getSubj());
-            subjSubCat = new SimpleStringProperty(m.getCat());
-            deckLanguage = new SimpleStringProperty(m.getLang());
-            courseCode = new SimpleStringProperty(m.getCourseCode());
-            deckImgName = new SimpleStringProperty(m.getDeckPhotoURL());
-            numCards = new SimpleIntegerProperty(Integer.parseInt(m.getNumCard()));
-            price = new SimpleStringProperty(m.getPrice());
-            numStars = new SimpleStringProperty(m.getNumStars());
-            shareDeck = new SimpleBooleanProperty(m.isShareDistro());
-            sellDeck = new SimpleBooleanProperty(m.isSellDeck());
+            deckDescript.set(m.getDescript());
+            deckSchool.set(m.getDeckSchool());
+            deckBook.set(m.getDeckBook());
+            deckProf.set(m.getDeckProf());
+            deckClass.set(m.getDeckClass());
+            subjCat.set(m.getSubj());
+            subjSubCat.set(m.getCat());
+            deckLanguage.set(m.getLang());
+            courseCode.set(m.getCourseCode());
+            deckImgNameProperty.set(m.getDeckPhotoName());
+            numCards.set(Integer.parseInt(m.getNumCard()));
+            price.set(m.getPrice());
+            numStars.set(m.getNumStars());
+            shareDeck.set(m.isShareDistro());
+            sellDeck.set(m.isSellDeck());
             allTuts = new SimpleListProperty<>(FXCollections.observableArrayList());
             allTuts.setAll(FlashCardOps.getInstance().getSchoolObjs());
             selectedTut = new SimpleObjectProperty<>();
@@ -417,7 +406,7 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
             subjCat.setValue("");
             subjSubCat.setValue("");
             courseCode.setValue("");
-            deckImgName.setValue("");
+            deckImgNameProperty.setValue("");
             price.setValue("0");
             numStars.setValue("0");
             sellDeck.setValue(false);

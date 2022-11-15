@@ -131,10 +131,10 @@ public class SingleCellSection //extends GenericSection
       }
 
       /**
-       * section view provides the sizing for the panes in a single section
-       * to comply with the rest of the FM sizing. Provide a pane with the
-       * contents if they are non-standard. IE not text nor media. Used by
-       * TrueOrFalse lower pane.
+       * section view provides the sizing (H, W) for each section.
+       * Provide a pane with the contents if they are non-standard.
+       * For instance, it is not text nor media such as for the
+       * Used by TrueOrFalse lower pane.
        *
        * @param lowerPane
        * @return
@@ -162,20 +162,17 @@ public class SingleCellSection //extends GenericSection
             GenericCell gc = new GenericCell();
             switch (type) {
                   // Audio Video = m / media
-                  case 'M':
+                  //case 'M': // should not be called here
                   case 'm': {
                         pane1 = new GridPane();
                         pane1 = gc.cellFactory(type, pane1,
                             (int) ReadFlash.getInstance().getMasterBPane().getWidth() - 8,
                             (int) (ReadFlash.getInstance().getMasterBPane().getHeight() - 214) / numHSections,
                             paths);
-                        //pane1.setMaxWidth(Double.MAX_VALUE);
-                        //sectionHBox.getChildren().add(pane1);
-                        //@todo fix case 'm' in SingleCellSection, size should not be set here
                         break;
                   }
                   // Canvas = images and shapes/drawings
-                  case 'C':
+                  //case 'C': // should not be called here
                   case 'c': {
                         LOGGER.debug("Case c in SingleCellSection");
                         pane1 = new GridPane();

@@ -5,13 +5,14 @@ import flashmonkey.FlashMonkeyMain;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uicontrols.FxNotify;
@@ -25,13 +26,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * The center container pane.
  * Contains the elements providing more details
- * on the deck that is on display;
+ * on the deck that is on display. Including the large
+ * image.
  */
 public class CenterPane {
 
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CenterPane.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(CenterPane.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CenterPane.class);
+    //private static final Logger LOGGER = LoggerFactory.getLogger(CenterPane.class);
 
     private GridPane mainGP;
     private VBox mediaPane;
@@ -69,19 +72,6 @@ public class CenterPane {
         setData(index, dmp);
     }
 
-    private GridPane setGPColumns(GridPane gp) {
-        LOGGER.debug("setColLayout called");
-        ColumnConstraints col1 = new ColumnConstraints();
-        ColumnConstraints col2 = new ColumnConstraints();
-        col1.setPercentWidth(58);
-        col2.setPercentWidth(40);
-        col1.setHgrow(Priority.NEVER);
-        col2.setHgrow(Priority.NEVER);
-        gp.getColumnConstraints().addAll(col1, col2);
-
-        return gp;
-    }
-
     private GridPane setTitleColumns(GridPane gp) {
         ColumnConstraints col1 = new ColumnConstraints();
         ColumnConstraints col2 = new ColumnConstraints();
@@ -109,12 +99,9 @@ public class CenterPane {
     }
 
     /**
-     * Change row heights using containsts
-     * and controls which row grows and shrinks/
-     * @param gp
-     * @return
+     * Controls the row settings for the Main GridPane
      */
-    private GridPane setRowLayout(GridPane gp) {
+    private GridPane setMainRows(GridPane gp) {
         LOGGER.debug("setRowLayout called");
         RowConstraints spacer0 = new RowConstraints(14);
         RowConstraints spacer1 = new RowConstraints(10);
@@ -128,11 +115,23 @@ public class CenterPane {
         return gp;
     }
 
+    private GridPane setMainColumns(GridPane gp) {
+        LOGGER.debug("setColLayout called");
+        ColumnConstraints col1 = new ColumnConstraints();
+        ColumnConstraints col2 = new ColumnConstraints();
+        col1.setPercentWidth(56);
+        col2.setPercentWidth(40);
+        col1.setHgrow(Priority.NEVER);
+        col2.setHgrow(Priority.NEVER);
+        gp.getColumnConstraints().addAll(col1, col2);
+        return gp;
+    }
+
     private void layoutParts() {
         LOGGER.debug("layoutParts called");
 
-        mainGP = setGPColumns(mainGP);
-        mainGP = setRowLayout(mainGP);
+        mainGP = setMainColumns(mainGP);
+        mainGP = setMainRows(mainGP);
         // row 0 spacer height set in setRowLayout
         mainGP.add(mediaPane, 0, 1, 2, 1);
         mainGP.add(titlePane, 0, 3, 2, 1);
@@ -179,27 +178,34 @@ public class CenterPane {
         Label an = new Label(authors);
 
         // date related
-
         LOGGER.debug("createDate {}", createDate );
 
         LocalDate date = LocalDate.parse(createDate);
         DateTimeFormatter format = DateTimeFormatter.ofPattern("dd MMM yyyy");
-        Label created = new Label("Since: " + format.format(date));
+        Label createdL = new Label("Since:");
+        Label createdR = new Label(format.format(date));
         date = Instant.ofEpochMilli(Long.valueOf(lastUsed)).atZone(ZoneId.systemDefault()).toLocalDate();
-        Label last = new Label("Last used: " + format.format(date));
+        Label lastL = new Label("Last Used:");
+        Label lastR = new Label(format.format(date));
 
         grid.add(textArea, 0, 0, 1, 2);
         grid.add(ul, 0, 2, 1, 1);
         grid.add(un, 1, 2, 1, 1);
         grid.add(al, 0, 3, 1, 1);
         grid.add(an, 1, 3, 1, 1);
-        grid.add(created, 0, 4, 2, 1);
-        grid.add(last, 0, 5, 2, 1);
+        grid.add(createdL, 0, 4, 1, 1);
+        grid.add(createdR, 1, 4, 1, 1);
+        grid.add(lastL, 0, 5, 1, 1);
+        grid.add(lastR, 1, 5, 1, 1);
 
-        ul.setId("blue14");
-        al.setId("blue14");
-        un.setId("blueRight");
-        an.setId("blueRight");
+        ul.setId("norm14");
+        al.setId("norm14");
+        un.setId("norm14");
+        an.setId("norm14");
+        createdL.setId("norm14");
+        createdR.setId("norm14");
+        lastL.setId("norm14");
+        lastR.setId("norm14");
 
         descriptScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         descriptScroll.setContent(grid);
@@ -222,9 +228,9 @@ public class CenterPane {
         Label numLabel = new Label(numUsers);
         numLabel.setId("norm16");
         Label classLabel = new Label(classMates);
-        classLabel.setId("purple14");
+        classLabel.setId("norm13Top");
         Label friendsLabel = new Label(friends);
-        friendsLabel.setId("purple14");
+        friendsLabel.setId("norm13Top");
         Region space = new Region();
         space.setPrefHeight(64);
         mediaPane.setMinHeight(40);
@@ -246,17 +252,17 @@ public class CenterPane {
         //pricePane.setGridLinesVisible(true);
         pricePane.setPadding(new Insets(4));
 
-        Hyperlink subscribeLink = new Hyperlink("Subscribe and save");
+        final Hyperlink subscribeLink = new Hyperlink("Subscribe and Save");
         subscribeLink.setId("link");
         //subscribeLink.setStyle("-fx-text-fill: #F2522E");
-        subscribeLink.setPadding(new Insets(0,10,0,30));
+        subscribeLink.setPadding(new Insets(0,10,0,4));
         subscribeLink.setOnAction(e -> {
             ConsumerPane.EcoReqSubscription.reqSubscription();
         });
-        Hyperlink cartLink = new Hyperlink("Add to cart");
+        final Hyperlink cartLink = new Hyperlink("Add to Cart");
         cartLink.setId("link");
         //cartLink.setStyle("-fx-text-fill: #F2522E");
-        cartLink.setPadding(new Insets(4,0,0,30));
+        cartLink.setPadding(new Insets(4,0,0,4));
         cartLink.setOnAction(e -> {
             // add to cart
             Map<String, String> map = dmp.getMapArray().get(idx);
@@ -269,38 +275,38 @@ public class CenterPane {
         spacer1.setPrefHeight(40);
         spacer2.setPrefHeight(60);
 
-        Text card = new Text("DECK SIZE: ");
-        Text cardNum = new Text(numCard + " cards");
+        final Text card = new Text("DECK SIZE: ");
+        final Text cardNum = new Text(numCard + " cards");
         pricePane.add(card, 0,0);
         pricePane.add(cardNum, 1,0);
 
-        Text imgLbl = new Text("image:");
-        Text imgNum = new Text(numImg);
+        final Text imgLbl = new Text("image:");
+        final Text imgNum = new Text(numImg);
         pricePane.add(imgLbl, 0, 1);
         pricePane.add(imgNum, 1, 1);
 
-        Text vidLbl = new Text("video:" );
-        Text vidNum = new Text(numVid);
+        final Text vidLbl = new Text("video:" );
+        final Text vidNum = new Text(numVid);
         pricePane.add(vidLbl, 0,2);
         pricePane.add(vidNum, 1, 2);
 
-        Text audLbl = new Text("audio:");
-        Text audNum = new Text(numAud);
+        final Text audLbl = new Text("audio:");
+        final Text audNum = new Text(numAud);
         pricePane.add(audLbl, 0,3);
         pricePane.add(audNum, 1, 3);
 
-        Region space = new Region();
-        Region space1 = new Region();
+        final Region space = new Region();
+        final Region space1 = new Region();
         space.setPrefHeight(20);
         space1.setPrefHeight(20);
         pricePane.add(space, 0, 4, 2,2);
 
-        Text p = new Text("Price:" );
-        Text pp = new Text("$" + price);
-        Text f = new Text("Non-subscriber Fee:");
-        Text ff = new Text("$" + nonPreemFee);
-        Label t = new Label("Total:");
-        Text tt = new Text("$" + total);
+        final Text p = new Text("Price:" );
+        final Text pp = new Text("$" + price);
+        final Text f = new Text("Non-subscriber Fee:");
+        final Text ff = new Text("$" + nonPreemFee);
+        final Label t = new Label("Total:");
+        final Text tt = new Text("$" + total);
         pricePane.add(p, 0, 6);
         pricePane.add(pp, 1, 6);
         pricePane.add(f, 0, 7);
@@ -317,7 +323,7 @@ public class CenterPane {
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setHgrow(Priority.ALWAYS);
         col1.setPercentWidth(60);
-        col2.setPercentWidth(40);
+        col2.setPercentWidth(34);
         col2.setHalignment(HPos.RIGHT);
         gp.getColumnConstraints().addAll(col1, col2);
         return gp;
@@ -359,16 +365,19 @@ public class CenterPane {
                     price, fee, calcTotal(fee, price), idx);
             dmp.setTopBar(map.get("deck_school"), map.get("deck_prof"), map.get("section"), dmp.getCartSize(), dmp.getTotal());
 
-            ImageView img = new ImageView(dmp.getDeckImg(idx));
-            if(img == null) {
+            Image img = dmp.getDeckImg(idx);
+            ImageView imgView = new ImageView(img);
+            if(imgView == null) {
                         LOGGER.warn("Image is null");
             }
-            double wd = SceneCntl.getConsumerPaneWd() * .38;
+            double wd = Math.round(SceneCntl.getConsumerPaneWd() * .38);
+            // 16:9 ratio
+            Rectangle2D viewPort = new Rectangle2D(0,0, wd, wd * .5625);
+            imgView.setViewport(viewPort);
 
-            img.fitWidthProperty().bind(mediaPane.widthProperty());
-            img.setPreserveRatio(true);
-            img.setSmooth(true);
-            mediaPane.getChildren().add(img);
+            //imgView.setPreserveRatio(true);
+            imgView.setSmooth(true);
+            mediaPane.getChildren().add(imgView);
             mediaPane.setMaxWidth(wd);
             mediaPane.setAlignment(Pos.CENTER);
         }

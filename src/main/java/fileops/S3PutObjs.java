@@ -64,7 +64,7 @@ public class S3PutObjs {
                   LOGGER.warn("serialPutMedia failed");
                   return false;
             }
-            succeeded = send(signedUrls);
+            succeeded = sendSignedURLs(signedUrls);
             if (succeeded) {
                   LOGGER.debug("asyncSend succeded to send files");
             } else {
@@ -79,22 +79,29 @@ public class S3PutObjs {
        * @param fileNames
        * @param token
        */
-      public void serialPutMedia(ArrayList<String> fileNames, String token) {
+      public void serialPutMedia(ArrayList<String> fileNames, String token, char bucket) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("serialPutMedia called");
             boolean succeeded = false;
             //long getTime = System.currentTimeMillis();
 
-            // 1st we request the signedURL's from our server
-            ArrayList<String> signedUrls = getMediaPutURLsSerial(fileNames, token);
+            // 1st we request the signedURL's from vertx
+            ArrayList<String> signedUrls = getMediaPutURLsSerial(fileNames, token, bucket);
+            // check if we recieved the signedURLs from vertx
             if ((signedUrls.size() == 0) || signedUrls.get(0).startsWith("fail")) {
                   LOGGER.warn("serialPutMedia failed");
                   return;
             }
-            send(signedUrls);
+            // send the signedURLs directly to s3.
+            sendSignedURLs(signedUrls);
       }
 
-      private boolean send(ArrayList<String> signedUrls) {
+      /**
+       * Sends media to S3. The underlying methods send them as a Signed-URL.
+       * @param signedUrls
+       * @return
+       */
+      private boolean sendSignedURLs(ArrayList<String> signedUrls) {
             int retry = 0;
             int response = 0;
             for (int i = 0; i < signedUrls.size(); i++) {
@@ -110,14 +117,14 @@ public class S3PutObjs {
                         e.printStackTrace();
                         return false;
                   }
-                  String localURL = getNameFromS3URL(uploadS3URI);
+                  String localURL = parseNameFromS3URL(uploadS3URI);
                   if (localURL == null) {
                         return false;
                   }
                   String ending = localURL.substring(localURL.length() - 3);
                   if (FileExtension.IS_FX_IMAGE.check(ending)) {
                         // the content type to be uploaded, ie "image/jpg"
-                        response = uploadURI(localURL, signedUrls.get(i), "image/" + ending);
+                       response = uploadURI(localURL, signedUrls.get(i), "image/" + ending);
                         if (response == -1) {
                               return false;
                         } else if (response == 0 && retry < 3) {
@@ -153,12 +160,19 @@ public class S3PutObjs {
             return true;
       }
 
-      private String getNameFromS3URL(URI s3PutURL) {
+      /**
+       * <p> Parses the deck name from the returned signedURL. </p>
+       * <p><<b>Note: </b>Currently, we expect that all media has a three letter mime.</p>
+       * @param s3PutURL The s3signedURL for the put operation.
+       * @return
+       */
+      private String parseNameFromS3URL(URI s3PutURL) {
             AmazonS3URI s3URI = new AmazonS3URI(s3PutURL);
             LOGGER.debug("s3.getBucketName() {}, s3.getKey: {}", s3URI.getBucket(), s3URI.getKey());
             String str = s3URI.getKey();
+            char bucket = str.charAt(str.length() - 5);
+            String toDiskDir = DirectoryMgr.getMediaPath(bucket);
             int count = str.lastIndexOf("/");
-            String toDiskDir = DirectoryMgr.getMediaPath('M');
             String localURL = toDiskDir + s3URI.getKey().substring(count + 1);
             LOGGER.debug("toDiskDir: contains extra / ? ", toDiskDir);
             return localURL;
@@ -376,9 +390,9 @@ public class S3PutObjs {
        * @param notUsed   not used
        * @return Returns the keys to be consumed by getUrlsHelper.
        */
-      private String getMediaKeys(ArrayList<String> fileNames, boolean notUsed) {
+      private String getCardsMediaKeys(ArrayList<String> fileNames, boolean notUsed) {
             StringBuilder keyBuilder = new StringBuilder();
-            String s3mediaSubDir = FileNaming.getMediaSubDir(FlashCardOps.getInstance().getFileName());
+            String s3mediaSubDir = FileNaming.getDeckMediaSubDir(FlashCardOps.getInstance().getFileName());
             // we do not add a comma on the last element
             for (int i = 0; i < fileNames.size() - 1; i++) {
                   keyBuilder.append(s3mediaSubDir +
@@ -399,7 +413,7 @@ public class S3PutObjs {
        */
       private String getMediaKeys(ArrayList<MediaSyncObj> mediaObjs) {
             StringBuilder keyBuilder = new StringBuilder();
-            String s3mediaSubDir = FileNaming.getMediaSubDir(FlashCardOps.getInstance().getFileName());
+            String s3mediaSubDir = FileNaming.getDeckMediaSubDir(FlashCardOps.getInstance().getFileName());
 
             // we do not add a comma on the last element
             for (int i = 0; i < mediaObjs.size() - 1; i++) {
@@ -411,11 +425,31 @@ public class S3PutObjs {
             return keyBuilder.toString();
       }
 
-      private ArrayList<String> getMediaPutURLsSerial(ArrayList<String> fileNames, String token) {
+      private ArrayList<String> getMediaPutURLsSerial(ArrayList<String> fileNames, String token, char bucket) {
             LOGGER.debug("getMediaPutURLs called");
             // cerate array of download names
-            boolean bool = false;
-            String keys = getMediaKeys(fileNames, bool);
+            String keys = "";
+            switch (bucket) {
+                  case 'a': // avatar
+                  case 'p': // public for deck descript images
+                  {
+                        keys = fileNames.get(0);
+                        break;
+                  }
+                  case 'c': // media for the cards
+                  case 'i':
+                  case 'm':
+                  {
+                        boolean bool = false;
+                        keys = getCardsMediaKeys(fileNames, bool);
+                        break;
+                  }
+                  default:
+                  {
+                        throw new IllegalArgumentException("Please provide a proper bucket p for public deck imgs, a for avatar, or c for deck media.");
+                  }
+            }
+
 
             if (!Utility.isConnected()) {
                   LOGGER.warn("I am not connected... returning nothing");
@@ -423,7 +457,7 @@ public class S3PutObjs {
             }
             // create a JsonArray with token and keys
             String json = "[{\"token\":\"" + token + "\"},{\"key\":\"" + keys + "\"}]";
-            return getUrlsHelper(json, 'm');
+            return httpFetchPresignedUrls(json, bucket);
       }
 
 
@@ -444,7 +478,7 @@ public class S3PutObjs {
             }
             // create a JsonArray with token and keys
             String json = "[{\"token\":\"" + token + "\"},{\"key\":\"" + keys + "\"}]";
-            return getUrlsHelper(json, 'm');
+            return httpFetchPresignedUrls(json, 'm');
       }
 
 
@@ -496,7 +530,7 @@ public class S3PutObjs {
                         e.printStackTrace();
                   }
                   String jsonArray = getDeckJsonArray(key, token, base64Str);
-                  return getUrlsHelper(jsonArray, 't');
+                  return httpFetchPresignedUrls(jsonArray, 't');
             }
             // should never get here.
             return null;
@@ -521,25 +555,43 @@ public class S3PutObjs {
        *                  presignedUrls from s3. Should include the token.
        * @return Returns an arrayList of presignedURLs
        */
-      private ArrayList<String> getUrlsHelper(String jsonArray, char type) {
-            LOGGER.debug("getUrlsHelper called");
+      private ArrayList<String> httpFetchPresignedUrls(String jsonArray, char type) {
+            LOGGER.debug("httpFetchPresignedUrls called");
+
             final HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();
 
+            // Fetch the presigned URL from VERTX
             HttpRequest req;
-            if (type == 'm') {
-                  req = mediaRequest(jsonArray);
-                  LOGGER.debug("media S3put request built ... sending...");
-            } else {
-                  req = deckRequest(jsonArray);
-                  LOGGER.debug("deck S3put request built ... sending...");
+            switch (type) {
+                  // avatar, users image put
+                  case 'a': {
+                        // TODO FINISH mediaRequest to VERTX for Users Image
+                        req = mediaRequest(jsonArray, "/33D334/user-img-put");
+                        break;
+                  }
+                  case 'p': {
+                        req = mediaRequest(jsonArray, "/77D774/deck-img-put");
+                        break;
+                  }
+                  case 'c':
+                  case 'i':
+                  case 'm': {
+                        req = mediaRequest(jsonArray, "/media-s3-put");
+                        LOGGER.debug("media S3put request built ... sending...");
+                        break;
+                  }
+                  default: {
+                        req = deckRequest(jsonArray);
+                        LOGGER.debug("deck S3put request built ... sending...");
+                  }
             }
 
             LOGGER.debug("sending: {}", jsonArray);
 
-            // send the name list to vertx
+            // send the name list to vertx, and process the response.
             try {
                   HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
                   String s = response.body();
@@ -579,12 +631,19 @@ public class S3PutObjs {
       }
 
 
-      private HttpRequest mediaRequest(String json) {
+      /**
+       * Requests media put URLs
+       * @param json The json request string
+       * @param endPoint The Vertx server Router Endpoint. Always starts with a "/".
+       * @return REturns the HttpRequest Object.
+       */
+      private HttpRequest mediaRequest(String json, String endPoint) {
             return HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create(Connect.LINK.getLink() + "/media-s3-put"))
+                .uri(URI.create(Connect.LINK.getLink() + endPoint))
                 //@TODO set S3Creds to HTTPS
                 .header("Content-Type", "application/json")
                 .build();
       }
+
 }

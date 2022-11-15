@@ -322,15 +322,12 @@ public final class ReadFlash implements BaseInterface {
       private GridPane buildStudyModeMenuPane() {
             LOGGER.debug("listHasCardsAction() called");
 
-            int flSize = FlashCardOps.getInstance().getFlashList().size();
-            // Redundant. Done later from studyButtonAction
-//            setTree();
-            int highestScore = FMTWalker.getInstance().highestPossibleScore() / 10;
-
-            progGauge = new MGauges(120, 120);
-            scoreGauge = new MGauges(120, 120);
-            pGaugePane = progGauge.makeGauge("COMPLETED", 0, flSize, 0);
-            sGaugePane = scoreGauge.makeGauge("SCORE", 0, highestScore, -1 * highestScore);
+//            int flSize = FlashCardOps.getInstance().getFlashList().size();
+//            int highestScore = FMTWalker.getInstance().highestPossibleScore() / 10;
+//            progGauge = new MGauges(120, 120);
+//            scoreGauge = new MGauges(120, 120);
+//            pGaugePane = progGauge.makeGauge("COMPLETED", 0, flSize, 0);
+//            sGaugePane = scoreGauge.makeGauge("SCORE", 0, highestScore, -1 * highestScore);
 
             Label label = new Label("Study Mode");
             label.setId("label24White");
@@ -424,7 +421,7 @@ public final class ReadFlash implements BaseInterface {
 
             if (null != test.getAnsButton()) {
                   test.getAnsButton().setDisable(false);
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
+                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
                   FMTransition.nodeFadeIn.play();
             }
 
@@ -474,7 +471,7 @@ public final class ReadFlash implements BaseInterface {
 
             if (null != test.getAnsButton()) {
                   test.getAnsButton().setDisable(false);
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
+                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
                   FMTransition.nodeFadeIn.play();
             }
 
@@ -525,7 +522,7 @@ public final class ReadFlash implements BaseInterface {
             // answer button transitions
             if (test.getAnsButton() != null) {
                   test.getAnsButton().setDisable(false);
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
+                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
                   FMTransition.nodeFadeIn.play();
                   //test.getAnsButton().setText("");
             }
@@ -570,7 +567,7 @@ public final class ReadFlash implements BaseInterface {
 
             if (test.getAnsButton() != null) {
                   test.getAnsButton().setDisable(false);
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
+                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
                   FMTransition.nodeFadeIn.play();
             }
 
@@ -627,6 +624,15 @@ public final class ReadFlash implements BaseInterface {
             return progress;
       }
 
+      private void initGauges() {
+            int flSize = FlashCardOps.getInstance().getFlashList().size();
+            int highestScore = FMTWalker.getInstance().highestPossibleScore() / 10;
+            progGauge = new MGauges(120, 120);
+            scoreGauge = new MGauges(120, 120);
+            pGaugePane = progGauge.makeGauge("COMPLETED", 0, flSize, 0);
+            sGaugePane = scoreGauge.makeGauge("SCORE", 0, highestScore, -1 * highestScore);
+      }
+
 
       /**
        * <p><b>Returning to the main pane resets and saves data from the current
@@ -680,6 +686,8 @@ public final class ReadFlash implements BaseInterface {
                   rpCenter.getChildren().clear();
             }
 
+            initGauges();
+
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
@@ -726,6 +734,7 @@ public final class ReadFlash implements BaseInterface {
                   rpCenter.getChildren().clear();
             }
             SoundEffects.PRESS_BUTTON_COMMON.play();
+            initGauges();
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             //String name = FlashCardOps.getInstance().getDeckFileName();
@@ -1130,6 +1139,7 @@ public final class ReadFlash implements BaseInterface {
        * display here.
        */
       public void endGame() {
+            leaveAction();
             int size = FlashCardOps.getInstance().getFlashList().size();
             int numTestCards = DeckMetaData.getInstance().numTestCards();
             int threshold = size / 4;
@@ -1175,7 +1185,7 @@ public final class ReadFlash implements BaseInterface {
             int flashListSize = FlashCardOps.getInstance().getFlashList().size();
 
             public JustAns(FlashCardMM currentCard) {
-                  FlashCardMM listCard = FlashCardOps.getFlashList().get(currentCard.getANumber());
+                  FlashCardMM listCard = FlashCardOps.getInstance().getFlashList().get(currentCard.getANumber());
                   // Set is right in the current session,
                   currentCard.setIsRightColor(1);
                   // Update in permenent version.
@@ -1221,7 +1231,7 @@ public final class ReadFlash implements BaseInterface {
 
             public RightAns(FlashCardMM currentCard, GenericTestType genTest) {
 
-                  FlashCardMM listCard = FlashCardOps.getFlashList().get(currentCard.getANumber());
+                  FlashCardMM listCard = FlashCardOps.getInstance().getFlashList().get(currentCard.getANumber());
 
                   SoundEffects.CORRECT_ANSWER.play();
                   LOGGER.debug("/n*** rightAns called ***");
@@ -1246,7 +1256,8 @@ public final class ReadFlash implements BaseInterface {
                   currentCard.setSessionSeen(currentCard.getSessionSeen() + 1);
                   ButtoniKon.getRightAns(genTest.getAnsButton(), "GOOD!");
                   // good nod
-                  correctNodActions(genTest.getAnsButton());
+                  correctNodActions(genTest.getAnsButton(), genTest);
+                  genTest.resetSelectAnsButton();
                   // Score related
                   scoreTextF.setText(printScore());
                   scoreGauge.moveNeedle(500, score.get() / 10);
@@ -1254,15 +1265,21 @@ public final class ReadFlash implements BaseInterface {
                   FlashMonkeyMain.AVLT_PANE.displayTree();
                   masterBPane.setBottom(manageSouthPane(mode));
                   masterBPane.requestFocus();
+            //      Button btn = genTest.getAnsButton();
+            //      btn = ButtoniKon.getAnsNext();
             }
 
             /**
              * Helper action method for the answerButton
              * Nods the answerButton up and down and sets its color.
              */
-            private void correctNodActions(Button selectAnsBtn) {
+            private void correctNodActions(Button selectAnsBtn, GenericTestType test) {
                   FMTransition.goodNod = FMTransition.nodUpDownFade(selectAnsBtn, 250);
                   FMTransition.goodNod.play();
+                  // ensure the selectAns button
+                  // has the correct look.
+
+
             }
 
             /**
@@ -1310,7 +1327,7 @@ public final class ReadFlash implements BaseInterface {
                    class should contain the buttons actionClass which will use the ReadFlash class right and wrong actions.
                    */
 
-                  FlashCardMM listCard = FlashCardOps.getFlashList().get(currentCard.getANumber());
+                  FlashCardMM listCard = FlashCardOps.getInstance().getFlashList().get(currentCard.getANumber());
                   /**
                    * The first time the EncryptedUser gets the card wrong,
                    * a) subtract 2 points,

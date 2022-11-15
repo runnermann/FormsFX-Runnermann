@@ -9,6 +9,7 @@ import javafx.scene.layout.*;
 import flashmonkey.FlashCardMM;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
+import uicontrols.ButtoniKon;
 
 import java.util.ArrayList;
 
@@ -143,5 +144,10 @@ public class MultiAnswer extends TestTypeBase implements GenericTestType<MultiAn
       @Override
       public void reset() {
             // stub
+      }
+
+      @Override
+      public void resetSelectAnsButton() {
+            selectAnsButton = ButtoniKon.getAnsSelect();
       }
 }

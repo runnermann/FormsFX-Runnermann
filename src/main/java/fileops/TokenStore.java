@@ -18,6 +18,8 @@ public enum TokenStore {
       }
 
       public static void set(String tkn) throws EmptyTokenException {
+            if(tkn.length() < 64) throw new EmptyTokenException("WARNING: Token is less than 64 chars in length." +
+                " Token length: " + tkn.length());
             token = tkn;
-    };
+      }
 }
