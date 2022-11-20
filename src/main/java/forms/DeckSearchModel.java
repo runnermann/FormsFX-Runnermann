@@ -163,8 +163,6 @@ public class DeckSearchModel extends ModelParent {
                   case 2: {
                         sb.append(" AND deck_prof = '" + searchBy[1].strip() + "' AND deck_class = '" + searchBy[2].strip() + "';");
 
-                        System.out.println("sending query: " + sb);
-
                         return DBFetchToMapAry.DECK_METADATA_MULTIPLE.query(sb.toString());
                   }
                   // by school/institute only

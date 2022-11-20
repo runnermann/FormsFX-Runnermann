@@ -139,8 +139,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  */
 public class SectionEditor {
       // THE LOGGER
-//      private static final Logger LOGGER = LoggerFactory.getLogger(SectionEditor.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SectionEditor.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(SectionEditor.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SectionEditor.class);
 
       // made changes to this class and it created a problem with serialization.
       // added serial versionUID.
@@ -296,7 +296,7 @@ public class SectionEditor {
 
             sectionHBox.setSpacing(6);
             sectionHBox.setPadding(new Insets(4, 4, 4, 4));
-            sectionHBox.setStyle("-fx-background-color: white");
+            sectionHBox.setStyle("-fx-background-color: white; -fx-background-radius: 3");
             sectionHBox.setAlignment(Pos.BOTTOM_LEFT);
 
             // Drag and Drop capability
@@ -1006,7 +1006,6 @@ public class SectionEditor {
 
                               this.rightPane.setOnMouseClicked(e -> {
                                     SoundEffects.PRESS_BUTTON_COMMON.play();
-                                    System.out.println("in SectionEditor mediaFileNames: <" + mediaFileNames + ">");
                                     rightPaneAction(mediaFileNames);
                               });
                         }
@@ -1269,7 +1268,6 @@ public class SectionEditor {
 
 
       public void setShapesInExplode(ArrayList<GenericShape> fmShapes, double origWd, double origHt, double newWd, double newHt) {
-            LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("setShapesInRtPane called ");
             double scale;
 

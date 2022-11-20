@@ -1,8 +1,10 @@
 package media.api;
 
 import ch.qos.logback.classic.Level;
+import forms.utility.StudentDescriptor;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celleditors.SectionEditor;
 import ws.schild.jave.Encoder;
@@ -20,8 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JaveInterface implements EncoderProgressListener {
+      private static final Logger LOGGER = LoggerFactory.getLogger(JaveInterface.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SectionEditor.class);
 
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SectionEditor.class);
       private double progress;
       private final Encoder encoder;
       private long fileLength;
@@ -29,19 +32,12 @@ public class JaveInterface implements EncoderProgressListener {
       private boolean isComplete;
 
       public JaveInterface() {
-            LOGGER.setLevel(Level.DEBUG);
             encoder = new Encoder();
       }
 
 
       public void transfer(File sourceFile, File outputFile, MultimediaInfo sourceInfo, MultimediaObject mmObject) throws EncoderException {
-
             LOGGER.debug("starting to transfer a video file");
-
-            //this.fileLength = mmObject.getFile().length();
-
-            System.out.println(mmObject.getInfo().getMetadata());
-            System.out.println("Source info size: " + sourceInfo.getVideo().getSize().getWidth());
 
             // get the current video's attributes
             VideoSize size = type.tools.video.Fit.size(sourceInfo);
@@ -86,19 +82,19 @@ public class JaveInterface implements EncoderProgressListener {
 
       @Override
       public void sourceInfo(MultimediaInfo multimediaInfo) {
-            System.out.println("\n\t *** Jave called JaveInterface.sourceInfo(): " + multimediaInfo.toString() + " ***\n");
+            //System.out.println("\n\t *** Jave called JaveInterface.sourceInfo(): " + multimediaInfo.toString() + " ***\n");
       }
 
 
       @Override
       public void progress(int permil) {
             progress += permil;
-            System.out.println("Progress: " + progress);
+
       }
 
       @Override
       public void message(String s) {
-            System.out.println("\n\t *** Jave message: " + s + "***\n");
+            //System.out.println("\n\t *** Jave message: " + s + "***\n");
       }
 
       public double getProgress() {

@@ -375,7 +375,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        */
       //public Node<T> getNext(Node<T> n) {
       public void getNext() {
-
             CompareFCard compare = new CompareFCard();
             Node local = currentNode;
 
@@ -417,7 +416,6 @@ public final class FMTWalker<T extends Comparable<T>> extends BinarySearchTreeWi
        * lowest node, and retain an easy way to get back to this node.
        */
       public void getPrevious() {
-
             CompareFCard compare = new CompareFCard();
             Node local = currentNode;
 

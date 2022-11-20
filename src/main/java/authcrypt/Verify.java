@@ -8,6 +8,7 @@ import fileops.DirectoryMgr;
 import fileops.utility.Utility;
 import flashmonkey.FlashCardOps;
 import forms.utility.Alphabet;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -20,8 +21,8 @@ import java.io.File;
  */
 public class Verify {
 
-      //private static final Logger LOGGER = LoggerFactory.getLogger(Verify.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Verify.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(Verify.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Verify.class);
 
 
       //private static String userName;
@@ -31,7 +32,6 @@ public class Verify {
       //private boolean s3IsSet;
 
       private Verify() {
-            LOGGER.setLevel(Level.DEBUG);
             /* no args constructor */
       }
 

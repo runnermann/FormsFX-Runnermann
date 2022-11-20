@@ -68,7 +68,8 @@ public final class DirectoryMgr {
 
 
       /**
-       * Returns the media path depending on the type of media file
+       * Returns the media path depending on the type of media file. Does not
+       * name the file.
        *
        * @param type <pre>
        *                         Uses a char to set the type of file

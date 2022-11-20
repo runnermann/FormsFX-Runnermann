@@ -64,7 +64,7 @@ public enum ButtoniKon { //extends Button {
       PAY_SYS_BUTTON("Pay System", "Edit or update your account information with Stripe.", FontAwesomeSolid.MONEY_BILL_WAVE, UIColors.FM_WHITE),
       SUBSCRIBE_BUTTON("Advanced", "Subscribe to FlashMonkey Advanced.", FontAwesomeSolid.USERS, UIColors.FM_WHITE),
       ACCOUNT_BUTTON("Access and update your profile and Stripe information.", FontAwesomeSolid.COGS, UIColors.FM_WHITE, 40),
-      GET_PAID_BUTTON("", "Disabled: Shows when you've been paid", "/image/qww_1.png", UIColors.FM_WHITE, 48),
+      PAY_ACCT_BUTTON("", "Disabled: Shows when you've been paid", "/image/qww_1.png", UIColors.FM_WHITE, 48),
       // MetaDataForm button
       QR_SHARE_BUTTON("SAVE TO DESKTOP", "Share this QR-Code so others can purchase your deck", FontAwesomeSolid.QRCODE, UIColors.FM_WHITE),
       // VIDEO PLAYER BUTTON;
@@ -282,7 +282,7 @@ public enum ButtoniKon { //extends Button {
       }
 
       // Profile menu buttons
-      public static Button getAccountButton() {
+      public static Button getFMAccountButton() {
             Button button = ACCOUNT_BUTTON.get();
             button.setId("clearButtonSquare");
             button.setMaxWidth(52);
@@ -292,8 +292,8 @@ public enum ButtoniKon { //extends Button {
             return button;
       }
 
-      public static Button getIgotPdButton() {
-            Button button = GET_PAID_BUTTON.get();
+      public static Button getPayAcctButton() {
+            Button button = PAY_ACCT_BUTTON.get();
             button.setId("clearButtonSquare");
             button.setMaxWidth(52);
             button.setMaxWidth(52);

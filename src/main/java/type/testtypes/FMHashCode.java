@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class FMHashCode {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(FMHashCode.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(FMHashCode.class);
 
       public FMHashCode() { /* do nothing */ }
 

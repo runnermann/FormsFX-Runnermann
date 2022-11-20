@@ -43,33 +43,16 @@ public class SingleCellSection //extends GenericSection
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SingleCellSection.class);
 
       private final HBox sectionHBox = new HBox();
-      private Pane pane;// = new Pane();
+      private Pane leftCell;// = new Pane();
       // Effects responsive height.
       // if a section ht is the same for all sections
-      private boolean notEqual = false;
+//      private boolean notEqual = false;
       // if an upper section is the mate for a
       // restricted lower/other section. Provide the
       // ht of the lower/other section.
-      private double otherHt = 100;
+//      private double otherHt = 0; //100;
 
       /* *** GETTERS ans SETTERS *** */
-
-      public boolean isNotEqual() {
-            return notEqual;
-      }
-
-      public void setNotEqual(boolean notEqual) {
-            this.notEqual = notEqual;
-      }
-
-      public double getOtherHt() {
-            return otherHt;
-      }
-
-      public void setOtherHt(double otherHt) {
-            this.otherHt = otherHt;
-      }
-
 
       /**
        * Provide a 't' in the mmType and this will be a text box,
@@ -94,38 +77,37 @@ public class SingleCellSection //extends GenericSection
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("in SingleCellSection.sectionView(string,char,string... )");
 
-            double bottomPaneHt = SceneCntl.getBottomHt();
-            pane = buildPaneSwitch(txt, type, pane, numHSections, isEqual, paths);
+            //Only a single pane but is the text pane or left pane in double section;
+            leftCell = buildPaneSwitch(txt, type, numHSections, isEqual, (int) otherHt, paths);
+            leftCell.setPrefWidth(ReadFlash.getInstance().getMasterBPane().widthProperty().get());
 
-            // RESPONSIVE SIZING for width and height
-            // Set the initial section height
-            double calcHt = SceneCntl.calcCenterHt(30, bottomPaneHt, FlashMonkeyMain.getPrimaryWindow().getHeight());
-            sectionHBox.setPrefHeight(calcHt / numHSections);
-            pane.setPrefHeight(calcHt / numHSections);
+            sectionHBox.setStyle("-fx-background-color: WHITE; -fx-background-radius: 3");
+            leftCell.setStyle("-fx-background-color: TRANSPARENT;");
 
             // Bind section width with a listener for responsive width
             ReadFlash.getInstance().getMasterBPane().widthProperty().addListener((obs, oldval, newVal) -> {
                   double val = (double) newVal - 8;
                   sectionHBox.setMinWidth(val);
-                  pane.setMinWidth(val);
+                  leftCell.setMinWidth(val);
             });
             // Make section height responsive
             ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newVal) -> {
-                  double val;
-                  if (!notEqual) { // is equal
-                        val = (double) newVal;
+                  double val = SceneCntl.calcCenterHt(30, 244, (double) newVal);
+                  val -= 8;
+
+                  if (isEqual) { // is equal
                         val /= numHSections; // grrrrrr!
-                        val -= bottomPaneHt;
+                        //val -= otherHt;
                   } else {
                         LOGGER.debug("SingleSection notEqual is true");
-                        val = (newVal.doubleValue() - 4) - (otherHt * 2);
+                        val = newVal.doubleValue() - otherHt;
                   }
-                  sectionHBox.setPrefHeight(val);
+                  sectionHBox.setMinHeight(val);
                   sectionHBox.setMaxHeight(val);
-                  pane.setPrefHeight(val);
-                  pane.setMaxHeight(val);
+                  leftCell.setMinHeight(val);
+                  leftCell.setMaxHeight(val);
             });
-            sectionHBox.getChildren().add(pane);
+            sectionHBox.getChildren().add(leftCell);
             sectionHBox.setAlignment(Pos.CENTER);
             return sectionHBox;
       }
@@ -157,46 +139,27 @@ public class SingleCellSection //extends GenericSection
             return sectionHBox;
       }
 
-      private Pane buildPaneSwitch(String txt, char type, Pane pane1, int numHSections, boolean isEqual, String... paths) {
+      private Pane buildPaneSwitch(String txt, char type, int numHSections, boolean isEqual, int otherHt, String... paths) {
 
             GenericCell gc = new GenericCell();
+            int wd = SceneCntl.getCenterWd();
+            int ht = (int) ReadFlash.getInstance().getMasterBPane().getHeight();
             switch (type) {
                   // Audio Video = m / media
                   //case 'M': // should not be called here
-                  case 'm': {
-                        pane1 = new GridPane();
-                        pane1 = gc.cellFactory(type, pane1,
-                            (int) ReadFlash.getInstance().getMasterBPane().getWidth() - 8,
-                            (int) (ReadFlash.getInstance().getMasterBPane().getHeight() - 214) / numHSections,
-                            paths);
-                        break;
-                  }
                   // Canvas = images and shapes/drawings
                   //case 'C': // should not be called here
-                  case 'c': {
-                        LOGGER.debug("Case c in SingleCellSection");
-                        pane1 = new GridPane();
-                        // set initial width and height
-                        pane1 = gc.cellFactory(type, pane1,
-                            (int) ReadFlash.getInstance().getMasterBPane().getWidth() - 8,
-                            (int) (ReadFlash.getInstance().getMasterBPane().getHeight() - 214) / numHSections,
-                            paths);
-
-                        break;
+                  case 'c':
+                  case 'm': {
+                        GridPane singlePane = new GridPane();
+                        return gc.cellFactory(type, singlePane, wd, ht, paths);
                   }
                   case 't': // Text only in this view
                   default: {
-                        LOGGER.debug("SingleSection switch: at default == text pane1. ");
-                        //   SceneCntl.setCellHt((int) ReadFlash.getInstance().getRPCenter().getHeight());
-                        int wd = (int) ReadFlash.getInstance().getMasterBPane().getWidth() - 8;
-                        int ht = (int) (ReadFlash.getInstance().getMasterBPane().getHeight() - 214) / numHSections;
+                        LOGGER.debug("SingleSection switch: at default == text singlePane. ");
                         LOGGER.debug("in SingleSection, setting ht to: " + ht);
-                        pane1 = gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
-
-                        break;
+                        return gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
                   }
             }
-
-            return pane1;
       }
 }

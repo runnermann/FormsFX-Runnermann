@@ -125,23 +125,12 @@ public abstract class Fit {
        * the deminsions provided.
        */
       public static MediaView mediaResize(MediaPlayer player, double paneW, double paneH, double origWd, double origHt) {
-
-//            double mediaW = player.getMedia().getHeight();
-//            double mediaH = player.getMedia().getHeight();
-
             MediaView view = new MediaView(player);
-
-            System.out.println("in Fit.MediaResize");
-            System.out.println("mediaW: " + origWd);
-            System.out.println("mediaH: " + origHt);
-
             boolean widthIsLarger = mediaFit(origWd, origHt, paneW, paneH);
 
             if (widthIsLarger) {
-                  System.out.println("media resize() setting media by wd " + w);
                   view.setFitWidth(w);
             } else {
-                  System.out.println("media resize() setting media by ht: " + h);
                   view.setFitHeight(h);
             }
             return view;
@@ -187,7 +176,6 @@ public abstract class Fit {
             // Set width to the narrower of either the pane
             // or the image.
             w = Math.min(paneW, mediaW);
-            //System.out.println("Fitting by media wd: " + w);
             double ratio = w / mediaW;
             double rHt = mediaH * ratio;
             // Ensure that the new height is not larger than
@@ -213,7 +201,6 @@ public abstract class Fit {
             // Set the height to the narrower of either the
             // pane or the image.
             h = Math.min(mediaH, paneH);
-            //System.out.println("Fitting by media ht: " + h);
             double ratio = h / mediaH;
             double rWd = mediaW * ratio;
             // Ensure that the new height is not larger than

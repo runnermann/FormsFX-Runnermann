@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
  * @author Lowell Stadelman
  */
 public class MultiChoice extends TestTypeBase implements GenericTestType<MultiChoice> {
-      //private static final Logger LOGGER = LoggerFactory.getLogger(MultiChoice.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MultiChoice.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(MultiChoice.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MultiChoice.class);
       // The singleton instance of this class
       private static MultiChoice CLASS_INSTANCE;
 
@@ -159,7 +159,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             // add the question to vBox
             upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(), 2, true, 0, currentCard.getQFiles());
 
-            // add the answer to the a StackPane, add the answer button, and add the stackPane to the vBox.
+            // add the answer to the StackPane, add the answer button, and add the stackPane to the vBox.
             AnswerMM firstAns = test.ansAry[0];
             lowerHBox = genSection.sectionFactory(firstAns.getAText(), firstAns.getAType(), 2, true, 0, firstAns.getAFiles());
 
@@ -269,7 +269,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             } else {
                   rf.new WrongAns(currentCard, this);
             }
-//            selectAnsButton.setDisable(true);
+            selectAnsButton.setDisable(true);
 
             double progress = ReadFlash.getInstance().getProgress();
             if (progress >= FMTWalker.getInstance().getCount()) {
@@ -497,7 +497,6 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
              * test and selected randomly.
              */
             private AnswerMM[] buildAnswerAry(final AnswerMM correctAnswer, Set<AnswerMM> qualifiedSet) {
-                  LOGGER.setLevel(Level.ALL);
                   LOGGER.debug("\n\n *** in buildAnswerAry *** \n");
                   LOGGER.debug("qualifiedSet length: {}", qualifiedSet.size());
 

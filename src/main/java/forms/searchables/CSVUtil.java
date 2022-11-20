@@ -14,8 +14,11 @@ import java.util.List;
  * Auxillery Class used to create Serilized Files. Serilized Files by design need to be used
  * by the same program that creates them. Thus this Auxillery Class exists within FlashMonkey.
  * <p>
- * Class is used to parse the CSVFiles from EDU.GOV list of education entities and output a reduced
- * list converted to an ArrayList of SchoolObjs and set them in a file.
+ * Class is used to parse the CSVFiles from EDU.GOV list of Higher education entities and output a reduced
+ * list converted to an ArrayList of SchoolObjs and set them in a file. Run On sentences are alright?
+ *
+ * The file that is downloaded from the Edu.gov website is a CSV file. We add institutions to the front of the list.
+ * by editing them in a text editor such as IntelliJ. Do not use MS Excel. THe files will not parse.
  */
 public class CSVUtil {
 
@@ -26,49 +29,63 @@ public class CSVUtil {
       // Descriminate if header file
       private static boolean notHeader = false;
 	
-	/*public static void main(String[] args) {
-		
-		String csvIN = "/Users/localmini/IdeaProjects/parse-csv/src/main/java/flashmonkey/utility/InstitutionCampus.csv";
-		String csvOUT = "/Users/localmini/IdeaProjects/flashmonkey-betaB/src/main/resources/processedCampus.dat";
-		
-		try {
-			parseFile(csvIN, csvOUT);
-		} catch (FileNotFoundException e) {
-			e.getMessage();
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}*/
+//	public static void main(String[] args) {
+//
+//		String csvIN = "src/main/resources/InstitutionCampus.csv";
+//		String csvOUT = "src/main/resources/processedCampus.dat";
+//
+//		try {
+//			parseFile(csvIN, csvOUT);
+//		} catch (FileNotFoundException e) {
+//			e.getMessage();
+//			e.printStackTrace();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 
-      public static void parseFile(String csvIn, String csvOut) throws Exception {
-            File file = new File(csvOut);
-            file.createNewFile();
-
-            ArrayList<SchoolObj> schoolList = new ArrayList<>();
-
-            try (BufferedReader br = new BufferedReader(new FileReader(csvIn)); ObjectOutputStream objOut = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(csvOut)))) {
-                  List<String> cellList;
-                  String line;
-                  int count = 0;
-                  // The send object
-                  //DataOutputStream dos = CsvOutput.dos;
-
-                  while ((line = br.readLine()) != null) {
-
-                        cellList = parseLine(line);
-                        if (notHeader) {
-                              String state = cellList.get(7);
-                              int num = state.lastIndexOf(",");
-                              state = state.substring(num + 2, num + 4);
-                              schoolList.add(new SchoolObj(cellList.get(3), cellList.get(7), state));
-                        }
-                  }
-                  //write the ArrayList to file
-                  objOut.writeObject(schoolList);
-            }
-      }
+      /**
+       * Parses the csv file based on a search for a CSV seperator and commas that are within a CSV cell.
+       * Additionally, specifically for parsing out unneeded and confusing univeristy listings, such as ASU
+       * where there are over 20 campuses. Thus according to the list provided by the department of education in 2020?
+       * we remove the extra listings by checking that the third column is not empty.
+       * @param csvIn
+       * @param csvOut
+       * @throws Exception
+       */
+//      public static void parseFile(String csvIn, String csvOut) throws Exception {
+//            File file = new File(csvOut);
+//            file.createNewFile();
+//
+//            ArrayList<SchoolObj> schoolList = new ArrayList<>();
+//
+//            try (BufferedReader br = new BufferedReader(new FileReader(csvIn)); ObjectOutputStream objOut = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(csvOut)))) {
+//                  List<String> cellList;
+//                  String line;
+//                  int count = 0;
+//                  // The send object
+//                  //DataOutputStream dos = CsvOutput.dos;
+//
+//                  while ((line = br.readLine()) != null) {
+//                        System.out.println("Count: " + count++);
+//                        cellList = parseLine(line);
+//                        if (notHeader) {
+//                              // Check that the third colum is not empty.
+//                              // Third column contains the Ipeds Unit ID
+//                              // and is not a child location.
+//                              if(cellList.get(2).length() > 3) {
+//                                    String state = cellList.get(7);
+//                                    int num = state.lastIndexOf(",");
+//                                    state = state.substring(num + 2, num + 4);
+//                                    schoolList.add(new SchoolObj(cellList.get(3), cellList.get(7), state));
+//                              }
+//                        }
+//                  }
+//                  //write the ArrayList to file
+//                  objOut.writeObject(schoolList);
+//            }
+//      }
 
 
       /**
@@ -79,40 +96,40 @@ public class CSVUtil {
        * @param csvLine
        * @return
        */
-      public static List<String> parseLine(String csvLine) {
-
-            notHeader = false;
-
-            StringBuilder cell = new StringBuilder();
-            result = new ArrayList<>();
-
-
-            char one = ' ';
-            char two = ' ';
-            char three = ' ';
-
-            char[] chars = csvLine.toCharArray();
-            for (char ch : chars) {
-                  // write char to cell
-                  cell.append(ch);
-
-                  three = two;
-                  two = one;
-                  one = ch;
-
-                  // if matches a cell divider
-                  if (one == '\"' & two == ',' & three == '\"') {
-                        // indicate it's not a header
-                        notHeader = true;
-                        // Remove last three chars
-                        // and add sb to array.
-                        result.add(cell.substring(0, cell.length() - 3));
-                        // create a new buffer
-                        cell = new StringBuilder();
-                  }
-            }
-            return result;
-      }
+//      public static List<String> parseLine(String csvLine) {
+//
+//            notHeader = false;
+//
+//            StringBuilder cell = new StringBuilder();
+//            result = new ArrayList<>();
+//
+//
+//            char one = ' ';
+//            char two = ' ';
+//            char three = ' ';
+//
+//            char[] chars = csvLine.toCharArray();
+//            for (char ch : chars) {
+//                  // write char to cell
+//                  cell.append(ch);
+//
+//                  three = two;
+//                  two = one;
+//                  one = ch;
+//
+//                  // if matches a cell divider
+//                  if (one == '\"' & two == ',' & three == '\"') {
+//                        // indicate it's not a header
+//                        notHeader = true;
+//                        // Remove last three chars
+//                        // and add sb to array.
+//                        result.add(cell.substring(0, cell.length() - 3));
+//                        // create a new buffer
+//                        cell = new StringBuilder();
+//                  }
+//            }
+//            return result;
+//      }
 
       /**
        * School object contains the school name, address, and state.

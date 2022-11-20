@@ -134,14 +134,6 @@ public class EncryptedStud extends EncryptedPerson implements FormData {
 		setPhotoLink(map.get("photo_link"));
 		setPhone(map.get("phone"));
 
-		if(map.get("avatar_name") == null) {
-			System.out.println("avatar_name is null. ending...");
-			System.exit(1);
-		} else {
-			System.out.println("avatar_Name: " + map.get("avatar_name"));
-		}
-
-
 		setAvatarName(map.get("avatar_name"));
 	}
 

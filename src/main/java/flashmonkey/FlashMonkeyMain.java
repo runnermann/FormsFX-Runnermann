@@ -8,7 +8,6 @@ import authcrypt.Auto;
 import authcrypt.user.EncryptedStud;
 import campaign.Report;
 import campaign.db.DBInsert;
-import ch.qos.logback.classic.Level;
 import ecosystem.ConsumerPane;
 
 import ecosystem.WebEcoPane;
@@ -39,9 +38,13 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import media.sound.SoundEffects;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celltypes.VideoPlayerPopUp;
 import uicontrols.*;
+import uicontrols.menus.AccountProfileMenu;
+import uicontrols.menus.Menu;
+import uicontrols.menus.PayAcctMenu;
 
 import java.awt.Toolkit;
 import java.util.concurrent.Executors;
@@ -115,8 +118,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
 
       // THE LOGGER
-      //private static final Logger LOGGER = LoggerFactory.getLogger(FlashMonkeyMain.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(FlashMonkeyMain.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(FlashMonkeyMain.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(FlashMonkeyMain.class);
 
 
       // *** Java FX UI *** STAGE *** ***
@@ -133,7 +136,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             try {
                   // set the app to the users stored preferences
                   SceneCntl.setPref();
-                  LOGGER.setLevel(Level.DEBUG);
+
                   // reporting app performace to DB
                   //LOGGER.debug("start called");
                   Report.getInstance().sessionStart();
@@ -195,7 +198,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                         }
                         else {
                               // 3b. ifExists == false: show createAcct over fileSelectPre
-                              showSignUpPane();
+                              showSignInPane();
                         }
                   }
                   else {
@@ -399,29 +402,45 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             HBox hBox = new HBox(2);
             hBox.setAlignment(Pos.CENTER_RIGHT);
             hBox.setPadding(new Insets(2, 2, 2, 2));
-            Button acctBtn = ButtoniKon.getAccountButton();
-            Button iGotPdBtn = ButtoniKon.getIgotPdButton();
+            Button acctBtn = ButtoniKon.getFMAccountButton();
+            Button payBtn = ButtoniKon.getPayAcctButton();
 
             acctBtn.setOnMousePressed(m -> {
                   if (m.isSecondaryButtonDown()) {
                         acctSecondaryAction();
                   } else if( !acctShowing) {
                         acctShowing = true;
-                        InnerScene.setToAccountProfileMenu();
-                      firstPane.setOnMouseClicked(f -> {
-                            acctShowing = false;
-                            InnerScene.setTofilePane();
-                      });
+                        AccountProfileMenu profileMenu = new AccountProfileMenu();
+                        InnerScene.setMenu(profileMenu);
+                        firstPane.setOnMouseClicked(f -> {
+                                  acctShowing = false;
+                                  InnerScene.setTofilePane();
+                        });
                   } else {
                         acctShowing = false;
                         InnerScene.setTofilePane();
                   }
             });
             // @TODO implement the getPaidPane with real data
+
+            payBtn.setOnMousePressed(m -> {
+                  if( !acctShowing) {
+                        acctShowing = true;
+                        PayAcctMenu payMenu = new PayAcctMenu();
+                        InnerScene.setMenu(payMenu);
+                        firstPane.setOnMouseClicked(f -> {
+                              acctShowing = false;
+                              InnerScene.setTofilePane();
+                        });
+                  } else {
+                        acctShowing = false;
+                        InnerScene.setTofilePane();
+                  }
+            });
             // and uncomment this page.
             // iGotPdBtn.setOnMouseClicked(e -> getPaidPane());
             // hBox.getChildren().addAll(emailLabel, acctBtn, iGotPdBtn);
-            hBox.getChildren().addAll( acctBtn, iGotPdBtn);
+            hBox.getChildren().addAll( acctBtn, payBtn);
 
             return hBox;
       }
@@ -939,8 +958,14 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             return new Point2D(x, y);
       }
 
+      /**
+       * If acctButtonRowShowing is set to true
+       * Displays the Account Button Box
+       */
       public static void setTopPane() {
-            firstPane.setTop(getAccountBox());
+            if(acctButtonRowShowing) {
+                  firstPane.setTop(getAccountBox());
+            }
       }
 
       /**
@@ -982,6 +1007,14 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
        */
       public static void setLoggedinToTrue() {
             isLoggedinProperty.setValue(true);
+      }
+
+      public static void logOutAction(){
+            // do not allow click on firstPane
+            firstPane.setOnMouseClicked(null);
+            isLoggedinProperty.setValue(false);
+            FlashCardOps.getInstance().deleteCPRFile();
+            InnerScene.setToSignInPane();
       }
 
       /**
@@ -1148,9 +1181,14 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
                   confirmPane.requestFocus();
             }
 
-            private static void setToAccountProfileMenu() {
+
+            /**
+             * Creates a menuPane from the parameter
+             * @param menu The menu to be displayed. Must inherit Menu.
+             */
+            private static void setMenu(Menu menu) {
                   gridPaneFirstScene.getChildren().removeIf(node -> GridPane.getRowIndex(node) == 3);
-                  GridPane gp = AccountProfileMenu.profileMenu();
+                  GridPane gp = menu.getGridPane();
                   ScaleTransition animate = animateScaleV(gp);
                   gridPaneFirstScene.addRow(3, gp);
                   animate.play();

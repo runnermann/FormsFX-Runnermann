@@ -23,8 +23,8 @@ import java.util.HashMap;
 
 public class TeaserPane extends ToggleButton {
 
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TeaserPane.class);
-      //private static final Logger LOGGER = LoggerFactory.getLogger(TeaserPane.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TeaserPane.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(TeaserPane.class);
 
 
       public TeaserPane() {
@@ -46,7 +46,6 @@ public class TeaserPane extends ToggleButton {
       private GridPane teaserGrid;
 
       public HBox build(HashMap<String, String> map, int idx) {
-            LOGGER.setLevel(Level.ALL);
             LOGGER.debug("getPane() called");
 
             HBox rdoBox = new HBox(6);

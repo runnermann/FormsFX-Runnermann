@@ -125,9 +125,6 @@ public class CanvasEditorPopup {
       private void shapePopupHandler(ArrayList<GenericShape> shapeArray, SectionEditor thisEditor, String shapeFileName,
                                     String deckName, String cID) {
 
-
-            System.out.println("shapePopupHandler line 100, x and y are zero");
-
             CreateFlash.getInstance().setFlashListChanged(true);
             CreateFlash.getInstance().disableButtons();
 
@@ -138,10 +135,6 @@ public class CanvasEditorPopup {
 
             if(popUpX < 20.0 | popUpY < 20.0) {
                   Toolkit.getDefaultToolkit().beep();
-                  System.err.println("shapePopupHandler line 100, x and y are zero");
-                  System.err.println("shapePopupHandler line 100, x and y are zero");
-                  System.err.println("shapePopupHandler line 100, x and y are zero");
-                  System.err.println("shapePopupHandler line 100, x and y are zero");
                   //Thread.dumpStack();
             }
 

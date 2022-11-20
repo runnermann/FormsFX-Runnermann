@@ -1,6 +1,7 @@
 package authcrypt;
 
 import fileops.CloudOps;
+import fileops.DirectoryMgr;
 import fileops.S3ListObjs;
 import flashmonkey.FlashMonkeyMain;
 import javafx.application.Platform;
@@ -19,7 +20,7 @@ import java.net.http.HttpConnectTimeoutException;
  */
 public class Auth {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(Auth.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(Auth.class);
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Auth.class);
 
       // Authorized locally only = 8675309
@@ -33,7 +34,7 @@ public class Auth {
       private boolean s3HasSet;
 
 
-      Auth() {
+      private Auth() {
             // no args
       }
 
@@ -109,7 +110,7 @@ public class Auth {
                         saveAction(x1, x2);
                   }
             } catch (HttpConnectTimeoutException e) {
-                  LOGGER.warn(e.getMessage());
+ //                 LOGGER.warn(e.getMessage());
             }
             // else
             // it's an error. Do nothing.
@@ -173,7 +174,7 @@ public class Auth {
        * @param field1 password
        */
       public static void finalizeUserRemote(String field0, String field1) {
-            LOGGER.debug("finalizeUserRemote called");
+            //LOGGER.debug("finalizeUserRemote called");
             //CloudOps co = new CloudOps();
             int res = CloudOps.requestFinalizeUserRemote(field0, UserData.getUserName(), UserData.getFirstName(), field1);
             switch (res) {
@@ -219,7 +220,7 @@ public class Auth {
 
       private boolean resetPasswordRemote() {
             // ?????
-            LOGGER.debug("resetPasswordRemote called");
+            //LOGGER.debug("resetPasswordRemote called");
             String errorMessage = "There is a problem with your password .";
             notifyError(errorMessage);
             UserData.clear();
@@ -247,7 +248,7 @@ public class Auth {
        */
       public boolean validatorActionSwitch(String pw, String email, String formName) {
             //LOGGER.setLevel(Level.DEBUG);
-            LOGGER.debug("Auth.validatorActionSwitch called. v.succeeded?: <{}>", v.succeeded());
+            //LOGGER.debug("Auth.validatorActionSwitch called. v.succeeded?: <{}>", v.succeeded());
 
             switch (v.succeeded()) {
                   case 0: {
@@ -305,6 +306,9 @@ public class Auth {
                         return true;
                   }
                   case 192: {
+                        if(!DirectoryMgr.resuExists()) {
+                              saveAction(pw, email);
+                        }
                         // Connected state: PW and USER combo passed on local and remote. Remote and local operations enabled.
                         this.state = 8675311;
                         return true;
@@ -355,7 +359,7 @@ public class Auth {
        * @return returns true if a new user is saved to file, false otherwise.
        */
       private boolean saveAction(String x1, String x2) {
-            LOGGER.info("In save action and pw is: " + x1 + " getUserName is: " + x2);
+            //LOGGER.info("In save action and pw is: " + x1 + " getUserName is: " + x2);
             // Create userFile data
             String msg = v.newUser(x1, x2);
             //LOGGER.info("saveAction() create newUser : {}",msg);

@@ -46,9 +46,7 @@ public abstract class FMTransition {
       protected static FadeTransition createFadeIn;
       //protected static FadeTransition ansButtonFadeIn;
 
-      public static void setQRight(TranslateTransition rightQTransition) {
-            qRight = rightQTransition;
-      }
+      public static void setQRight(TranslateTransition rightQTransition) { qRight = rightQTransition; }
 
       public static TranslateTransition getQRight() {
             return qRight;
@@ -153,7 +151,6 @@ public abstract class FMTransition {
  /*   public static SequentialTransition newQRightTop(Node node)
     {
         // @test
-        System.out.println("newQRightTop called: FMTransition line 133");
 
     	TranslateTransition transLeft = new TranslateTransition();
     	transLeft = transitionFmLeft(node);

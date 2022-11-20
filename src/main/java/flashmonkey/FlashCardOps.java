@@ -22,6 +22,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import media.sound.SoundEffects;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uicontrols.FMAlerts;
 
 
@@ -48,8 +50,8 @@ import uicontrols.FMAlerts;
 public class FlashCardOps extends FileOperations implements Serializable {//< T extends Comparable<T>> extends FlashCardMM<T> implements Comparable<T>
 
       // Logging reporting level is set in src/main/resources/logback.xml
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FlashCardOps.class);
-      //private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(FlashCardOps.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(FileOperations.class);
 
       private static final ArrayList<String> dontSaveDeck = new ArrayList<>();
       private static final long serialVersionUID = FlashMonkeyMain.VERSION;
@@ -80,7 +82,6 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
       private FlashCardOps() {
             super();
             fileExists("default.dec", getUserFolder());
-            LOGGER.setLevel(Level.DEBUG);
       }
 
       public static synchronized FlashCardOps getInstance() {

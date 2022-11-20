@@ -73,7 +73,6 @@ public class DeckNameModel {
 
       public void formAction() {
             SoundEffects.PRESS_BUTTON_COMMON.play();
-            System.out.println("DeckNameModel.formAction called");
             // First check if form has correct values. THis
             // prevents the form from submitting when the user
             // presses the enter key as opposed to using the submit
@@ -105,7 +104,6 @@ public class DeckNameModel {
       }
 
       private void deckSaveAction() {
-            System.out.println("deckSaveAction Called in DeckNameModel");
             // get newfile name fm field
             String fileName = descriptor.getName();
 

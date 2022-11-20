@@ -83,10 +83,14 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
 
             final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
+            // There is not an answer button in NoteTaker so we provide the actions
+            // for the gauges here.
             if (currentCard.getIsRightColor() == 0) {
                   final ReadFlash rf = ReadFlash.getInstance();
                   rf.new JustAns(currentCard);
                   rf.getProgGauge().moveNeedle(500, rf.incProg());
+                  // When this is the last card, it will not be seen if
+                  // we set the below.
 //                  double progress = rf.getProgress();
 //                  if (progress >= FMTWalker.getInstance().getCount()) {
 //                        ReadFlash.getInstance().endGame();
@@ -107,7 +111,6 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
       public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane) {
             // Instantiate vBox
             VBox vBox = new VBox();
-
             vBox.getChildren().addAll(q.sectionHBox);
             return vBox;
       }

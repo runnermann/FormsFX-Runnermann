@@ -27,7 +27,7 @@ package type.sectiontype;
 
 import javafx.scene.layout.HBox;
 
-public class GenericSection {
+public final class GenericSection {
 
       private static GenericSection CLASS_INSTANCE;
 

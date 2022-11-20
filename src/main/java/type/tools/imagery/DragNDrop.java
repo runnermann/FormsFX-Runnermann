@@ -22,6 +22,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
 import ws.schild.jave.EncoderException;
@@ -43,8 +44,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class DragNDrop {
 
-      //      private static final Logger LOGGER = LoggerFactory.getLogger(DragNDrop.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DragNDrop.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(DragNDrop.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DragNDrop.class);
 
       // p for public
       public static final char MKT_IMG = 'p';
@@ -55,7 +56,6 @@ public class DragNDrop {
       private final StringProperty mediaURLProperty;
 
       DragNDrop() {
-            LOGGER.setLevel(Level.ALL);
             mediaNameProperty = new SimpleStringProperty("");
             mediaURLProperty = new SimpleStringProperty("");
       }
@@ -78,9 +78,9 @@ public class DragNDrop {
        * media URL for the local file. Returns the String URL.
        * @return
        */
-      public String getMediaURL() {
-            return mediaURLProperty.get();
-      }
+//      public String getMediaURL() {
+//            return mediaURLProperty.get();
+//      }
 
       public String getMediaName() {
             return mediaNameProperty.get();
@@ -197,10 +197,10 @@ public class DragNDrop {
        * @return Returns the imageFileName
        */
       private String saveImage(Image image, String mime, char bucket) {
-            BufferedImage inputImage = SwingFXUtils.fromFXImage(image, null);
-            FileNaming fileNaming = new FileNaming(FileNaming.getImageHash(inputImage), bucket, mime);
+            FileNaming fileNaming = getDeckMediName(mime);
+            String mediaName = fileNaming.getMediaFileName();
             FlashCardOps fco = FlashCardOps.getInstance();
-            boolean bool = fco.saveImage(fileNaming.getMediaFileName(), image, mime, bucket);
+            boolean bool = fco.saveImage(mediaName, image, mime, bucket);
             if (!bool) {
                   String errorMessage = " That's a drag. That didn't work." +
                       "\n Try dragging to the desktop first. " +
@@ -209,14 +209,14 @@ public class DragNDrop {
                       "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
             } else {
                   String mediaPath = DirectoryMgr.getMediaPath(bucket);
-                  mediaNameProperty.set(fileNaming.getMediaFileName());
-                  mediaURLProperty.set( mediaPath + fileNaming.getMediaFileName());
+                  mediaNameProperty.set(mediaName);
+                  mediaURLProperty.set( mediaPath + mediaName);
             }
-            return fileNaming.getMediaFileName();
+            return mediaName;
       }
 
       /**
-       * Transfers a media file based on its type. Discriminates files if they are not
+       * Transfers a media file based on its type. Discriminate files if they are not
        * of a media type accepted by javaFX. Convert video if possible using JAVE2
        *
        * @param files, contains the file to be transferred in [0]
@@ -345,10 +345,7 @@ public class DragNDrop {
                   // The deck image is always the name of the deck.
                   FileNaming fileName;
                   if(bucket == 'p') {
-                        String s = FlashCardOps.getInstance().getDeckFileName();
-                        int n = s.indexOf(".");
-                        s = s.substring(0, n);
-                        fileName = new FileNaming(s, bucket, "." + ending);
+                        fileName = getDeckMediName(ending);
                   } else if(bucket == 'a') {
                         fileName = new FileNaming(UserData.getUserMD5Hash(), bucket, "." + ending);
                   } else {
@@ -369,5 +366,19 @@ public class DragNDrop {
                         LOGGER.warn("WARNING: IOException while copying file in SectionEditor");
                   }
             }
+      }
+
+      /**
+       * The deckFileName is always the same as the deck name. Method provides
+       * the new media file name with the proper ending.
+       * @param ending the ending of the Image. jpg, png...
+       * @return Media File Name for the Deck Image.
+       */
+      public static final FileNaming getDeckMediName(String ending) {
+            String s = FlashCardOps.getInstance().getDeckFileName();
+            int n = s.indexOf(".");
+            s = s.substring(0, n);
+            FileNaming f = new FileNaming(s, 'p', "." + ending);
+            return f;
       }
 }

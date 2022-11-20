@@ -81,9 +81,7 @@ public class ModelError {
             try {
                   this.setModelError();
             } catch (Exception e) {
-                  //LOGGER.warn("CRITICAL ERROR!!!: ModelError threw exception in AppAccessVerticle {} \n{}", e.getMessage(), e.getStackTrace());
                   e.printStackTrace();
-                  // System.exit(1);
             }
       }
 
@@ -91,9 +89,7 @@ public class ModelError {
             try {
                   this.setMError();
             } catch (Exception e) {
-                  //LOGGER.warn("CRITICAL ERROR!!!: ModelError threw exception in AppAccessVerticle {} \n{}", e.getMessage(), e.getStackTrace());
                   e.printStackTrace();
-                  // System.exit(1);
             }
       }
 
@@ -164,10 +160,9 @@ public class ModelError {
             dec = new Dec();
             //LOGGER.debug("syekDec == null: " + (syekDec == null));
             //LOGGER.debug("icDec == null: " + (icDec == null));
-            System.out.println("setModelError() dec length: " + dec.arr.length);
- //           for (int i = 0; i < dec.arr.length; i++) {
-                  dec.arr[0] = Util.decryptWithPrefixIV(syekDec.arr[0], icDec.one);
- //           }
+
+            dec.arr[0] = Util.decryptWithPrefixIV(syekDec.arr[0], icDec.one);
+
       }
 
       private void setMError() throws Exception {
@@ -180,9 +175,9 @@ public class ModelError {
             InnerOps<Syek> innoDec2 = new InnerOps<Syek>();
             // double byte array
             Syek syekDec = innoDec2.getResuSyekFile(userKeyFile.getName());
-            String OUTPUT_FORMAT = "%s";
-            String encyptedPWEm = String.format(OUTPUT_FORMAT, Util.hex(syekDec.arr[0]));
-            System.out.println("encryptedPW,email: " + encyptedPWEm);
+            //String OUTPUT_FORMAT = "%s";
+            // String encyptedPWEm = String.format(OUTPUT_FORMAT, Util.hex(syekDec.arr[0]));
+
             //return encyptedPW;
             // 2.a. The decrypted keys stored in memory.
             dec = new Dec();
@@ -221,16 +216,16 @@ public class ModelError {
 
       private static class InnerOps<T> {
             // Uncomment to run main()
-            void createSyekFile(T syek, File m) {
-                  //Thread.dumpStack();
-                  try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("src/main/resources/" + m.getName()), 512))) {
-                        out.writeObject(syek);
-                  } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                  } catch (IOException e) {
-                        e.printStackTrace();
-                  }
-            }
+//            void createSyekFile(T syek, File m) {
+//                  //Thread.dumpStack();
+//                  try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("src/main/resources/" + m.getName()), 512))) {
+//                        out.writeObject(syek);
+//                  } catch (FileNotFoundException e) {
+//                        e.printStackTrace();
+//                  } catch (IOException e) {
+//                        e.printStackTrace();
+//                  }
+//            }
 
             /**
              * Save the users PW
@@ -457,44 +452,5 @@ public class ModelError {
 //        }
 //    }
 
-      // Tests PW encryption and decryption
-      public static void main(String[] args) {
-            ModelError m = ModelError.getInstance();
-            String pw = "bangBang#01";
-            String orig_email = "lowell.stadelman@gmail.com";
-
-// Uncomment to create the file and comment out everything in try catch
-// m.itM() to decrypt and print will not work while the file is being written.
-//            m.outputMErrors(pw, orig_email);
-            try {
-                  m.itM();
-                  System.out.println("user (hex): " + String.format("%s", m.getBFTErrors()));
-            } catch (Exception e) {
-                  System.out.println(e.getMessage());
-                  e.printStackTrace();
-            }
-
-      }
-
-
-    private static class Error {
-
-        private static final String[] arr = new String[1];
-        // 0
-        private static String dbAccessString = "jdbc:postgresql://usa-conus.caws1d0xah4s.us-west-2.rds.amazonaws.com:5432/usa-conus?user=lowell&password=ochCtirAwddThcatemHQzi2002";
-
-
-        private Error() {
-              System.err.println("WARNING: ModelError.error() ERROR is exposed");
-              System.err.println("WARNING: ModelError.error() ERROR is exposed");
-              System.err.println("WARNING: ModelError.error() ERROR is exposed");
-              buildArr();
-        }
-
-        // this is correct for decrypt as well???
-        private String[] buildArr() {
-            arr[0] = dbAccessString;
-            return arr;
-        }
-    }
+//    }
 }

@@ -169,7 +169,6 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
 
 
             calcButton.setOnAction(e -> {
-                  System.out.println("Calc button pressed in GraphCard");
                   expression = p.getText();
                   // creates grid, & line, and makes responsive,
                   // parentPane used for resizing
@@ -582,20 +581,18 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
              * @return
              */
             private String graphFunction(String expression, int xStart, int xEnd, int yLowLim, int yHighLim, Point2D originXY) {
-
-                  System.out.println(" *!*!* IN graphFunction() !*!*!");
                   // offsets to adjust line to graph
                   int xOffset = -4;
                   int yOffset = -14;
                   // clip the line offset
                   int upOffset = -100;
 
-                  System.out.println("\n\nxStart " + xStart + ", xEnd " + xEnd + "\n\n");
-                  System.out.println("\n\nyLowLim " + yLowLim + " yHighLim " + yHighLim + " \n\n");
+                  //System.out.println("\n\nxStart " + xStart + ", xEnd " + xEnd + "\n\n");
+                  //System.out.println("\n\nyLowLim " + yLowLim + " yHighLim " + yHighLim + " \n\n");
 
                   int length = xEnd - xStart;
                   length *= 5;
-                  System.out.println(" length: " + length);
+                  //System.out.println(" length: " + length);
 
                   double y;
                   double x = xStart;
@@ -636,7 +633,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
 
                               sb.replace(index, index + 1, "M");
                         } else {
-                              System.out.println(" out of bounds Y " + y + ",  yCoord: " + yCoord);
+                              //System.out.println(" out of bounds Y " + y + ",  yCoord: " + yCoord);
                         }
                   }
                   // For the hanging 'M' added but without a point.
@@ -670,8 +667,6 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
                   }
 
                   if (DijkstraParser.isInvalidInput()) {
-
-                        System.out.println(" Invalid input: " + DijkstraParser.isInvalidInput());
                         // Insert a temporary error message into the
                         // text area
                         StringBuilder sb = new StringBuilder();
@@ -800,7 +795,6 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
             // display expressions on the graph
             for (int i = 0; i < exps.length; i++) {
                   //Pane parentPane, String exp, DoubleProperty wdProperty, DoubleProperty htProperty, Point2D originXY, Color color)
-                  System.out.println("loop " + i + " adding to line to pane");
                   pane.getChildren().add(createLinePane(parentPane, exps[i], wdProperty, htProperty, originXY, colors[i]));
             }
             return pane;

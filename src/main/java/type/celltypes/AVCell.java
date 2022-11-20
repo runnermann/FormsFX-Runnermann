@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 //import java.util.concurrent.atomic.AtomicInteger;
 //import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.tools.imagery.Fit;
 //import uicontrols.UIColors;
@@ -42,8 +43,8 @@ import type.tools.imagery.Fit;
 
 public class AVCell implements MediaPlayerInterface {
 
-      //private static final Logger LOGGER = LoggerFactory.getLogger(AVCell.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVCell.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(AVCell.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AVCell.class);
 
       private MediaPlayer mediaPlayer;
       private MediaView mediaViewer;
@@ -78,8 +79,6 @@ public class AVCell implements MediaPlayerInterface {
        * @return the pane containing the cell
        */
       public Pane buildCell(double toWd, double toHt, String mediaPathStr) {
-
-            LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("\n***in first AVCell.buildCell() ***");
             // Create file from media path
             mediaFile = new File(mediaPathStr);
@@ -127,7 +126,6 @@ public class AVCell implements MediaPlayerInterface {
 //      private boolean isShowing = false;
 
       private synchronized Pane buildRightCell(Double toWd, Double toHt) {
-            System.out.println("\n*** buildRightCell called in AVCell ***");
             // temp fix for Java-Bug ??? for windows. Video does not always load in win 10/11
 
             ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(4);
@@ -152,9 +150,7 @@ public class AVCell implements MediaPlayerInterface {
                   mediaViewer.setPreserveRatio(true);
                   mediaViewer.setSmooth(true);
 
-                  System.out.println("running task and count is: " + count);
                   mediaPlayer.statusProperty().addListener((obs, ov, nv) -> {
-                        System.out.println("in listener, mediaPlayer statusProperty is: " + nv);
                         if (nv == MediaPlayer.Status.READY) {
                               scheduledExecutor.shutdownNow();
                               //isShowing = true;

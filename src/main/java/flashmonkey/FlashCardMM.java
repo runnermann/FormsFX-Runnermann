@@ -678,16 +678,12 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
                         }
                   }
 
-                  //System.out.println("this question: " + this.questionMM.getQText() + " equals " + otherFC.questionMM.getQText());
-                  //System.out.println("this question: " + this.answerMM.getAText() + " equals " + otherFC.answerMM.getAText());
-
                   // Text area
                   boolean bool1 = this.questionMM.getQText().equals(otherFC.questionMM.getQText());
                   if (!bool1) {
                         return false;
                   }
                   boolean bool2 = this.answerMM.getAText().equals(otherFC.answerMM.getAText());
-                  //System.out.println("bool 2 in FlashCardMM equals is: " + bool2 + ", and thisFC.getAText: <" + this.answerMM.getAText() + ">  == <" + otherFC.answerMM.getAText() + "> otherFC.getAText: "  );
                   if (!bool2) {
                         return false;
                   }

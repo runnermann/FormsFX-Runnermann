@@ -151,7 +151,6 @@ public class EncryptedAcct {
 		LocalDate today = LocalDate.now();
 		//LocalDate today = LocalDate.now();
 		if(map == null) {
-			//System.out.println("EncryptedAcct.verify: map is null, returning false...");
 			return false;
 		} else {
             switch (acctStatus) {

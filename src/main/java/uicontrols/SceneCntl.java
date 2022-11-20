@@ -9,7 +9,9 @@ import com.sun.glass.ui.Screen;
 import javafx.geometry.Point2D;
 //import javafx.stage.Screen;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import type.testtypes.FMHashCode;
 
 import java.io.*;
 import java.util.*;
@@ -23,7 +25,8 @@ import java.util.prefs.BackingStoreException;
  * @author Lowell Stadelman
  */
 public abstract class SceneCntl {
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SceneCntl.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SceneCntl.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(SceneCntl.class);
 
       private static int deltaHt;
       private static int deltaWd;
@@ -141,7 +144,6 @@ public abstract class SceneCntl {
       private static void storeUserSettings() {
             String userDir = System.getProperty("user.home");
             String dirFile = userDir + propertiesFile;
-            LOGGER.setLevel(Level.DEBUG);
 
             LOGGER.debug("Called storeUserSettings, dirFile: {}", dirFile);
 
@@ -164,7 +166,7 @@ public abstract class SceneCntl {
             String userDir = System.getProperty("user.home");
             File f = new File(userDir + propertiesFile);
             if (f.exists()) {
-                  LOGGER.setLevel(Level.DEBUG);
+                  //LOGGER.setLevel(Level.DEBUG);
                   LOGGER.debug("user settings file exists");
                   try (InputStream in = new FileInputStream(userDir + propertiesFile)) {
                         userSettings.load(in);

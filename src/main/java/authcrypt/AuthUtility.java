@@ -36,8 +36,6 @@ public class AuthUtility {
                   return "fail: salt is null or empty";
             }
 
-            //System.out.println("AuthUtility checkStr's passed");
-
             final SecretKeyFactory skf;
             try {
                   skf = SecretKeyFactory.getInstance(alg);
@@ -53,7 +51,6 @@ public class AuthUtility {
                 salt.getBytes(StandardCharsets.UTF_8),
                 512,
                 64 * 8);
-            //System.out.println("AuthUtility createHash successful, returning hash: " + hash(skf, spec));
             return hash(skf, spec);
       }
 
@@ -103,7 +100,6 @@ public class AuthUtility {
        * @return true if correct
        */
       private boolean checkStr(String str) {
-            //System.out.println("checkStr: " + str );
             return (str == null || str.length() < 8);
       }
 

@@ -102,11 +102,8 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
       public ArrowBuilder(Canvas c, GraphicsContext graphC, Pane overlayPane, SectionEditor editor, String stroke, String fill) {
             super(c, graphC, overlayPane, editor);
             fxLine = new Polyline();
-            //System.out.println("LineBuilder full constructor called strokeColor: {}" + strokeClr);
             this.strokeColor = stroke;
             this.fillColor = fill;
-            //strokeProperty.setValue(stroke);
-            //fillProperty.setValue(fill);
       }
 
       /**
@@ -158,9 +155,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
       @Override
       public void mousePressed(MouseEvent mouse) {
             SoundEffects.ROBOT_SERVO_2.play();
-
-            System.out.println("mousePressed in ArrowBuilder");
-
             DrawTools draw = DrawTools.getInstance();
             GraphicsContext gC = getGc();
 
@@ -202,7 +196,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
        */
       @Override
       public void mouseDragged(MouseEvent e) {
-            System.out.println("ArrowBuilder.mouseDragged");
             Canvas can = getCanvas();
             GraphicsContext gC = getGc();
             Utility ut = new Utility();
@@ -233,7 +226,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
                   arrowTop[1] = rectBase.get(0).getY();
                   arrowBtm[0] = rectBase.get(1).getX();
                   arrowBtm[1] = rectBase.get(1).getY();
-                  //System.out.println("arrowTopY: " + arrowTop[1] + " arrowBottomY: " + arrowBtm[1]);
                   upperRectBase[0] = rectBase.get(2).getX();
                   upperRectBase[1] = rectBase.get(2).getY();
                   lowerRectBase[0] = rectBase.get(3).getX();
@@ -270,8 +262,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
        */
       @Override
       public void mouseReleased(MouseEvent mouse) {
-            System.out.println("mouseReleased called");
-
             DrawTools draw = DrawTools.getInstance();
 
             if (draw.getShapeNotSelected() && distance > 15) {
@@ -353,7 +343,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
        */
       @Override
       public Shape editableShapeAction(Shape fxLine, GenericShape gs) {
-            System.out.println("editableShapeAction called");
             // add mouse actions to the shape
             fxLine.setOnMousePressed(f -> shapePressed(f, gs, fxLine));
             fxLine.setOnMouseDragged(f -> shapeDragged(f, gs, fxLine));
@@ -373,7 +362,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
        */
       @Override
       public void copyAction(MouseEvent mouse, GenericShape gs) {
-            System.out.println("copyAction called");
             FMPolyLine fmPolyLine;
 
             fmPolyLine = new FMPolyLine(
@@ -476,7 +464,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
 
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape fxShape) {
-            System.out.println("called shapeDragged");
             newSound = startTime < System.currentTimeMillis() - 1500;
             if(newSound) {
                   startTime = System.currentTimeMillis();
@@ -517,10 +504,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
        */
       @Override
       public void shapeReleased(MouseEvent mouse, GenericShape gs, Shape shape) {
-
-            System.out.println("shapeReleased called");
-
-            //System.out.println("ShapeReleased called in PolyLine");
             // if not adding to the existing line
             if (!isNewShape()) {
                   SectionEditor editor = editorRef;
@@ -627,7 +610,6 @@ public class ArrowBuilder extends GenericBuilder<FMPolyLine, ArrowBuilder> {
        */
       @Override
       public void verticyXYDragged(MouseEvent mouse, GenericShape gs, ArrayList<Circle> vertArry, Shape shape) {
-            System.out.println("verticyXYDragged called");
             if (!mouse.isSecondaryButtonDown() && !mouse.isAltDown()) {
                   Circle c = vertArry.get(verticyIdx);
                   c.setCenterX(mouse.getSceneX());

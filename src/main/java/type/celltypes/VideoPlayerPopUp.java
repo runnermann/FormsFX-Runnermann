@@ -111,7 +111,6 @@ public class VideoPlayerPopUp implements MediaPlayerInterface {
        * video player and controls.
        */
       public StackPane getVideoPlayerPane() {
-            System.out.println("Called START in VideoPlayerPopUp");
             setControls(media);
 
 
@@ -128,9 +127,7 @@ public class VideoPlayerPopUp implements MediaPlayerInterface {
 
             //singleMViewer.setFitWidth(1024);
             mediaPlayer.statusProperty().addListener((obs, ov, nv) -> {
-                  System.out.println("MediaPlayer statusProperty Listener called,");
                   if (nv == MediaPlayer.Status.READY) {
-                        System.out.println("MediaPlayer status is READY");
                         HBox viewerHBox = viewerHBox();
                         playContainer.getChildren().addAll(viewerHBox, controlVBox);
                         playContainer.setAlignment(Pos.BOTTOM_CENTER);
@@ -317,13 +314,13 @@ public class VideoPlayerPopUp implements MediaPlayerInterface {
                   System.err.println("\n\n **** Media Exception ****");
 
                   mediaPlayer.setOnError(() -> System.err.println("MediaPlayer Error: " + mediaPlayer.getError().getMessage()));
-                  media.setOnError(() -> System.out.println("Media Error: " + media.getError().getMessage()));
+
                   singleMViewer.setOnError((MediaErrorEvent me) ->
                   {
                         MediaException error = me.getMediaError();
                         MediaException.Type errorType = error.getType();
                         String errorMsg = error.getMessage();
-                        System.out.println("MediaViewer Error: " + "\n\t Type: " + errorType + "\n\t Message: " + errorMsg);
+                       // System.out.println("MediaViewer Error: " + "\n\t Type: " + errorType + "\n\t Message: " + errorMsg);
                   });
             }
       }
@@ -363,7 +360,6 @@ public class VideoPlayerPopUp implements MediaPlayerInterface {
 
       private void resetBtnAction(Button playBtn) {
             //MediaPlayer.Status status = player.getStatus();
-            System.out.println("\n\t *** Pause / resume button pressed ***");
             mediaPlayer.stop();
             mediaPlayer.seek(Duration.ZERO);
             playBtn = VID_PLAY.getPlay(playBtn);

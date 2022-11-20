@@ -111,7 +111,6 @@ public abstract class FileOperations implements Serializable {
     }
 
     protected void setFileName(String name) throws IllegalArgumentException {
-        System.out.println("Name: " + name);
         if(name.equals("default")) {
             throw new IllegalArgumentException("WARNING: fileName cannot be default");
         } else {
@@ -233,29 +232,21 @@ public abstract class FileOperations implements Serializable {
         folder.mkdirs();
         //Thread.dumpStack();
 
-        System.out.println(" output dir fileName: " + folder + "/" +fileName);
-
         ObjectOutputStream output = null;
         // action
         try {
             output = new ObjectOutputStream(new FileOutputStream(folder + "/" + fileName));
-
-            System.out.println("\n\n----- Sending list to file: -----\n");
             if(minus == '-') {
                 for (int i = 0; i < arrayList.size() - 1; i++) {
-                    System.out.println((FlashCardMM)arrayList.get(i));
                     output.writeObject(arrayList.get(i));
                 }
             } else {
                 for (int i = 0; i < arrayList.size(); i++) {
-                    System.out.println((FlashCardMM)arrayList.get(i));
                     output.writeObject(arrayList.get(i));
                 }
             }
                   output.flush();
                   output.close();
-
-            System.out.println("----- List complete: -----\n\n");
 
             } catch (EOFException e) {
             /* do nothing */
@@ -661,6 +652,15 @@ public abstract class FileOperations implements Serializable {
             LOGGER.warn("ERROR: An unknown error occurred: " + e.getMessage());
         }
         return false;
+    }
+
+    public void deleteCPRFile() {
+        boolean bool = DirectoryMgr.resuExists();
+        if(bool) {
+            String dir = DirectoryMgr.CPR_DIR;
+            File cpr = new File( dir + "/resuone.enc");
+            cpr.delete();
+        }
     }
 }
 

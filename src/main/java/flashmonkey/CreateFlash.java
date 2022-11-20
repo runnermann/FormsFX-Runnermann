@@ -18,6 +18,7 @@ import forms.DeckMetaPane;
 import media.sound.SoundEffects;
 import metadata.DeckMetaData;
 
+import org.slf4j.Logger;
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
 import type.testtypes.GenericTestType;
@@ -157,8 +158,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlash.class);
-      //private static final Logger LOGGER = LoggerFactory.getLogger(CreateFlash.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlash.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(CreateFlash.class);
       // Only one instance of this class may exist within a JVM. Not
       // a 100% solution.
       private static CreateFlash CLASS_INSTANCE;
@@ -169,7 +170,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       // ensures that if there is an exit, the users
       // modifications are saved.
       private boolean flashListChanged;
-
       // MarketPlace/sell button
       private static Button metaButton;
       // Buttons for deckActions and card
@@ -181,12 +181,9 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       private BorderPane masterBPane;
       private VBox cfpCenter;
       private Stage metaWindow;
-
       // flags
       private boolean isDisabled;
-
-
-      /**
+      /*
        * currentCard = is always a card stored in
        * the creatorList. The last card on the list
        * is always empty after start. The last card
@@ -194,21 +191,18 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        * FlashCardOps.setListInFile(...)
        */
       private FlashCardMM currentCard;
-
       //*** VARIABLES ***
       private int startSize;
       private int testTypeIdx;
-
+      // The metaData about this deck that is
+      // saved or will be saved to disk and the db.
       private DeckMetaData meta;// = new DeckMetaData();
-
       //*** ARRAY List ***
       private static volatile ArrayList<FlashCardMM> creatorList;//  = new ArrayList<>(20);
-
       // The iterator index. Starts at the last existing
       // index prior to the new card added.
       private int listIdx;// = creatorList.size();
-
-      /**
+      /*
        * Used by the ComboBox Test Selector.
        * Note: Combobox contains placeholder classes that
        * currently do nothing.
@@ -216,11 +210,8 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
        */
       private final ObservableList<TestMapper> TESTS = FXCollections.observableArrayList(TestMapper.getTestList(TestList.TEST_TYPES));
       private static PrefixSelectionComboBox<TestMapper> entryComboBox;
-
       /* ***** FOR TESTING ONLY ********/
       DeckMetaPane metaPane;
-
-
       // Editors
       private static Editors editors;
       private static class Editors {
@@ -294,7 +285,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             entryComboBox.setMaxWidth(Double.MAX_VALUE);
             entryComboBox.setPrefHeight(24);
             entryComboBox.setPromptText("CARD TYPE");
-
             // set number of rows visible
             entryComboBox.setVisibleRowCount(5);
       }
@@ -308,11 +298,9 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
       public BorderPane createFlashScene() {
             initComboBox();
             flashListChanged = false;
-            LOGGER.setLevel(Level.ALL);
             LOGGER.debug("called createFlashScene()");
             LOGGER.debug("deckName: {}", FlashCardOps.getInstance().getDeckLabelName());
             // The metadata and allow sell window
-//            metaWindow = new Stage();
             meta = DeckMetaData.getInstance();
             // Label at top of window
             // Get deck name from readflash.
@@ -321,19 +309,14 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             Label mainLabel = new Label("Deck name:  " + fcOps.getDeckLabelName());
             // Set id for style in CSS
             mainLabel.setId("deckNameLabel");
-
             // If we are working on a deck that was just downloaded
             // Then update the FlashList.
             if (fcOps.getFlashList() == null || fcOps.getFlashList().isEmpty()) {
                   fcOps.refreshFlashList();
             } else {
-                  // @todo remove always save to cloud in saveFlashList
-                  //fcOps.unsafeSaveFlashList();
                   fcOps.safeSaveFlashList();
                   fcOps.refreshFlashList();
             }
-
-            LOGGER.debug("flashList is empty: {}", fcOps.getFlashList().isEmpty());
 
             // If this is adding cards to an existing flashCard list, then
             // creates the list to be added to. Also sets the
@@ -355,17 +338,14 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             HBox northContainer = new HBox();
             northContainer.setId("CreateNorthCtnr");
             HBox cfpNorth = new HBox(4);
-
-
             cfpNorth.setPadding(new Insets(2, 4, 2, 4));
+            cfpNorth.setId("cfpNorthPane");
             // Contains the CardType
             cfpCenter = new VBox(2);
             cfpCenter.setPadding(new Insets(0, 4, 0, 4));
             cfpCenter.setSpacing(2);
-
             // contains the buttons in a horizontal row
             VBox cfpSouth;
-            cfpNorth.setId("cfpNorthPane");
 
             // create blank card with new cID for the first card
             // and add it to creatorList. getCID from card in list.
@@ -732,7 +712,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             nextQButton = ButtoniKon.getCreateQNextButton();
             nextQButton.setMaxWidth(Double.MAX_VALUE);
             nextQButton.setOnAction(e -> nextQButtonAction());
-
             prevQButton = ButtoniKon.getCreateQPrevButton();
             prevQButton.setMaxWidth(Double.MAX_VALUE);
             prevQButton.setOnAction(e -> prevQButtonAction());
@@ -1121,17 +1100,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                           "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                   metaButton.setDisable(true);
             }
-
       }
-
-
-      /* ------------------------------------------------------- **/
-
-/*      public static final void resetSectionEditors() {
-            editorU = new SectionEditor();
-            editors.EDITOR_L = new SectionEditor();
-      }*/
-
 
       /* ------------------------------------------------------- **/
 
@@ -1149,25 +1118,23 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
             if ( ! moveOK) {
                   return;
             }
-
             // increment the cardIdx and for
             // setting fileNames to each card
             listIdx++;
-
+            // set the UI to the current card
             if (listIdx > -1 && listIdx < creatorList.size()) {
                   // set the current cards data into the fields
                   FlashCardMM currentCard = creatorList.get(listIdx);
                   // set section editors to current card
                   setSectionEditors(currentCard);
+                  // display the current node in the tree
                   FMTWalker.getInstance().setCurrentNodeReferance(currentCard);
                   if ( ! FlashMonkeyMain.getPrimaryWindow().isFullScreen()) {
                         FlashMonkeyMain.AVLT_PANE.displayTree();
                   }
             }
-
             // Enable buttons according to idx
             navButtonDisplay(listIdx);
-
             String insertBtnMsg = "Insert a new card at " + (listIdx + 1);
             insertCardButton.setTooltip(new Tooltip(insertBtnMsg));
       }
@@ -1195,11 +1162,10 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   return;
             }
             // decrement the cardNumber for setting fileNames to each card
-            int oldIdx = listIdx;
             listIdx--;
-
             // set the UI to the current card
             if (listIdx > -1) {
+                  // set the current cards data into the fields
                   FlashCardMM currentCard = creatorList.get(listIdx);
                   // set section editors to current card.
                   setSectionEditors(currentCard);
@@ -1590,7 +1556,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                         LOGGER.debug("listIdx: {} is less than Ops FlashList.size: {} == {}",  listIdx, opsFlashSize, listIdx < opsFlashSize );
                         boolean inRange = listIdx < opsFlashSize && listIdx > -1;
                         if (inRange && 1 == cardEqualsOriginal(currentCard)) {
-                              System.out.println("no change detected. not saving");
                               // No changes, continue to next card
                               safeToMove = true;
                               break;
@@ -1838,8 +1803,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                   currentCard.set_A_Type(editors.EDITOR_L.getMediaType());
                   currentCard.setQFiles(editors.EDITOR_U.getMediaNameArray());
                   currentCard.setAFiles(editors.EDITOR_L.getMediaNameArray());
-
-                  System.out.println("In createFlash and current card is set to: " + currentCard.toString());
             }
 
 
@@ -1894,7 +1857,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                               if (getTestType().toString().contains("NoteTaker")) {
                                     return 1;
                               } else {
-                                    System.out.println("in CreateFlash.statusResponse and result == 3");
                                     // data is not completed in answer. Create Popup choice
                                     // and return the user's response.
                                     return notCompleteChoicePopup('a');
@@ -1906,7 +1868,6 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
                               if (getTestType().toString().contains("NoteTaker")) {
                                     return 0;
                               } else {
-                                    System.out.println("in CreateFlash.statusResponse and result == 3");
                                     // data is not completed in answer. Create Popup choice
                                     // and return the user's response.
                                     return notCompleteChoicePopup('q');

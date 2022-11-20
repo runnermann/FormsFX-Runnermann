@@ -31,10 +31,9 @@ import javafx.scene.layout.VBox;
  * @author Lowell Stadelman
  */
 public class TextCell {
-      // Variables
+
       private VBox textCellVbox;
       private TextArea textArea;
-
 
       /**
        * Default constructor
@@ -43,32 +42,50 @@ public class TextCell {
             textCellVbox = new VBox();
             textArea = new TextArea();
             textCellVbox.setPadding(new Insets(6, 6, 6, 6));
-//            textCellVbox.setStyle("-fx-background-color: white; -fx-border-radius: 3; -fx-background-radius: 3");
             textCellVbox.setAlignment(Pos.BOTTOM_LEFT);
             textArea.setWrapText(true);
             textArea.setEditable(false);
-
             textCellVbox.getChildren().add(textArea);
       }
 
+      /**
+       * Only used by Create Edit.
+       * @param txt
+       * @param prompt
+       * @param isEqual
+       * @param otherHt
+       * @return
+       */
       public final VBox buildCell(String txt, String prompt, boolean isEqual, double otherHt) {
             return buildCell(txt, prompt, SceneCntl.getCenterWd(), SceneCntl.calcCellHt(), 2, isEqual, otherHt);
       }
 
-
       /**
-       * Sets the text area
        *
        * @param txt The text inside the TextArea. ie The answer or question
+       * @param prompt What is shown if the text cell is empty
+       * @param cellWd width
+       * @param cellHt heigth
+       * @param numSections number of sections
+       * @param isEqual If the sections are not equal in height
+       * @param otherHt If the sections are not equal, the height of the other section.
+       * @return The VBox set with the correct ht wd containing this text cell.
        */
-      public final VBox buildCell(String txt, String prompt, int cellWd, int cellHt, int numSections, boolean isEqual, double otherHt) {
+      public final VBox buildCell(String txt, String prompt, final int cellWd, final int cellHt, int numSections, boolean isEqual, double otherHt) {
             textCellVbox = new VBox();
             textArea = new TextArea();
+            double ht;
+            if(isEqual) {
+                  ht = cellHt;
+            } else {
+                  double ht1 = ReadFlash.getInstance().getMasterBPane().getHeight();
+                  ht = ht1 - otherHt;
+            }
             // The starting size of this pane which will adapt to the settings
             // of the (parent) single or double section containers due to their responsive
             // settings.
-            textArea.setPrefSize(cellWd, cellHt);
-            textCellVbox.setPrefSize(cellWd, cellHt);
+            textArea.setPrefSize(cellWd, ht);
+            textCellVbox.setPrefSize(cellWd, ht);
             textCellVbox.setStyle("-fx-background-color: white; -fx-border-radius: 2; -fx-background-radius: 2");
 //            textArea.setStyle("-fx-background-color: white; -fx-border-radius: 3; -fx-background-radius: 3");
             textArea.setWrapText(true);
@@ -80,18 +97,19 @@ public class TextCell {
             }
 
             textCellVbox.getChildren().add(textArea);
-            if (ReadFlash.getInstance().getMasterBPane() != null) {
-                  ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newVal) -> {
-                        double bottomPaneHt = SceneCntl.getBottomHt();
-                        if (isEqual) {
-                              textArea.setMinHeight((newVal.doubleValue() - bottomPaneHt) / numSections);
-                              textArea.setMaxHeight((newVal.doubleValue() - bottomPaneHt) / numSections);
-                        } else {
-                              textArea.setMinHeight((newVal.doubleValue() - bottomPaneHt) - otherHt);
-                              textArea.setMaxHeight((newVal.doubleValue() - bottomPaneHt) - otherHt);
-                        }
-                  });
-            }
+//            if (ReadFlash.getInstance().getMasterBPane() != null) {
+//                  // LISTENER for section height
+//                  ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newVal) -> {
+//                        double bottomPaneHt = SceneCntl.getBottomHt();
+//                        if (isEqual) {
+//                              textArea.setMinHeight((newVal.doubleValue() - bottomPaneHt) / numSections);
+//                              textArea.setMaxHeight((newVal.doubleValue() - bottomPaneHt) / numSections);
+//                        } else {
+//                              textArea.setMinHeight((newVal.doubleValue() - bottomPaneHt) - otherHt);
+//                              textArea.setMaxHeight((newVal.doubleValue() - bottomPaneHt) - otherHt);
+//                        }
+//                  });
+//            }
 
             return textCellVbox;
       }

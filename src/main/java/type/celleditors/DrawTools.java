@@ -32,6 +32,7 @@ import javafx.geometry.Pos;
 import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import media.sound.SoundEffects;
+import org.slf4j.Logger;
 import type.draw.DrawObj;
 import type.draw.shapes.*;
 import uicontrols.FMAlerts;
@@ -101,8 +102,8 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
       // THE LOGGER
       // REMOVE BEFORE
-      //private static final Logger LOGGER = LoggerFactory.getLogger(DrawTools.class);
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DrawTools.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(DrawTools.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DrawTools.class);
 
       // A reference to the right pane in the ass!!!
       private static SectionEditor classEditorRef;
@@ -198,7 +199,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             // height and width of drawpad
             int wd = 400;
             int ht = 400;
-            LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("line 145) buildDrawTools for drawPad, fileName: " + shapeFileName);
             overlayCanvas = new Canvas();
 
@@ -367,7 +367,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             drawPadWindow.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
                   @Override
                   public void changed(ObservableValue<? extends Boolean> prop, Boolean wasIconified, Boolean isIconified) {
-                        System.out.println("ignore fullscreen");
                         drawPadWindow.setFullScreen(false);
                   }
             });
@@ -463,7 +462,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
        */
       private Stage buildNewCanvasEditor(double prevX, double prevY, double prevWd, double prevHt,
                                    String shapeFileName, SectionEditor paramEditor, StageStyle style, ImageView iView) {
-            LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("shapeFileName: {} ends with .shp: {}", shapeFileName, shapeFileName.endsWith(".shp"));
 
             Stage drawPadWindow = new Stage(style);
@@ -476,7 +474,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             drawPadWindow.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
                   @Override
                   public void changed(ObservableValue<? extends Boolean> prop, Boolean wasIconified, Boolean isIconified) {
-                        System.out.println("ignore fullscreen");
                         drawPadWindow.setFullScreen(false);
                   }
             });
@@ -866,7 +863,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       }
 
       private void heightChangedListener(ObservableValue<? extends Number> property, Number oldVal, Number newVal) {
-            LOGGER.setLevel(Level.ALL);
             LOGGER.debug("called, HEIGHT changed. newVal: <{}>", newVal);
 
             double ht = (double) newVal;
@@ -880,7 +876,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       }
 
       private void widthChangedLister(ObservableValue<? extends Number> property, Number oldVal, Number newVal) {
-            LOGGER.setLevel(Level.ALL);
             LOGGER.debug("called, WIDTH changed. newVal: <{}>", newVal);
 
             double wd = (double) newVal;
@@ -954,7 +949,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   int idx = 1;
                   for (String s : colors) {
                         shape[idx] = new Rectangle(btnSize - 2, btnSize - 2);
-                        System.out.println("stroke color: " + s);
                         shape[idx].setStroke(Color.web(s));
                         shape[idx].setStrokeWidth(2);
                         shape[idx].setFill(Color.web(UIColors.TRANSPARENT));
@@ -1063,9 +1057,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             overlayScene.setOnMousePressed(cBuilder::mousePressed);
             overlayScene.setOnMouseDragged(cBuilder::mouseDragged);
             overlayScene.setOnMouseReleased(cBuilder::mouseReleased);
-
-            //System.out.println("\n *** circeBtnAction called ***");
-
 
             overlayPane.setOnMouseEntered((MouseEvent e) -> overlayPane.setCursor(Cursor.CROSSHAIR));
             overlayPane.setOnMouseExited((MouseEvent e) -> overlayPane.setCursor(Cursor.DEFAULT));

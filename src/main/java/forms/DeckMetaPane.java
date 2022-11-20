@@ -10,6 +10,7 @@ import flashmonkey.CreateFlash;
 import flashmonkey.FlashCardOps;
 import fmannotations.FMAnnotations;
 //import javafx.geometry.Point2D;
+import javafx.application.Platform;
 import javafx.scene.text.Text;
 import metadata.DeckMetaData;
 import type.tools.imagery.ImageUploaderBox;
@@ -41,6 +42,9 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class DeckMetaPane extends FormParentPane {
@@ -49,6 +53,9 @@ public class DeckMetaPane extends FormParentPane {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DeckMetaPane.class);
 
       private HBox containerHBox;
+      // Box to contain the imgView so we can swap the
+      // img later!?!
+      private HBox imgViewBox;
       private VBox msgContainer;
       private GridPane leftGPane;
       private GridPane rightGPane;
@@ -64,20 +71,20 @@ public class DeckMetaPane extends FormParentPane {
       private Label lastScoreLabel;
       private ToggleSwitch sellSwitch;
       private ToggleSwitch shareDistSwitch;
-      private Button qrButton;
+      private static Button qrButton;
       private static String vertxGet;// = VertxLink.QRCODE_DECK.getLink() + model.getDeckID();
       private static FMHyperlink deckLink;
 
       private Label sellLabel;
       private Label shareLabel;
       private Label creatorLabel;
-      private ImageView qrView;
-      //private ImageView deckView;
-      private ImageUploaderBox imgUp;
-
+      private static ImageView qrView;
+      private static ImageUploaderBox imgUp;
 
       private static DeckMetaModel model;
       private DeckMetaData meta;
+
+      private AtomicReference<File> qrImgFile;
 
 
       public DeckMetaPane() {
@@ -111,16 +118,19 @@ public class DeckMetaPane extends FormParentPane {
             leftGPane = getGrid();
             rightGPane = getGrid();
             imgUp = new ImageUploaderBox();
+            imgViewBox = new HBox();
             containerHBox = new HBox(4);
             deckLink = new FMHyperlink("Not yet available.", "");
             deckLink.setDisable(true);
-            // Get the deck ID
-            fetchIDAsync();
+            // Get the deck ID and set the QR link if id exists.
+ //           fetchIDAsync();
 
             creatorLabel = new Label("CREATOR:  " + meta.getCreatorAvatarName());
             lastScoreLabel = new Label("LAST SCORE: " + meta.calcLastScore());//model.getDataModel().getLastScore());
             sellSwitch = new ToggleSwitch();
+            sellSwitch.setSelected(meta.isSellDeck());
             shareDistSwitch = new ToggleSwitch();
+            shareDistSwitch.setSelected(meta.isShareDistro());
             creatorLabel.setId("label-bold-grey-emph");
             sellLabel = new Label("Sell this deck");
             sellLabel.setId("label-bold-grey-emph");
@@ -146,15 +156,23 @@ public class DeckMetaPane extends FormParentPane {
             aLbl.setId("label-blue-small");
             lastScoreLabel.setId("label-blue-small");
 
-            //super.setSubmitButtonTitle("SAVE");
             qrButton = new Button("SAVE TO DESKTOP");
             qrButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: #ffffff; -fx-font-size: 14;");
             qrButton.setMaxWidth(200);
 
-            File qrImgFile = showQrCode();
-            // User save location selector
+            AtomicReference<String> deckQRfile = new AtomicReference<>(FileNaming.getQRFileName(FlashCardOps.getInstance().getDeckFileName()));
+            qrImgFile = new AtomicReference<>(new File(DirectoryMgr.getMediaPath('q') + "/" + deckQRfile.get()));
+            // if file exists, shows the decks qr code, else,
+            // shows the standard FlashMonkey QR Code.
+            setQrImage(qrImgFile.get());
+
+            // User save QR-File folder selector
             qrButton.setOnAction(e -> {
-                  saveQRImageStage(qrImgFile, "QR-Code-" + FlashCardOps.getInstance().getDeckLabelName() + ".png");
+                  deckQRfile.set(FileNaming.getQRFileName(FlashCardOps.getInstance().getDeckFileName()));
+                  qrImgFile.set(new File(DirectoryMgr.getMediaPath('q') + "/" + deckQRfile));
+                  if(qrImgFile.get().exists()) {
+                        saveQRImagePopup(qrImgFile.get(), "QR-Code-" + FlashCardOps.getInstance().getDeckLabelName() + ".png");
+                  }
             });
 
             // is necessary to offset the control to the left, we don't use the provided label
@@ -164,23 +182,6 @@ public class DeckMetaPane extends FormParentPane {
             shareDistSwitch.getStyleClass().add("sellSwitch");
             // Builds the pane containing the form fields.
             super.formRenderer = new FormRenderer(model.getFormInstance());
-      }
-
-      /**
-       * Makes an async call to the DB to fetch the deck id.
-       */
-      public static void fetchIDAsync() {
-            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
-            Runnable task = () -> {
-                  long deckID = model.getDeckID();
-                  if(deckID != -99) {
-                        vertxGet = VertxLink.QRCODE_DECK.getLink() + deckID;
-                        deckLink = new FMHyperlink("Link to your deck. Right click to copy", vertxGet);
-                        deckLink.setDisable(false);
-                  }
-                  scheduledExecutor.shutdown();
-            };
-            scheduledExecutor.execute(task);
       }
 
 
@@ -206,12 +207,101 @@ public class DeckMetaPane extends FormParentPane {
             sellSwitch.setOnMouseClicked(event -> {
                   model.getFormInstance().changedProperty().setValue(true);
                   model.sellSwitchAction(sellSwitch, shareDistSwitch);
-                  //model.getFormInstance().persistableProperty().setValue(true);
             });
             shareDistSwitch.setOnMouseClicked(event -> {
                   model.getFormInstance().changedProperty().setValue(true);
-                  //model.getFormInstance().persistableProperty().setValue(true);
             });
+            // When the user clicks submit, listen for the QR link property for
+            // a change. Display the QR code and the link.
+            model.getVertxQRLinkProperty().addListener((obs, old, changed) -> {
+                  ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(3);
+                  final AtomicInteger atomInt = new AtomicInteger(0);
+                  final File f = new File(qrImgFile.get().getPath());
+                  Runnable task = () -> {
+                        atomInt.getAndIncrement();
+                        if(f.exists()) {
+                              Platform.runLater(() -> {
+                                    setQrCode(f);
+                                    imgViewBox.getChildren().clear();
+                                    imgViewBox.getChildren().add(qrView);
+                                    VBox linkBox = new VBox(10);
+                                    linkBox.setId("linkBox");
+                                    linkBox.getChildren().clear();
+                                    linkBox.getChildren().addAll(deckLink, qrButton);
+                                    leftGPane.add(linkBox, 1, 4, 1, 1);
+                              });
+                              scheduledExecutor.shutdownNow();
+                        } else if (atomInt.get() > 11) {
+                              scheduledExecutor.shutdownNow();
+                        }
+                  };
+                  scheduledExecutor.scheduleWithFixedDelay(task, 500, 100, TimeUnit.MILLISECONDS);
+            });
+      }
+
+      /**
+       * Call when the QR code has changed or to display in the pane.
+       * Sets the qrView
+       */
+      private void setQrCode(File qrImgFile) {
+            if (qrImgFile.exists()) {
+                  Image img = new Image("file:" + qrImgFile.getPath(), true);
+                  if(qrView == null) {
+                        qrView = new ImageView();
+                  }
+                  qrView.setImage(img);
+                  String vertxGet = VertxLink.QRCODE_DECK.getLink() + model.getDeckID();
+                  LOGGER.debug("vertxGet: " + vertxGet);
+                  deckLink = new FMHyperlink("Link to your deck. Right click to copy", vertxGet);
+                  deckLink.setOnMouseClicked(this::linkAction);
+                  //                 leftGPane.add(qrView, 1, 1, 1, 3);
+            } else {
+                  // set it to the default app QR image
+                  qrView = new ImageView(new Image(getClass().getResourceAsStream("/image/QR_Code_IndexPg.png")));
+            }
+      }
+
+      /**
+       * Called when the form is initially opened. If the image exists on disk it is displayed,
+       * otherwise it displays the blue QR code.
+       * @param qrImgFile
+       */
+      private void setQrImage(File qrImgFile) {
+            if (qrImgFile.exists()) {
+                  fetchIDAsync();
+                  Image img = new Image("file:" + qrImgFile.getPath(), true);
+                  if(qrView == null) {
+                        qrView = new ImageView();
+                  }
+                  qrView.setImage(img);
+                  //String vertxGet = VertxLink.QRCODE_DECK.getLink() + model.getDeckID();
+
+                  LOGGER.debug("vertxGet: " + vertxGet);
+                  deckLink = new FMHyperlink("Link to your deck. Right click to copy", vertxGet);
+                  deckLink.setOnMouseClicked(this::linkAction);
+                  //                 leftGPane.add(qrView, 1, 1, 1, 3);
+            } else {
+                  // set it to the default app QR image
+                  qrView = new ImageView(new Image(getClass().getResourceAsStream("/image/QR_Code_IndexPg.png")));
+            }
+      }
+
+      /**
+       * Makes an async call to the DB to fetch the deck id. Needed for the link and to create the
+       * QR Code.
+       */
+      public static void fetchIDAsync() {
+            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+            Runnable task = () -> {
+                  long deckID = model.getDeckID();
+                  if(deckID != -99) {
+                        vertxGet = VertxLink.QRCODE_DECK.getLink() + deckID;
+                        deckLink = new FMHyperlink("Link to your deck. Right click to copy", vertxGet);
+                        deckLink.setDisable(false);
+                  }
+                  scheduledExecutor.shutdown();
+            };
+            scheduledExecutor.execute(task);
       }
 
       /**
@@ -330,6 +420,7 @@ public class DeckMetaPane extends FormParentPane {
             switchBox.getChildren().addAll(switchBox1, switchBox2);
             VBox linkBox = new VBox(10);
             linkBox.getChildren().addAll(deckLink, qrButton);
+            linkBox.setId("linkBox");
 
             // column 0, row 0 , column span 1, row span 1
       //      leftGPane.setGridLinesVisible(true);
@@ -342,7 +433,8 @@ public class DeckMetaPane extends FormParentPane {
             leftGPane.add(switchBox, 0, 4, 1, 1);
 
             // Temp QR code column 1, set in method.
-            leftGPane.add(qrView, 1, 1, 1, 3);
+            imgViewBox.getChildren().add(qrView);
+            leftGPane.add(imgViewBox, 1, 1, 1, 3);
 
             leftGPane.add(linkBox, 1, 4, 1, 1);
             // Row 6 & 7 are empty
@@ -376,39 +468,20 @@ public class DeckMetaPane extends FormParentPane {
       public void paneAction() {
             model.getDescriptor().setDeckImgNameProperty(imgUp.getImgName());
             imgUp.snapShot('p');
-            if(Utility.isConnected()) {
-                  showQrCode();
-            }
-      }
 
-      /**
-       * Call when the QR code has changed or to display in the pane.
-       */
-      private File showQrCode() {
-            // qr code related
+            // Create QR Image
             String deckQRfile = FileNaming.getQRFileName(FlashCardOps.getInstance().getDeckFileName());
             File file = new File(DirectoryMgr.getMediaPath('q') + "/" + deckQRfile);
-            if (file.exists()) {
-                  Image img = new Image("file:" + file.getPath(), true);
-                  if(qrView == null) {
-                        qrView = new ImageView();
-                  }
-                  qrView.setImage(img);
-                  String vertxGet = VertxLink.QRCODE_DECK.getLink() + model.getDeckID();
-                  LOGGER.debug("vertxGet: " + vertxGet);
-                  deckLink = new FMHyperlink("Link to your deck. Right click to copy", vertxGet);
-                  deckLink.setOnMouseClicked(this::linkAction);
-            //      leftGPane.add(deckLink, 1, 4, 1, 1);
-            } else {
-                  // set to default
-                  qrView = new ImageView(new Image(getClass().getResourceAsStream("/image/QR_Code_IndexPg.png")));
-                  //leftGPane.add(qrView, 1, 0, 1, 3);
-            }
-            return file;
+            setQrCode(file);
       }
 
 
-      private void saveQRImageStage(File imgFile, String suggestName) {
+      /**
+       * Popup for the file chooser.
+       * @param imgFile The actual file name
+       * @param suggestName The File chooser suggested name.
+       */
+      private void saveQRImagePopup(File imgFile, String suggestName) {
             Stage stage = new Stage();
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save QR-Code");
@@ -420,15 +493,6 @@ public class DeckMetaPane extends FormParentPane {
             } catch (IOException e) {
                   e.printStackTrace();
             }
-      }
-
-      /**
-       * If there has been an image uploaded to the ImageUploader,
-       * takes a SnapShot of the visible image, saves it to the local
-       * file, and sends it too the cloud.
-       */
-      private void saveDeckImage() {
-
       }
 
       private void linkAction(MouseEvent e) {

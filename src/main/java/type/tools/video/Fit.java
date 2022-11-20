@@ -22,11 +22,6 @@ public class Fit {
        * the max wd and max ht
        */
       public static VideoSize size(MultimediaInfo sourceInfo) throws EncoderException {
-            VideoSize newSize = null;
-
-            System.out.println("SourceInfo.metaData: " + sourceInfo.getMetadata().toString());
-            System.out.println("SourceInfo.frameRate " + sourceInfo.getVideo().getFrameRate());
-            System.out.println("SourceInfo. " + sourceInfo.getFormat());
 
             VideoSize size = sourceInfo.getVideo().getSize();
             int ht = size.getHeight();

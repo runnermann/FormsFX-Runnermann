@@ -126,7 +126,6 @@ public class CircleBuilder extends GenericBuilder<FMCircle, CircleBuilder> {
             gC.setStroke(Color.web(strokeColor));
             gC.setFill(Color.web(fillColor));
 
-            //System.out.println(" - mouseDragged in circleBuilder");
             DrawTools draw = DrawTools.getInstance();
             if (draw.getShapeNotSelected()) {
                   // Creating a new shape. Set to true

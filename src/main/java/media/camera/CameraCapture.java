@@ -134,7 +134,6 @@ public class CameraCapture extends Application {
 
       @Override
       public void stop() {
-            System.out.println("CameraCapture stop called");
             if (sarxoswebCam != null && sarxoswebCam.isOpen()) {
                   sarxoswebCam.close();
                   sarxoswebCam = null;

@@ -35,6 +35,16 @@ public class QrCode {
     }
 
 
+    /**
+     * Builds the QR Code and saves it too disk.
+     * @param deck_id
+     * @param folder
+     * @param deckFileName
+     * @param userName
+     * @return
+     * @throws WriterException
+     * @throws IOException
+     */
     public static String buildDeckQrCode(long deck_id, String folder, String deckFileName, String userName) throws WriterException, IOException {
         // Where we will store the QR image.
         String pathName = folder + "/" + deckFileName.substring(0, deckFileName.length() - 4) + ".png";

@@ -7,6 +7,7 @@ import fileops.DirectoryMgr;
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import javafx.animation.ScaleTransition;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -359,7 +360,7 @@ public final class ReadFlash implements BaseInterface {
       /**
        * Sends the UI to the menu screen and displays the message
        * provided in the argument.
-       * NOTE: Set the the String errorMsg in FlashMonkeyMain. and
+       * NOTE: Set the String errorMsg in FlashMonkeyMain. and
        * provide FlashMonkeyMain.errorMsg in the argument.
        */
       public void emptyListAction() {
@@ -399,11 +400,50 @@ public final class ReadFlash implements BaseInterface {
       /**
        * The previous question button action
        */
-      @SuppressWarnings("rawTypes")
-      protected void prevQButtonAction() {
-            SoundEffects.SLIDE_RIGHT.play();
-            // Get the previous node in treeWalker
+      private void prevQButtonAction() {
             FMTWalker.getInstance().getPrevious();
+            navButtonActionCommon();
+            FMTransition.getQLeft().play();
+      }
+
+      /**
+       * The next question button action
+       * - Get the next card from the tree,
+       * - read the cards bitset and get the test
+       * -
+       */
+      private void nextQButtonAction() {
+            FMTWalker.getInstance().getNext();
+            navButtonActionCommon();
+            FMTransition.getQRight().play();
+      }
+
+      /**
+       * Sends the treedisplay and the flashcard panes to the
+       * first question in the tree.
+       */
+      private void firstQButtonAction(ActionEvent e) {
+            FMTWalker.getInstance().setToFirst();
+            navButtonActionCommon();
+            FMTransition.getQLeft().play();
+      }
+
+      /**
+       * sends the flashCard pane to the last flashCard that is displayed in the
+       * tree. The firthest right card.
+       */
+      private void lastQButtonAction(ActionEvent e) {
+            FMTWalker.getInstance().setToLast(); // O(log(n))
+            navButtonActionCommon();
+            FMTransition.getQRight().play();
+      }
+
+      /**
+       * The common action for the nav buttons for ReadFlash
+       */
+      private void navButtonActionCommon() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
+            // Get the previous node in treeWalker
 
             //Node currentNode = FMTWalker.getCurrentNode();
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
@@ -428,12 +468,10 @@ public final class ReadFlash implements BaseInterface {
             // Set the status of the answer button. A question should only
             // be answered once
             ansQButtonSet(currentCard.getIsRightColor(), test);
-            //setAnsButtonStatus(currentCard.getIsRight(), test);
-
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashMonkeyMain.AVLT_PANE.displayTree();
-            // The animation for this button
-            FMTransition.getQLeft().play();
+            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
+
             if (null != FMTransition.getAWaitTop()) {
                   try {
                         FMTransition.getAWaitTop().play();
@@ -443,167 +481,6 @@ public final class ReadFlash implements BaseInterface {
             }
       }
 
-
-      /**
-       * The next question button action
-       * - Get the next card from the tree,
-       * - read the cards bitset and get the test
-       * -
-       */
-      protected void nextQButtonAction() {
-            // Get the next node in the treeWalker
-            FMTWalker.getInstance().getNext();
-            SoundEffects.SLIDE_RIGHT.play();
-
-            // Node currentNode = FMTWalker.getInstance().getCurrentNode();
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
-
-            rpCenter.getChildren().clear();
-            // All of the work is accessed from selectTest()
-            GenericTestType test = TestList.selectTest(currentCard.getTestType());
-
-            if (mode == 't') {
-                  rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, rpCenter));
-            } else {
-                  rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
-            }
-            masterBPane.setBottom(manageSouthPane(mode));
-
-            if (null != test.getAnsButton()) {
-                  test.getAnsButton().setDisable(false);
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
-                  FMTransition.nodeFadeIn.play();
-            }
-
-            // Set the status of the answer button. A question should only
-            // be answered once
-            ansQButtonSet(currentCard.getIsRightColor(), test);
-            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-            // The animation for this button
-            FMTransition.getQRight().play();
-            if (null != FMTransition.getAWaitTop()) {
-                  try {
-                        FMTransition.getAWaitTop().play();
-                  } catch (NullPointerException e) {
-                        // if there is an error, do nothing here.
-                  }
-            }
-      }
-
-
-      //@todo change qNavButtonAction() to private in readflash.
-/*      public void qNavButtonAction() {
-            LOGGER.debug("\n *** qNavButtonAction ***");
-            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-      }*/
-
-      /**
-       * Sends the treedisplay and the flashcard panes to the
-       * first question in the tree.
-       */
-      private void firstQButtonAction(ActionEvent e) {
-            SoundEffects.GOTO_START.play();
-            //visIndex = 1;
-            FMTWalker.getInstance().setToFirst();
-
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
-
-            rpCenter.getChildren().clear();
-            GenericTestType test = TestList.selectTest(currentCard.getTestType());
-            if (mode == 't') {
-                  rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, rpCenter));
-            } else {
-                  rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
-            }
-            masterBPane.setBottom(manageSouthPane(mode));
-
-            // answer button transitions
-            if (test.getAnsButton() != null) {
-                  test.getAnsButton().setDisable(false);
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
-                  FMTransition.nodeFadeIn.play();
-                  //test.getAnsButton().setText("");
-            }
-
-            // Set the status of the answer button. A question should only
-            // be answered once
-            // setAnsButtonStatus(currentCard.getIsRight(), test);
-            ansQButtonSet(currentCard.getIsRightColor(), test);
-
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-            // Animations
-            FMTransition.getQLeft().play();
-            if (FMTransition.getAWaitTop() != null) {
-                  FMTransition.getAWaitTop().play();
-            }
-            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-      }
-
-      /**
-       * sends the flashCard pane to the last flashCard that is displayed in the
-       * tree. The firthest right card.
-       */
-      private void lastQButtonAction(ActionEvent e) {
-            SoundEffects.GOTO_END.play();
-            FMTWalker.getInstance().setToLast(); // O(log(n))
-
-            //Node currentNode = TR.getCurrentNode();
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
-
-            rpCenter.getChildren().clear();
-            long nanoStart = System.nanoTime();
-            GenericTestType test = TestList.selectTest(currentCard.getTestType());
-            long time = System.nanoTime() - nanoStart;
-
-
-            if (mode == 't') {
-                  rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, rpCenter));
-            } else {
-                  rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
-            }
-            masterBPane.setBottom(manageSouthPane(mode));
-
-            if (test.getAnsButton() != null) {
-                  test.getAnsButton().setDisable(false);
-                  FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
-                  FMTransition.nodeFadeIn.play();
-            }
-
-            // Set the status of the answer button. A question should only
-            // be answered once
-            //setAnsButtonStatus(currentCard.getIsRight(), test);
-            ansQButtonSet(currentCard.getIsRightColor(), test);
-
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-            // Animations
-            FMTransition.getQRight().play();
-            if (FMTransition.getAWaitTop() != null) {
-                  FMTransition.getAWaitTop().play();
-            }
-            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-      }
-
-      /**
-       * Sets the answerButton status to either enabled,
-       * or disabled based on a cards isRight status. 0
-       * is unanswered, anything else it has been answered.
-       *
-       * @param isRight The status of this question in this session
-       * @param test    The TestType for this question.
-       */
-//      private void setAnsButtonStatus(int isRight, GenericTestType test) {
-//            if (isRight == 0) {
-//                  if (test.getAnsButton() != null) {
-//                        test.getAnsButton().setDisable(false);
-//                        FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, false);
-//                        FMTransition.nodeFadeIn.play();
-//                  }
-//            } else {
-//                  test.getAnsButton().setDisable(true);
-//            }
-//      }
 
       /**
        * Increment the progress count. Used by
@@ -864,6 +741,14 @@ public final class ReadFlash implements BaseInterface {
 
       public Pane getMasterBPane() {
             return masterBPane;
+      }
+
+//      public ReadOnlyDoubleProperty getRpCenterHeightProperty() {
+//            return rpCenter.heightProperty();
+//      }
+
+      public ReadOnlyDoubleProperty getRPCenterWidthProperty() {
+            return rpCenter.widthProperty();
       }
 
       /**

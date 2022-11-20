@@ -29,6 +29,11 @@ import java.util.ArrayList;
 public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrFalse> {
       // The class instance for a singleton class
       private static TrueOrFalse CLASS_INSTANCE;
+      private static int NUM_SECTIONS = 2;
+      private static int LOWER_BOX_HT = 64;
+      private static boolean IS_EQUAL_HT = false;
+
+
       private GenericSection genSection;
       private Button selectAnsButton;
       private RadioButton trueRdoBtn;
@@ -64,8 +69,8 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       @Override
       public Pane getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor q, SectionEditor a, Pane pane) {
             // Instantiate HBox and "set spacing" !important!!!
-            VBox vBox = new VBox(2);
-            vBox.getChildren().addAll(q.sectionHBox, trueOrFalsePane(a));
+            VBox vBox = new VBox(4);
+            vBox.getChildren().addAll(q.sectionHBox, trueOrFalseEditorPane(a));
             if (a.getText() != null && a.getText().equals("T")) {
                   this.trueRdoBtn.setSelected(true);
             } else {
@@ -84,15 +89,24 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
 
             HBox upperHBox;
             HBox lowerHBox;
-            double lowerHBoxHt = 64;
 
             // set the lower section
             SingleCellSection l = new SingleCellSection();
-            lowerHBox = l.sectionView(trueOrFalsePane(lowerHBoxHt));
+            lowerHBox = l.sectionView(trueOrFalsePane(LOWER_BOX_HT));
+            lowerHBox.setStyle("-fx-background-color: white; -fx-background-radius: 3");
+            StackPane lowerStackP = new StackPane();
+            lowerStackP.setStyle("-fx-background-color: white; -fx-background-radius: 3");
+
+            // Constructor that sets the params for this test type upper section.
             // set the upper section
-            upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(),
-                1, false, lowerHBoxHt, currentCard.getQFiles());
-            StackPane stackP = new StackPane();
+            upperHBox = genSection.sectionFactory(
+                    currentCard.getQText(),
+                    currentCard.getQType(),
+                    NUM_SECTIONS,
+                    IS_EQUAL_HT,
+                    LOWER_BOX_HT,
+                    currentCard.getQFiles());
+
             ReadFlash.getInstance().setShowAnsNavBtns(false);
             // T or F buttons do not have any visible actions. Select ansBtn
             // will provide feed back and save the answer, like MultiChoice actions.
@@ -103,15 +117,20 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             }
             selectAnsButton.setOnAction(e -> ansButtonAction());
 
-            // add the question to vBox
-            // upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(), 1, currentCard.getQFiles());
+            lowerStackP.getChildren().add(lowerHBox);
+            lowerStackP.getChildren().add(selectAnsButton);
+            lowerStackP.setStyle("-fx-background-color: white; -fx-background-radius: 3");
 
-            stackP.getChildren().add(lowerHBox);
-            stackP.getChildren().add(selectAnsButton);
-
-            gPane.addRow(2, stackP);
+            gPane.addRow(2, lowerStackP);
             gPane.addRow(1, upperHBox);
 
+            // Set the transitions
+            setTrasitions(upperHBox, lowerHBox);
+
+            return gPane;
+      }
+
+      private void setTrasitions(HBox upperHBox, HBox lowerHBox) {
             // Transition for Question, Right & end button click
             FMTransition.setQRight(FMTransition.transitionFmRight(upperHBox));
             // Transition for Question, left & start button click
@@ -121,8 +140,6 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
 
             FMTransition.nodeFadeIn = FMTransition.ansFadePlay(selectAnsButton, 1, 750, 320,false);
             FMTransition.nodeFadeIn.play();
-
-            return gPane;
       }
 
       /**
@@ -221,11 +238,14 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       private VBox trueOrFalsePane(double sectionHt) {
             // Set spacing between RdoButtons
             VBox tfBox = new VBox(10);
-            tfBox.setMinWidth(ReadFlash.getInstance().getMasterBPane().getBoundsInLocal().getWidth() - 8);
-
             return buildTFBox(tfBox);
       }
 
+      /**
+       * ReadPane TF Radio Button Box
+       * @param tfBox
+       * @return
+       */
       private VBox buildTFBox(VBox tfBox) {
             trueRdoBtn = new RadioButton("True");
             falseRdoBtn = new RadioButton("False");
@@ -234,35 +254,32 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             grp.getToggles().addAll(trueRdoBtn, falseRdoBtn);
 
             tfBox.getChildren().addAll(trueRdoBtn, falseRdoBtn);
-            tfBox.setId("tfBox");
+            tfBox.setId("tfRdoButtonBox");
 
-            tfBox.setMaxHeight(100);
-            tfBox.setMinHeight(100);
             tfBox.setMaxWidth(Double.MAX_VALUE);
             return tfBox;
       }
 
       /**
        * EDITOR PANE True or False radio button pane.
-       *
        * @return VBox containing the TrueOrFalsePane
        */
-      private VBox trueOrFalsePane(SectionEditor editor) {
+      private VBox trueOrFalseEditorPane(SectionEditor editor) {
             // Set spacing between RdoButtons
             VBox tfBox = new VBox(10);
-            tfBox.setMinWidth(SceneCntl.getCenterWd());
+
+            tfBox.setStyle("-fx-background-color: white; -fx-background-radius: 3");
 
             tfBox = buildTFBox(tfBox);
+            tfBox.setId("tfRdoButtonBox");
             // Set the default value.
             editor.tCell.getTextArea().setText("F");
             trueRdoBtn.setOnAction(e -> {
                   editor.tCell.getTextArea().setText("T");
             });
-
             falseRdoBtn.setOnAction(e -> {
                   editor.tCell.getTextArea().setText("F");
             });
-
 
             return tfBox;
       }

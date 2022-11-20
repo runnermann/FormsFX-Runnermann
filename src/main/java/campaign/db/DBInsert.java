@@ -2,7 +2,6 @@ package campaign.db;
 
 import authcrypt.UserData;
 import authcrypt.user.EncryptedStud;
-import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.QueryResult;
 import flashmonkey.Timer;
 import forms.utility.Alphabet;
@@ -16,35 +15,36 @@ public enum DBInsert {
 
       STUDENT_ENCRYPTED_DATA() {
             @Override
-            public boolean doInsert(EncryptedStud student) {
+            public boolean doInsert(Object student) {
+                  EncryptedStud stud = (EncryptedStud) student;
                   //LOGGER.setLevel(Level.DEBUG);
-                  LOGGER.debug("orig_email: {} ", student.getOrigUserEmail());
+                  LOGGER.debug("orig_email: {} ", stud.getOrigUserEmail());
                   LOGGER.debug("userName: {}", authcrypt.UserData.getUserName());
 
                   String statement = //" BEGIN; " +
 				" INSERT INTO Person (first_name, last_name, middle_name, orig_email, current_email, phone, age, ip_connect, institution, descript, photo_link, avatar_name) " +
                           " VALUES ('" +
-                          Alphabet.encrypt(student.getFirstName()) + btw +
-                          Alphabet.encrypt(student.getLastName()) + btw +
-                          student.getMiddleName() + btw +
-                          Alphabet.encrypt(student.getOrigUserEmail()) + btw +
-                          Alphabet.encrypt(student.getOrigUserEmail()) + btw +
-                          student.getPhone() + btw +
-                          student.getAge() + btw +
+                          Alphabet.encrypt(stud.getFirstName()) + btw +
+                          Alphabet.encrypt(stud.getLastName()) + btw +
+                          stud.getMiddleName() + btw +
+                          Alphabet.encrypt(stud.getOrigUserEmail()) + btw +
+                          Alphabet.encrypt(stud.getOrigUserEmail()) + btw +
+                          stud.getPhone() + btw +
+                          stud.getAge() + btw +
                           "ip address" + btw +
-                          student.getInstitution() + btw +
-                          student.getDescript() + btw +
-				  student.getPhotoLink() + btw +
-				  student.getAvatarName() +
+                          stud.getInstitution() + btw +
+                          stud.getDescript() + btw +
+                          stud.getPhotoLink() + btw +
+                          stud.getAvatarName() +
                           "'); " +
 
                           "INSERT INTO Student  VALUES ('" +
                           // currently the orig_email
-                          Alphabet.encrypt(student.getOrigUserEmail()) + btw +
-                          student.getEducationLevel() + btw +
-                          student.getMajor() + btw +
-                          student.getMinor() + btw +
-                          student.getCvLink() +
+                          Alphabet.encrypt(stud.getOrigUserEmail()) + btw +
+                          stud.getEducationLevel() + btw +
+                          stud.getMajor() + btw +
+                          stud.getMinor() + btw +
+                          stud.getCvLink() +
                           "'); " +
                           "COMMIT;";
 
@@ -58,7 +58,8 @@ public enum DBInsert {
             private final Timer fmTimer = Timer.getClassInstance();
 
             @Override
-            public boolean doInsert(EncryptedStud student) {
+            public boolean doInsert(Object notUsed) {
+                  //EncryptedStud student = (EncryptedStud) s;
 
                   String name = UserData.getUserName() != null ? Alphabet.encrypt(UserData.getUserName()) : "not set yet";
 
@@ -69,7 +70,7 @@ public enum DBInsert {
                       fmTimer.getNote() +
                       "'); ";
 
-                  return query((statement));
+                  return query(statement);
             }
 
       };
@@ -81,17 +82,20 @@ public enum DBInsert {
 
       DBInsert() { /* NO ARGS CONSTRUCTOR */ }
 
-      public abstract boolean doInsert(EncryptedStud student);
+      public abstract boolean doInsert(Object data);
 
+      /**
+       * The query. Sends the Query in the Enum to the DB.
+       * @param statement
+       * @return
+       */
       private static boolean query(String statement) {
-
             DBConnect db = DBConnect.getInstance();
             try {
                   CompletableFuture<QueryResult> future = db.getConnection()
                       .sendQuery(statement);
                   future.get();
                   return true;
-
             } catch (ExecutionException e) {
                   LOGGER.warn("WARNING: DB ExecutionException, {}\n{}" + e.getMessage(), e.getStackTrace());
             } catch (InterruptedException e) {

@@ -36,7 +36,7 @@ import java.util.HashMap;
  */
 public final class TestList {
 
-      private static final ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TestList.class);
+      //private static final ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TestList.class);
 
 
       // The order is important. Cards should be added to

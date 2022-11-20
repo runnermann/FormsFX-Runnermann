@@ -132,6 +132,11 @@
     -fx-border-insets: 0px;
 }
 
+#linkBox {
+    -fx-background-color: #F7F7F7;
+    -fx-margin-top: 10;
+}
+
 #formPane {
     /*-fx-border-color: ICON_BLUE;*/
     /*-fx-border-width: 0 0 0 0;*/

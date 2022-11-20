@@ -3,6 +3,8 @@ package forms;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import com.dlsc.formsfx.view.util.ViewMixin;
 import com.sun.glass.ui.Screen;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -95,10 +97,14 @@ public abstract class FormParentPane extends Pane implements ViewMixin {
       @Override
       public void setupEventHandlers() {
             model.getFormInstance().persistableProperty().getValue();
-            submitButton.setOnAction(e -> {
-                  this.paneAction();
-                  model.formAction(data);
-            });
+            submitButton.setOnAction(
+                    new EventHandler<ActionEvent>() {
+                          @Override
+                          public void handle(ActionEvent t) {
+                                paneAction();
+                                model.formAction(data);
+                          }
+                    });
       }
 
       @Override

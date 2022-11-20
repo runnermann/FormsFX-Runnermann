@@ -153,7 +153,6 @@ public class VidSnapshot {
             player.setOnPlaying(new Runnable() {
                   @Override
                   public void run() {
-                        System.out.println("Player playing. now setting to pause");
                         player.pause();
                   }
             });

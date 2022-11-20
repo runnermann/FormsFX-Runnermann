@@ -36,10 +36,11 @@ public class DoubleCellSection //extends GenericSection
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DoubleCellSection.class);
       private static final Logger LOGGER = LoggerFactory.getLogger(DoubleCellSection.class);
 
+      private static final int RIGHT_PANE_WD = 108;
+
       private Pane leftCell = new Pane();
       private Pane rightCell = new Pane();
       private final HBox sectionHBox = new HBox();
-
 
       //@Override
       public HBox sectionView(String txt, char type, int numHSections, boolean isEqual, double otherHt, String... fileName) {
@@ -47,37 +48,46 @@ public class DoubleCellSection //extends GenericSection
             LOGGER.debug("in sectionView for DoubleCellSection. ");
 
             GenericCell gc = new GenericCell();
-            int wd = SceneCntl.getCenterWd() - 108;
+            int wd = SceneCntl.getCenterWd() - RIGHT_PANE_WD;
             int ht = (int) ReadFlash.getInstance().getMasterBPane().getHeight();
             // text cell
             leftCell = gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
+
             rightCell.getChildren().clear();
+
             // Set the rightCell initial width and height from SceneCntl
             rightCell = gc.cellFactory(type, rightCell, SceneCntl.getRightCellWd(), SceneCntl.calcCellHt(), fileName);
             rightCell.setMinWidth(SceneCntl.getRightCellWd());
             rightCell.setMaxWidth(SceneCntl.getRightCellWd());
             sectionHBox.getChildren().addAll(leftCell, rightCell);
+            sectionHBox.setStyle("-fx-background-color: WHITE; -fx-background-radius: 3");
+            rightCell.setStyle("-fx-background-color: TRANSPARENT; -fx-background-radius: 0 3 3 0; -fx-border-radius: 0 3 3 0; -fx-padding: 4");
+            leftCell.setStyle("-fx-background-color: TRANSPARENT;");
             // Set the initial section height
-            double no = SceneCntl.calcCenterHt(30, 244, FlashMonkeyMain.getPrimaryWindow().getHeight());
-            sectionHBox.setPrefHeight(no / numHSections);
+  //          double no = SceneCntl.calcCenterHt(30, 244, FlashMonkeyMain.getPrimaryWindow().getHeight());
+  //          sectionHBox.setPrefHeight(no / numHSections);
 
-            leftCell.setPrefHeight(no / numHSections);
-            leftCell.setPrefWidth(FlashMonkeyMain.getPrimaryWindow().getWidth() - 108);
+  //          leftCell.setPrefHeight(no / numHSections);
+            leftCell.setPrefWidth(ReadFlash.getInstance().getMasterBPane().widthProperty().get() - RIGHT_PANE_WD);
 
             // RESPONSIVE SIZING for width and height
-            ReadFlash.getInstance().getMasterBPane().widthProperty().addListener((obs, oldval, newVal) -> {
-                  leftCell.setMinWidth(newVal.doubleValue() - 108);
-                  leftCell.setMaxWidth(newVal.doubleValue() - 108);
+            ReadFlash.getInstance().getRPCenterWidthProperty().addListener((obs, oldval, newVal) -> {
+                  leftCell.setMinWidth(newVal.doubleValue() - RIGHT_PANE_WD);
+                  leftCell.setMaxWidth(newVal.doubleValue() - RIGHT_PANE_WD);
             });
 
-
             ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newval) -> {
-                  LOGGER.debug("resizing heigth line 75");
-                  double val = newval.doubleValue() - 244.0;
-                  val /= numHSections; // grrrrrr!
-                  sectionHBox.setPrefHeight(val);
+                  double val = SceneCntl.calcCenterHt(30, 244, (double) newval);
+
+                  if(isEqual) {
+                        val /= numHSections; // grrrrrr!
+                  }
+                  else {
+                        val -= otherHt;
+                  }
+                  sectionHBox.setMinHeight(val);
                   sectionHBox.setMaxHeight(val);
-                  leftCell.setPrefHeight(val);
+                  leftCell.setMinHeight(val);
                   leftCell.setMaxHeight(val);
             });
 

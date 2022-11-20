@@ -355,7 +355,6 @@ public abstract class GenericBuilder<T extends GenericShape<T>, B extends Generi
 
       @Override
       public void verticyReleased(GenericShape gs) {
-            //System.out.println("\t - this.fmRectangle paneIndex: " + ((FMRectangle)gs).getShapeAryIdx());
 
             // update shape x, y, width, and height in rightPane
 

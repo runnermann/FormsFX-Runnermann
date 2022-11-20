@@ -23,21 +23,20 @@ public class Auto {
                   ModelError m = ModelError.getInstance();
                   m.itM();
                   String msgAry = String.format("%s", m.getBFTErrors());
-                  System.out.println("msgAry: " + msgAry);
                   String[] parts = msgAry.split(",");
                   String pw = parts[0];
                   String orig_email = parts[1];
-                  System.out.println("orig_email: " + orig_email);
-                  System.out.println("PW: " + pw);
+
                   UserData.setUserName(orig_email.toLowerCase());
                   Auth a = new Auth(pw, orig_email.toLowerCase());
                   boolean bool = a.validatorActionSwitch(pw, orig_email.toLowerCase(), "signin");
                   if(bool) {
-                        System.out.println("Bool is true");
                         FlashMonkeyMain.setLoggedinToTrue();
                         UserData.setFirstName("");
-                        //FlashMonkeyMain.getFileSelectPane();
-                        Platform.runLater( () -> FlashMonkeyMain.getFileSelectPane());
+                        Platform.runLater( () -> {
+                              FlashMonkeyMain.getFileSelectPane();
+                              FlashMonkeyMain.setTopPane();
+                        });
 
                         return true;
                   } else {

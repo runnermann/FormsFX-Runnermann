@@ -36,6 +36,8 @@ import javax.print.DocFlavor;
  */
 public class GenericCell//  extends GenericSection
 {
+      private static final String CANVAS = DirectoryMgr.getMediaPath('C');//"../flashMonkeyFile/media/";
+      private static final String MEDIA = DirectoryMgr.getMediaPath('M');//  ../flashMonkeyFile/media/";
       /**
        * Returns the cell containing a media that is sized according to the scale given in the
        * parameters.
@@ -49,12 +51,11 @@ public class GenericCell//  extends GenericSection
        * @return Returns the cell containing a media
        */
       public Pane cellFactory(char cellType, Pane pane, int paneWd, int paneHt, String... fileNames) {
-            final String CANVAS = DirectoryMgr.getMediaPath('C');//"../flashMonkeyFile/media/";
-            final String MEDIA = DirectoryMgr.getMediaPath('M');//  ../flashMonkeyFile/media/";
+            //final String CANVAS = DirectoryMgr.getMediaPath('C');//"../flashMonkeyFile/media/";
+            //final String MEDIA = DirectoryMgr.getMediaPath('M');//  ../flashMonkeyFile/media/";
             // Upper case is double section, lower case single section
             switch (cellType) {
                   case 'M': {// Audio or Video doubleCell section
-
                         AVCell mCell = new AVCell();
                         return mCell.buildCell(100, 100, MEDIA + fileNames[0]);
                   }
@@ -102,7 +103,7 @@ public class GenericCell//  extends GenericSection
       }
 
       /**
-       * Builds the left TextCell
+       * Builds the left TextCell for ReadFlash
        *
        * @param text
        * @return

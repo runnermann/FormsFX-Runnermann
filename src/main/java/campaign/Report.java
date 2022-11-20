@@ -292,7 +292,7 @@ public final class Report {
       /**
        * Most frequently, MetaData will come from an update.
        * Sends data from the MetaDataAry to the MetaData Table
-       * recieves data from updateDataAry in DeckMetaData
+       * receives data from updateDataAry in DeckMetaData
        *
        * @param metaObj ..
        * @param id      ..

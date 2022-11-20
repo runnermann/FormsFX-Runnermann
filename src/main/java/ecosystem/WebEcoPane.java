@@ -18,6 +18,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
 
@@ -27,8 +28,8 @@ import java.util.HashMap;
 
 public class WebEcoPane extends BorderPane {
 
-    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(WebEcoPane.class);
-    //private static final Logger LOGGER = LoggerFactory.getLogger(EcoPane.class);
+    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(WebEcoPane.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebEcoPane.class);
 
     WebEngine engine = new WebEngine();
 
@@ -50,15 +51,12 @@ public class WebEcoPane extends BorderPane {
      */
     protected BorderPane getPurchasePane() {
 
-        LOGGER.setLevel(Level.DEBUG);
-
         // -----------------     start webview    --------------------- //
         WebView webView = new WebView();
         engine = webView.getEngine();
         //@todo Create the method to purchase multiple decks at a time.
         if(deckIds != null) {
             engine.setUserAgent(getPurchJson(cartList));
-            LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug(getPurchJson(cartList));
 
         } else {
@@ -78,7 +76,7 @@ public class WebEcoPane extends BorderPane {
                 if (Worker.State.SUCCEEDED.equals(newValue)) {
                     // verify address is the correct address and there has not been a redirect.
                 //@todo finish prevent redirects from potential malicious actors
-                System.out.println("domain: " + engine.getLocation());
+                    //System.out.println("domain: " + engine.getLocation());
                     String domain = engine.locationProperty().getValue();
                     if (!domain.startsWith("https://")) {
                         LOGGER.warn("WARNING: CRITICAL!!! Ecosystem purchase attempting a non secure connection at: {}", engine.getLocation());
@@ -92,7 +90,7 @@ public class WebEcoPane extends BorderPane {
                     }
                     if (!engine.getLocation().equals(VertxLink.REQ_PURCHASE.getLink())) {
                         LOGGER.warn("WARNING: CRITICAL!!! Ecosystem purchase attempting domain: {}", engine.getLocation());
-                        System.out.println("Not a jackrabbit");
+                        //System.out.println("Not a jackrabbit");
                         //System.exit(1);
                     }
                 } else {
@@ -171,7 +169,7 @@ public class WebEcoPane extends BorderPane {
         engine.setJavaScriptEnabled(true);
 
         engine.setOnAlert(webEvent -> {
-            System.out.println("WebKit Alert: " + webEvent.getData());
+            LOGGER.error("WebKit Alert: " + webEvent.getData());
         });
 
         engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {

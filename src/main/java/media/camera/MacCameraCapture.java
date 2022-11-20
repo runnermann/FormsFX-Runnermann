@@ -28,6 +28,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
@@ -41,8 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MacCameraCapture extends Application {
 
       private static MacCameraCapture CLASS_INSTANCE;
-      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MacCameraCapture.class);
-      //private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
+      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MacCameraCapture.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(CameraCapture.class);
 
       private SectionEditor parentEditor;
       private static Stage cameraStage;
@@ -83,7 +84,6 @@ public class MacCameraCapture extends Application {
        * @throws Exception ..
        */
       public boolean cameraCaptureBuilder(SectionEditor editor) throws Exception {
-            LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("cameraCaptureBuilder called");
 
             //Webcam webcam = Webcam.getDefault(300, TimeUnit.MILLISECONDS);

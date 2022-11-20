@@ -74,7 +74,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
                   this.qFiles = new String[files.length];
                   for (int i = 0; i < files.length; i++) {
                         this.qFiles[i] = files[i];
-                        System.out.println(this.qFiles[i]);
+                        //System.out.println(this.qFiles[i]);
                   }
             }
       }

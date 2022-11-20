@@ -22,6 +22,10 @@ import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.MetaDescriptor;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.layout.VBox;
 import metadata.DeckMetaData;
@@ -49,6 +53,8 @@ public class DeckMetaModel extends ModelParent {
       private final MetaDescriptor descriptor = new MetaDescriptor();
       private long deck_id;
       private static String deckImgName;
+
+      private StringProperty vertxQRLinkProperty = new SimpleStringProperty();
 
 
       /**
@@ -124,8 +130,9 @@ public class DeckMetaModel extends ModelParent {
       }
 
       /**
-       * Asynchronously save deck metadata or fail.
-       */
+       * Asynchronous.
+       * call to the formActionAsyncHelper
+       * */
       @Override
       public void formAction(FormData data) {
             DeckMetaData metaData = buildMetaData(data);
@@ -138,7 +145,14 @@ public class DeckMetaModel extends ModelParent {
             scheduledExecutor.execute(task);
       }
 
+      /**
+       * If the deckMetaData is successfully submitted to the DB,
+       * Gets the deckID from the insert or update. Biulds the QR Code
+       * and then saves it to file.
+       * @param metaData
+       */
       private void formActionAsyncHelper(DeckMetaData metaData) {
+            // doAction submits the metaData to the database.
             if (doAction(metaData)) {
                   LOGGER.info("formAction() User created, closing form");
                   // CreateFlash.getInstance().closeMetaWindow();
@@ -148,7 +162,9 @@ public class DeckMetaModel extends ModelParent {
                   try {
                         // deck_id is set by doAction.
                         // Predicessor Chain, get chain hash from db.
-                        QrCode.buildDeckQrCode(deck_id, dir, deckQRname, UserData.getUserName());
+                        String link = QrCode.buildDeckQrCode(deck_id, dir, deckQRname, UserData.getUserName());
+                        vertxQRLinkProperty.set(link);
+                        // set the form action completed listener to true;
                   } catch (WriterException e) {
                         LOGGER.warn("ERROR: WriterException caused by {} ", e.getMessage());
                         e.printStackTrace();
@@ -173,6 +189,10 @@ public class DeckMetaModel extends ModelParent {
       @Override
       public MetaDescriptor getDescriptor() {
             return descriptor;
+      }
+
+      public StringProperty getVertxQRLinkProperty() {
+            return this.vertxQRLinkProperty;
       }
 
       /**
@@ -201,11 +221,6 @@ public class DeckMetaModel extends ModelParent {
       public boolean doAction(final FormData data) {
             DeckMetaData metaData = (DeckMetaData) data;
             String path = DirectoryMgr.getMediaPath('z') + FlashCardOps.getInstance().getMetaFileName();
-            // Update File with this metadata
-            // metaData.saveDeckMetaData();
-            // Update database
-            boolean bool = false;
-            // update the metaDataAry
             // Save the metadata to file.
             FlashCardOps.getInstance().setMetaInFile(metaData, path);
             // Save it to the cloud.
@@ -271,8 +286,8 @@ public class DeckMetaModel extends ModelParent {
 
 
       /**
-       * Called when the formm is initially created. Sets the data in
-       * the form.
+       * Called when the formAction Sets the data
+       * to be sent to the DB.
        * @param data
        * @return
        */
@@ -292,7 +307,6 @@ public class DeckMetaModel extends ModelParent {
             metaData.setCourseCode(descriptor.getCourseCode());
             metaData.setPrice(Integer.parseInt(descriptor.getPrice()));
             metaData.setNumStars(Integer.parseInt(descriptor.getNumStars()));
-            //metaData.setDeckImgName(descriptor.getDeckImgName());
             // NOTE: shareDeck and sellDeck are switches in DeckMetaPane
             metaData.setShareDistro(descriptor.getShareDeck());
             metaData.setSellDeck(descriptor.getSellDeck());

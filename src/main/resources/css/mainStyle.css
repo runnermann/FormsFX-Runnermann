@@ -644,6 +644,10 @@ hyperlink14white {
     -fx-padding: 4,4,4,4;
 }
 
+#tfRdoButtonBox {
+    -fx-padding: 24,4,4,20;
+}
+
 #vidPlayerVBox {
     -fx-background-color: FM_GREY;
 }
