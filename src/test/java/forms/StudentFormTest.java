@@ -33,8 +33,8 @@ import java.util.Date;
 public class StudentFormTest extends ApplicationTest {
     // private static final Logger LOGGER = LoggerFactory.getLogger(StudentFormTest.class);
     // LOGGING
-    //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentFormTest.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(StudentFormTest.class);
+    private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentFormTest.class);
+    //private static final Logger LOGGER = LoggerFactory.getLogger(StudentFormTest.class);
 
     // Insert data into the DB for the purpose of the tests.
         String description = "The description is here.";
@@ -47,7 +47,6 @@ public class StudentFormTest extends ApplicationTest {
         String origMail = "studentFormTestOrigt@flashmonkey.xyz";
         String photoLink = "photoLink/me.jpg";
         String avatarName = "myAvatar";
-
 
         String institute= "TestInstitute";
         String edLevel  = "TestEdLevel";
@@ -67,7 +66,6 @@ public class StudentFormTest extends ApplicationTest {
 
 
     public void writeToDotEnv() {
-
 
         String dir = System.getProperty("user.dir");
         //System.out.println("user.dir: " + resources);
@@ -137,6 +135,7 @@ public class StudentFormTest extends ApplicationTest {
         // CLear the DB if the student already exists
         String[] args = {origMail};
         String[] result = DBFetchUnique.PERSON_ID.query(args);
+        LOGGER.debug("Result: " + result);
 
         delete(result);
 
@@ -146,7 +145,7 @@ public class StudentFormTest extends ApplicationTest {
         // Insert data to the DB
         boolean bool = DBInsert.STUDENT_ENCRYPTED_DATA.doInsert(encryptedStud);
 
-        System.out.println("StudentFormTest, encrypted student: " + encryptedStud.toString());
+        LOGGER.debug("StudentFormTest, encrypted student: " + encryptedStud.toString());
 
         Assert.assertTrue(bool == true);
 
@@ -186,17 +185,6 @@ public class StudentFormTest extends ApplicationTest {
         Assert.assertTrue(studDescript.getAvatarName().equals(avatarName));
     }
 
-
-
-    // DELETE Data from the DB that is not neccessary for the next tests
-
-    // Enter data into the Student form
-
-    // Verify that the Encrypted Person is correct
-
-    // verify that the Form properly displays data when it is opened a second time
-
-    //
 
 
     private boolean delete(String[] result) {

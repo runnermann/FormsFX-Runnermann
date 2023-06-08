@@ -14,6 +14,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Paint;
+import media.sound.SoundEffects;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 
@@ -31,20 +32,29 @@ public class AccountProfileMenu extends Menu {
       }
 
       private void setMenu() {
-            label.setText("MY PROFILE MENU");
-            subLabel.setText("This is the data that others will see when they buy your decks or they");
+            label.setText("SETTINGS");
+            //subLabel.setText("Profile related operations.");
 
-            Hyperlink howLink = new Hyperlink("How I can earn money on FlashMonkey");
+            Hyperlink howLink = new Hyperlink("How I can earn pay on FlashMonkey");
             howLink.setTextFill(Paint.valueOf("WHITE"));
-            howLink.setOnAction(e -> FlashMonkeyMain.getWebView(VertxLink.CANCEL_POLICY.getLink()));
+            howLink.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
+                  FlashMonkeyMain.getWebView(VertxLink.CANCEL_POLICY.getLink());
+            });
 
             Hyperlink logoutLink = new Hyperlink("LOG OUT");
-            logoutLink.setOnAction(e -> FlashMonkeyMain.logOutAction());
+            logoutLink.setOnAction(e -> {
+                  SoundEffects.GAME_OVER.play();
+                  FlashMonkeyMain.logOutAction();
+            });
             logoutLink.setTextFill(Paint.valueOf("WHITE"));
 
             // The users profile form
             Button profileBtn = ButtoniKon.getProfileButton();
-            profileBtn.setOnAction(e -> FlashMonkeyMain.getProfilePane());
+            profileBtn.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
+                  FlashMonkeyMain.getProfilePane();
+            });
 
             buttonBox.getChildren().addAll(profileBtn);
 

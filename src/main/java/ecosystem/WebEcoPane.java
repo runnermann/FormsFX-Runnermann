@@ -83,7 +83,7 @@ public class WebEcoPane extends BorderPane {
                         boolean bool = engine.getLocation().equals(VertxLink.REQ_PURCHASE.getLink());
                         if (bool) {
                             String msg = "NOTICE! There was an attempt to reach a non-secure link. Please reset the connection to the internet.";
-                            FxNotify.notification("", " Oooph! " + msg, Pos.CENTER, 8,
+                            FxNotify.notificationRedAlert("", " Oooph! " + msg, Pos.CENTER, 8,
                                     "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
                             //System.exit(1);
                         }
@@ -140,7 +140,6 @@ public class WebEcoPane extends BorderPane {
 
         Pane pane = new Pane();
         pane.getChildren().add(webView);
-
 
         return pane;
     }

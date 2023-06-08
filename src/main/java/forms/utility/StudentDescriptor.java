@@ -21,6 +21,7 @@ public class StudentDescriptor extends PersonDescriptor {
       private StringProperty major;
       private StringProperty minor;
       private StringProperty cvLink;
+      private StringProperty avatarFileName;
       private EncryptedStud student;
 
       // Prevent multiple upload and downlaods
@@ -60,6 +61,10 @@ public class StudentDescriptor extends PersonDescriptor {
             return cvLink.get();
       }
 
+      public String getAvatarFileNameProperty() {
+            return avatarFileName.get();
+      }
+
       // student properties
       public StringProperty educationLevelProperty() {
             return educationLevel;
@@ -77,6 +82,10 @@ public class StudentDescriptor extends PersonDescriptor {
             return cvLink;
       }
 
+      public StringProperty avatarFileNameProperty() {
+            return avatarFileName;
+      }
+
       @Override
       public void setProperitesDefault() {
             LOGGER.debug("called setPropertiesDefault");
@@ -86,6 +95,7 @@ public class StudentDescriptor extends PersonDescriptor {
             major = new SimpleStringProperty("");
             minor = new SimpleStringProperty("");
             cvLink = new SimpleStringProperty("");
+            avatarFileName = new SimpleStringProperty("");
       }
 
 
@@ -109,6 +119,7 @@ public class StudentDescriptor extends PersonDescriptor {
             major = new SimpleStringProperty(student.getMajor());
             minor = new SimpleStringProperty(student.getMinor());
             cvLink = new SimpleStringProperty(student.getCvLink());
+            avatarFileName = new SimpleStringProperty(student.getAvatarName());
       }
 
       /**

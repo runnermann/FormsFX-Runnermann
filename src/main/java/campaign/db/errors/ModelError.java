@@ -81,7 +81,9 @@ public class ModelError {
             try {
                   this.setModelError();
             } catch (Exception e) {
+                  //LOGGER.warn("CRITICAL ERROR!!!: ModelError threw exception in AppAccessVerticle {} \n{}", e.getMessage(), e.getStackTrace());
                   e.printStackTrace();
+                  // System.exit(1);
             }
       }
 
@@ -89,7 +91,9 @@ public class ModelError {
             try {
                   this.setMError();
             } catch (Exception e) {
+                  //LOGGER.warn("CRITICAL ERROR!!!: ModelError threw exception in AppAccessVerticle {} \n{}", e.getMessage(), e.getStackTrace());
                   e.printStackTrace();
+                  // System.exit(1);
             }
       }
 
@@ -143,7 +147,7 @@ public class ModelError {
                   inno2.createResuSyekFile(syekEnc, m.userKeyFile);
 
             } catch (Exception e) {
-                  System.out.println("Error in Model Error line 119.");
+                 // System.out.println("Error in Model Error line 119.");
             }
       }
 
@@ -250,7 +254,6 @@ public class ModelError {
                   String filePath = DirectoryMgr.CPR_DIR + fileName;
                   T t = null;
                   try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filePath)))) {
-                        //System.out.println("input length" + input.toString());
                         while (true) {
                               t = (T) input.readObject();
                         }
@@ -282,7 +285,6 @@ public class ModelError {
                   //if (new File("/" + fileName).exists()) {
                   T t = null;
                   try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(getClass().getResourceAsStream("/" + fileName)))) {
-                        //System.out.println("File exists: /" + fileName);
                         while (true) {
                               t = (T) input.readObject();
                         }
@@ -452,5 +454,42 @@ public class ModelError {
 //        }
 //    }
 
+//      // Tests PW encryption and decryption
+//      public static void main(String[] args) {
+//            ModelError m = ModelError.getInstance();
+//            String pw = "bangBang#01";
+//            String orig_email = "lowell.stadelman@gmail.com";
+//
+//// Uncomment to create the file and comment out everything in try catch
+//// m.itM() to decrypt and print will not work while the file is being written.
+////            m.outputMErrors(pw, orig_email);
+//            try {
+//                  m.itM();
+//            } catch (Exception e) {
+//                  e.printStackTrace();
+//            }
+//
+//      }
+
+
+//    private static class Error {
+//
+//        private static final String[] arr = new String[1];
+//        // 0
+//        private static String dbAccessString = "jdbc:postgresql://usa-conus.caws1d0xah4s.us-west-2.rds.amazonaws.com:5432/usa-conus?user=lowell&password=ochCtirAwddThcatemHQzi2002";
+//
+//
+//        private Error() {
+//              System.err.println("WARNING: ModelError.error() ERROR is exposed");
+//              System.err.println("WARNING: ModelError.error() ERROR is exposed");
+//              System.err.println("WARNING: ModelError.error() ERROR is exposed");
+//              buildArr();
+//        }
+//
+//        // this is correct for decrypt as well???
+//        private String[] buildArr() {
+//            arr[0] = dbAccessString;
+//            return arr;
+//        }
 //    }
 }

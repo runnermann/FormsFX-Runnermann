@@ -18,12 +18,13 @@ import java.lang.*;
 
 public class Timer {
       private static Timer CLASS_INSTANCE;
-      private static long startTime;
-      private long endTime = 0;
+      private static long fmStartTime;
+      private static long testStartTime;
+      private static long createStartTime;
       // start times
 
-      private long beginTime = 0;
-      private long createTestsTime = 0;
+      private static final long fmBeginTime = System.currentTimeMillis();
+      private long createTime = 0;
       private long createNotesTime = 0;
       private long qnaTime = 0;
       private long takeTestTime = 0;
@@ -46,32 +47,55 @@ public class Timer {
       }
 
       // Use analytics and performance
-      public long getCreateTestsTime() {
-            return createTestsTime;
+
+      /**
+       * Zeros the create time and returns the quantity
+       * of the create time.
+       * @return the createTime
+       */
+      public long getCreateTimeNonModifiable() {
+            long num = createTime;
+            createTime = 0;
+            return num;
       }
 
+      public void startQnATime() {
+            qnaTime = System.currentTimeMillis();
+      }
+
+      /**
+       * For use by FM use time, not user metrics
+       * @return system time - testStartTime.
+       */
       public long getQnATime() {
-            return this.qnaTime;
+            long num = qnaTime;
+            qnaTime = 0;
+            return System.currentTimeMillis() - num;
       }
 
-      public long getCreateNotesTime() {
-            return this.createNotesTime;
+      /**
+       * Zeros the createNotesTime and returns the quantity
+       * of createNotesTime;
+       * @return the quantity of create notes time.
+       */
+      public long getCreateNotesTimeNonModifiable() {
+            long num = this.createNotesTime;
+            this.createNotesTime = 0;
+            return num;
       }
 
       public long getTakeTestTime() {
-            return this.takeTestTime;
-      }
-
-      public long getEndTime() {
-            return this.endTime;
+            long num = this.takeTestTime;
+            this.takeTestTime = 0;
+            return num;
       }
 
       public long getBeginTime() {
-            return this.beginTime;
+            return this.fmBeginTime;
       }
 
-      public long getTotalTime() {
-            return (this.endTime - this.beginTime);
+      public long getFMTotalTime() {
+            return (System.currentTimeMillis() - this.fmBeginTime);
       }
 
       public String getNote() {
@@ -88,58 +112,49 @@ public class Timer {
        * Start the timer, then stop and record with a stop... m
        * method.
        */
-      public void startTime() {
-            startTime = System.currentTimeMillis();
+      public void startFlashMonkeyUseTime() {
+            fmStartTime = System.currentTimeMillis();
+      }
+
+      public void startCreateTime() {
+            createStartTime = System.currentTimeMillis();
+            createTime = 0;
+      }
+
+      public void startTestTime() {
+            testStartTime = System.currentTimeMillis();
       }
 
       /**
-       * Program start.
+       * Stops and captures creatTime. Adds the
+       * quantity of time to the existing time if
+       * any exists previously.
        */
-      public void begin() {
-            this.beginTime = System.currentTimeMillis();
-      }
-
-      /**
-       * stops and captures creatTEstTime.
-       */
-      public void createTestTimeStop() {
-            if (startTime != 0) {
-                  createTestsTime += System.currentTimeMillis() - startTime;
+      public void createTimeStop() {
+            if (createStartTime != 0) {
+                  long useTime = System.currentTimeMillis() - createStartTime;
+                  createTime += useTime;
             }
-            //startTime = 0;
       }
 
       /**
        * stops and captures testTime.
        */
       public void testTimeStop() {
-            if (startTime != 0) {
-                  takeTestTime += System.currentTimeMillis() - startTime;
+            if (testStartTime != 0) {
+                  takeTestTime += System.currentTimeMillis() - testStartTime;
             }
       }
 
-      /**
-       * stops and captures createNOtesTime
-       */
-      public void createNotesTimeStop() {
-            if (startTime != 0) {
-                  createNotesTime += System.currentTimeMillis() - startTime;
-            }
-      }
-
-      /**
-       * stops and captures qnATime
-       */
-      public void qnaTimeStop() {
-            if (startTime != 0) {
-                  qnaTime += System.currentTimeMillis() - startTime;
-            }
-      }
-
-      public void end() {
-            this.endTime = System.currentTimeMillis();
-      }
-
+//      /**
+//       * stops and captures qnATime
+//       */
+//      public void qnaTimeStop() {
+//            if (readOrCreateStartTime != 0) {
+//                  qnaTime += System.currentTimeMillis() - readOrCreateStartTime;
+//            }
+//            readOrCreateStartTime = 0;
+//      }
 
       public String printTimeNow() {
             LocalTime hour = ZonedDateTime.now().toLocalTime().truncatedTo(ChronoUnit.SECONDS);
@@ -147,7 +162,7 @@ public class Timer {
       }
 
       public String getTotalTimeString() {
-            long now = getTotalTime();
+            long now = getFMTotalTime();
             long millis = now % 1000;
             long second = (now / 1000) % 60;
             long minute = (now / (1000 * 60)) % 60;
@@ -182,7 +197,7 @@ public class Timer {
 
 
       public void printTime() {
-            double milliseconds = getTotalTime();
+            double milliseconds = getFMTotalTime();
       }
 
 

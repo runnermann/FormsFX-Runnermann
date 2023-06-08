@@ -12,6 +12,9 @@ import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.RegexValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
+import com.dlsc.formsfx.view.controls.SimpleBooleanControl;
+import com.dlsc.formsfx.view.controls.SimpleCheckBoxControl;
+import com.dlsc.formsfx.view.util.ColSpan;
 import fileops.utility.Utility;
 import flashmonkey.FlashMonkeyMain;
 import flashmonkey.Timer;
@@ -48,7 +51,7 @@ public class SignUpModel {
        * These are the resource bundles for german and english.
        */
       private final ResourceBundle rbDE = ResourceBundle.getBundle("demo-locale", new Locale("de", "CH"));
-      private final ResourceBundle rbEN = ResourceBundle.getBundle("demo-locale", new Locale("en", "UK"));
+      private final ResourceBundle rbEN = ResourceBundle.getBundle("demo-locale", new Locale("en", "US"));
 
       /**
        * Default locale is English. The {@code ResourceBundleService} is
@@ -70,14 +73,14 @@ public class SignUpModel {
       }
 
       private void action() {
-            if (Utility.isConnected()) {
-                  String message = "You are not online. \nIf the password does not match your online account \nyou will not be able to synchronize with it." +
-                      "\nYou may reset the password by clicking\n on \"reset password\" on the sign-in page.";
-                  String emojiPath = "image/Flash_hmm_75.png";
-
-                  FxNotify.notification("Ouch!", message, Pos.CENTER, 5,
-                      emojiPath, FlashMonkeyMain.getPrimaryWindow());
-            }
+//            if (Utility.isConnected()) {
+//                  String message = "You are not online. \nIf the password does not match your online account \nyou will not be able to synchronize with it." +
+//                      "\nYou may reset the password by clicking\n on \"reset password\" on the sign-in page.";
+//                  String emojiPath = "image/Flash_hmm_75.png";
+//
+//                  FxNotify.notificationError("ouch!", message, Pos.CENTER, 5,
+//                      emojiPath, FlashMonkeyMain.getPrimaryWindow());
+//            }
             createForm();
       }
 
@@ -89,23 +92,12 @@ public class SignUpModel {
             String[] pwCheck = new String[1];
 
             formInstance = Form.of(
-
                     Group.of(
-                        Field.ofStringType(descriptor.siFirstNameProperty())
-                            .id("form-field")
-                            .required("required_error_message")
-                            .placeholder("name_placeholder")
-                            .validate(StringLengthValidator.between(3, 40, "name_error_message")),
                         Field.ofStringType(descriptor.siOrigEmailProperty())
                             .id("form-field")
                             .required("required_error_message")
                             .placeholder("email_placeholder")
                             .validate(RegexValidator.forEmail("email_error_message")),
-                        Field.ofStringType(descriptor.siAgeProperty())
-                            .id("form-field")
-                            .required("required_error_message")
-                            .placeholder("age_placeholder")
-                            .validate(StringNumRangeValidator.between(13, 130, "omg_age_error")),
                         Field.ofPasswordType(field1)
                             .placeholder("password_first")
                             .required("required_error_message")
@@ -116,45 +108,47 @@ public class SignUpModel {
                                 RegexValidator.forPattern(".*[a-z].*", "no_lowercase_error_msg"),
                                 RegexValidator.forPattern(".*[0-9].*", "no_numeric_error_msg"),
                                 RegexValidator.forPattern(".*[!#$%&?@ ().~_\\[\\]\\{\\}`':;^+=].*", "no_specchars_error_msg"),
-                                RegexValidator.forNotPattern(".*([0-9A-Za-z])\\1{2,}.*", "repeat_char_error_msg"),
-                                // only way to get the value from the field for confirmation with second pw field
-                                CustomValidator.forPredicate(e -> {
-                                      pwCheck[0] = e;
-                                      return true;
-                                }, "pw_match_error_msg")
+                                RegexValidator.forNotPattern(".*([0-9A-Za-z])\\1{2,}.*", "repeat_char_error_msg")
                             ),
-                        Field.ofPasswordType(field2)
-                            .placeholder("password_second")
-                            .required("required_error_message")
-                            .validate(
-                                CustomValidator.forPredicate(e -> {
-                                      return pwCheck[0] != null;
-                                }, "pw_empty_error_msg"))
-                            .validate(
-                                CustomValidator.forPredicate(e -> {
-                                      //LOGGER.info(" pw1: {} matches pw2: {} is: {}", pwCheck[0], e, pwCheck[0].equals(e));
-                                      return pwCheck[0].equals(e);
-                                }, "pw_match_error_msg"))
+                        Field.ofStringType("Please accept our EULA")
+                                .multiline(true)
+                                .editable(false),
+                        Field.ofStringType("        ")
+                                .editable(false)
+                                .span(ColSpan.HALF),
+                        Field.ofBooleanType(descriptor.getAcceptEULAProperty())
+                             .required("required_eula_message")
+                                .span(ColSpan.HALF)
+
                     )
+
+
                 ).title("form_label")
                 .i18n(rbs);
       }
 
       /**
-       * Save user information or fail . If the user has not been created before,
-       * after success sends the user to fileSelectPane, otherwise fail.
+       * Save user information or fail. If the user does not exist in the DB,
+       * they are created and sent to step 2 in user creation, the set code pane.
+       * If they exist in the DB, sends the user to fileSelectPane, otherwise
+       * the lower methods fail and the user is returned to the create user pane.
        */
       protected void formAction() {
             // set user information for file system access
             LOGGER.info("formAction() values data.getName(): {} data.getEmail: {}",
                 descriptor.getSiFirstName(), descriptor.getSiOrigEmail().toLowerCase());
 
-
             //LOGGER.debug("createS3 returns: {}", createS3.toString() );
             // attempt to create users authInfo
             if (formInstance.isPersistable()) {
                   getFormInstance().persist();
                   if (saveAction()) {
+                        String message = "Your user is created. ";
+                        String emojiPath = "image/flashFaces_sunglasses_60.png";
+
+                        FxNotify.notificationNormal("Congrats!", message, Pos.CENTER, 5,
+                                emojiPath, FlashMonkeyMain.getPrimaryWindow());
+
                         // set session data
                         LOGGER.info("formAction() User created, sending user to fileSelectPane");
                         // send user to fileSelectPane
@@ -164,8 +158,12 @@ public class SignUpModel {
                         LOGGER.info("formAction() User creation failed ???");
                         getFormInstance().reset();
                         descriptor.siOrigEmailProperty().setValue("");
-                        field1.setValue("");
-                        field2.setValue("");
+                        // clear PW
+                        if(field1 != null) {
+                              field1.setValue("");
+                              // clear Email
+                              field2.setValue("");
+                        }
                   }
             }
 
@@ -188,8 +186,6 @@ public class SignUpModel {
        */
       protected boolean saveAction() {
             String email = descriptor.getSiOrigEmail().toLowerCase();
-            String firstName = forms.utility.Utility.firstCapitol(descriptor.getSiFirstName());
-            UserData.setFirstName(firstName);
             UserData.setUserName(email);
 
             Auth a = new Auth(field1.get(), email);

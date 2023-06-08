@@ -5,14 +5,9 @@
 package flashmonkey;
 
 import javafx.animation.*;
-import javafx.geometry.Insets;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
 import javafx.util.Duration;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.util.Duration;
 
 /**
  * Provides the necessary methods and
@@ -44,7 +39,6 @@ public abstract class FMTransition {
       public static FadeTransition nodeFadeIn;
       protected static FadeTransition topFadeIn;
       protected static FadeTransition createFadeIn;
-      //protected static FadeTransition ansButtonFadeIn;
 
       public static void setQRight(TranslateTransition rightQTransition) { qRight = rightQTransition; }
 
@@ -58,6 +52,10 @@ public abstract class FMTransition {
 
       public static TranslateTransition getQLeft() {
             return qLeft;
+      }
+
+      public static void setNodeFadeIn(FadeTransition nodeTransition) {
+            nodeFadeIn = nodeTransition;
       }
 
       public static void setAWaitTop(SequentialTransition aTransition) {
@@ -258,6 +256,10 @@ public abstract class FMTransition {
             return fTrans;
       }
 
+      public static FadeTransition fadeTransition(Node node) {
+            return fadeTransition(node, 0.0, 1.0, 1, 0, false);
+      }
+
       /**
        * lbFadeIn Left Button fade in. Button fades from 1% to
        * 100%. Used on transition from left.
@@ -266,8 +268,8 @@ public abstract class FMTransition {
        * @param cycle       count
        * @param autoReverse true or not
        */
-      public static FadeTransition fadeTrans(Node node, Double from, Double to, int cycle, double duration,
-                                             boolean autoReverse) {
+      public static FadeTransition fadeTransition(Node node, Double from, Double to, int cycle, double duration,
+                                                  boolean autoReverse) {
             FadeTransition fTrans = new FadeTransition(Duration.millis(duration), node);
             fTrans.setFromValue(from);
             fTrans.setToValue(to);
@@ -284,7 +286,7 @@ public abstract class FMTransition {
        */
       public static SequentialTransition waitTransFmTop(Node node, int fmHt, int duration, int pause) {
             FadeTransition fadeTrans;// = new FadeTransition();
-            fadeTrans = fadeTrans(node, 0.0, 1.0, 1, pause, false);
+            fadeTrans = fadeTransition(node, 0.0, 1.0, 1, pause, false);
             TranslateTransition trans;// = new TranslateTransition();
             trans = transitionFmTop(node, duration, fmHt);
             SequentialTransition seqTrans = new SequentialTransition(

@@ -7,16 +7,12 @@ package uicontrols;
 import ch.qos.logback.classic.Level;
 import com.sun.glass.ui.Screen;
 import javafx.geometry.Point2D;
-//import javafx.stage.Screen;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import type.testtypes.FMHashCode;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.prefs.BackingStoreException;
 
 /**
@@ -45,6 +41,11 @@ public abstract class SceneCntl {
       // default settings are the fields set in this class.
       private static final Properties userSettings = new Properties();
       private static final String propertiesFile = "/flashmonkey.properties";
+      private static int soundEffectIterableNumber = 0;
+
+      public static int getAndIncrementSoundEffectNumber() {
+            return soundEffectIterableNumber++;
+      }
 
       /**
        * Sets the app from the user's stored preferences.
@@ -239,7 +240,7 @@ public abstract class SceneCntl {
       public static int calcCellHt() throws IllegalArgumentException {
             if (Dim.CFP_CENTER_HT.get() == 0) {
                   throw new IllegalArgumentException("CenterHeight cannot be 0. Be sure to set CenterHeight before" +
-                      "usin this method.");
+                      "using this method.");
             }
             return Dim.CFP_CENTER_HT.get() / 2;
       }

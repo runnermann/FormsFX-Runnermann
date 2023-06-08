@@ -43,6 +43,7 @@ public class UIColors {
       //public static final String BUTTON_PURPLE        = "rgba(72, 32, 110, 1.0)";  // #48206E;
       //public static final String BUTTON_PURPLE_50     = "rgba(72, 32, 110, .5)";
       public static final String BACKGROUND_BLUE = "rgba(127, 192, 236, 1)";  //7FC0EC;
+      public static final String GUAGE_BLUE = "rgba(55, 179, 252, 1)"; // #37B3FC
       public static final String BACKGROUND_ORANGE = "rgba(232, 150, 32, 1)";  //E89620
       //public static final String BUTTON_COMPLIMENT    = "rgba(130,72, 185, 1.0)"; //#8248B9;
       public static final String TRANSPARENT = "rgba(0, 0, 0, 0.0)";

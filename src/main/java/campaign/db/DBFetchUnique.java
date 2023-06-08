@@ -1,16 +1,12 @@
 package campaign.db;
 
-import ch.qos.logback.classic.Level;
+
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
 import forms.utility.Alphabet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -38,9 +34,8 @@ public enum DBFetchUnique {
                       "WHERE orig_email = '" + Alphabet.encrypt(args[0]) + "';";
                   return fetchUniqueResult(strQuery);
             }
-      },
-
-      STUDENTS_UUID {
+    },
+    STUDENTS_UUID {
             @Override
             public String[] query(String... args) {
                   String strQuery = "SELECT uuid, password " +
@@ -48,7 +43,7 @@ public enum DBFetchUnique {
                       "WHERE email = '" + args[0] + "';";
                   return fetchUniqueResult(strQuery);
             }
-      },
+    },
 	STUDENT_ENCRYPTED_DATA {
             /**
              * Queries the table provided in the param for the users encrypted data if it exists.
@@ -59,7 +54,7 @@ public enum DBFetchUnique {
             @Override
             public String[] query(String... args) {
                   // photo link is not currently used.
-			String strQuery = "SELECT first_name, last_name, middle_name, phone, age, institution, descript, photo_link, avatar_name," +
+			      String strQuery = "SELECT first_name, last_name, middle_name, phone, age, institution, descript, photo_link, avatar_name," +
                       " education_level, major, minor, cv_link, person_id" +
                       " FROM Person JOIN Student USING(orig_email)" +
                       //" FROM Student" +
@@ -67,6 +62,14 @@ public enum DBFetchUnique {
                   return fetchUniqueResult(strQuery);
             }
 	},
+    STUDENT_EXISTS_IN_APPREQ_TABLE {
+          @Override
+          public String[] query(String... email) {
+                String strQuery = "SELECT DISTINCT email FROM apprequest " +
+                "WHERE email = '" + email[0] + "'";
+                return fetchUniqueResult(strQuery);
+          }
+    },
 	CAMPAIGN_GROW_INSERT {
 		public String[] query(String ... args) {
 			String strQuery = "INSERT INTO CampaignGrowKey(cg_id, fwd_id, person_id, qr_img, expire, visits, note)" +
@@ -122,7 +125,6 @@ public enum DBFetchUnique {
                       .sendPreparedStatement(strQuery);
                   QueryResult queryResult = future.get();
                   if (queryResult.getRows().size() > 0) {
-
                         LOGGER.debug("query result has rows of data");
 
                         ArrayRowData row = (ArrayRowData) (queryResult.getRows().get(0));
@@ -131,15 +133,15 @@ public enum DBFetchUnique {
                         for (int i = 0; i < row.size(); i++) {
                               columnData[i] = row.get(i).toString();
                         }
-                        //return columnData;
-                        //num = num.replaceAll("\\D", "");
-                        //id = Long.valueOf(num);
                   }
             } catch (NullPointerException e) {
+                  columnData[0] = "ERROR";
                   LOGGER.warn("WARNING: Null pointer exception at DBFetch.fetchUniqueResult: Deck may not exist. ");
             } catch (ExecutionException e) {
+                  columnData[0] = "ERROR";
                   LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
             } catch (InterruptedException e) {
+                  columnData[0] = "ERROR";
                   LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage(), e.getStackTrace());
             }
             return columnData;

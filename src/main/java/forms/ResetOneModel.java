@@ -83,14 +83,14 @@ public class ResetOneModel {
         switch (res) {
             case -1: {
                 String msg = "That didn't work. Is your email correct?";
-                FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 8,
+                FxNotify.notificationError("", " Hmmmm! " + msg, Pos.CENTER, 8,
                         "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
                 SimpleFormParentPane.resetDescriptor.clear();
                 break;
             }
             case 0: {
                 String msg = " Bad connection. Check to make sure your online and try again.";
-                FxNotify.notification("", " Ouch! " + msg, Pos.CENTER, 8,
+                FxNotify.notificationError("", " Ouch! " + msg, Pos.CENTER, 8,
                         "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
                 SimpleFormParentPane.resetDescriptor.clear();
                 break;

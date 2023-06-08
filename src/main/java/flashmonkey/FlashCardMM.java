@@ -6,6 +6,8 @@ import multimedia.AnswerMM;
 import multimedia.QuestionMM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import type.cardtypes.CardLayout;
+import type.celltypes.CellLayout;
 import type.draw.shapes.GenericShape;
 
 import java.io.Serializable;
@@ -48,7 +50,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
       //*** CONSTANTS / DEFAULTS***
       public static final String C_ID = "0"; // Original card number. Never changes
       public static final int C_NUMBER = 777; // Card number this session
-      public static final char CARD_LAYOUT = 'F'; // FlashCard, Top and Bottom
+      public static final CardLayout CARD_LAYOUT = CardLayout.DOUBLE_VERTICAL; // FlashCard, Top and Bottom
       public static final int IS_RIGHT_COLOR = 0; // was it answered correctly this session, controls color in tree.
       public static final int REMEMBER = 0; // The prioirty of this card is set based on this number.
       public static final int SECONDS = 0; // seconds to answer this session.
@@ -72,7 +74,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
       /* The cardNumber used as a priority as the flashcard is set in the tree. Changes each iteration. */
       private int cNumber;
       /* The card layout type **/
-      private char cardLayout;
+      private CardLayout cardLayout;
       /* the question */
       private QuestionMM questionMM;  // contains its section layout type
       /* the answer */
@@ -119,7 +121,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
       /**
        * Create card constructor, creates a new FlashCardMM. Called only once in the life of a card.
        * for a new card, only need to provide the qNum, aNum, questionTxt, questionType, mmQfileName,
-       * answerTxt, answerType, answerMMFileName, Array of like answers, and card layout. All
+       * answerTxt, answerType, answerMMFileName, Array of like answers, and card cardLayout. All
        * other variables are the defaults.
        *
        * @param deckName   Used to create a new cID/cHash. The current deck's name.
@@ -135,14 +137,14 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        * @param aType      The type section the answer will use
        * @param aFileNames The files associated with the answer. IE for an image, sound, or video, and shapes
        * @param ansSt      The set of answers that would also be correct for this question
-       * @param layout     The layout for this card. IE full or half sections
+       * @param cardLayout     The cardLayout for this card. IE full or half sections
        */
-      public FlashCardMM(final String deckName, int cNum, int testType, char layout, String qTxt, char qType, String[] qFileNames, String aTxt, int aNum,
-                         char aType, String[] aFileNames, ArrayList<Integer> ansSt) {
+      public FlashCardMM(final String deckName, int cNum, int testType, CardLayout cardLayout, String qTxt, CellLayout qType, String[] qFileNames, String aTxt, int aNum,
+                         CellLayout aType, String[] aFileNames, ArrayList<Integer> ansSt) {
             this.answerMM = new AnswerMM(aTxt, aNum, aType, ansSt, aFileNames); // AnswerMM
             this.questionMM = new QuestionMM(qTxt, qType, qFileNames);
             this.testType = testType;
-            this.cardLayout = layout;
+            this.cardLayout = cardLayout;
             this.cID = createCardHash(deckName); // may be created previously in the default constructor
             this.cNumber = cNum;
             this.remember = REMEMBER;
@@ -163,7 +165,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        * @param cNum       A changing number used to compare the question, sets its order in the tree
        * @param testType   An int used as a boolean array indicating the tests for this session. Default is
        *                   multiple choice, multiple answer, write it in, and true or false.
-       * @param layout     The card layout (Should not change, copied from previous card.)
+       * @param CardLayout     The card CardLayout (Should not change, copied from previous card.)
        * @param qTxt       The question text
        * @param qType      The type section the question will use
        * @param qFileNames The files associated with the question. IE for an image, sound or video
@@ -179,13 +181,13 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        * @param date       The date this question was last answered correctly
        * @param sessionSeen    The number of times this card has been seen.
        */
-      public FlashCardMM(final String cID, int cNum, int testType, char layout, String qTxt, char qType, String[] qFileNames, String aTxt, int aNum,
-                         char aType, String[] aFileNames, ArrayList<Integer> ansSt, int remember, int isRightColor, int numRight,
+      public FlashCardMM(final String cID, int cNum, int testType, CardLayout CardLayout, String qTxt, CellLayout qType, String[] qFileNames, String aTxt, int aNum,
+                         CellLayout aType, String[] aFileNames, ArrayList<Integer> ansSt, int remember, int isRightColor, int numRight,
                          int sec, ZonedDateTime date, int sessionSeen) {
             this.answerMM = new AnswerMM(aTxt, aNum, aType, ansSt, aFileNames); // AnswerMM
             this.questionMM = new QuestionMM(qTxt, qType, qFileNames);
             this.testType = testType;
-            this.cardLayout = layout;
+            this.cardLayout = CardLayout;
             this.cID = cID;
             this.cNumber = cNum;
             this.remember = remember;
@@ -282,9 +284,9 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
        * @param aFileNames
        * @param ansSt
        */
-      public void setAll(int cNum, int testType, char layout, String qTxt,
-                         char qType, String[] qFileNames, String aTxt, int aNum,
-                         char aType, String[] aFileNames, ArrayList<Integer> ansSt) {
+      public void setAll(int cNum, int testType, CardLayout layout, String qTxt,
+                         CellLayout qType, String[] qFileNames, String aTxt, int aNum,
+                         CellLayout aType, String[] aFileNames, ArrayList<Integer> ansSt) {
             this.answerMM = new AnswerMM(aTxt, aNum, aType, ansSt, aFileNames); // AnswerMM
             this.questionMM = new QuestionMM(qTxt, qType, qFileNames);
             this.testType = testType;
@@ -301,11 +303,11 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             this.answerMM.setAText(ans);
       }
 
-      protected void set_Q_Type(char qType) {
+      protected void set_Q_Type(CellLayout qType) {
             this.questionMM.setQType(qType);
       }
 
-      protected void set_A_Type(char aType) {
+      protected void set_A_Type(CellLayout aType) {
             this.answerMM.setAType(aType);
       }
 
@@ -321,7 +323,7 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             this.answerMM.setAFiles(files);
       }
 
-      protected void setCardLayout(char layout) {
+      protected void setCardLayout(CardLayout layout) {
             this.cardLayout = layout;
       }
 
@@ -481,11 +483,11 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
             return this.answerMM.getAFiles();
       }
 
-      public char getQType() {
+      public CellLayout getQType() {
             return this.questionMM.getQType();
       }
 
-      public char getAType() {
+      public CellLayout getAType() {
             return this.answerMM.getAType();
       }
 
@@ -807,13 +809,12 @@ public class FlashCardMM<T extends Comparable<T>> implements Serializable, Compa
                 + "\n\t layout = " + this.cardLayout
                 + "\n\t QuestionMM = \n" + this.questionMM
                 + "\n\t AnswerMM  = \n" + this.answerMM
-                + "\nn\t isRight  = " + this.isRightColor
+                + "\n\t isRight  = " + this.isRightColor
                 + "\n\t remember  = " + this.remember
                 + "\n\t seconds  = " + this.seconds
                 + "\n\t numRight  = " + this.numRight
                 + "\n\t rtDate  = " + this.rtDate
                 + "\n\t numSeen  = " + this.sessionSeen
-                + "\n\t testType  = " + this.testType
-                ;
+                + "\n\t testType  = " + this.testType;
       }
 }

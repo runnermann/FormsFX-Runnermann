@@ -162,7 +162,7 @@
 }
 
 #infoPane-message {
-    -fx-font-family: "Times New Roman";
+    /*-fx-font-family: "Times New Roman";*/
     -fx-font-size: 16px;
     -fx-wrap-text: true;
     -fx-text-fill: #393E46; /* fm grey */
@@ -184,12 +184,16 @@
 }
 
 #label-bold-grey-emph {
+    -fx-font-famiily: Arial;
     -fx-text-fill: #01076d;
-    -fx-font-size: 14px;
+    -fx-font-size: 11px;
 }
 #label-blue-small {
-    -fx-text-fill: #01076d;
-    -fx-font-size: 12px;
+    /*-fx-font-family: "Times New Roman";*/
+    -fx-font-family: Arial;
+    -fx-font-weight: 800;
+    /*-fx-text-fill: #01076d;*/
+    -fx-font-size: 11pt;
 }
 
 #switch-label {
@@ -207,8 +211,6 @@
     -fx-text-fill: #ffffff;
     -fx-font-weight: 600;
 }
-
-
 
 .sellSwitch {
     base-color: ICON_ELEC_BLUE;

@@ -4,7 +4,6 @@
 
 package flashmonkey;
 
-import ch.qos.logback.classic.Level;
 import fileops.*;
 import fileops.utility.Utility;
 import forms.searchables.CSVUtil;
@@ -227,7 +226,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                         if (fc.getQFiles()[i] != null) {
                               name = fc.getQFiles()[i];
                               if (name != null || !name.equals("")) {
-                                    mediaSyncObjs.add(new MediaSyncObj(name, fc.getQType(), 1));
+                                    mediaSyncObjs.add(new MediaSyncObj(name, fc.getQType().get(), 1));
                               }
                         }
                   }
@@ -236,7 +235,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                         if (fc.getAFiles()[i] != null) {
                               name = fc.getAFiles()[i];
                               if (name != null || !name.equals("")) {
-                                    mediaSyncObjs.add(new MediaSyncObj(name, fc.getAType(), 1));
+                                    mediaSyncObjs.add(new MediaSyncObj(name, fc.getAType().get(), 1));
                               }
                         }
                   }
@@ -254,20 +253,6 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             return flashListMM;
       }
 
-
-      /**
-       * getElement()
-       *
-       * @param i
-       * @return returns a new FlashCardMM object cloned from the ArrayList
-       */
-//      public FlashCardMM getElement(int i) {
-//            try {
-//                  return new FlashCardMM(flashListMM.get(i));
-//            } catch (IndexOutOfBoundsException e) {
-//                  return null;
-//            }
-//      }
 
       /**
        * Returns the tree_walker
@@ -291,7 +276,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
 
       void resetAgrList() {
             //if(cloudLinks == null || cloudLinks.isEmpty()) { LOGGER.warn("cloudLinks is empty or null "); }
-            agrList = new AgrFileList(getDeckFolder());
+            agrList = new AgrFileList(getDecksFolder());
       }
 
       /**
@@ -300,7 +285,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
       @SuppressWarnings("unchecked")
       protected ArrayList<FlashCardMM> getListFromFile() {
             String fileName = getFileName();
-            final File check = new File(getDeckFolder() + "/" + fileName);
+            final File check = new File(getDecksFolder() + "/" + fileName);
             LOGGER.info("calling getListFromFile, filePath: " + check.getPath());
             if (agrList.getLinkObj() != null) {
                   if (check.exists()) {
@@ -324,6 +309,13 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
       // ************************************** ******* **************************************
       // ************************************** OTHERS  **************************************
       // ************************************** ******* **************************************
+
+      @Override
+      public void logOut() {
+            super.logOut();
+            agrList = null;
+      }
+
 
 
       /**
@@ -385,7 +377,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        * the flashList from the file.
        */
       public void clearFlashList() {
-            flashListMM.clear();
+            if(flashListMM != null) { flashListMM.clear(); }
       }
 
       public void addToNotCompatibleList(String name) {
@@ -516,6 +508,21 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             for (FlashCardMM cd : cardList) {
                   cd.setCNumber(count++);
                   TREE_WALKER.add(cd);
+            }
+      }
+
+      /**
+       * Used when a card is deleted from the deck and the aNumbers need to be
+       * re-ordered.
+       * @param cardList
+       */
+      protected void buildTreeAfterDelete(ArrayList<FlashCardMM> cardList) {
+            int count = 0;
+            for (FlashCardMM cd : cardList) {
+                  cd.setANumber(count);
+                  cd.setCNumber(count);
+                  TREE_WALKER.add(cd);
+                  count++;
             }
       }
 

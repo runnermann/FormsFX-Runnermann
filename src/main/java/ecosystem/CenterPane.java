@@ -13,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import media.sound.SoundEffects;
 import org.slf4j.LoggerFactory;
 
 import uicontrols.FxNotify;
@@ -257,6 +258,7 @@ public class CenterPane {
         //subscribeLink.setStyle("-fx-text-fill: #F2522E");
         subscribeLink.setPadding(new Insets(0,10,0,4));
         subscribeLink.setOnAction(e -> {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             ConsumerPane.EcoReqSubscription.reqSubscription();
         });
         final Hyperlink cartLink = new Hyperlink("Add to Cart");
@@ -264,6 +266,7 @@ public class CenterPane {
         //cartLink.setStyle("-fx-text-fill: #F2522E");
         cartLink.setPadding(new Insets(4,0,0,4));
         cartLink.setOnAction(e -> {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             // add to cart
             Map<String, String> map = dmp.getMapArray().get(idx);
                     map.put("fee", Double.toString(nonPreemFee));
@@ -350,7 +353,7 @@ public class CenterPane {
         if(dmp.getMapArray().isEmpty()) {
             String message = " I was unable to find anything for that search." +
                     "\nTry a different spelling or a broader search.";
-                  FxNotify.notification("Oooph!", message, Pos.CENTER, 10,
+                  FxNotify.notificationError("Oooph!", message, Pos.CENTER, 10,
                       "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getActionWindow());
         } else {
             HashMap<String, String> map = dmp.getMapArray().get(idx);

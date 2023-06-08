@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -67,7 +67,6 @@ public class TriangleBuilder extends GenericBuilder<FMTriangle, TriangleBuilder>
 
       private String fillColor;
       private String strokeColor;
-
 
       private final StringProperty fillProperty = new SimpleStringProperty();
       private final StringProperty strokeProperty = new SimpleStringProperty();

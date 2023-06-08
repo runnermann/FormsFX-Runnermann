@@ -64,11 +64,22 @@ public abstract class CloudOps implements Serializable {
             }
       }
 
+      // ****** CLEAR THE TOKEN *******
+
+      /**
+       * Sets the Token to null, sets cloud links and s3ListObjs to null
+       */
+      public static void clearAll() {
+            TokenStore.clearToken();
+            cloudLinks = new ArrayList<>(4);
+            s3ListObjs = null;
+      }
+
 
       //  ****** account related *********
 
       /**
-       * Request from vertx and stripe to cancell the subscription.
+       * Request from vertx and stripe to cancel the subscription.
        *
        * @param pw
        * @return returns true if the cancellation was successful.
@@ -78,7 +89,6 @@ public abstract class CloudOps implements Serializable {
 
             String json = vio.ou812cancel(Alphabet.encrypt(UserData.getUserName()), pw, TokenStore.get());
             return vertxPost(json, VertxLink.SUBSCRIPT_CANCEL.getEndPoint());
-
       }
 
 
@@ -149,7 +159,6 @@ public abstract class CloudOps implements Serializable {
        * @return
        */
       public static int requestFinalizeUserRemote(String code, String email, String firstName, String password) {
-
             //LOGGER.setLevel(Level.DEBUG);
 
             VertxIO vio = new VertxIO();
@@ -158,6 +167,16 @@ public abstract class CloudOps implements Serializable {
             LOGGER.debug("JSON: " + json);
             String destination = "/AD1/AAE027"; // list
 
+            int res = vertxPost(json, destination);
+            LOGGER.debug("boolean for send: ", res);
+
+            return res;
+      }
+
+      public static int requestCreateUserWhenInAppReqTable(String email, String password) {
+            VertxIO vio = new VertxIO();
+            String json = vio.ou812CreateNewUser(email, password);
+            String destination = "/AD1/AAE979";
             int res = vertxPost(json, destination);
             LOGGER.debug("boolean for send: ", res);
 
@@ -470,7 +489,7 @@ public abstract class CloudOps implements Serializable {
       public static void putMedia(String[] uploads, char bucket) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("putMedia for serial called");
-            timer.start();
+            //timer.start();
             S3PutObjs putObjs = new S3PutObjs();
             String token = TokenStore.get();
             if (token != null) {
@@ -479,9 +498,21 @@ public abstract class CloudOps implements Serializable {
             } else {
                   LOGGER.warn("ERROR: Warning, Token is null when attempting to put media. Expected the token to be set.");
             }
-            timer.end();
-            LOGGER.debug("\n\nputMedia running time: {}\n\n", timer.getTotalTimeString());
+            //timer.end();
+            //LOGGER.debug("\n\nputMedia running time: {}\n\n", timer.getTotalTimeString());
       }
+
+//      public static void putQRImage(String[] qrImgFile) {
+//            LOGGER.debug("putting qrImage in decks bucket");
+//            S3PutObjs putObjs = new S3PutObjs();
+//            String token = TokenStore.get();
+//            if (token != null) {
+//                  ArrayList<String> l = new ArrayList<>(Arrays.asList(qrImgFile));
+//                  putObjs.serialPutMedia(l, token, 'q');
+//            } else {
+//                  LOGGER.warn("ERROR: Warning, Token is null when attempting to put media. Expected the token to be set.");
+//            }
+//      }
 
       /**
        * Uses async upload to upload to S3.
@@ -658,4 +689,6 @@ public abstract class CloudOps implements Serializable {
             }
             return false;
       }
+
+
 }

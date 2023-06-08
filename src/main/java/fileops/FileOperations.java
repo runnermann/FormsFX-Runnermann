@@ -1,24 +1,21 @@
 package fileops;
 
-import ch.qos.logback.classic.Level;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
 import metadata.DeckMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import static javafx.embed.swing.SwingFXUtils.fromFXImage;
+import java.util.Comparator;
 
 /***************************************************************************
  * <P><B>Do not use this class. Use FlashCard Ops to interact with
@@ -56,7 +53,7 @@ public abstract class FileOperations implements Serializable {
      * @return Returns the folder on the system that contains decks. Does
      * not include the trailing forward-slash. See above.
      */
-    protected File getDeckFolder() {
+    protected File getDecksFolder() {
         if(deckFolder == null) {
             deckFolder = new File(DirectoryMgr.SYSTEM_DIR
             + DirectoryMgr.getUserNameHash() + "/decks");
@@ -131,7 +128,7 @@ public abstract class FileOperations implements Serializable {
         }
         if (bName.length() > 3) {
             String name = FileNaming.buildDeckFileName(bName);
-            fileExists(name, getDeckFolder());
+            fileExists(name, getDecksFolder());
             return name;
         }
         return null;
@@ -654,13 +651,32 @@ public abstract class FileOperations implements Serializable {
         return false;
     }
 
-    public void deleteCPRFile() {
+    protected void logOut() {
         boolean bool = DirectoryMgr.resuExists();
         if(bool) {
-            String dir = DirectoryMgr.CPR_DIR;
-            File cpr = new File( dir + "/resuone.enc");
-            cpr.delete();
+            String dir = DirectoryMgr.getWorkingDirectory();
+            File f = new File(dir + DirectoryMgr.LOGOUT);
+
+            Path pathToBeDeleted = f.toPath();
+
+            try {
+                Files.walk(pathToBeDeleted)
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+
+                System.out.println(" File deleted: " + !Files.exists(pathToBeDeleted));
+            } catch (IOException e) {
+                LOGGER.warn("ERROR deleting files");
+            }
+
+
+
+
+//            File cpr = new File( dir + "/resuone.enc");
+//            cpr.delete();
         }
+        CloudOps.clearAll();
     }
 }
 

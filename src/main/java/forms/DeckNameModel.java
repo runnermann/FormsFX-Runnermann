@@ -36,7 +36,6 @@ public class DeckNameModel {
        */
       private final ResourceBundleService rbs = new ResourceBundleService(rbEN);
 
-
       public Form getFormInstance() {
             if (formInstance == null) {
                   createForm();
@@ -57,7 +56,6 @@ public class DeckNameModel {
                     Group.of(
                         Field.ofStringType(descriptor.nameProperty())
                             .id("form-field")
-                            .required("required_error_message")
                             .placeholder("deck_name")
                             .validate(StringLengthValidator.between(5, 50, "deckname_error_message"))
                     ))

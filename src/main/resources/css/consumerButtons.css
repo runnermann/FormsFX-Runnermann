@@ -97,12 +97,10 @@
     -fx-margin-bottom: 10;
 }
 
-
-
 #navButtonLight {
     -fx-base: BUTTON_WHITE;
-    -fx-font-weight: 900;
     -fx-background-radius: 4;
+    -fx-font-weight: 900;
     -fx-background-color: derive(-fx-base,80%);
 }
 #navButtonLight:hover {
@@ -116,7 +114,7 @@
     -fx-bkgbase: FM_SETTINGS_BCKGND;
     -fx-font-weight: 900;
     -fx-background-radius: 4;
-    -fx-border-width: 1;
+    -fx-border-width: -1;
     -fx-border-color: derive(-fx-bkgbase,10%);
     -fx-background-color: derive(-fx-base,80%);
 }

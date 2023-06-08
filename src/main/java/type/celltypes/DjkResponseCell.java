@@ -20,7 +20,7 @@ import java.io.Serializable;
  * the Dijkstra's shunting algorithm. It is independent from operations
  * of the class. This class makes use of Operator, an Enum.</p>
  */
-public class DjkResponseCell extends GenericCell implements Serializable {
+public class DjkResponseCell implements Serializable {
       private static final long serialVersionUID = FlashMonkeyMain.VERSION;
       private static final Logger LOGGER = LoggerFactory.getLogger(CanvasCell.class);
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CanvasCell.class);

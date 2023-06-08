@@ -1,5 +1,7 @@
 package authcrypt;
 
+import campaign.db.DBFetchUnique;
+import campaign.db.DBInsert;
 import fileops.CloudOps;
 import fileops.DirectoryMgr;
 import fileops.S3ListObjs;
@@ -128,7 +130,33 @@ public class Auth {
             saveAction(x1, x2);
       }
 
+
       /**
+       *
+       * @param x1 email
+       * @param x4 password
+       */
+      private boolean createNewUserRemote(String x1, String x4) {
+            //verify if user exists in the
+            // appRequest Table:
+            String[] columnData = DBFetchUnique.STUDENT_EXISTS_IN_APPREQ_TABLE.query(x1);
+            boolean bool = columnData[0].equals(x1);
+            // If true create them
+            if(bool) {
+                  int res = CloudOps.requestCreateUserWhenInAppReqTable(x1, x4);
+                  return responseDo(res);
+            } else {
+                  createUserRemote(x1);
+                  return false;
+            }
+
+      }
+
+      /**
+       * When user does not exist in the AppRequest Table. They likely downloaded
+       * the app directly from the website. We need to verify that the email they
+       * give us is real. THis is the first in a two step process to verify
+       * their email.
        * Create REMOTE user step 1
        *
        * @param email ..
@@ -138,34 +166,38 @@ public class Auth {
             // an account online. And make it optional.
             // They are directed to the sign-in pane if they cancel.
             FMAlerts alerts = new FMAlerts();
-            boolean b = alerts.yesOrRedirectToSignInPopup(" ALERT ", FMAlerts.CREATE_ONLINE, "image/logo/vertical_logo_blue_480.png",
-                UIColors.ICON_ELEC_BLUE);
-            if (b) {
-                  // Send request to remote server
-                  //CloudOps co = new CloudOps();
-                  int res = CloudOps.requestCreateUserCode(email);
-                  switch (res) {
-                        case -1: {
-                              String msg = "That didn't work.... Try resetting your password.";
-                              FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 8,
-                                  "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
-                              FlashMonkeyMain.showResetOnePane();
-                              break;
-                        }
-                        case 0: {
-                              String msg = "I cannot connect with the server. Please check the connection to the internet";
-                              FxNotify.notification("", " Oooph! " + msg, Pos.CENTER, 8,
-                                  "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
-                              break;
-                        }
-                        case 1: {
-                              // Succeeded, email has been sent
-                              FlashMonkeyMain.showConfirmPane();
-                              break;
+            Platform.runLater(() -> {
+                  boolean b = alerts.yesOrRedirectToSignInPopup(" ALERT ", FMAlerts.CREATE_ONLINE, "image/logo/vertical_logo_blue_480.png",
+                          UIColors.ICON_ELEC_BLUE);
+                  if (b) {
+                        // Send request to remote server
+                        //CloudOps co = new CloudOps();
+                        int res = CloudOps.requestCreateUserCode(email);
+                        switch (res) {
+                              case -1: {
+                                    String msg = "That didn't work.... Try resetting your password.";
+                                    FxNotify.notificationError("", " Hmmmm! " + msg, Pos.CENTER, 8,
+                                            "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
+                                    FlashMonkeyMain.showResetOnePane();
+                                    break;
+                              }
+                              case 0: {
+                                    String msg = "I cannot connect with the server. Please check the connection to the internet";
+                                    FxNotify.notificationError("", " Oooph! " + msg, Pos.CENTER, 8,
+                                            "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
+                                    break;
+                              }
+                              case 1: {
+                                    // Succeeded, email has been sent
+                                    FlashMonkeyMain.showConfirmPane();
+                                    break;
+                              }
                         }
                   }
-            }
+            });
+
       }
+
 
       /**
        * Create remote user step 2
@@ -173,36 +205,41 @@ public class Auth {
        * @param field0 code
        * @param field1 password
        */
-      public static void finalizeUserRemote(String field0, String field1) {
+      public static boolean finalizeUserRemote(String field0, String field1) {
             //LOGGER.debug("finalizeUserRemote called");
             //CloudOps co = new CloudOps();
             int res = CloudOps.requestFinalizeUserRemote(field0, UserData.getUserName(), UserData.getFirstName(), field1);
-            switch (res) {
-                  case -1: {
-                        String msg = "That didn't work.";
-                        FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 4,
-                            "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
-                        break;
-                  }
-                  case 0: {
-                        String msg = " Please check your connection to the internet";
-                        FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 4,
-                            "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
+            return responseDo(res);
+      }
 
-                        break;
-                  }
+      private static boolean responseDo(int res) {
+            switch (res) {
                   case 1: {
                         String msg = " Congratulations! \n Welcome to FlashMonkey. The learning platform where" +
-                            " you get more than a grade. \n1. You can Learn Smarter\n" +
-                            "2. Earn Cash\n3. Organize Everything\n4. Find Faster\n5. and Create on the Fly";
-                        FxNotify.notification("", " Awesomeness! " + msg, Pos.CENTER, 4,
-                            "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
+                                " you get more than a grade. \n1. Get better grades\n" +
+                                "2. Earn Pay\n3. and earn a \nKnowledge Credibility Score\u2122 \nyou can share with recruiters";
+                        FxNotify.notificationError("", " Awesomeness! " + msg, Pos.CENTER, 4,
+                                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                         // set flashmonkey main to filesPane()
                         FlashMonkeyMain.getFileSelectPane();
-                        break;
+                        return true;
+                  }
+
+                  case 0: {
+                        String msg = " Please check your connection to the internet";
+                        FxNotify.notificationError("", " Hmmmm! " + msg, Pos.CENTER, 4,
+                                "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
+
+                        return false;
+                  }
+                  default:
+                  case -1: {
+                        String msg = "That didn't work.";
+                        FxNotify.notificationError("", " Hmmmm! " + msg, Pos.CENTER, 4,
+                                "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
+                        return false;
                   }
             }
-
       }
 
       /**
@@ -241,6 +278,14 @@ public class Auth {
        * Security, Privacy, Account Create, and Log-in section of the FlashMonkey Developer
        * Document.
        *
+       * * Because Auto is running on a seperate thread, and there are user inter-actions that
+       *        * MAY need to occur, we set them on a Platform.runLater() based upon the response from
+       *        * the ValidatorActionSwitch. However!!! there may be a niche response that needs to be
+       *        * hanlded outside of the validator action switch. Scenes and Panes, should be after the
+       *        * validator action switch. Not in it.
+       *        * @TODO move actions outside of validtorActionSwitch and handle them by the calling method.
+       *                      specifically move createUserRemote!!!
+       *
        * @param pw       ..
        * @param email    ..
        * @param formName ..
@@ -264,6 +309,8 @@ public class Auth {
                               createUserLocalNot(pw, email);
                               return true;
                         } else {
+                              // @TODO move actions outside of validtorActionSwitch and handle them by the calling method.
+                                          // specifically move createUserRemote!!!
                               String errorMessage = "Your user does not exist. Please create an account.";
                               notifyError(errorMessage);
                               showCreateUserLocal();
@@ -274,13 +321,16 @@ public class Auth {
                   // at remote.
                   case 20: {
                         if (formName.equals("signup")) {
+                              // User does not exist anywhere.
                               saveAction(pw, email);
-                              // Sets userCreated
-                              createUserRemote(email);
-                              return false;
+                              // determine if user is in the appRequest table and
+                              // if true create them, if not then use email code confirmation method.
+                              return createNewUserRemote(email, pw);
                         } else {
                               // Attempted to sign-in and user does
                               // not exist.
+                              // @TODO move actions outside of validtorActionSwitch and handle them by the calling method.
+                                          // specifically move createUserRemote!!!
                               String errorMessage = "We didn't find your user. Please create an account.";
                               notifyError(errorMessage);
                               showCreateUserLocal();
@@ -317,6 +367,7 @@ public class Auth {
                         // Moved to here from 80 on 12 Jan 2022
                         if (formName.equals("signup")) {
                               // request to create user at remote. Sets userCreated
+                              // @TODO move actions outside of validtorActionSwitch and handle them by the calling method.// specifically move createUserRemote!!!
                               createUserRemote(email);
                               return false;
                         } else {
@@ -333,7 +384,7 @@ public class Auth {
 
       // **** HELPER METHODS **** //
       private static void notifyError(String errorMessage) {
-            FxNotify.notification("", " Ooops! " + errorMessage, Pos.CENTER, 10,
+            FxNotify.notificationError("", " Ooops! " + errorMessage, Pos.CENTER, 10,
                 "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 

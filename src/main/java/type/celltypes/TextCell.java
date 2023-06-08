@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2022. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2023. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * DISCLAIMER OF WARRANTY.
  *
@@ -38,15 +38,7 @@ public class TextCell {
       /**
        * Default constructor
        */
-      public TextCell() {
-            textCellVbox = new VBox();
-            textArea = new TextArea();
-            textCellVbox.setPadding(new Insets(6, 6, 6, 6));
-            textCellVbox.setAlignment(Pos.BOTTOM_LEFT);
-            textArea.setWrapText(true);
-            textArea.setEditable(false);
-            textCellVbox.getChildren().add(textArea);
-      }
+      public TextCell() { /* empty */ }
 
       /**
        * Only used by Create Edit.
@@ -86,30 +78,21 @@ public class TextCell {
             // settings.
             textArea.setPrefSize(cellWd, ht);
             textCellVbox.setPrefSize(cellWd, ht);
-            textCellVbox.setStyle("-fx-background-color: white; -fx-border-radius: 2; -fx-background-radius: 2");
-//            textArea.setStyle("-fx-background-color: white; -fx-border-radius: 3; -fx-background-radius: 3");
+            textCellVbox.setStyle("-fx-background-color: WHITE; -fx-border-radius: 2; -fx-background-radius: 2");
             textArea.setWrapText(true);
             textArea.setEditable(false);
+            textCellVbox.setPadding(new Insets(6, 6, 6, 6));
+            textCellVbox.setAlignment(Pos.BOTTOM_LEFT);
             if ( txt.isEmpty() ) {
                   textArea.setPromptText(prompt);
             } else {
                   textArea.setText(txt);
             }
+            textArea.setStyle("-fx-background-color: WHITE");
+            textArea.setWrapText(true);
+            textArea.setEditable(false);
 
             textCellVbox.getChildren().add(textArea);
-//            if (ReadFlash.getInstance().getMasterBPane() != null) {
-//                  // LISTENER for section height
-//                  ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, oldval, newVal) -> {
-//                        double bottomPaneHt = SceneCntl.getBottomHt();
-//                        if (isEqual) {
-//                              textArea.setMinHeight((newVal.doubleValue() - bottomPaneHt) / numSections);
-//                              textArea.setMaxHeight((newVal.doubleValue() - bottomPaneHt) / numSections);
-//                        } else {
-//                              textArea.setMinHeight((newVal.doubleValue() - bottomPaneHt) - otherHt);
-//                              textArea.setMaxHeight((newVal.doubleValue() - bottomPaneHt) - otherHt);
-//                        }
-//                  });
-//            }
 
             return textCellVbox;
       }

@@ -1,5 +1,7 @@
 package forms.utility;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -18,6 +20,7 @@ public class FirstDescriptor {
       private StringProperty siFirstName = new SimpleStringProperty("");
       private StringProperty siOrigEmail = new SimpleStringProperty("");
       private StringProperty siAge = new SimpleStringProperty("");
+      private BooleanProperty acceptEULAAgreement = new SimpleBooleanProperty(false);
 
       /**
        * No args constructor
@@ -55,6 +58,12 @@ public class FirstDescriptor {
       }
 
 
+
+      public BooleanProperty getAcceptEULAProperty() {
+            return acceptEULAAgreement;
+      }
+
+
       /**
        * SignIn and SignUp forms
        * related
@@ -89,5 +98,6 @@ public class FirstDescriptor {
             siFirstName = new SimpleStringProperty("");
             siOrigEmail = new SimpleStringProperty("");
             siAge = new SimpleStringProperty("");
+            acceptEULAAgreement = new SimpleBooleanProperty(false);
       }
 }

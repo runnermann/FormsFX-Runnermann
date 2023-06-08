@@ -63,7 +63,7 @@ public class ConfirmationModel {
                       "\nYou may reset the password by clicking\n on \"reset password\" on the sign-in page.";
                   String emojiPath = "image/Flash_hmm_75.png";
 
-                  FxNotify.notification("Ouch!", message, Pos.CENTER, 5,
+                  FxNotify.notificationError("Ouch!", message, Pos.CENTER, 5,
                       emojiPath, FlashMonkeyMain.getPrimaryWindow());
             }
             createForm();
@@ -148,7 +148,7 @@ public class ConfirmationModel {
 
       // **** HELPER METHODS **** //
       private void notifyError(String errorMessage) {
-            FxNotify.notification("", " Ooops! " + errorMessage, Pos.CENTER, 8,
+            FxNotify.notificationError("", " Ooops! " + errorMessage, Pos.CENTER, 8,
                 "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 }

@@ -1,6 +1,23 @@
 package fileops;
 
-public interface BaseInterface {
+public interface BaseInterface<T extends BaseInterface> {
+
+
+      /**
+       * <p>IMPORTANT!!! Implement this method</p>
+       * <p>Check if This singleton class has been instantiated before calling
+       *        a method for verifying state. No need to instantiate
+       *        the implemented Class to verify if it exists.</p>
+       * <pre>
+       *     Should look similar to
+       *     public static boolean instanceExists() {
+       *             return CLASS_INSTANCE != null;
+       *       }
+       * </pre>
+       *
+       * @return true if the CLASS_INSTANCE exists.
+       */
+
 
       /**
        * Deck save action for this class that is called when FlashMonkey main stage

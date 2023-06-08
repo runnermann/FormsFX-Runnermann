@@ -98,7 +98,7 @@ public class S3GetObjs {
                         LOGGER.debug("response body: {}", sURL);  // signedUrl
                         File file = new File(pathName);
                         if (!file.exists()) {
-                              FlashCardOps.getInstance().getDeckFolder().mkdirs();
+                              FlashCardOps.getInstance().getDecksFolder().mkdirs();
                               boolean bool = file.createNewFile();
                               LOGGER.debug("File was created for new file in S3getObjs: <{}>", bool);
                         }

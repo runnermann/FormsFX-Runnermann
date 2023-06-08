@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import flashmonkey.FlashCardMM;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import uicontrols.ButtoniKon;
@@ -47,10 +48,23 @@ public class TurninVideo extends TestTypeBase implements GenericTestType<TurninV
             return 0b0000000001000000;
       }
 
+      /**
+       * Return the time until the answer
+       * was clicked. If answer was not clicked
+       * e.g. another button was clicked,
+       * this time should not be stored.
+       *
+       * @return
+       */
+      @Override
+      public int getSeconds() {
+            return 0;
+      }
+
 
       @Override
-      public char getCardLayout() {
-            return 'D'; // double horizontal
+      public CardLayout getCardLayout() {
+            return CardLayout.DOUBLE_HORIZ; // double horizontal
       }
 
       @Override

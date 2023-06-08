@@ -470,7 +470,6 @@ public enum Operator implements OperatorInterface {
             return ansComponents.poll();
       }
 
-
       @Override
       public boolean isUnaryOp() {
             return false;
@@ -485,4 +484,20 @@ public enum Operator implements OperatorInterface {
       public String getStrExpr(String x, String y, OperatorInterface op) {
             return x + " " + op + " " + y;
       }
+
+      @Override
+      public boolean isOpenEnclosure() {
+            return false;
+      }
+
+      @Override
+      public boolean isCloseEnclosure() {
+            return false;
+      }
+
+      @Override
+      public boolean isMatch(char operatorSymbol) {
+            return false;
+      }
+
 }

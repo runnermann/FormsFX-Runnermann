@@ -10,6 +10,8 @@ import java.io.Serializable;
 /*** IMPORTS ***/
 import flashmonkey.FlashMonkeyMain;
 import flashmonkey.Question;
+import type.celltypes.CellLayout;
+import type.celltypes.SingleCellType;
 
 /**
  * @author Lowell Stadelman
@@ -20,7 +22,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
       /**
        * VARIABLES
        **/
-      private char qType;
+      private CellLayout qType;
       // media files
       private String[] qFiles;
 
@@ -29,7 +31,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
        **/
       public QuestionMM() {
             super();
-            this.qType = 't';
+            this.qType = SingleCellType.TEXT;
       }
 
 
@@ -37,7 +39,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
        * FULL CONSTRUCTOR
        **/
       //public QuestionMM(String q, int type, String fileName)
-      public QuestionMM(String q, char type, String[] fileAry) {
+      public QuestionMM(String q, CellLayout type, String[] fileAry) {
             super(q);
             this.qType = type;
             setQFiles(fileAry);
@@ -65,7 +67,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
        * SETTERS
        **/
 
-      public void setQType(char type) {
+      public void setQType(CellLayout type) {
             this.qType = type;
       }
 
@@ -74,7 +76,6 @@ public class QuestionMM extends Question implements Serializable, Comparable {
                   this.qFiles = new String[files.length];
                   for (int i = 0; i < files.length; i++) {
                         this.qFiles[i] = files[i];
-                        //System.out.println(this.qFiles[i]);
                   }
             }
       }
@@ -105,7 +106,7 @@ public class QuestionMM extends Question implements Serializable, Comparable {
        *
        * @return returns the media type
        */
-      public char getQType() {
+      public CellLayout getQType() {
             return this.qType;
       }
 
@@ -128,6 +129,4 @@ public class QuestionMM extends Question implements Serializable, Comparable {
                 + "\n\t qFiles  = " + qFil;
 
       }
-
-
 }

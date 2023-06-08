@@ -54,7 +54,7 @@ public class SubscriptCancelPane extends SimpleFormParentPane {
             setFormTitle("CANCEL SUBSCRIPTION");
             setMessageLabel("",
                 "We are sorry to see you go.",
-                "These are some important",
+                "Here are some important",
                 "considerations:",
                 "",
                 "1. You will lose any",

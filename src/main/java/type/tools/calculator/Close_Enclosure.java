@@ -4,6 +4,9 @@ import queue.ArrayQueue;
 
 import java.util.Stack;
 
+/**
+ * An operator that is the container close such as a close bracket
+ */
 public enum Close_Enclosure implements OperatorInterface {
 
       /**
@@ -32,7 +35,7 @@ public enum Close_Enclosure implements OperatorInterface {
             @Override
             public void stackAction(Object previous, ExpNode notUsed, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
 
-                  super.stackAction(previous, notUsed, outQueue, opStack, index);
+                  super.stackAction(previous, notUsed, outQueue, opStack, index); // Using enum stackAction???
                   ExpNode exp = new ExpNode(Operator.ABS, " abs ", index);
                   outQueue.offer(exp);
             }
@@ -104,11 +107,26 @@ public enum Close_Enclosure implements OperatorInterface {
             return false;
       }
 
+      @Override
+      public boolean isOpenEnclosure() {
+            return false;
+      }
+
+      @Override
+      public boolean isCloseEnclosure() {
+            return true;
+      }
+
       // Not used.
       public double execute(ExpNode exp, double x, double value) {
             System.err.println("ERROR: Called execute() in Close_Enclosure\n");
             // not used
             return 0.77;
+      }
+
+      @Override
+      public boolean isMatch(char operatorSymbol) {
+            return false;
       }
 
 }

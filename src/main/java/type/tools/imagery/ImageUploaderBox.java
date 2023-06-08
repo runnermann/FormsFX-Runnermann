@@ -1,16 +1,21 @@
 package type.tools.imagery;
 
+import authcrypt.UserData;
 import fileops.CloudOps;
 import fileops.DirectoryMgr;
 import fileops.utility.Utility;
 import flashmonkey.FlashCardOps;
+import uicontrols.SceneCntl;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
-import uicontrols.SceneCntl;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,15 +37,19 @@ import java.util.concurrent.atomic.AtomicReference;
  * when snapShot(...) is called. </p>
  */
 public class ImageUploaderBox {
+      public static final char DECK_IMG = 'p';
+      public static final char AVATAR_IMG = 'a';
 
       private VBox uploaderBox;// = new VBox();
       private DragNDrop dragDrop; // = new DragNDrop();
       private ImageView iView;// = new ImageView();
       private int wd;
       private int ht;
-      private boolean isNewImgName;
+      private BooleanProperty isNewImgName;
 //      private boolean hasImage;
       private String imgName;
+//      private BooleanProperty filenameChangedProperty;
+
 
       /**
        * No args constructor. Sets the instance fields for this class.
@@ -49,64 +58,90 @@ public class ImageUploaderBox {
       public ImageUploaderBox() {
             this.uploaderBox = new VBox();
             this.iView = new ImageView();
+            this.isNewImgName = new SimpleBooleanProperty(false);
             dragDrop = new DragNDrop();
-            init();
+
       }
 
       public VBox getVBox() {
             return this.uploaderBox;
       }
 
-      private void init() {
-            //verify if there is already an image
-            // and if so, set it.
-            setExistingImage();
-            dragDrop.dndOperations(this.uploaderBox, DragNDrop.MKT_IMG);
-            setListener();
+      public ReadOnlyBooleanProperty getIsNewImgNameChangedProperty() {
+            return isNewImgName;
       }
 
-      private void setExistingImage() {
-            String mediaPath = DirectoryMgr.getMediaPath('p');
+      /**
+       * Initializes the Image Drag and Drop box.
+       * If there is an existing image, will set it into the frame using an underlying method.
+       * @param dirType
+       * @param width
+       * @param height
+       */
+      public void init(char dirType, int width, int height) {
+            // verify if there is already an image
+            // and if so, set it.
+            setExistingImage(dirType, width, height);
+            dragDrop.dndOperations(this.uploaderBox, dirType);
+            setListener(dirType);
+      }
+
+      private void setExistingImage(char dir, int width, int height) {
+            String mediaPath = DirectoryMgr.getMediaPath(dir);
             File path = new File(mediaPath);
             if(path.exists()) {
-                  // check the files in the directory if they match the
-                  // existing name (-) the mime/ending.
-                  String s = FlashCardOps.getInstance().getDeckFileName();
-                  s = s.substring(0, s.length() - 4);
-                  // blank spaces do not work when fetching from s3
-                  // convert blanks to underscore.
-                  s = s.replaceAll(" ", "_");
-                  // get the files from the directory
-                  File[] fileAry = path.listFiles();
+                  if(dir == 'a') {
+                        // Check if there is a file that was downloaded from the
+                        // parent deck.
+                        File[] files = path.listFiles();
+                        if (files.length > 0) {
+                              imgName = files[files.length -1].getName();
+                              //String imgFile = UserData.getUserMD5Hash() + "a.png";
+                              // The trailing forward slash is stripped off
+                              // by File() !!! Add it back in.
+                              String p = path + "/" + imgName;
+                              setImgHelper(p, width, height);
+                              isNewImgName.set(false);
+                        }
+                  }
+                  else {
+                        // Check the files in the directory if they match the
+                        // existing name (-) the mime/ending.
+                        String s = FlashCardOps.getInstance().getDeckFileName();
+                        s = s.substring(0, s.length() - 4);
+                        // blank spaces do not work when fetching from s3
+                        // convert blanks to underscore.
+                        s = s.replaceAll(" ", "_");
+                        // get the files from the directory
+                        File[] fileAry = path.listFiles();
 
-                  for(int i = 0; i < fileAry.length; i++) {
-                        String imgFile = fileAry[i].getName();
-                        // remove mime and the bucket char, plus dot "." = 5.
-                        String temp = imgFile.substring(0, imgFile.length() - 5);
-                        if(temp.equals(s)) {
-                              imgHelper(fileAry[i].getPath());
-                              //iView.setImage(new Image("File:" + fileAry[i], true));
-                              isNewImgName = false;
-                              imgName = imgFile;
-                              //hasImage = true;
+                        for (int i = 0; i < fileAry.length; i++) {
+                              String imgFile = fileAry[i].getName();
+                              // remove mime and the bucket char, plus dot "." = 5.
+                              String temp = imgFile.substring(0, imgFile.length() - 5);
+                              if (temp.equals(s)) {
+                                    setImgHelper(fileAry[i].getPath(), width, height);
+                                    isNewImgName.set(false);
+                                    imgName = imgFile;
+                              }
                         }
                   }
             }
       }
 
-      private void imgHelper(String urlStr) {
-            wd = (int) Math.round(SceneCntl.getConsumerPaneWd() * .38);
-            ht = (int) Math.round(wd * .5625);
+      private void setImgHelper(String urlStr, int width, int height) {
+            wd = width; //(int) Math.round(SceneCntl.getConsumerPaneWd() * .38);
+            ht = height; //(int) Math.round(wd * .5625);
             // 16:9 ratio
             Rectangle2D viewPort = new Rectangle2D(0,0, wd, ht);
 
             Image deckImg = new Image("File:" + urlStr,
-                wd,
-                -1,
-                true,
-                true,
-                true
-            );
+                          wd,
+                          -1,
+                          true,
+                          true,
+                          true
+                  );
 
             iView.setImage(deckImg);
             iView.setViewport(viewPort);
@@ -120,13 +155,13 @@ public class ImageUploaderBox {
       }
 
 
-      public void setListener() {
+      public void setListener(char dir) {
             dragDrop.getMediaURLProperty().addListener((obj, old, changed) -> {
                   if( ! old.equals(changed)) {
-                        iView = deckImageZoomPan(changed);
+                        iView = deckImageZoomPan(dir, changed);
                         uploaderBox.getChildren().clear();
                         uploaderBox.getChildren().add(iView);
-                        isNewImgName = true;
+                        isNewImgName.set(true);
                   }
             });
 
@@ -135,9 +170,14 @@ public class ImageUploaderBox {
             });
       }
 
-      private ImageView deckImageZoomPan(String urlStr) {
-            wd = (int) Math.round(SceneCntl.getConsumerPaneWd() * .38);
-            ht = (int) Math.round(wd * .5625);
+      private ImageView deckImageZoomPan(char dir, String urlStr) {
+            if(dir == 'p') {
+                  wd = (int) Math.round(SceneCntl.getConsumerPaneWd() * .38);
+                  ht = (int) Math.round(wd * .5625);
+            } else {
+                  wd = 270;
+                  ht = 270;
+            }
             // 16:9 ratio
             Rectangle2D viewPort = new Rectangle2D(0,0, wd, ht);
 
@@ -171,7 +211,7 @@ public class ImageUploaderBox {
        * @param type 'a' for avatar, 'p' for the PUBLIC deck descript image.
        */
       public void snapShot(char type) {
-            if(isNewImgName) {
+            if(isNewImgName.get()) {
                   WritableImage writableImage = new WritableImage(wd, ht);
                   SnapshotParameters params = new SnapshotParameters();
                   Image img = uploaderBox.snapshot(params, writableImage);
@@ -190,11 +230,10 @@ public class ImageUploaderBox {
        */
       private void sendAndCheck(char bucket) {
             AtomicInteger count = new AtomicInteger(); // increased to 5, for bad networks.
-            //     AtomicBoolean bool = new AtomicBoolean(false);
             if (Utility.isConnected()) {
                   ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
                   String[] uploads = new String[1];
-                  uploads[0] = dragDrop.getMediaNameProperty().get();// mediaMergeUnique(editors.EDITOR_U.getMediaNameArray(), editors.EDITOR_L.getMediaNameArray());
+                  uploads[0] = dragDrop.getMediaNameProperty().get();
                   Runnable task = () -> {
                         sendMedia(uploads, bucket);
                         try {

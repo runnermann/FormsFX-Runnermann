@@ -18,7 +18,6 @@ import javafx.stage.Stage;
 import media.sound.SoundEffects;
 
 
-
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,10 +29,6 @@ public class FMAlerts {
 
       private static Alert alert;
 
-//      public final static String MISSING_DELETE = "It appears that the question or answer\n"
-//          + "area's are incomplete. If you\n"
-//          + "continue this card will be deleted.\n\n"
-//          + "Are you sure you want to delete this card?";
 
       public final static String MISSING_ANSWER = "There is no content in the answer.\n\n"
           + "To save it anyway, click save.\n"
@@ -47,10 +42,6 @@ public class FMAlerts {
           + "\n\nDELETE THIS CARD?" +
           "\n\n \"Cancel\" to go back and set it.";
 
-
-      public final static String NO_DATA = "There is no data to save.\n"
-          + " If you are finished, click quit.";
-
       public final static String CREATE_ONLINE = "Hey! \nYou are about to create an online account. "
           + "This will allow you to:  synchronize your learning materials, share with friends, " +
           "become a creator, and find resources created by your classmates. ";
@@ -58,7 +49,7 @@ public class FMAlerts {
       public final static String JOIN_OR_FAIL =
           "\nSTART EARNING FROM YOUR STUDY MATERIALS" +
           "\n\n - Earn knowledge credibility to show to job recruiters" +
-          "\n - Earn cash" +
+          "\n - Earn pay" +
               "\n\t - get 100% of what you earn" +
               "\n\t - only minor credit card fees and taxes are subtracted" +
           "\n\n - Click OK to begin";
@@ -68,17 +59,6 @@ public class FMAlerts {
             /* empty constructor */
       }
 
-      public void purchaseWindow(Pane pane) {
-            alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Purchase Pane");
-            alert.setResizable(true);
-            alert.setHeight(690);
-            alert.setWidth(460);
-            //alert.getDialogPane().contentTextProperty().toString();//   setStyle(" -fx-text-fill: #FFFFFF");
-            alert.getDialogPane().setStyle(" -fx-background-color: " + UIColors.BACKGROUND_BLUE);
-            alert.getDialogPane().getChildren().add(pane);
-            alert.show();
-      }
 
       /**
        * Single button choice popup message box.
@@ -101,7 +81,7 @@ public class FMAlerts {
             alert.setGraphic(emojiView);
             alert.setHeight(190);
             alert.setWidth(200);
-            alert.getDialogPane().contentTextProperty().toString();//   setStyle(" -fx-text-fill: #FFFFFF");
+            alert.getDialogPane().contentTextProperty().toString();
             alert.getDialogPane().setStyle(" -fx-background-color: " + UIColors.BACKGROUND_BLUE);
             SoundEffects.ATTENTION.play();
 
@@ -119,20 +99,19 @@ public class FMAlerts {
             return bool.get();
       }
 
-
-      public void noDataAlert(String alertMsg) {
-            alert = new Alert(Alert.AlertType.NONE);
-            alert.setTitle("No data to save.");
+      public void mathErrorAlert(String title, Node node) {
+            alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(title);
             alert.setHeaderText(null);
-            alert.setContentText(alertMsg);
-            SoundEffects.ATTENTION.play();
-            ImageView sunglasses = new ImageView("emojis/Flash_hmm_75.png");
-            alert.setGraphic(sunglasses);
-            alert.setHeight(190);
-            alert.setWidth(200);
-            alert.getDialogPane().setStyle("-fx-background-color: " + UIColors.BACKGROUND_ORANGE);
-            alert.show();
+            // Set a pane into the dialogue
+            alert.getDialogPane().setContent(node);
+
+            alert.setWidth(180);
+            SoundEffects.ERROR.play();
+
+            Optional<ButtonType> option = alert.showAndWait();
       }
+
 
       public void sessionRestartPopup() {
             AtomicBoolean bool = new AtomicBoolean(false);
@@ -194,12 +173,14 @@ public class FMAlerts {
                         FlashMonkeyMain.showSignInPane();
                   }
             });
-
             return bool.get();
+
       }
 
-      public static String COLOR_NORMAL = "alert-dialog";
-      public static String COLOR_WARNING = "warning-dialog";
+
+
+      public static final String COLOR_NORMAL = "alert-dialog";
+      public static final String COLOR_WARNING = "warning-dialog";
 
       /**
        * Provides a popup alert with two button options. If the user clicks ok, returns a true
@@ -397,6 +378,7 @@ public class FMAlerts {
       }
 
       /**
+       * <p>A pre formatted pane to use in alert messages, Not stand alone alerts.</p>
        * The Intro text string that has a heavier font weight. The
        * Center message with a normal font and weight. The
        * Call to action or lower message with a heavier font
@@ -423,6 +405,24 @@ public class FMAlerts {
 
             return box;
       }
+
+      public VBox alertPane(String topStr, HBox expBox) {
+            //String topStyle = "-fx-font-family: Arial; -fx-font-size: 24px; -fx-font-weight: 800; -fx-padding: 0 0 0 0; -fx-text-alignment: CENTER;";
+            VBox box = new VBox(20);
+
+            Label top = new Label(topStr);
+            //top.setStyle(topStyle);
+            top.setId("label24BldCtr");
+
+            //Label center = new Label(message);
+            //center.setStyle("-fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: 600;");
+
+            box.setAlignment(Pos.TOP_CENTER);
+            box.getChildren().addAll(top, expBox);
+
+            return box;
+      }
+
 
       @FMAnnotations.DoNotDeployMethod
       public static boolean notificationIsShowing() {

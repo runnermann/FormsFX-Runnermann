@@ -69,7 +69,7 @@ public class FMToolTip {
 
       // Flag if there is an FMToolTip visible
       private static boolean isVisible;
-      private final boolean showing = false;
+    private final boolean showing = false;
 
       /***************************************************************************
        *                                                                         *

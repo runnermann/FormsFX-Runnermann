@@ -5,8 +5,13 @@ import campaign.db.DBInsert;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import com.dlsc.formsfx.view.util.ViewMixin;
 
+import fileops.VertxLink;
 import flashmonkey.FlashMonkeyMain;
 import flashmonkey.Timer;
+import forms.utility.FirstDescriptor;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -14,6 +19,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
+import media.sound.SoundEffects;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -21,7 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 public class SignUpPane extends Pane implements ViewMixin {
       //private static final Logger LOGGER = LoggerFactory.getLogger(SignUpPane.class);
       // NOTE: EntryFields are created in FormModel
-
       private GridPane signUpPane;
       private Pane spacer;
       private Pane spacer1;
@@ -34,10 +41,10 @@ public class SignUpPane extends Pane implements ViewMixin {
       // Action related
       private Button signUpBtn;
       private Hyperlink signInLink;
+      private Hyperlink eulaLink;
       //FxForm related
       private FormRenderer displayForm;
       private final SignUpModel model;
-
 
 
       public SignUpPane(SignUpModel signUpModel) {
@@ -65,13 +72,13 @@ public class SignUpPane extends Pane implements ViewMixin {
             msgVBox = new VBox();
             // Action related
             signUpBtn = new Button("SIGN UP");
-
             signInLink = new Hyperlink("SIGN IN");
+            eulaLink = new Hyperlink("View EULA Agreement");
             signUpPane = new GridPane();
 
             msgLabel1 = new Label("I just need ");
-            msgLabel2 = new Label("a little information");
-            msgLabel3 = new Label("before we get started.");
+            msgLabel2 = new Label("a bit of information");
+            msgLabel3 = new Label("to get started.");
 
             displayForm = new FormRenderer(model.getFormInstance());
 
@@ -102,7 +109,7 @@ public class SignUpPane extends Pane implements ViewMixin {
        */
       @Override
       public void setupValueChangedListeners() {
-
+            /* stub */
       }
 
       /**
@@ -116,6 +123,11 @@ public class SignUpPane extends Pane implements ViewMixin {
 
             signInLink.setOnAction(e -> {
                   FlashMonkeyMain.showSignInInnerPane();
+            });
+
+            eulaLink.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
+                  FlashMonkeyMain.getWebView(VertxLink.EULA_POLICY.getLink());
             });
       }
 
@@ -148,6 +160,12 @@ public class SignUpPane extends Pane implements ViewMixin {
 
             signInLink.setId("signInHyp");
 
+            eulaLink.setId("signInHyp");
+            eulaLink.setAlignment(Pos.CENTER);
+            HBox eulaBox = new HBox(eulaLink);
+            eulaBox.setAlignment(Pos.CENTER);
+            eulaBox.setPadding(new Insets( -20, 0, 0, 0));
+
             msgVBox.setAlignment(Pos.CENTER);
             signUpHBox.setAlignment(Pos.CENTER);
             signUpHBox.getChildren().add(signUpBtn);
@@ -164,8 +182,9 @@ public class SignUpPane extends Pane implements ViewMixin {
             signUpPane.addRow(0, spacer);
             signUpPane.addRow(1, msgVBox);
             signUpPane.addRow(2, displayForm);
-            signUpPane.addRow(3, signUpHBox);
-            signUpPane.addRow(4, signInHBox);
+            signUpPane.addRow(3, eulaBox);
+            signUpPane.addRow(4, signUpHBox);
+            signUpPane.addRow(5, signInHBox);
             //signUpPane.addRow(5, spacer1);
       }
 

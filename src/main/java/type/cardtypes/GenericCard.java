@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -23,6 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import type.celltypes.AVCell;
 import type.celltypes.CanvasCell;
+import type.celltypes.CellLayout;
 import type.celltypes.TextCell;
 
 /**
@@ -46,14 +47,14 @@ public class GenericCard<T extends GenericCard> {
        * @param aFiles    The file paths for multi-media.
        * @return Returns a Pane.
        */
-      public Pane cardFactory(String qTxt, char upType, String aTxt, char lowerType, char layout, String[] qFiles, String[] aFiles) {
-            switch (layout) {
+      public Pane cardFactory(String qTxt, CellLayout upType, String aTxt, CellLayout lowerType, CardLayout layout, String[] qFiles, String[] aFiles) {
+            switch (layout.get()) {
                   case 'S': // SingleCellCard
                   {
                         SingleCard s = new SingleCard();
                         return s.retrieveCard(qTxt, upType, qFiles);
                   }
-                  case 'D': // two sections stacked vertically
+                  case 'D': // two sections stacked horizontally
                   default: {
                         dhc = new DoubleHorzCard();
                         return dhc.retrieveCard(qTxt, upType, aTxt, lowerType, qFiles, aFiles);

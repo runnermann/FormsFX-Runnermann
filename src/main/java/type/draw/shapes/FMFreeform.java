@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -28,16 +28,19 @@ import java.io.Serializable;
 
 public class FMFreeform //extends GenericShape<FMFreeform> implements Serializable
 {
-      private static final long serialVersionUID = FlashMonkeyMain.VERSION;
+    private static final long serialVersionUID = FlashMonkeyMain.VERSION;
 
-      // Stroke and fill
-      private double strokeWidth;
-      private String strokeColor;
-      private String fillColor;
+    // Stroke and fill
+    private double strokeWidth;
+    private String strokeColor;
+    private String fillColor;
 
-      // To set scale
-      //private double origPaneWd;  // depricated
-      //private double origPaneHt;  // depricated
+    // To set scale
+    //private double origPaneWd;  // depricated
+    //private double origPaneHt;  // depricated
+
+
+
 
 
 }

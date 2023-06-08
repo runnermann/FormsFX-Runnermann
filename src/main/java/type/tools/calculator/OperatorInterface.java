@@ -17,4 +17,16 @@ public interface OperatorInterface {
       String getStrExpr(String x, String y, OperatorInterface op);
 
       boolean isUnaryOp();
+
+      boolean isOpenEnclosure();
+
+      boolean isCloseEnclosure();
+
+      /**
+       * For open enclosures, a match would be the
+       * closing enclosure for the same type.
+       * @param operatorSymbol The operator
+       * @return
+       */
+      public boolean isMatch(char operatorSymbol);
 }

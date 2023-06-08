@@ -38,19 +38,18 @@ public class QrCode {
     /**
      * Builds the QR Code and saves it too disk.
      * @param deck_id
-     * @param folder
-     * @param deckFileName
+     * @param pathName
      * @param userName
      * @return
      * @throws WriterException
      * @throws IOException
      */
-    public static String buildDeckQrCode(long deck_id, String folder, String deckFileName, String userName) throws WriterException, IOException {
+    public static String buildSaveDeckQrCode(long deck_id, String pathName, String userName) throws WriterException, IOException {
         // Where we will store the QR image.
-        String pathName = folder + "/" + deckFileName.substring(0, deckFileName.length() - 4) + ".png";
+
 
         // The distributor's version of the deck
-        //String fmVertx = "https://www.flashmonkey.xyz/Q52/FFG415/:" ;
+        //String fmVertx = "https://www.flashmonkey.co/Q52/FFG415/:" ;
         String vertxGet = VertxLink.QRCODE_DECK.getLink() + createDeckFetchString(deck_id, FlashCardOps.getInstance().getDeckLabelName(), userName);
 
         // generate QR code
@@ -67,6 +66,25 @@ public class QrCode {
         return vertxGet;
     }
 
+    public static String createSaveUserQRCode() throws WriterException, IOException {
+        // Where we will store the QR image.
+        String pathName = DirectoryMgr.getMediaPath('z') + "/" + UserData.getFirstName() + "_QRCode.png";
+        String vertxGet = VertxLink.USER_PAGE.getLink() + UserData.getUserMD5Hash();
+
+        // generate QR code
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(vertxGet, BarcodeFormat.QR_CODE, 200, 200);
+
+        // write to file
+        Path p = Paths.get(pathName);
+        File f = new File(pathName);
+        if(!f.exists()) {
+            f.mkdirs();
+        }
+        MatrixToImageWriter.writeToPath(bitMatrix, "png", p);
+        return pathName;
+    }
+
     /**
      * Currently we are using the deck_id to retrieve this deck
      * when a QR code is used. The deck_id and userName unencrypted are
@@ -78,7 +96,7 @@ public class QrCode {
      * @return Returns the following string deck_id-md5Hash-predicessorHash
      */
     public static String createDeckFetchString(Long deck_id, String deckName, String thisUserName) {
-        String md5HashString = hashToHex(thisUserName + deck_id);
+        //String md5HashString = hashToHex(thisUserName + deck_id);
         return deck_id + "";// + "-" + md5HashString;
     }
 
@@ -89,7 +107,7 @@ public class QrCode {
 
         // The distributor's version of the deck
         String fmVertx = VertxLink.QRCODE_PREDCHAIN.getLink() + id +"-" + hex;
-       // System.out.println("Link = " + fmVertx);
+        System.out.println("Link = " + fmVertx);
 
         // generate QR code
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -117,27 +135,29 @@ public class QrCode {
      */
     public static Path buildPredicessorWithImage(int cKeyID, String userEmail, String folder) throws WriterException, IOException {
 
-        String logoPath = "image/logo/blue_flash_bkgd_128.png";
+        // String logoPath = "image/logo/blue_flash_bkgd_128.png";
+        String logoPath = "image/social/Instagram_Glyph_Gradient.jpg";
 
         String hex = FileNaming.hashToHex(userEmail);
         // Where we will store the QR image.
         // String pathName = folder + "/" + id + "-" + hex + ".png";
-        String pathName = folder + "/" + "campaign-" + cKeyID + ".png";
+        String pathName = folder + "/" + "Instagram_FlashMonkeyget-smart.png";
 
         // The distributor's version of the deck
-        String index = "https://www.flashmonkey.xyz";
+        String index = "https://flashmonkey.co";
         String campaign = index + "/Q52/A017BA/:" + cKeyID +"-" + hex;
-        String instagram = "https://www.instagram.com/flashmonkey.get_smart/";
+        String instagram = "https://www.instagram.com/flashmonkeygetsmart/";
         String facebook = "https://www.facebook.com/FlashMonkey-399314090825681/";
 
         // generate QR code
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         //BitMatrix bitMatrix = qrCodeWriter.encode(fmVertx, BarcodeFormat.QR_CODE, 400, 400);
-        BitMatrix bitMatrix = qrCodeWriter.encode(campaign, BarcodeFormat.QR_CODE, 400, 400);
 
-        MatrixToImageConfig conf = new MatrixToImageConfig(0x22276FFF,-15883559); // orange = -761561
+        BitMatrix bitMatrix = qrCodeWriter.encode(instagram, BarcodeFormat.QR_CODE, 400, 400);
+
+    //    MatrixToImageConfig conf = new MatrixToImageConfig(0x22276FFF,-15883559); // orange = -761561
+        MatrixToImageConfig conf = new MatrixToImageConfig();
         BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix, conf);
-        //InputStream is = QrCode.class.getClassLoader().getResourceAsStream(logoPath);
 
         Image overlay = new Image(QrCode.class.getClassLoader().getResourceAsStream(logoPath), 64, 64, true, true);
         BufferedImage overlayImg = SwingFXUtils.fromFXImage(overlay, null);
@@ -149,7 +169,7 @@ public class QrCode {
                 BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) combined.getGraphics();
 
-        g.drawImage(qrImage, 10, 0, null);
+        g.drawImage(qrImage, 0, 0, null);
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
         g.drawImage(overlayImg, xy + 14, xy + 6, null);
 
@@ -168,37 +188,37 @@ public class QrCode {
      * @throws WriterException
      * @throws IOException
      */
-//    public static void main(String[] args) throws WriterException, IOException {
-//        Scanner scan = new Scanner(System.in);
-//        String s = " ";
-//        //System.out.println("Enter email");
-//        //s = scan.nextLine();
-//        System.out.println("Enter origin first name or a short descriptive note: ");
-//        String noteOrName = scan.nextLine();
-//        while( ! noteOrName.equals("q")) {
-//
-//
-//            System.out.println("Enter email address: ");
-//            String email = scan.nextLine();
-//            String[] stAry = {email};
-//
-//            String[] res = DBFetchUnique.PERSON_ID.query(stAry);
-//            String personID = res[0]; // query to get person id on email
-//            // cg_id, fwd_id, person_id, qr_img, expire, visits
-//            // c key id
-//            String[] queryArg = {"2", "1", personID, "'img_link'", "'2024-12-31'", "0", "'" + noteOrName + "'"};
-//            String[] ckAry = DBFetchUnique.CAMPAIGN_GROW_INSERT.query(queryArg);
-//            int cKeyID = Integer.parseInt(ckAry[0]);
-//
-//        UserData.setUserName("flash@flashmonkey.xyz");
-//        String dir = DirectoryMgr.getMediaPath('q');
-//            //Path path = buildPredicessorWithImage(1, "flash@flashmonkey.xyz", dir);
-//        System.out.println("the directory for the QR code: " + dir);
-//            buildPredicessorQRCode(cKeyID, email, dir);
-//
-//            System.out.println("Enter origin first name or a short descriptive note: or Q to quit");
-//            noteOrName = scan.nextLine();
-//        }
+    public static void main(String[] args) throws WriterException, IOException {
+        Scanner scan = new Scanner(System.in);
+        String s = " ";
+
+        System.out.println("Enter origin first name or a short descriptive note: ");
+        String noteOrName = scan.nextLine();
+        while( ! noteOrName.equals("q")) {
+
+            System.out.println("Enter email address: ");
+            String email = scan.nextLine();
+            String[] stAry = {email};
+
+            String[] res = DBFetchUnique.PERSON_ID.query(stAry);
+            String personID = res[0]; // query to get person id on email
+            // cg_id, fwd_id, person_id, qr_img, expire, visits
+            // c key id
+            String[] queryArg = {"2", "1", personID, "'img_link'", "'2024-12-31'", "0", "'" + noteOrName + "'"};
+            String[] ckAry = DBFetchUnique.CAMPAIGN_GROW_INSERT.query(queryArg);
+            int cKeyID = Integer.parseInt(ckAry[0]);
+
+            UserData.setUserName("flash@flashmonkey.xyz");
+            String dir = DirectoryMgr.getMediaPath('q');
+ //           Path path = buildPredicessorWithImage(cKeyID, email, dir);
+ //           Path path = buildPredicessorWithImage(0, email, dir);
+ //           System.out.println("Path: " + path);
+            System.out.println("the directory for the QR code: " + dir);
+            buildPredicessorQRCode(cKeyID, email, dir);
+
+            System.out.println("Enter origin first name or a short descriptive note: or Q to quit");
+            noteOrName = scan.nextLine();
+        }
 
 //        UserData.setUserName("flash@flashmonkey.xyz");
 //        String dir = DirectoryMgr.getMediaPath('q');
@@ -209,7 +229,7 @@ public class QrCode {
 //        //Path path = buildPredicessorQRCode(16, "marissakapp1@gmail.com", dir);
 //
 //        System.out.println(path.toString());
-//    }
+    }
 }
 
 

@@ -46,10 +46,9 @@ public class DeckNamePane extends SimpleFormParentPane {
       public void initializeParts() {
             super.initializeParts();
             setFormTitle("DECK NAME");
-            setMessageLabelStyle("white14");
-            setMessageLabel("Example: \"Calc 203 Estimating Limits Part 1\".",
-                "More information can be provided",
-                "in Create and Edit Mode.");
+            setMessageLabelStyle("white12");
+            setMessageLabel("Name your deck. ",
+                "Example: \"Calc 203 Estimating Limits Part 1\".");
       }
 
       @Override

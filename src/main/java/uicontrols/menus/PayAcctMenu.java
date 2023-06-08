@@ -23,14 +23,14 @@ public class PayAcctMenu extends Menu {
     }
 
     private void setMenu() {
-        label.setText("PAY ACCOUNT MENU");
-        subLabel.setText("save on purchases and become eligible to earn money by subscribing.");
+        label.setText("EARN");
+        subLabel.setText("Save on purchases and become eligible to earn pay.");
 
         // Sign up for advanced and pay system
         Button subsciptBtn = ButtoniKon.getSubscriptStatusButton();
         subsciptBtn.setOnAction(e -> FlashMonkeyMain.getSubscribeWindow());
 
-        Hyperlink howLink = new Hyperlink("How I can earn money on FlashMonkey");
+        Hyperlink howLink = new Hyperlink("How I can earn pay on FlashMonkey");
         howLink.setTextFill(Paint.valueOf("WHITE"));
         howLink.setOnAction(e -> FlashMonkeyMain.getWebView(VertxLink.CANCEL_POLICY.getLink()));
 

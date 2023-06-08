@@ -5,6 +5,7 @@ import com.amazonaws.util.Base64;
 import com.amazonaws.util.BinaryUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fileops.Connect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +26,14 @@ public class Utility {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Utility.class);
       private static final Logger LOGGER = LoggerFactory.getLogger(Utility.class);
       private static boolean allowed = true;
-      private static final String VERTX = "https://www.flashmonkey.xyz";
+      //private static final String VERTX = "https://www.flashmonkey.co";
 
       public static boolean isConnected() {
-            return isConnected(VERTX);
+            return isConnected(Connect.LINK.getLink());
       }
 
       public static void wakeUpVertx() throws IOException {
-            URLConnection con = new URL(VERTX).openConnection();
+            URLConnection con = new URL(Connect.LINK.getLink()).openConnection();
       }
 
       public static boolean isConnected(String url) {

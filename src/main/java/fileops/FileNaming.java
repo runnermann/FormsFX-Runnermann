@@ -131,6 +131,7 @@ public class FileNaming {
       }
 
       public static final String getQRFileName(String deckFileName) {
+            deckFileName = deckFileName.replace(" ", "_");
             return deckFileName.substring(0, deckFileName.length() - 4) + ".png";
       }
 
@@ -150,7 +151,8 @@ public class FileNaming {
       }
 
       private void setMediaFileName(String mediaName, String ending) {
-            this.fileName = mediaName + ending;
+            String temp = mediaName.replaceAll(" ", "_");
+            this.fileName = temp + ending;
       }
 
 
@@ -196,6 +198,12 @@ public class FileNaming {
        */
       public final String getMediaFileName() {
             String temp = fileName.replaceAll(" ", "_");
+            return temp;
+      }
+
+      public final String getQRCloudFileName() {
+            String temp = fileName.replaceAll(" ", "_");
+            temp = "qr" + temp;
             return temp;
       }
 

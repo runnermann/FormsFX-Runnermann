@@ -9,38 +9,42 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import type.celltypes.CellLayout;
 import type.celltypes.GenericCell;
 import type.sectiontype.GenericSection;
+
 
 
 /**
  * @author Lowell Stadelman
  */
-public class DoubleHorzCard extends GenericCard {
-      public HBox qBox = new HBox();
-      public HBox ansBox = new HBox();
+public class DoubleHorzCard extends GenericCard
+{
+    public HBox qBox = new HBox();
+    public HBox ansBox = new HBox();
 
-      //private VBox vBox = new VBox();
-      private GridPane gPane;
+    //private VBox vBox = new VBox();
+    private GridPane gPane;
 
-      //@Override
-      public GridPane retrieveCard(String qTxt, char upperType, String aTxt, char lowerType, String[] qFiles, String[] aFiles) {
-            gPane = new GridPane();
-            gPane.setVgap(2);
+    //@Override
+    public GridPane retrieveCard(String qTxt, CellLayout upperType, String aTxt, CellLayout lowerType, String[] qFiles, String[] aFiles)
+    {
+        gPane = new GridPane();
+        gPane.setVgap(2);
 
-            // IS THIS SHOWING IN THE COMPARISION?
-            GenericSection gs = GenericSection.getInstance();
-            qBox = gs.sectionFactory(qTxt, upperType, 2, true, 0, qFiles);
-            ansBox = gs.sectionFactory(aTxt, lowerType, 2, true, 0, aFiles);
-            ansBox.setAlignment(Pos.CENTER);
+        // IS THIS SHOWING IN THE COMPARISION?
+        GenericSection gs = GenericSection.getInstance();
+        qBox = gs.sectionFactory(qTxt, upperType, 2, true, 0, qFiles);
+        ansBox = gs.sectionFactory(aTxt, lowerType, 2, true, 0, aFiles);
+        ansBox.setAlignment(Pos.CENTER);
 
-            gPane.addRow(2, ansBox);
-            gPane.addRow(1, qBox);
+        gPane.addRow(2, ansBox);
+        gPane.addRow(1, qBox);
 
-            FMTransition.setQRight(FMTransition.transitionFmRight(qBox));
-            FMTransition.setQLeft(FMTransition.transitionFmLeft(qBox));
-            FMTransition.setAWaitTop(FMTransition.waitTransFmTop(ansBox, 0, 300, 350));
+        FMTransition.setQRight( FMTransition.transitionFmRight(qBox));
+        FMTransition.setQLeft( FMTransition.transitionFmLeft(qBox));
+        FMTransition.setAWaitTop( FMTransition.waitTransFmTop(ansBox, 0, 300, 350));
 
-            return gPane;
-      }
+        return gPane;
+    }
 }

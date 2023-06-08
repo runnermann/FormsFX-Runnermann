@@ -2,6 +2,7 @@ package flashmonkey;
 
 import fileops.CloudOps;
 import fileops.FileNaming;
+import type.celltypes.SingleCellType;
 import type.testtypes.MultiChoice;
 
 import java.io.File;
@@ -174,11 +175,11 @@ public class VanillaTextQA {
                 multiChoice.getTestType(),// BitSet testTypes
                 multiChoice.getCardLayout(),// cardLayout
                 qText,                      // questionText
-                't',                 // question Section Layout 'M'
+                SingleCellType.TEXT,                 // question Section Layout 'M'
                 getMediaFiles(),            // String[] of media files
                 aText,                      // answerText
                 cardNum,                    // answerNumber
-                't',                 // answer section layout
+                SingleCellType.TEXT,                 // answer section layout
                 getMediaFiles(),            // String[] of media files
                 new ArrayList<Integer>()    //Arraylist of other correct answers
             );

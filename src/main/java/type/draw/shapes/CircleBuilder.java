@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -19,10 +19,7 @@
 
 package type.draw.shapes;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -237,7 +234,6 @@ public class CircleBuilder extends GenericBuilder<FMCircle, CircleBuilder> {
                         // add shape to gbcopyArrayOfFMShapes
                         gbcopyArrayOfFMShapes.add(fmCirc);
 
-
                         // get the shape from the saved shape
                         Ellipse fxEl = fmCirc.getShape();
 
@@ -248,14 +244,9 @@ public class CircleBuilder extends GenericBuilder<FMCircle, CircleBuilder> {
 
                         // Show the shape in the overlayPane
                         getOverlayPane().getChildren().add(fxEl);
-
-                        // Add the scaled version of the shape in the right pane
-
-
+                        // set shapes in right pane
                         int wd = (int) getOverlayPane().getWidth();
                         int ht = (int) getOverlayPane().getHeight();
-
-                        //getRightPane().getChildren().add( fmCirc.getScaledShape());
                         editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, wd, ht);
 
                         setNewShape(false);

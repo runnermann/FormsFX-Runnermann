@@ -247,8 +247,6 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
       }
 
       public final <T extends Boolean> Section setProfBarProperties(ObservableValue<T> value, Section section) {
-
-            //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("Value: {}", value);
 
             if (value.getValue().equals(false)) {
@@ -327,7 +325,6 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
       private ArrayList<String> getSubSectionsList() {
             return DBFetchMulti.DECK_SUB_SECTIONS.query("notUsed");
       }
-
 
       // *** FORM DATA ***
 

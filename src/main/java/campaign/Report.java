@@ -7,9 +7,7 @@ import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
 import fileops.utility.Utility;
-import flashmonkey.EndGame;
-import flashmonkey.FlashCardOps;
-import flashmonkey.Timer;
+import flashmonkey.*;
 import forms.utility.Alphabet;
 import metadata.DeckMetaData;
 import org.slf4j.Logger;
@@ -44,9 +42,6 @@ public final class Report {
       }
 
       public static synchronized Report getInstance() {
-            //LOGGER.setLevel(Level.DEBUG);
-            //LOGGER.info("getInstance called");
-
             if (CLASS_INSTANCE == null) {
                   CLASS_INSTANCE = new Report();
             }
@@ -71,73 +66,23 @@ public final class Report {
             }
       }
 
-      /**
-       * Call sessionStart() at the beginning of the session
-       * Then call sessionUseTime() at the end.
-       */
-      public void sessionStart() {
-            fmTimer.begin();
-            //LOGGER.info("sessionStart called at: {}" + fmTimer.getBeginTime());
-      }
+
+
+
+      // ********* FORM RELATED ************
+
+
 
       /**
-       * Call sessionUseTime() at the end of a session. Reports to
-       * the table object set in setTable();
-       */
-      public void endSessionTime() {
-            if (connect != null && Utility.isConnected()) {
-                  LOGGER.info("called endSessionTime()");
-
-                  DBConnect db = DBConnect.getInstance();
-                  fmTimer.end();
-                  Long useTime = fmTimer.getTotalTime();
-
-                  //Verify v = new Verify();
-
-                  try {
-                        String userName = UserData.getUserName();
-                        CompletableFuture<QueryResult> future = db.getConnection()
-                            .sendPreparedStatement("INSERT INTO sessions (" +
-                                "uhash, " +
-                                "event_localtime, " +
-                                "createnotes_time, " +
-                                "createtest_time, " +
-                                "qna_usetime, " +
-                                "test_usetime, " +
-                                "total_usetime, " +
-                                "session_score) VALUES ('"
-                                + Alphabet.encrypt(userName != null ? userName : "name was null") + "', '"
-                                + fmTimer.getBeginTime() + "', '"
-                                + fmTimer.getCreateNotesTime() + "', '"
-                                + fmTimer.getCreateTestsTime() + "', '"
-                                + fmTimer.getQnATime() + "', '"
-                                + fmTimer.getTakeTestTime() + "', '"
-                                + useTime + "', '"
-                                + EndGame.getPercentScore() + "')");
-                        future.get();
-                  } catch (ExecutionException e) {
-                        LOGGER.warn("WARNING: I cannot connect! : ExecutionException, DBConnection ERROR, {}" + e.getMessage());
-                        e.printStackTrace();
-                  } catch (InterruptedException e) {
-                        LOGGER.warn("WARNING: InterruptedException, DBConnection ERROR, {}" + e.getMessage());
-                        e.printStackTrace();
-                  } finally {
-                        //connect.disconnect();
-                  }
-
-            } else {
-                  LOGGER.info("endSessionTime(). We are not connected to the DB.  Check network connection.");
-            }
-      }
-
-      /**
-       * Sets metadata to the database. Depending on if the deck exists, this method will
-     * conduct an insert or an update. Returns a long. Negative numbers are an error.
-       * @param metaData ..
-     * @return Returns the deck_id for insert or update and was successful, otherwise returns -99 if the insert failed,
-     * -2 if the update failed.
-       */
-      public long reportDeckMetadata(DeckMetaData metaData) {
+       * Used by DeckMetaModel from form.
+      * Sets metadata to the database. Depending on if the deck exists, this method will
+      * conduct an insert or an update. Returns a long. Negative numbers are an error.
+      * Used by forms.DeckMetaModel
+      * @param metaData ..
+      * @return Returns the deck_id for insert or update and was successful, otherwise returns -99 if the insert failed,
+      * -2 if the update failed.
+      */
+      public long formUpsertDeckMetadata(DeckMetaData metaData) {
             //query DB for username and deckname, get ID, and do update
             long id = queryGetDeckID();
 
@@ -146,24 +91,20 @@ public final class Report {
             if (id == -99) {
                   // item does not exist, do insert
                   LOGGER.debug("result was -99. inserting new row");
-                  return insertDeckMetadata(metaData);
+                  long num = insertDeckMetadata(metaData);
+                  String upsertUserDeckStats = buildUserDeckStatsHelper(num, 0, Timer.getClassInstance().getCreateTimeNonModifiable());
+                  sendQuery(upsertUserDeckStats);
+                  return num;
             } else {
                   // item exists, do update
                   LOGGER.debug("result was " + id + ". updating!");
-                  return updateDeckMetadata(metaData, id) ? id : -2;
+                  long num = updateDeckMetadata(metaData, id) ? id : -2;
+                  if(id != -2) {
+                        String upsertUserDeckStats = buildUserDeckStatsHelper(num, 0, Timer.getClassInstance().getCreateTimeNonModifiable());
+                        sendQuery(upsertUserDeckStats);
+                  }
+                  return num;
             }
-      }
-
-      /**
-       * Updates test metaData, uses same array as
-       * reportDeckMetadata
-       * @param metaDataAry ..
-       */
-      public void reportTestMetaData(HashMap<String, String> metaDataAry) {
-            //query DB for username and deckname, get ID, and do update
-            long id = queryGetDeckID();
-            LOGGER.debug("id: " + id);
-            updateTestMetaData(metaDataAry, id);
       }
 
 
@@ -239,6 +180,7 @@ public final class Report {
                   sbuffer.append(metaObj.getNumStars() + sep);
                   sbuffer.append(metaObj.getDeckImgName() + "')" +
                     " RETURNING deck_id;");
+
                   DBConnect db = DBConnect.getInstance();
 
                   LOGGER.debug(sbuffer.toString());
@@ -352,57 +294,177 @@ public final class Report {
       }
 
 
+
+
+
+
+      // **************** UPDATES NON FORM RELATED **********************
+
+
+
+
+
       /**
-       * Updates DeckMetaData with the Test Score.
-       * Only updates testScore, last date, and increments
-       * session_count to DB
+       *  NOT RELATED TO METADATA NOR STATS
        *
-       * @param map Uses same string as insertDeckMetadata
-       * @param id  ..
-       * @return true if successful
+       * Call sessionUseTime() at the end of a session. Reports to
+       * the sessions table;
        */
-      private boolean updateTestMetaData(HashMap<String, String> map, long id) {
-            AtomicBoolean bool = new AtomicBoolean(false);
-
-            LOGGER.info("updateDeckMetadata sending, ID: {}" + id);
+      public void sendSessionTime() {
             if (connect != null && Utility.isConnected()) {
-
-                  String updateDB = "UPDATE deckMetadata SET" +
-                      " last_date = '" + map.get("last_date") + "'" +
-                      ", session_score = '" + map.get("session_score") + "'" +
-                      ", session_count = session_count+1 " +
-                      " WHERE deck_id = " + id + ";";
-
-                  LOGGER.debug("query: " + updateDB);
+                  LOGGER.info("called sendSessionTime()");
 
                   DBConnect db = DBConnect.getInstance();
 
+                  Long useTime = fmTimer.getFMTotalTime();
 
-                  ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
-                  Runnable task = () -> {
+                  String userHash = UserData.getUserMD5Hash();
+                  String sessionInsert = "INSERT INTO sessions (" +
+                          "uhash, " +
+                          "event_localtime, " +
+                          "createnotes_time, " +
+                          "createtest_time, " +
+                          "qna_usetime, " +
+                          "test_usetime, " +
+                          "total_usetime, " +
+                          "session_score) VALUES ('"
+                          + userHash + "', '"
+                          + fmTimer.getBeginTime() + "', '"
+                          + fmTimer.getCreateNotesTimeNonModifiable() + "', '"
+                          + fmTimer.getCreateTimeNonModifiable() + "', '"
+                          + fmTimer.getQnATime() + "', '"
+                          + fmTimer.getTakeTestTime() + "', '"
+                          + useTime + "', '"
+                          + EndGame.getPercentScore() + "')";
+                  try {
                         CompletableFuture<QueryResult> future = db.getConnection()
-                            .sendPreparedStatement(updateDB);
-                        try {
-                              future.get();
-                        } catch (InterruptedException e) {
-                              LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
-                              e.printStackTrace();
-                        } catch (ExecutionException e) {
-                              LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
-                              e.printStackTrace();
-                        }
-                        bool.set(true);
-                        scheduledExecutor.shutdown();
-                  };
-                  scheduledExecutor.execute(task);
+                                .sendPreparedStatement(sessionInsert);
+                        future.get();
+
+                  } catch (ExecutionException e) {
+                        LOGGER.warn("WARNING: I cannot connect! : ExecutionException, DBConnection ERROR, {}" + e.getMessage());
+                        e.printStackTrace();
+                  } catch (InterruptedException e) {
+                        LOGGER.warn("WARNING: InterruptedException, DBConnection ERROR, {}" + e.getMessage());
+                        e.printStackTrace();
+                  } finally {
+                        //connect.disconnect();
+                  }
 
             } else {
-                  LOGGER.info(" updateDeckMetadata() DB is not connected. Check network connection.");
+                  LOGGER.info("sendSessionTime(). We are not connected to the DB.  Check network connection.");
             }
-            return bool.get();
+      }
+
+
+
+
+      // ******** TESTS AND STUDY RELATED *********
+
+
+
+
+      /**
+       * Updates test metaData, uses same array as
+       * formUpsertDeckMetadata
+       * @param metaDataAry ..
+       */
+      public void reportTestMetaData(HashMap<String, String> metaDataAry) {
+            //query DB for username and deckname, get ID, and do update
+            long id = queryGetDeckID();
+            String statement = buildQueryReportTestMetadata(metaDataAry, id);
+            sendQuery(statement);
       }
 
       /**
+       * Updates the deckMetadata and user test stats.
+       * @param map Metadata
+       * @param id The deck id.
+       * @return The query.
+       */
+      private String buildQueryReportTestMetadata(HashMap<String, String> map, long id) {
+            String updateMetadata = "UPDATE deckMetadata SET" +
+                    " last_date = '" + System.currentTimeMillis() + "'" +
+                    ", session_score = '" + map.get("session_score") + "'" +
+                    ", session_count = session_count+1 " +
+                    " WHERE deck_id = " + id + ";";
+            String upsertUserDeckStats = buildUserDeckStatsHelper(id, fmTimer.getTakeTestTime(), 0);
+            String statement = "START TRANSACTION;\n" +
+                    updateMetadata + "\n" +
+                    upsertUserDeckStats + "\n" +
+                    "COMMIT;";
+
+            return statement;
+      }
+
+
+
+      // ******* CREATE EDIT RELATED ********
+
+
+
+      public void reportCreateMetaData(HashMap<String, String> map, long id) {
+            String inventoryUpdate = buildDeckInventoryUpdateHelper(map, id);
+            String upsertUserDeckStats = buildUserDeckStatsHelper(id, 0, fmTimer.getCreateTimeNonModifiable());
+            String statement = "START TRANSACTION;\n" +
+                    inventoryUpdate + "\n" +
+                    upsertUserDeckStats + "\n" +
+                    "COMMIT;";
+
+            sendQuery(statement);
+      }
+
+
+      private String buildDeckInventoryUpdateHelper(HashMap<String, String> map, long id) {
+            String updateMetadata = "UPDATE deckMetadata SET" +
+                    " last_date = '" + System.currentTimeMillis() + "'" +
+                    ", session_count = session_count+1 " +
+                    ", num_cards = " + map.get("num_cards") +
+                    ", num_imgs = " + map.get("num_imgs") +
+                    ", num_video = " + map.get("num_video") +
+                    ", num_audio = " + map.get("num_audio") +
+                    " WHERE deck_id = " + id + ";";
+
+            return updateMetadata;
+      }
+
+
+      private String buildUserDeckStatsHelper(long id, long testTime, long createTime) {
+            String userHash = UserData.getUserMD5Hash();
+            String upsertUserDeckStats = "INSERT INTO public.UserDeckStats AS t1 " +
+                    " VALUES('" + UserData.getUserMD5Hash() + "', '"
+                    + id + "', '"
+                    + 0 + "', '" // no amount here
+                    + createTime + "', '"
+                    + fmTimer.getTakeTestTime() + "')"
+                    + " ON CONFLICT ON CONSTRAINT userdeckstats_deck_id_user_hash_key" +
+                    " DO UPDATE SET"
+                    + " create_time = t1.create_time +" + createTime // no create time here
+                    + ", review_test_time = t1.review_test_time +" + testTime + ";";
+            return upsertUserDeckStats;
+      }
+
+
+
+      // ********** GENERAL USE ************
+
+
+
+      /**
+       * <p>1. If this is a child deck, does it's data exist?
+       *    - If the child's data exists, use the child's data.
+       *    - If not then use the parents data.</p>
+       * <p>2. If this is a child deck, does the parent allow shared earnings?
+       *    - If the parent allows shared earnings, then set the the shared earnings
+       *    to true. And set sell to true.
+       *    - If not, then set the sell and shared values to false. </p>
+       */
+//      public String getData() {
+//
+//      }
+
+
+       /**
        * returns the deck_id if successful. If not returns
        * -99l;
        *
@@ -412,11 +474,9 @@ public final class Report {
             long id = -99;
             String idQuery = "SELECT deck_id FROM deckMetadata"
                 + " WHERE user_email = " + "'" + Alphabet.encrypt(UserData.getUserName()) + "'"
-                + " AND deck_name = " + "'" + FlashCardOps.getInstance().getDeckLabelName() + "'"
-                + ";";
+                + " AND deck_name = " + "'" + FlashCardOps.getInstance().getDeckLabelName() + "';";
 
-
-            LOGGER.info("Report query request: " + idQuery);
+            System.out.println("deck id query = " + idQuery);
 
             DBConnect db = DBConnect.getInstance();
 
@@ -441,5 +501,46 @@ public final class Report {
             }
 
             return id;
+      }
+
+      /**
+       * Updates DeckMetaData with the Test Score.
+       * Only updates testScore, last date, and increments
+       * session_count to DB
+       *
+       * @param statement query to be sent
+       * @return true if successful
+       */
+      private boolean sendQuery(String statement) {
+            AtomicBoolean bool = new AtomicBoolean(false);
+
+            if (connect != null && Utility.isConnected()) {
+
+                  System.out.println("Statement: " + statement);
+
+                  DBConnect db = DBConnect.getInstance();
+
+                  ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+                  Runnable task = () -> {
+                        CompletableFuture<QueryResult> future1 = db.getConnection()
+                                .sendQuery(statement);
+                        try {
+                              future1.get();
+                        } catch (InterruptedException e) {
+                              LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
+                              e.printStackTrace();
+                        } catch (ExecutionException e) {
+                              LOGGER.warn("WARNING: DBConnection ERROR, {}\n{}" + e.getMessage()); //, e.getStackTrace());
+                              e.printStackTrace();
+                        }
+                        bool.set(true);
+                        scheduledExecutor.shutdown();
+                  };
+                  scheduledExecutor.execute(task);
+
+            } else {
+                  LOGGER.info(" updateDeckMetadata() DB is not connected. Check network connection.");
+            }
+            return bool.get();
       }
 }

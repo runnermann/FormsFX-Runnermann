@@ -102,7 +102,7 @@ public class DeckSearchModel extends ModelParent {
             if (dm.isEmpty()) {
                   String message = " I was unable to find anything for that search." +
                       "\nTry a broader search or use different information.";
-                  FxNotify.notification("Oooph!", message, Pos.CENTER, 10,
+                  FxNotify.notificationError("Oooph!", message, Pos.CENTER, 10,
                       "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getActionWindow());
             } else {
                   dm.build();

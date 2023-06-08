@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -20,17 +20,16 @@
 package type.celleditors;
 
 import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import fileops.*;
-import fileops.utility.FileExtension;
-import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.*;
-import javafx.scene.media.MediaPlayer;
 import media.sound.SoundEffects;
 import org.slf4j.Logger;
-import type.celltypes.MediaPlayerInterface;
+import type.DnDInterface;
+import type.celltypes.*;
 import type.draw.DrawObj;
 import type.draw.shapes.FMRectangle;
 //import FMTriangle;
@@ -40,8 +39,6 @@ import flashmonkey.*;
 import javafx.scene.layout.*;
 //import org.kordamp.ikonli.entypo.Entypo;
 import org.kordamp.ikonli.fontawesome5.*;
-import type.celltypes.AVCell;
-import type.celltypes.TextCell;
 import type.tools.imagery.Fit;
 import fmannotations.FMAnnotations;
 
@@ -54,23 +51,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import javax.imageio.ImageIO;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -78,13 +64,8 @@ import java.util.function.Consumer;
 
 import org.slf4j.LoggerFactory;
 import uicontrols.*;
-import media.api.JaveInterface;
 import media.camera.CameraCapture;
 import media.camera.WindowsCameraCapture;
-import ws.schild.jave.*;
-import ws.schild.jave.info.MultimediaInfo;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 
 /**
@@ -137,7 +118,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  *
  * @author Lowell Stadelman
  */
-public class SectionEditor {
+public class SectionEditor implements DnDInterface {
       // THE LOGGER
       private static final Logger LOGGER = LoggerFactory.getLogger(SectionEditor.class);
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SectionEditor.class);
@@ -150,17 +131,17 @@ public class SectionEditor {
       // the concise information paradigm. Also ensures a
       // smaller file size to prevent upload download blocking
       // by internet providers.
-      private static final int MAX_DURATION = 7;
+      static final int MAX_DURATION = 60;
 
 
       // The array of FM shapes as opposed to the arrayOfBuilderShapes which are JavaShapes. FM
       // shapes have added variables and methods
       // do not change
-      private ArrayList<GenericShape> arrayOfFMShapes = new ArrayList<>(5);
+      private ArrayList<GenericShape> arrayOfFMShapes = new ArrayList<>();
 
       // **** Variables ****
       public HBox sectionHBox;
-      private VBox txtVBox;
+
       private Button clearBtn;
       private Button snapShotBtn;
       private Button drawpadBtn;
@@ -179,18 +160,21 @@ public class SectionEditor {
       private final ButtoniKonClazz CLEAR_T_AREA = new ButtoniKonClazz("", "Remove text area", FontAwesomeSolid.MINUS_CIRCLE, UIColors.FOCUS_BLUE_OPAQUE, ButtoniKonClazz.SIZE_24);
       private final ButtoniKonClazz CLEAR_RIGHT = new ButtoniKonClazz("", "Remove right area", FontAwesomeSolid.MINUS_CIRCLE, UIColors.FOCUS_BLUE_OPAQUE,ButtoniKonClazz.SIZE_24);
       // upper section area.
-      private final ButtoniKonClazz TEXT_CELL = new ButtoniKonClazz("", "Add a text cell", FontAwesomeSolid.FONT, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_16);
+      private final ButtoniKonClazz ADD_TEXT_CELL = new ButtoniKonClazz("", "Add a text cell", FontAwesomeSolid.FONT, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_16);
       private final ButtoniKonClazz HASHTAG = new ButtoniKonClazz("", "Add searchable keywords about this media", FontAwesomeSolid.HASHTAG, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_16);
       private final ButtoniKonClazz DELETE_T_CELL = new ButtoniKonClazz("", "Remove text cell", FontAwesomeSolid.TIMES_CIRCLE, UIColors.EDITOR_BTNS,ButtoniKonClazz.SIZE_16);
       private final ButtoniKonClazz DELETE_MM_CELL = new ButtoniKonClazz("", "Remove multi-media cell", FontAwesomeSolid.TIMES_CIRCLE, UIColors.EDITOR_BTNS,ButtoniKonClazz.SIZE_16);
 
-      private char qOra;
-      private String cID;
+      // Package Private
+      char qOra;
+      String cID;
+      VBox txtVBox;
+      ProgressIndicator progressIndicator;
 
       // *** Flags ***
       private boolean drawPadOpen;
 
-      private ProgressIndicator progressIndicator;
+
 
       /**
        * Double cell sections are upper-case
@@ -205,27 +189,24 @@ public class SectionEditor {
        * 'c' canvas only
        * The default is 't' for single cell text.
        */
-      private char sectionType = 't'; // double or single section
+      CellLayout sectionType = SingleCellType.TEXT; // double or single section
       private static DrawTools draw;
       private Image image;
-      private ImageView iView;
+      ImageView iView;
       private Pane rightPane; // pane showing shape and image
       private StackPane stackL;
       private StackPane stackR;
 
+      // Public? it is called by 20 objects
       public TextCell tCell;
-      //   private AVCell avCell;
-
-      // This objects image or mediaFileName used
+      private DragAndDrop dragAndDrop;
+      // Audio, Video, Image
+      // aka mediaFileName used
       // by getMediaFileNames[0]
-      private String aviFileName;
+      StringProperty aviFileNameProperty = null;
       // This objects shape File Name used
       // by getMediaFileNames[1]
-      private String shapesFileName;
-
-      // FLAGS
-      // Disable flag for Drag n Drop
-      private boolean dNdIsdisabled;
+      private StringProperty shapesFileNameProperty = null;
 
       /* ------------------------------------------------------- **/
 
@@ -238,11 +219,10 @@ public class SectionEditor {
             this.snapShotBtn = SNAPSHOT.get();
             this.clearBtn = CLEAR_TEXT.get();
             this.cameraBtn = CAMERA.get();
-            //setTextCellWidthFull();
-            //deleteMMcellAction();
       }
 
 
+      SectionEditor() { /* empty */ }
 
       /**
        * Constructor called for a new FlashCard
@@ -263,8 +243,8 @@ public class SectionEditor {
             // for existing cards array is set
             // later.
             this.arrayOfFMShapes = new ArrayList<>(5);
-            shapesFileName = null;
-            aviFileName = null;
+            aviFileNameProperty = new SimpleStringProperty();
+            shapesFileNameProperty = new SimpleStringProperty();
             rightPane = new Pane();
 
             this.tCell = new TextCell();
@@ -272,7 +252,6 @@ public class SectionEditor {
             this.stackL = new StackPane();
             this.stackR = new StackPane();
             this.txtVBox = new VBox( tCell.buildCell ( "", prompt, true, 0 ) );
-
 
             double w = FlashMonkeyMain.getPrimaryWindow().getWidth();
             this.txtVBox.setPrefWidth(w);
@@ -299,9 +278,14 @@ public class SectionEditor {
             sectionHBox.setStyle("-fx-background-color: white; -fx-background-radius: 3");
             sectionHBox.setAlignment(Pos.BOTTOM_LEFT);
 
-            // Drag and Drop capability
-            DragAndDrop dragAndDrop = new DragAndDrop();
-            dragAndDrop.dndOperations();
+            // Drag and Drop capability/
+
+            dragAndDrop = DragAndDrop.getInstance();
+            DnDNode node = new DnDNode(this);
+            registerDndOperations();
+
+            //DnD dnd = new DnD();
+
 
             // Set the initial textCell size and container size
             double no = SceneCntl.calcCenterHt(40, 150, FlashMonkeyMain.getPrimaryWindow().getHeight());
@@ -319,6 +303,7 @@ public class SectionEditor {
             });
             // Responsive width
             CreateFlash.getInstance().getCFPCenter().widthProperty().addListener( ( obs, oldval, newVal ) -> txtVBox.setPrefWidth(newVal.doubleValue() ) );
+
 
             // add stackL (stackLeft) to sectionHBox
             this.sectionHBox.getChildren().addAll(this.stackL);
@@ -383,7 +368,7 @@ public class SectionEditor {
             });
 
             // Text area button
-            this.addTextCellBtn = TEXT_CELL.get();
+            this.addTextCellBtn = ADD_TEXT_CELL.get();
             this.addTextCellBtn.setFocusTraversable(false);
             this.addTextCellBtn.setId("clrBtn");
             //this.addTextCellBtn.setTooltip(new Tooltip("Add a text area to the\n card"));
@@ -462,10 +447,11 @@ public class SectionEditor {
             this.sectionHBox.getChildren().clear();
             stackR.getChildren().clear();
 
-            switch (this.sectionType) {
+            switch (this.sectionType.get()) {
+                  // img and drawing or img only
                   case 'C':
                   case 'c': {
-                        this.sectionType = 'c';
+                        this.sectionType = SingleCellType.CANVAS;
                         if (this.iView == null) {
                               this.iView = new ImageView(image);
                         }
@@ -480,46 +466,51 @@ public class SectionEditor {
                         rightPane.getChildren().add(iView);
 
                         // rescale shapes
-                        double rectWd = ((FMRectangle) arrayOfFMShapes.get(0)).getWd();
-                        double rectHt = ((FMRectangle) arrayOfFMShapes.get(0)).getHt();
-                        setShapesInExplode(this.arrayOfFMShapes, rectWd, rectHt,
-                            sectionHBox.widthProperty().get() - 90,
-                            sectionHBox.heightProperty().get() -20);
+                        if(arrayOfFMShapes.size() > 1) {
+                              double rectWd = ((FMRectangle) arrayOfFMShapes.get(0)).getWd();
+                              double rectHt = ((FMRectangle) arrayOfFMShapes.get(0)).getHt();
+                              setShapesInExplode(this.arrayOfFMShapes, rectWd, rectHt,
+                                      sectionHBox.widthProperty().get() - 90,
+                                      sectionHBox.heightProperty().get() - 20);
+                              //if (iView != null) {
+                              // responsive height
+                              AtomicLong newValHt = new AtomicLong();
 
-                        //if (iView != null) {
-                        // responsive height
-                        AtomicLong newValHt = new AtomicLong();
+                              sectionHBox.widthProperty().addListener((obs, oldval, newVal) -> {
+                                    if (null != iView) {
+                                          iView.setFitHeight(newValHt.get());
+                                          iView.setFitWidth(newVal.doubleValue() - 90);
+                                          setShapesInExplode(this.arrayOfFMShapes, rectWd, rectHt,
+                                                  newVal.doubleValue() - 90, newValHt.get() - 20);
+                                    }
+                              });
+                              // responsive height
+                              sectionHBox.heightProperty().addListener((obs, oldval, newVal) -> {
+                                    newValHt.set((long) newVal.doubleValue());
+                              });
+                        }
 
-                        sectionHBox.widthProperty().addListener((obs, oldval, newVal) -> {
-                              if(null != iView) {
-                                    iView.setFitHeight(newValHt.get());
-                                    iView.setFitWidth(newVal.doubleValue() - 90);
-                                    setShapesInExplode(this.arrayOfFMShapes, rectWd, rectHt,
-                                        newVal.doubleValue() - 90, newValHt.get() - 20);
-                              }
-                        });
-                        // responsive height
-                        sectionHBox.heightProperty().addListener((obs, oldval, newVal) -> {
-                              newValHt.set((long) newVal.doubleValue());
-                        });
+                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) ->
+                                iView.setFitWidth(newVal.intValue() - 108));  //setPrefWidth(newVal.doubleValue() - 108));
 
                         // the initial display of the shapes
                         break;
                   }
+                  // drawing
                   case 'D':
                   case 'd': {
                         LOGGER.info("\tsetting type to 'd'");
-                        this.sectionType = 'd';
+                        this.sectionType = SingleCellType.DRAWING;
                         // for media
                         this.rightPane.setMaxWidth(200);
 
                         break;
                   }
+                  // video or sound
                   case 'M':
                   case 'm': {
-                        this.sectionType = 'm';
+                        this.sectionType = SingleCellType.AV;
                         LOGGER.info("\tsetting type to 'm'");
-                        this.sectionType = 'm';
                         this.rightPane.setMaxWidth(this.sectionHBox.getWidth() - 90);
                   }
                   default: {
@@ -535,20 +526,6 @@ public class SectionEditor {
             this.sectionHBox.getChildren().addAll(btnBox, stackR);
       }
 
-      /* ------------------------------------------------------- **/
-
-
-//      /**
-//       * Removes the TCell from the left pane. Called by CreateFlash
-//       * when a card is edited as opposed to created.
-//       */
-//      public void deleteTCell() {
-//            this.sectionHBox.getChildren().clear();
-//            stackR.getChildren().clear();
-//            stackR.getChildren().add(this.rightPane);
-//            this.sectionHBox.getChildren().addAll(textAreaBtn, stackR);
-//            CreateFlash.getInstance().setFlashListChanged(true);
-//      }
 
       /* ------------------------------------------------------- **/
 
@@ -563,18 +540,21 @@ public class SectionEditor {
 
             CreateFlash.getInstance().setFlashListChanged(true);
 
-            switch (this.sectionType) {
+            switch (this.sectionType.get()) {
                   case 'c': {
-                        this.sectionType = 'C';
-                        setImageHelper(image);
+                        this.sectionType = DoubleCellType.CANVAS;
+                        String path = image.getUrl();
+                        image = null;
+                        image = new Image("File:" + path);
+                        setImageHelperForRPane(image);
                         break;
                   }
                   case 'd': {
-                        this.sectionType = 'D';
+                        this.sectionType = DoubleCellType.DRAWING;
                         break;
                   }
                   case 'm': {
-                        this.sectionType = 'M';
+                        this.sectionType = DoubleCellType.AV;
                         break;
                   }
                   default: {
@@ -597,14 +577,14 @@ public class SectionEditor {
        * Clear stackR from sectionHBox {@code &} remove
        * deleteTCellbtn from stackL.
        */
-      private void deleteMMcellAction() {
+      void deleteMMcellAction() {
             //SoundEffects.PRESS_BUTTON_COMMON.play();
             CreateFlash.getInstance().setFlashListChanged(true);
             clearMMCell();
       }
 
       private void clearMMCell() {
-            this.sectionType = 't';
+            this.sectionType = SingleCellType.TEXT;
             if (arrayOfFMShapes != null) {
                   arrayOfFMShapes.clear();
             }
@@ -628,11 +608,12 @@ public class SectionEditor {
       public void resetSection() {
             image = null;
             iView = null;
-            aviFileName = null;
+            aviFileNameProperty.set("") ;
+            aviFileNameProperty.set("");
 
             rightPane.getChildren().clear();
             stackR.getChildren().clear();
-            shapesFileName = null;
+
             tCell.getTextArea().setText("");
             setTextCellWidthFull();
             arrayOfFMShapes = new ArrayList<>();
@@ -641,8 +622,8 @@ public class SectionEditor {
       }
 
 
-      /****************************************************************************
-       GETTERS
+      /* ***************************************************************************
+                                    GETTERS
        *****************************************************************************/
 
 
@@ -653,23 +634,23 @@ public class SectionEditor {
        * @return String array containing the shapes
        */
       public String[] getMediaNameArray() {
-            LOGGER.debug(" **** called getMediaFileNames() before check ****" + "\nmediaFileName: " + aviFileName + " | shapesFile: " + shapesFileName);
+            LOGGER.debug(" **** called getMediaFileNames() before check ****" + "\nmediaFileName: " + aviFileNameProperty.get() + " | shapesFile: " + shapesFileNameProperty.get());
             //Thread.dumpStack();
             if (this.arrayOfFMShapes.size() > 1) {
-                  final String[] str = {aviFileName, shapesFileName};
+                  final String[] str = {aviFileNameProperty.get(), shapesFileNameProperty.get()};
                   return str;
             } else {
-                  final String[] s = {aviFileName};
+                  final String[] s = {aviFileNameProperty.get()};
                   return s;
             }
       }
 
       public String getMediaFileName() {
-            return aviFileName;
+            return aviFileNameProperty.get();
       }
 
       public String getShapesFileName() {
-            return shapesFileName;
+            return shapesFileNameProperty.get();
       }
 
 
@@ -705,28 +686,13 @@ public class SectionEditor {
 
 
       /**
-       * Returns the DrawTools object... Do not call this reference from outside
-       * of the section editor. DrawTools should be called directly using
-       * getInstance().
-       * @return Returns the DrawTools object set in setDrawTools().
-       */
-      /*public DrawTools getDrawTools() {
-            return draw;
-      }*/
-
-
-
-      /* ------------------------------------------------------- **/
-
-
-      /**
        * Returns the mediaType used as well as
        * the sectionType for this section. Section being
-       * either a double or singl cell section.
+       * either a double or single cell section.
        *
        * @return Returns the media type.
        */
-      public char getMediaType() {
+      public CellLayout getMediaType() {
             return this.sectionType;
       }
 
@@ -786,7 +752,7 @@ public class SectionEditor {
 
       protected void setMediaFileName(String mediaName) {
             if (mediaName != null && !mediaName.equals("")) {
-                  aviFileName = mediaName;
+                  aviFileNameProperty.set(mediaName);
             } else {
                   LOGGER.warn("Setting avi/media FileName to null or empty");
             }
@@ -804,7 +770,7 @@ public class SectionEditor {
        */
       public void setShapeFileName(String name) {
             if (name != null && !name.equals("")) {
-                  shapesFileName = name;
+                  shapesFileNameProperty.set(name);
             } else {
                   LOGGER.warn("Settting shapesFileName to null or empty");
             }
@@ -876,12 +842,12 @@ public class SectionEditor {
       /* ------------------------------------------------------- **/
 
 
-      public boolean hasTextCell(char sectionType) {
-            return sectionType == 't'
-                    || sectionType == 'C'
-                    || sectionType == 'M'
-                    || sectionType == 'D';
-      }
+//      public boolean hasTextCell(char sectionType) {
+//            return sectionType == 't'
+//                    || sectionType == 'C'
+//                    || sectionType == 'M'
+//                    || sectionType == 'D';
+//      }
 
 
       /* ------------------------------------------------------- **/
@@ -895,7 +861,7 @@ public class SectionEditor {
        */
       private void setImageRightPane(BufferedImage imgBuffer) {
             image = SwingFXUtils.toFXImage(imgBuffer, null);
-            setImageHelper(image);
+            setImageHelperForRPane(image);
       }
 
 
@@ -907,7 +873,8 @@ public class SectionEditor {
        * in the HBox
        */
       public void setTextCellWdForMedia() {
-            double w = FlashMonkeyMain.getPrimaryWindow().getWidth() - 108;
+            // DO NOT CHANGE THIS. Different between apple 126 and windows 138.
+            double w = FlashMonkeyMain.getPrimaryWindow().getWidth() - 138;
             this.txtVBox.setPrefWidth(w);
       }
 
@@ -939,7 +906,7 @@ public class SectionEditor {
        * @param qOrA           ..
        * @param cID            cardID, does not change.
        */
-      public void setSectionMedia(String[] mediaFileNames, char mediaType, char qOrA, final String cID) {
+      public void setSectionMedia(String[] mediaFileNames, CellLayout mediaType, char qOrA, final String cID) {
             DirectoryMgr dirMgr = new DirectoryMgr();
             LOGGER.info(" setSectionMedia() called \n");
             this.sectionType = mediaType;
@@ -950,7 +917,7 @@ public class SectionEditor {
             tCell.getTextArea().setPrefHeight(num - 150);
             tCell.getTextCellVbox().setPrefHeight(num - 125);
 
-            switch (mediaType) {
+            switch (mediaType.get()) {
                   // text
                   // 'T' is never used
                   case 't': {
@@ -964,53 +931,19 @@ public class SectionEditor {
                   case 'C': {
                         // For responsive text pane with the right pane.
                         CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) ->
-                            txtVBox.setPrefWidth(newVal.doubleValue() - 108));
-                        // no break, let it fall through.
+                            txtVBox.setPrefWidth(newVal.doubleValue() - 138));
+
+                        imageCoordinatorDoubleSection(mediaFileNames);
+
+                        break;
                   }
-                  // Single section image with or without shapes
+                  // Single cell section with image and or shapes
                   case 'c': {
-                        LOGGER.debug("case 'c' or 'C' setImage and shapes");
-                        setMediaFileName(mediaFileNames[0]);
-                        //this.mediaFileName = mediaFileNames[0];
-                        this.arrayOfFMShapes.clear();
+                        // Responsive image cell
+                        CreateFlash.getInstance().getCFPCenter().widthProperty().addListener((obs, oldval, newVal) ->
+                                txtVBox.setPrefWidth(newVal.doubleValue() - 108));
 
-                        String path = DirectoryMgr.getMediaPath('c') + mediaFileNames[0];
-                        File f = new File(path);
-                        if (f.exists()) {
-                              image = new Image("File:" + path);
-                              // set shapes in right pane with image
-                              if(mediaType == 'C') {
-                                    setImageHelper(image);
-                              }
-                              //else {
-                                    //setImageHelperWSize(image, );
-                              //}
-
-                              FileOpsShapes fo = new FileOpsShapes();
-                              if (mediaFileNames.length == 2) {
-                                    this.shapesFileName = mediaFileNames[1];
-                                    this.arrayOfFMShapes = fo.getListFromFile(mediaFileNames[1]);
-                                    //the rectangle containing the original size
-                                    FMRectangle rect = ((FMRectangle) this.arrayOfFMShapes.get(0));
-                                    double origHt = rect.getHt();
-                                    double origWd = rect.getWd();
-                                    if(mediaType == 'C') {
-                                          // for double cell, when image and shapes are in Rt pane.
-                                          // Note uses the original pane width for ratio.
-                                          setShapesInRtPane(this.arrayOfFMShapes, origWd, origHt);
-                                    }
-                                    else {
-                                          toSingleMediaCellAction();
-                                    }
-                              }
-
-                              this.rightPane.setOnMouseClicked(e -> {
-                                    SoundEffects.PRESS_BUTTON_COMMON.play();
-                                    rightPaneAction(mediaFileNames);
-                              });
-                        }
-
-
+                        imageCoordinatorSingleSection(mediaFileNames);
                         break;
                   }
                   // Double section drawings
@@ -1021,12 +954,12 @@ public class SectionEditor {
                   }
                   // single section Drawings only
                   case 'd': {
-                        this.shapesFileName = mediaFileNames[1];
+                        shapesFileNameProperty.set(mediaFileNames[1]);
                         LOGGER.debug(" Shapes Only .. This is a DrawPad");
                         this.arrayOfFMShapes.clear();
-
+                        // use 'c' instead of 'd'
                         String path = DirectoryMgr.getMediaPath('c');
-                        String shapesPath = path + shapesFileName;
+                        String shapesPath = path + shapesFileNameProperty.get();
                         File f = new File(shapesPath);
                         if (f.exists()) {
                               FileOpsShapes fo = new FileOpsShapes();
@@ -1045,10 +978,8 @@ public class SectionEditor {
                               LOGGER.warn("ERROR: Shapes file does not exist. Path: {}", f);
                         }
 
-                        LOGGER.debug("mediaPath: " + path + ", shapesPathName: " + shapesFileName);
+                        LOGGER.debug("mediaPath: " + path + ", shapesPathName: " + shapesFileNameProperty.get());
                         LOGGER.debug("mediaType: " + mediaType);
-
-
 
                         break;
                   }
@@ -1060,11 +991,12 @@ public class SectionEditor {
                   }
                   // Single section media
                   case 'm': {
+                        // use 'c' instead of 'm'
                         String path = DirectoryMgr.getMediaPath('c');
                         String relativeImgPath = path + mediaFileNames[0];
                         LOGGER.debug("relativeImgPath: " + relativeImgPath + ", & mediaType: " + mediaType);
                         setMediaFileName(mediaFileNames[0]);
-                        if(mediaType == 'M') {
+                        if(mediaType.get() == 'M') {
                               setVideoHelper(relativeImgPath, 100, 100);
                         }
                         else {
@@ -1079,22 +1011,98 @@ public class SectionEditor {
             }
       }
 
+      /* ------------------------------------------------------- **/
+
+      private void imageCoordinatorSingleSection(String[] mediaFileNames) {
+            setMediaFileName(mediaFileNames[0]);
+            this.arrayOfFMShapes.clear();
+            String path = DirectoryMgr.getMediaPath('c') + mediaFileNames[0];
+            File f = new File(path);
+            if (f.exists()) {
+                  image = new Image("File:" + path);
+                  // set shapes in right pane with image
+                  FileOpsShapes fo = new FileOpsShapes();
+                  if (mediaFileNames.length == 2) {
+                        this.shapesFileNameProperty.set(mediaFileNames[1]);
+                        this.arrayOfFMShapes = fo.getListFromFile(mediaFileNames[1]);
+                        //the rectangle containing the original size
+                        FMRectangle rect = ((FMRectangle) this.arrayOfFMShapes.get(0));
+                        double origHt = rect.getHt();
+                        double origWd = rect.getWd();
+                  }
+                  toSingleMediaCellAction();
+
+                  this.rightPane.setOnMouseClicked(e -> {
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
+                        rightPaneAction(mediaFileNames);
+                  });
+            }
+            else {
+                  LOGGER.warn("ERROR: SectionEditor setSectionMedia(...) image file does not exist. ");
+            }
+      }
+
+      /* ------------------------------------------------------- **/
+
+      private void imageCoordinatorDoubleSection(String[] mediaFileNames) {
+            setMediaFileName(mediaFileNames[0]);
+            this.arrayOfFMShapes.clear();
+            String path = DirectoryMgr.getMediaPath('c') + mediaFileNames[0];
+            File f = new File(path);
+            if (f.exists()) {
+                  image = new Image("File:" + path);
+                  // set shapes in right pane with image
+                  setImageHelperForRPane(image);
+
+                  FileOpsShapes fo = new FileOpsShapes();
+                  if (mediaFileNames.length == 2) {
+                        this.shapesFileNameProperty.set(mediaFileNames[1]);
+                        this.arrayOfFMShapes = fo.getListFromFile(mediaFileNames[1]);
+                        //the rectangle containing the original size
+                        FMRectangle rect = ((FMRectangle) this.arrayOfFMShapes.get(0));
+                        double origHt = rect.getHt();
+                        double origWd = rect.getWd();
+
+                        // for double cell, when image and shapes are in Rt pane.
+                        // Note uses the original pane width for ratio.
+                        setShapesInRtPane(this.arrayOfFMShapes, origWd, origHt);
+                  }
+
+                  this.rightPane.setOnMouseClicked(e -> {
+                        SoundEffects.PRESS_BUTTON_COMMON.play();
+                        rightPaneAction(mediaFileNames);
+                  });
+            }
+            else {
+                  LOGGER.warn("ERROR: SectionEditor setSectionMedia(...) image file does not exist. ");
+            }
+
+      }
+
+      /* ------------------------------------------------------- **/
+
       /**
        * Provides the rightPane clickOn action that creates a popup with the image
        * and shapeToolPane/popup.
        *
        * @param mediaFileNames ..
        */
-      private void rightPaneAction(String[] mediaFileNames) {
-            String[] mediaFiles = getMediaNameArray();
-
-            minimizeFullScreen();
-            LOGGER.debug("rightPane action called");
-            CanvasEditorPopup edPopup = CanvasEditorPopup.getInstance();
-            edPopup.init();
-            String deckName = FlashCardOps.getInstance().getDeckLabelName();
-            edPopup.popup(this.arrayOfFMShapes, this, mediaFiles, deckName, cID);
-            CreateFlash.getInstance().setFlashListChanged(true);
+      void rightPaneAction(String[] mediaFileNames) {
+            String[] mediaFiles;
+            if(mediaFileNames == null || mediaFileNames.length < 1) {
+                  mediaFiles = getMediaNameArray();
+            } else {
+                  mediaFiles = mediaFileNames;
+            }
+            if(mediaFiles != null && mediaFiles.length > 0) {
+                  minimizeFullScreen();
+                  LOGGER.debug("rightPane action called");
+                  CanvasEditorPopup edPopup = CanvasEditorPopup.getInstance();
+                  edPopup.init();
+                  String deckName = FlashCardOps.getInstance().getDeckLabelName();
+                  edPopup.popup(this.arrayOfFMShapes, this, mediaFiles, deckName, cID);
+                  CreateFlash.getInstance().setFlashListChanged(true);
+            }
       }
 
 
@@ -1107,7 +1115,7 @@ public class SectionEditor {
        *
        * @param image ..
        */
-      void setImageHelper(Image image) {
+      public void setImageHelperForRPane(Image image) {
             setImageHelperWSize(image, 100, 100);
       }
 
@@ -1163,7 +1171,7 @@ public class SectionEditor {
        *
        * @param relativePath ..
        */
-      private void setVideoHelper(String relativePath, double wd, double ht) {
+      void setVideoHelper(String relativePath, double wd, double ht) {
             this.sectionHBox.getChildren().clear();
             this.stackR.getChildren().clear();
 
@@ -1250,13 +1258,16 @@ public class SectionEditor {
             if (iView != null) {
                   this.rightPane.getChildren().add(iView);
             } else {
+                  //this.stackL.setMinWidth();
+                  this.stackR.setMaxWidth(100);
+                  this.rightPane.setMaxWidth(100);
                   this.rightPane.setMinWidth(100);
                   this.rightPane.setMinHeight(100);
             }
 
             scale = Fit.calcScale(origWd, origHt, 100, 100);
 
-            LOGGER.info(" Scale: " + scale);
+            LOGGER.debug(" Scale: " + scale);
 
             for (int i = 1; i < fmShapes.size(); i++) {
                   this.rightPane.getChildren().add(fmShapes.get(i).getScaledShape(scale));
@@ -1414,7 +1425,7 @@ public class SectionEditor {
        */
       private void cameraBtnAction() {
             SoundEffects.PRESS_BUTTON_COMMON.play();
-            this.sectionType = 'C';
+            this.sectionType = DoubleCellType.CANVAS;
             LOGGER.info("\n ~^~^~^ *** cameraBtnAction called *** ~^~^~^");
 
             this.rightPane.setMinWidth(100);
@@ -1438,7 +1449,7 @@ public class SectionEditor {
                   String message = "\n  Something went wrong. I didn't find a web-cam." +
                           "\n  If you have one, check your computer settings \n and try again. ";
                   String emojiPath = "image/Flash_hmm_75.png";
-                  FxNotify.notification("Oooph!", message, Pos.CENTER, 20,
+                  FxNotify.notificationError("Oooph!", message, Pos.CENTER, 20,
                       emojiPath, FlashMonkeyMain.getPrimaryWindow());
                   LOGGER.warn("Camera error: Possibly no camera available");
             }
@@ -1463,7 +1474,7 @@ public class SectionEditor {
       public void snapShotBtnAction() {
             SoundEffects.PRESS_BUTTON_COMMON.play();
             minimizeFullScreen();
-            this.sectionType = 'C';
+            this.sectionType = DoubleCellType.CANVAS;
             LOGGER.info("\n ~^~^~^ *** SnapShot Button Action called *** ~^~^~^");
 
             this.rightPane.setMinWidth(100);
@@ -1512,7 +1523,7 @@ public class SectionEditor {
                         // check that folder exists, if not it will
                         // be created.
                         FileOpsUtil.folderExists(new File(path));
-                        FlashCardOps.getInstance().saveImage(imgFileName.get(), image, "png", 'c');
+                        FlashCardOps.getInstance().saveImage(imgFileName.get(), image, "png", 'C');
                         // SnapShot.getInstance().saveImage(path + imgFileName.get());
                         draw = DrawTools.getInstance();
 
@@ -1527,8 +1538,9 @@ public class SectionEditor {
                         // Also saves the shapes to file.
                         // set the drawObj fileName to be passed to
                         // DrawTools
-                        shapesFileName = FileNaming.getShapesName(imgFileName.get());
+                        String shapesFileName = FileNaming.getShapesName(imgFileName.get());
                         drawObj.setFileName(shapesFileName);
+                        shapesFileNameProperty.set(shapesFileName);
                         // and finally build the drawtools
                         draw.buildDrawTools(drawObj, this);
                         //draw.popUpTools();
@@ -1539,8 +1551,8 @@ public class SectionEditor {
                   }
                   drawObj.clearDrawObj();
             });
-            String[] mediaNames = {imgFileName.get(), shapesFileName};
-            //       rightPane.setOnMouseDragReleased(g ->  setEditorPopup(mediaNames, name, cID));
+
+
             this.rightPane.setOnMouseClicked(e -> {
                   rightPaneAction(getMediaNameArray());
             });
@@ -1556,17 +1568,6 @@ public class SectionEditor {
        */
       private void minimizeFullScreen() {
             FlashMonkeyMain.minimizeFullScreen();
-      }
-
-      private void setEditorPopup(String[] mediaFileNames, String deckName, String cID) {
-            CanvasEditorPopup edPopup = CanvasEditorPopup.getInstance();
-            edPopup.init();
-            edPopup.popup(
-                    this.getArrayOfFMShapes(),
-                this,
-                    mediaFileNames,
-                    deckName,
-                    cID);
       }
 
 
@@ -1596,9 +1597,9 @@ public class SectionEditor {
             this.rightPane.setMinHeight(100);
 
             LOGGER.info("*** drawpad action called ***");
-            this.sectionType = 'D';
+            this.sectionType = DoubleCellType.DRAWING;
             this.arrayOfFMShapes.clear();
-            aviFileName = null;
+            aviFileNameProperty = null;
             this.iView = null;
 
             Bounds bounds = parentPane.getBoundsInLocal();
@@ -1615,12 +1616,10 @@ public class SectionEditor {
 
             DirectoryMgr dirMgr = new DirectoryMgr();
             String mediaPath = DirectoryMgr.getMediaPath('C');
-//        authcrypt.UserData data = new authcrypt.UserData();
+
             String deckName = FlashCardOps.getInstance().getDeckLabelName();
             String cID = CreateFlash.getInstance().getCurrentCID();
-
             setShapeFileName(FileNaming.getShapesName(deckName, cID));
-            //shapesFileName = FileNaming.getShapesName(deckName, cID);
 
             // check that folder exists, if not it will
             // be created.
@@ -1630,8 +1629,7 @@ public class SectionEditor {
             // Flag for detecting if this instance of SectionEditor has a drawpad open.
             drawPadOpen = true;
             draw = DrawTools.getInstance();
-            draw.buildDrawTools(minX, minY, shapesFileName, this);
-            //draw.popUpTools();
+            draw.buildDrawTools(minX, minY, shapesFileNameProperty.get(), this);
 
             this.rightPane.getChildren().clear();
             this.rightPane.setOnMouseClicked(e -> {
@@ -1643,487 +1641,6 @@ public class SectionEditor {
             CreateFlash.getInstance().setFlashListChanged(true);
       }
 
-      void saveImageFromImageTool(Image img, String mime) {
-            String deckName = FlashCardOps.getInstance().getDeckLabelName();
-            // Save the image to the FMCanvas Folder
-            // and rename it.
-            DragAndDrop dragAndDrop = new DragAndDrop();
-            String imgNewName = dragAndDrop.saveImage(img, mime, deckName);
-            setMediaFileName(imgNewName);
-      }
-
-
-      /**************************************************************************
-       *                      ***** INNER CLASS ******
-       *                **** Drag and Drop methods *****
-       ***************************************************************************/
-
-      private class DragAndDrop {
-
-            private final String mediaURL;
-
-            DragAndDrop() {
-                  mediaURL = "";
-            }
-
-            /**
-             * The drag and drop handler for this card and section.
-             */
-            private void dndOperations() {
-                  txtVBox.setOnDragOver(this::dragOver);
-                  txtVBox.setOnDragDropped(this::dragDropped);
-            }
-
-
-            /**
-             * Currently, set to copy either an image, URL or File,
-             * May need to accept text.
-             *
-             * @param e ..
-             */
-
-            private void dragOver(DragEvent e) {
-                  //if(!fileAccepted || fileRejected) {
-                  // allows an image, URL or a file
-                  Dragboard dragboard = e.getDragboard();
-                  if (dragboard.hasImage() || dragboard.hasFiles() || dragboard.hasUrl()) {
-                        //LOGGER.debug("\t file is accepted ");
-                        e.acceptTransferModes(TransferMode.COPY);
-                  }
-                  e.consume();
-                  //}
-            }
-
-
-            /**
-             * The drag and drop capability for this card and this section
-             *
-             * @param e ..
-             */
-            private void dragDropped(DragEvent e) {
-                  //LOGGER.setLevel(Level.DEBUG);
-                  boolean isCompleted = false;
-
-                  if (!dNdIsdisabled) {
-                        LOGGER.info("\n *** In dragDropped(dragevent e) *** ");
-                        // Transfer the data to the target
-                        Dragboard dragboard = e.getDragboard();
-
-                        if (dragboard.hasImage()) {
-                              LOGGER.debug("\t dragBoard has Image");
-                              String str = dragboard.getUrl();
-                              // handle .gif animations differently
-                              String ending = str.substring(str.length() - 3);
-
-                              isCompleted = this.transferImage(dragboard.getImage(), ending);
-                              if (isCompleted) {
-                                    // Sets the image in the rPane from
-                                    // the image created in transferImage(...)
-                                    setImageHelper(image);
-                              }
-                        } else if (dragboard.hasFiles()) {
-                              LOGGER.debug("\t dragboard hasFiles: ");
-                              iView = null;
-                              try {
-                                    isCompleted = transferMediaFile(dragboard.getFiles());
-                              } catch (Exception ex) {
-                                    LOGGER.warn("WARNING: transferMedia(...) Unable to copy video from dragboard");
-                                    ex.printStackTrace();
-                              }
-
-                        } else if (dragboard.hasUrl()) {
-                              LOGGER.debug("\t dragBoard hasURL ");
-                              iView = null;
-                              isCompleted = this.transferImageURL(dragboard.getUrl());
-                              if (isCompleted) {
-                                    // sets the video in the rPane
-                                    // to the dragboard file
-                                    setVideoHelper(dragboard.getUrl(), 100, 100);
-                              }
-                        } else {
-                              LOGGER.warn("\nDragboard does not contain an image or media \nin the expected format: Image, File, URL");
-                        }
-
-                        if (isCompleted) {
-                              LOGGER.debug("drag-n-drop is completed");
-                              //FlashCardOps.getInstance().setMediaIsSynced(false);
-                              String[] mediaFileNames;// = new String[];
-                              // images always have shapeFileNames, video and audio do not
-                              if (shapesFileName != null) {
-                                    mediaFileNames = new String[2];
-                                    mediaFileNames[0] = getMediaFileName();
-                                    mediaFileNames[1] = getShapesFileName();
-                              } else {
-                                    mediaFileNames = new String[1];
-                                    mediaFileNames[0] = getMediaFileName();
-                              }
-                              rightPane.setOnMouseClicked(m -> {
-                                    LOGGER.debug("RightPane clicked.");
-                                    rightPaneAction(mediaFileNames);
-                              });
-                        }
-                        //Notify DragEvent if successful.
-                        e.setDropCompleted(isCompleted);
-                  }
-                  e.consume();
-                  CreateFlash.getInstance().setFlashListChanged(true);
-            }
-
-            /**
-             * Intended as an internal method on a drag-drop action.
-             * Sets this objects ImageView to the image in the parameter. Names the
-             * image, sets the sectionType to 'C', saves the image, and sets the
-             * shapesFileName.
-             *
-             * @param img  ..
-             * @param mime the file ending either .png for all except, if. gif use .gif
-             * @return true if successful
-             */
-            private boolean transferImage(Image img, String mime) {
-                  arrayOfFMShapes.clear();
-
-                  LOGGER.debug("*** In transferImage() ***");
-
-                  if (img != null) {
-                        image = img;
-                        // set section type to double section
-                        // with canvas
-                        sectionType = 'C';
-                        String deckName = FlashCardOps.getInstance().getDeckLabelName();
-                        // Transfer the image to the FMCanvas Folder
-                        // and rename it.
-                        saveImage(img, mime, deckName);
-                        String cID = CreateFlash.getInstance().getCurrentCID();
-                        shapesFileName = FileNaming.getShapesName(deckName, cID);
-
-                        return true;
-                  }
-                  return false;
-            }
-
-            // Methods to create a file for SnapShot are in SnapShot.
-
-            /**
-             * Names an image file and saves a javaFX Image to the
-             * correct media directory based on the
-             * parameters.
-             * If file is not saved, a warning message is printed to the log.
-             *
-             * @param image    The image to be saved
-             * @param mime     the file ending .gif for gif, all others .png
-             * @param deckName ..
-             * @return Returns the imageFileName
-             */
-            private String saveImage(Image image, String mime, String deckName) {
-                  BufferedImage inputImage = SwingFXUtils.fromFXImage(image, null);
-                  FileNaming fileNaming = new FileNaming(FileNaming.getImageHash(inputImage), 'i', mime);
-                  FlashCardOps fco = FlashCardOps.getInstance();
-                  boolean bool = fco.saveImage(fileNaming.getMediaFileName(), image, mime, 'c');
-                  if (!bool) {
-                        deleteMMcellAction();
-                        String errorMessage = " That's a drag. That didn't work." +
-                            "\n Try dragging to the desktop first. " +
-                            "\n then drag from the desk top";
-                        FxNotify.notification("OUCH!!!!", errorMessage, Pos.CENTER, 7,
-                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
-                  } else {
-                        setMediaFileName(fileNaming.getMediaFileName());
-                  }
-                  return fileNaming.getMediaFileName();
-            }
-
-            /**
-             * Transfers a media file based on its type. Discriminates files if they are not
-             * of a media type accepted by javaFX. Convert if possible using JAVE2
-             *
-             * @param files, contains the file to be transferred in [0]
-             * @return true if successful
-             * @throws EncoderException
-             */
-            private boolean transferMediaFile(List<File> files) throws EncoderException {
-                  // Use the first index contains the dragged file
-                  File fromDrag = files.get(0);
-
-                  int num = fromDrag.getName().lastIndexOf('.') + 1;
-                  String mime = fromDrag.getName().substring(num);
-                  if(mime.equals("JPEG")) {
-                        mime = "JPG";
-                  } else if (mime.equals("jpeg")) {
-                        mime = "jpg";
-                  }
-
-                  LOGGER.info(" *** in transferMediaFile(list<File>) and OriginFilePath: " + fromDrag.toPath() + " ***");
-                  String fromPath = fromDrag.toPath().toString();
-                  LOGGER.debug(" mimeType should be image or video: {}", fromPath);
-
-                  MultimediaObject mmObject = new MultimediaObject(new File(fromPath));
-                  MultimediaInfo sourceInfo = mmObject.getInfo();
-
-                  if (fromPath == null) {
-                        return false;
-                  }
-                  // Is accepted javaFX image for transfer
-                  // Note that the image will be converted to ".png"
-                  if (FileExtension.IS_FX_IMAGE.check(mime)) {
-                        sectionType = 'C';
-                        // Transfer the image to the FMCanvas Folder
-                        // and rename it.
-                        transferImageURL(fromPath);
-                        image = new Image("File:" + fromPath);
-                        // insert media into the rightPane.
-                        // and add delete buttons
-                        setImageHelper(image);
-                        return true;
-
-                        // Else its a video, or audio, first try to use JavaFX.
-                        // If not in a format that JavaFX handles,
-                        // then use JAVE
-                  } else if (type.tools.video.Fit.checkDuration(sourceInfo, MAX_DURATION)) {
-                        return false;
-                  } else if (FileExtension.IS_FX_AV.check(mime) && type.tools.video.Fit.checkSize(sourceInfo)) {
-                        MediaPlayer m = null;
-                        sectionType = 'M';
-                        // Transfer the media to the
-                        // FMCanvas Folder and
-                        // rename it.
-                        this.transferVideoURL(fromPath);
-                        // creates the video and insert
-                        // into the right pane, add
-                        // delete buttons
-                        setVideoHelper(fromPath, 100, 100);
-                        return true;
-                        // Video is not a format that JavaFX handles, use
-                        // JAVE for video
-                  } else if (FileExtension.IS_JAVE_VIDEO.check(mime)) {
-                        sectionType = 'M';
-                        //Rename the file. End with mp4
-                        setMediaFileName(FileNaming.getVideoName(cID, getQorA(), "mp4"));
-
-                        //mediaFileName = FileNaming.getVideoName(cID, getQorA(), "mp4");
-                        DirectoryMgr dirMgr = new DirectoryMgr();
-                        String mediaPath = DirectoryMgr.getMediaPath('M');
-                        String outputPathName = mediaPath + getMediaFileName();
-                        progressIndicator = new ProgressIndicator();
-
-                        LOGGER.debug("Trying to copy file: media outputPathName: {}", outputPathName);
-
-                        File sourceFile = new File(fromPath);
-                        //LOGGER.debug("Video sourceFile path: {}", sourceFile.toPath());
-                        File outputFile = new File(outputPathName);
-                        JaveInterface jave = new JaveInterface();
-                        // Transfer and convert the video to a smaller size
-                        // if needed.
-                        Runnable task = () -> {
-                              try {
-                                    // Convert the video to smaller format and to .mp4
-                                    jave.transfer(sourceFile, outputFile, sourceInfo, mmObject);
-
-                                    String[] mediaFileNames = new String[1];
-                                    mediaFileNames[0] = getMediaFileName();
-
-                                    Platform.runLater(() -> runVideoHelper(outputPathName));
-                                    //runVideoHelper(outputPathName, progressIndicator);
-                              } catch (EncoderException ex) {
-                                    throw new AssertionError("Unexpected exception in encoder", ex);
-                              }
-                        };
-
-                        Thread thread = new Thread(task);
-                        thread.start();
-
-                        LOGGER.debug("Video ends with .mov. output pathName: {}", outputFile.getPath());
-                        // sets right pane
-                        setVideoHelper(outputPathName, 100, 100);
-                        rightPane.getChildren().add(progressIndicator);
-                        rightPane.setMinSize(100, 50);
-                        return true;
-                  }
-                  return false;
-            }
-
-            public void runVideoHelper(String outputPathName) {
-                  progressIndicator = null;
-                  setVideoHelper(outputPathName, 100, 100);
-            }
-
-            /**
-             * Helper method transfers an image provided in the parameter
-             * to a file for this card and section. Resizes the image and
-             * sets it in the rightPane.
-             *
-             * @param imageURL
-             * @return true if successful
-             */
-            private boolean transferImageURL(String imageURL) {
-                  try {
-                        LOGGER.info("in transferImageURL");
-
-                        arrayOfFMShapes.clear();
-                        copyMediaFile(imageURL, 'C');
-                        //setShapeFile(null);
-                        return true;
-                  } catch (Exception e) {
-                        deleteMMcellAction();
-                        LOGGER.warn("WARNING:  Unknown Exception transfering ImageURL {}", e.getMessage());
-                        String errorMessage = " That's a drag. That didn't work." +
-                            "\n Try dragging to the desktop first. " +
-                            "\n then drag from the desk top";
-                        FxNotify.notification("OUCH!!!!", errorMessage, Pos.CENTER, 7,
-                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
-                        e.printStackTrace();
-                  }
-                  return false;
-            }
-
-            public void downloadFile(URL url, String fileName) throws Exception {
-                  try (InputStream in = url.openStream()) {
-                        Files.copy(in, Paths.get(fileName));
-                  }
-            }
-
-
-            /**
-             * Helper method, Copies a media object, ie video or audio provided in the
-             * parameter, to a file for this card and section.
-             *
-             * @param mediaURLStr The media URL or path for the media to be copied
-             * @return ture if successful
-             */
-            private boolean transferVideoURL(String mediaURLStr) {
-                  try {
-                        LOGGER.info("\n *** in transferVideoURL ***");
-                        LOGGER.debug("\tMedia coming from mediaURLStr:  {}", mediaURLStr);
-                        // Create a fileName for this card, and copy
-                        // the file from the URLstring to it.
-                        copyMediaFile(mediaURLStr, 'M');
-                        return true;
-                  } catch (Exception e) {
-                        LOGGER.warn("WARNING: Unknown Exception transfering MediaURL");
-                  }
-                  return false;
-            }
-
-
-            /**
-             * Copies a media file to this cards local directory. Provides the
-             * path name based on mediapath, Names the file based on cardNum and
-             * charLetter. If a folder does not exist, it creates the folder
-             * before inserting the card.
-             * <p>
-             * Non Java capable Audio and Video conversion is provided by JAVE
-             * Java Audio Video Encoder. https://github.com/a-schild/jave2
-             *
-             * @param source    The source path
-             * @param mediaType The char type for this file.
-             *                  'M '= Media(Audio or Video), 'C' = canvas(Image and Drawings)
-             */
-            private void copyMediaFile(String source, char mediaType) {
-                  aviFileName = "";
-                  LOGGER.info("copyMediaFile called, type: {}, source: {}", mediaType, source);
-                  //         authcrypt.UserData data = new authcrypt.UserData();
-                  //String currentCardCID = CreateFlash.getInstance().getCurrentCID();
-
-                  //Rename the file. Get the ending of the file.
-                  int idx = source.lastIndexOf('.');
-                  String ending = source.substring(idx + 1);
-                  DirectoryMgr dirMgr = new DirectoryMgr();
-                  String mediaPath = DirectoryMgr.getMediaPath(mediaType);
-                  LOGGER.debug("mediaPath: " + mediaPath);
-
-                  if (FileOpsUtil.folderExists(new File(mediaPath))) {
-                        LOGGER.debug("copyMediaFile folder exists");
-                        if (mediaType == 'M') {
-                              try {
-                                    //String hash = FileNaming.getVideoHash(source);
-                                    //FileNaming fileNaming = new FileNaming(hash, 'v', ending);
-                                    setMediaFileName(FileNaming.getVideoName(cID, getQorA(), ending));
-                                    //mediaFileName = ;
-                                    String mediaURL = mediaPath + getMediaFileName();
-
-                                    java.nio.file.Path original = Paths.get(source);
-                                    java.nio.file.Path target = Paths.get(mediaURL);
-                                    Files.copy(original, target, REPLACE_EXISTING);
-                              } catch (IOException e) {
-                                    LOGGER.warn("WARNING: IOException while copying file in SectionEditor" +
-                                        "\n from source: {}", source);
-
-                                    e.printStackTrace();
-                              } catch (Exception s) {
-                                    LOGGER.warn(s.getMessage());
-                                    s.printStackTrace();
-                              }
-                        } else {
-                              // it is an image
-                              Image image = new Image("File:" + source);
-                              BufferedImage inputImage = SwingFXUtils.fromFXImage(image, null);
-                              FileNaming fileName = new FileNaming(FileNaming.getImageHash(inputImage), 'i', "." + ending);
-                              // Resize image if larger than 800 x 800
-                              if (800 < image.getHeight() || 800 < image.getWidth()) {
-                                    double scale = Fit.calcScale(image.getWidth(), image.getHeight(), 800, 800);
-                                    LOGGER.debug("scale: " + scale);
-
-                                    double scaledHeight = image.getHeight() * scale;
-                                    double scaledWidth = image.getWidth() * scale;
-                                    java.nio.file.Path targetImg = null;
-                                    try {
-                                          // create output image
-                                          LOGGER.info("copying image by hand");
-                                          setMediaFileName(fileName.getMediaFileName());
-                                          //mediaFileName = fileName.getMediaFileName();
-                                          shapesFileName = FileNaming.getShapesName(getMediaFileName());
-
-
-                                          targetImg = Paths.get(mediaPath + getMediaFileName());
-
-                                          LOGGER.debug("image getType: " + inputImage.getType()
-                                              + "\n ht" + (int) scaledHeight
-                                              + "\n wd" + (int) scaledWidth
-                                              + "\n imgPath:" + targetImg
-                                              + "\n ending: " + ending
-                                          );
-                                          // create output image
-                                          BufferedImage outputImage = new BufferedImage((int) scaledWidth,
-                                              (int) scaledHeight, inputImage.getType());
-                                          Graphics2D g2d = outputImage.createGraphics();
-                                          g2d.drawImage(inputImage, 0, 0, (int) scaledWidth, (int) scaledHeight, null);
-                                          ImageIO.write(outputImage, ending, new File(targetImg.toUri()));
-                                          g2d.dispose();
-                                    } catch (IOException e) {
-                                          LOGGER.error("Error copying image: {}", e.getMessage());
-                                          //e.printStackTrace();
-                                    }
-
-                                    File check = new File(targetImg.toUri());
-                                    if (!check.exists()) {
-                                          LOGGER.warn("WARNING: Image file does not exist");
-                                    }
-                                    // test
-                                    //Image testImage = new Image( "File: " + mediaPath + mediaURL);
-                                    //LOGGER.info("Is image < 800 x 800? wd: {} ht: {}", testImage.getWidth() <= 800, testImage.getHeight() <= 800);
-                              } else {
-                                    // the image is smaller than 800x800
-                                    setMediaFileName(fileName.getMediaFileName());
-                                    //mediaFileName = fileName.getMediaFileName();
-                                    shapesFileName = FileNaming.getShapesName(getMediaFileName());
-                                    String mediaURL = mediaPath + getMediaFileName();
-
-                                    java.nio.file.Path original = Paths.get(source);
-                                    java.nio.file.Path target = Paths.get(mediaURL);
-                                    try {
-                                          Files.copy(original, target, REPLACE_EXISTING);
-                                    } catch (IOException e) {
-                                          LOGGER.warn("WARNING: IOException while copying file in SectionEditor");
-                                    }
-                              }
-                        }
-                  }
-            }
-      } // END INNER CLASS DragAndDrop
-
-
-      /*************************** END INNER CLASSES ***********************/
-
-
       /**
        * Disables buttons for this object. To disable all buttons for the
        * Card editor, call CreateFlash.DisableButtons();
@@ -2131,7 +1648,7 @@ public class SectionEditor {
       public void disableEditorBtns() {
             LOGGER.debug("\n *~*~* disableEditorBtns called *~*~*");
             // disable drag and drop
-            dNdIsdisabled = true;
+            dragAndDrop.setDisabled(true);
 
             if (deleteMMCellBtn != null) {
                   deleteMMCellBtn.setDisable(true);
@@ -2155,7 +1672,7 @@ public class SectionEditor {
        * SectionEditor, call CreateFlash.EnableButtons();
        */
       public void enableEditorBtns() {
-            dNdIsdisabled = false;
+            dragAndDrop.setDisabled(false);
             if (deleteMMCellBtn != null) {
                   deleteMMCellBtn.setDisable(false);
                   deleteTCellBtn.setDisable(false);
@@ -2170,6 +1687,110 @@ public class SectionEditor {
             }
       }
 
+
+      /* ------------------------------------------------------- **/
+
+
+      void saveImageFromImageTool(Image img, String mime) {
+            String deckName = FlashCardOps.getInstance().getDeckLabelName();
+            // Save the image to the FMCanvas Folder
+            // and rename it.
+            String imgNewName = dragAndDrop.saveImage(img, mime, deckName);
+            setMediaFileName(imgNewName);
+      }
+
+
+      /**
+       * The drag and drop handler for this card and section.
+       */
+      @Override
+      public void registerDndOperations() {
+            txtVBox.setOnDragOver(e -> DragAndDrop.getInstance().dragOver(e));
+
+            txtVBox.setOnDragDropped(e -> {
+                  arrayOfFMShapes.clear();
+                  dragAndDrop.dragDropped(e, progressIndicator, cID, qOra, new DnDNode(this));
+                  aviFileNameProperty.set(dragAndDrop.getAVIFileNameProperty().getValue());
+                  String[] mediaFileNames = dragAndDrop.setMediaFileNames(new DnDNode(this));
+                  if(dragAndDrop.isVid()) {
+                        // builds from a file
+                        if(!dragAndDrop.isJave()) {
+                              setVideoHelper(dragAndDrop.getAviURLProperty().get(), 100, 100);
+                        }
+                        } else {
+                        // builds from an image
+                        setImageHelperForRPane(dragAndDrop.getImage());
+                  }
+                  rightPane.setOnMouseClicked(m -> {
+                        rightPaneAction(mediaFileNames);
+                  });
+                  e.consume();
+            });
+      }
+
+      /**
+       * May set a thread to handle long-running video processing.
+       * Ensure usage is thread safe.
+       */
+//      @Override
+//      public void setupValueChangedListeners(DnDNode node) {
+//            isImgXferCompletedProperty().addListener((obs, oldVal, newVal) -> {
+//                  // - Tightly coupled with DragNDrop due to long-running video convert task, and
+//                  // displaying the progressIndicator and video in the rightPane.
+//                  // - Change listeners get pinged every time it is used, created, or reset.
+//                  // prevents unnecessary work.
+//                  if(oldVal.equals(newVal)) { return; }
+//
+//                  node.editor.iView = null;
+//                  if (newVal.intValue() == 1) {
+//
+//                        System.out.println("\n\n\nValue changed in Section Editor \n\n\n");
+//
+//                        if (isImage()) {
+//                              node.editor.getArrayOfFMShapes().clear();
+//                              node.editor.sectionType = DoubleCellType.CANVAS;
+//                              String cID = CreateFlash.getInstance().getCurrentCID();
+//                              String deckName = FlashCardOps.getInstance().getDeckLabelName();
+//                              // Why is there a shapesfilename in drag and drop?
+//                              // shapesFileName = FileNaming.getShapesName(deckName, cID);
+//                              node.editor.setMediaFileName(getAVIFileNameProperty().get());
+//                              // Sets the image in the rPane from
+//                              // the image created in transferImage(...)
+//                              node.editor.setImageHelperForRPane(image);
+//
+//                        } else if (isVid()) {
+//                              node.editor.sectionType = DoubleCellType.AV;
+//                              if (isJave()) {
+//                                    isJaveCompleteProperty().addListener((i, j, k) -> {
+//                                          if (k.intValue() == 1) {
+//                                                runVideoHelper(getAVIFileNameProperty().get(), node);
+//                                          } else {
+//                                                // failed
+//                                          }
+//                                    });
+//                                    node.editor.setMediaFileName(FileNaming.getVideoName(node.editor.cID, node.editor.getQorA(), "mp4"));
+//
+//                                    Thread thread = new Thread(getTask());
+//                                    thread.start();
+//
+//                              } else {
+//                                    node.editor.setMediaFileName(getAVIFileNameProperty().get());
+//                              }
+//                              // sets the video in the rPane
+//                              // to the dragboard file
+//                              // videoURL is from the dragboard.
+//                              node.editor.setVideoHelper(getVidUrl(), 100, 100);
+//                        }
+//                  } else {
+//                        // It failed.
+//                        node.editor.deleteMMcellAction();
+//
+//                        FxNotify.notificationError("OUCH!!!!", getErrorMsg(), Pos.CENTER, 7,
+//                                "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
+//                  }
+//            });
+//
+//      }
 
 
       /* ------------------------------------------------------- **/
@@ -2226,7 +1847,7 @@ public class SectionEditor {
 
       @FMAnnotations.DoNotDeployMethod
       public String getShapesFileNameTestMethod() {
-            return shapesFileName;
+            return shapesFileNameProperty.get();
       }
 }
 

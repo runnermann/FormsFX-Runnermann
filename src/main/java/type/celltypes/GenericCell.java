@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -34,7 +34,7 @@ import javax.print.DocFlavor;
  *
  * @author Lowell Stadelman
  */
-public class GenericCell//  extends GenericSection
+public abstract class GenericCell//  extends GenericSection
 {
       private static final String CANVAS = DirectoryMgr.getMediaPath('C');//"../flashMonkeyFile/media/";
       private static final String MEDIA = DirectoryMgr.getMediaPath('M');//  ../flashMonkeyFile/media/";
@@ -50,33 +50,31 @@ public class GenericCell//  extends GenericSection
        * @param fileNames Files as an array. Expects the image or media to be at idx [0], shapes array idx [1]
        * @return Returns the cell containing a media
        */
-      public Pane cellFactory(char cellType, Pane pane, int paneWd, int paneHt, String... fileNames) {
-            //final String CANVAS = DirectoryMgr.getMediaPath('C');//"../flashMonkeyFile/media/";
-            //final String MEDIA = DirectoryMgr.getMediaPath('M');//  ../flashMonkeyFile/media/";
+      public static Pane cellFactory(CellLayout cellType, Pane pane, int paneWd, int paneHt, String... fileNames) {
             // Upper case is double section, lower case single section
-            switch (cellType) {
+            switch (cellType.get()) {
                   case 'M': {// Audio or Video doubleCell section
-                        AVCell mCell = new AVCell();
+                        final AVCell mCell = new AVCell();
                         return mCell.buildCell(100, 100, MEDIA + fileNames[0]);
                   }
                   case 'm': // Audio or video for singleCell section
                   {
-                        HBox containerHBox = new HBox();
+                        final HBox containerHBox = new HBox();
                         containerHBox.setPrefSize(paneWd, paneHt);
                         containerHBox.setId("whiteCurvedContainer");
                         containerHBox.setAlignment(Pos.CENTER);
-                        AVCell mCell = new AVCell();
+                        final AVCell mCell = new AVCell();
                         containerHBox.getChildren().add(mCell.buildCell(200, 200, MEDIA + fileNames[0]));
                         return containerHBox;
                   }
                   case 'c': // image or both. for singleCell section
                   case 'd': // drawing no image. singleCell
                   {
-                        HBox containerHBox = new HBox();
+                        final HBox containerHBox = new HBox();
                         containerHBox.setPrefSize(paneWd, paneHt);
                         containerHBox.setId("whiteCurvedContainer");
                         containerHBox.setAlignment(Pos.CENTER);
-                        String[] canvasPaths = new String[2];
+                        final String[] canvasPaths = new String[2];
                         int i = 0;
                         CanvasCell cCell = new CanvasCell();
 
@@ -89,9 +87,9 @@ public class GenericCell//  extends GenericSection
                   case 'C': // image, or both. for doubleCell section
                   case 'D': // drawing, no image. doubleCell
                   default: {
-                        String[] canvasPaths = new String[2];
+                        final String[] canvasPaths = new String[2];
                         int i = 0;
-                        CanvasCell cCell = new CanvasCell();
+                        final CanvasCell cCell = new CanvasCell();
 
                         for (String s : fileNames) {
                               canvasPaths[i++] = CANVAS + s;
@@ -108,13 +106,15 @@ public class GenericCell//  extends GenericSection
        * @param text
        * @return
        */
-      public Pane cellFactory(String text, int paneWd, int paneHt, int numSections, boolean isEqual, double otherHt) {
-            TextCell tCell = new TextCell();
+      public static Pane cellFactory(String text, int paneWd, int paneHt, int numSections, boolean isEqual, double otherHt) {
+            final TextCell tCell = new TextCell();
             return tCell.buildCell(text, "", paneWd, paneHt, numSections, isEqual, otherHt);
       }
 
-      public ScrollPane cellFactory(String response, int paneWd, int paneHt, int numSections) {
-            DjkResponseCell djk = new DjkResponseCell();
+      public static ScrollPane cellFactory(String response, int paneWd, int paneHt, int numSections) {
+            final DjkResponseCell djk = new DjkResponseCell();
             return djk.buildCell(response, paneWd, paneHt, numSections);
       }
+
+
 }

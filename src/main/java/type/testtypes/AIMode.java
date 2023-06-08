@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -24,6 +24,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import flashmonkey.FlashCardMM;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import uicontrols.ButtoniKon;
@@ -78,9 +79,22 @@ public class AIMode extends TestTypeBase implements GenericTestType<AIMode> {
             return 0b0000000000011111;
       }
 
+      /**
+       * Return the time until the answer
+       * was clicked. If answer was not clicked
+       * e.g. another button was clicked,
+       * this time should not be stored.
+       *
+       * @return
+       */
       @Override
-      public char getCardLayout() {
-            return 'D'; // double horizontal
+      public int getSeconds() {
+            return 0;
+      }
+
+      @Override
+      public CardLayout getCardLayout() {
+            return CardLayout.DOUBLE_HORIZ; // double horizontal
       }
 
       @Override

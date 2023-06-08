@@ -78,11 +78,6 @@ public class ConsumerPane extends StackPane {
       private void layoutSearch() {
             LOGGER.debug("layoutSearch called");
             mainStackPane.getChildren().clear();
-            //AnchorPane.setTopAnchor(searchPane.getMainPane(), 0.0);
-            //AnchorPane.setLeftAnchor(searchPane.getMainPane(), 0.0);
-            // set 20 from left and 50 from top
-            //layer1.getFormPane().setPadding(new Insets(20,0,0,50));
-            //mainStackPane.getChildren().add(layer2Anchor);
             mainStackPane.getChildren().add(searchPane.getMainGridPane());
       }
 
@@ -96,15 +91,8 @@ public class ConsumerPane extends StackPane {
             AnchorPane.setTopAnchor(bp, 28.0);
             AnchorPane.setLeftAnchor(bp, 42.0);
             layer2Anchor.setMaxWidth(600);
-            // EcoPurchase ep = new EcoPurchase();
             layer1 = DeckMarketPane.getInstance(); // everything else
-            //layer0.getMarketPane().setAlignment((Pos.TOP_LEFT));
-            //layer1.getFormPane().setAlignment(Pos.CENTER_LEFT);
-            //layer1.getFormPane().setPadding(new Insets(0,0,0,50));
             mainStackPane.getChildren().clear();
-            //
-            // mainPane.setAlignment(Pos.TOP_LEFT);
-            // StackPane contains layer0 & layer1 that are Objects, need to use getPane().
             mainStackPane.getChildren().addAll(layer1.getMarketPane(), layer2Anchor);
       }
 
@@ -113,15 +101,11 @@ public class ConsumerPane extends StackPane {
             private static void layoutWebView(WebEcoPane eco) {
                   LOGGER.debug("layoutWebView called");
                   WebEcoPane ePane = eco;
-
                   BorderPane bp = ePane.getPurchasePane();
                   AnchorPane layer3 = new AnchorPane(bp);
-                  //DeckMarketPane dmpInstance = DeckMarketPane.getInstance();
                   AnchorPane.setTopAnchor(bp, 30.0);
                   AnchorPane.setLeftAnchor(bp, 370.0);
                   // @TODO setmaxheigth to be responsive
-                  //bp.setMaxHeight(370);
-                  //layer3.setMaxHeight(370);
                   mainStackPane.getChildren().add(layer3);
             }
 
@@ -133,7 +117,7 @@ public class ConsumerPane extends StackPane {
                         layoutWebView(ePane);
                   } else {
                         String errorMessage = " Please select a deck for your purchase";
-                        CreateFlash.getInstance().metaAlertPopup(errorMessage);
+                        CreateFlash.getInstance().metaAlertPopup("Ooph!", errorMessage);
                   }
             }
 

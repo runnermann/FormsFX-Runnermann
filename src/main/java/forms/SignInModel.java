@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
  */
 public class SignInModel {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(SignInModel.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(SignInModel.class);
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SignInModel.class);
       private final StringProperty field1 = new SimpleStringProperty("");
       private final FirstDescriptor descriptor = new FirstDescriptor();
@@ -85,7 +85,7 @@ public class SignInModel {
             getFormInstance().persist();
             UserData.setUserName(descriptor.getSiOrigEmail().toLowerCase());
 
-            LOGGER.debug("formAction() userName from form: {}", descriptor.getSiOrigEmail().toLowerCase());
+            //LOGGER.debug("formAction() userName from form: {}", descriptor.getSiOrigEmail().toLowerCase());
 
             if (validate()) {
                   SoundEffects.ACCESS_GRANTED.play();
@@ -109,7 +109,7 @@ public class SignInModel {
       // - If connected, returns
       // the response from VertX. If ifConnected & ifSuccessful, gets deckList from s3 and synchronizes with local list if exists.
       private boolean validate() {
-            LOGGER.info("validatorActionSwitch() called");
+            //LOGGER.info("validatorActionSwitch() called");
             // We interface with s3resources underneath to prevent storing unencrypted passwords.
             Auth a = new Auth(field1.get(), descriptor.getSiOrigEmail().toLowerCase());
             // validatorActionSwitch, the forms input.

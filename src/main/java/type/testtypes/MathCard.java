@@ -9,15 +9,17 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 
+import javafx.scene.text.Text;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
+import type.cardtypes.CardLayout;
+import type.celltypes.CellLayout;
+import type.celltypes.SingleCellType;
 import type.tools.calculator.*;
-//import type.tools.calculator.Expression;
+
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import type.sectiontype.GenericSection;
-import uicontrols.ButtoniKon;
-import uicontrols.FxNotify;
-import uicontrols.SceneCntl;
-import uicontrols.UIColors;
+import uicontrols.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -65,32 +67,39 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
       private static MathCard CLASS_INSTANCE;
 
+      // Parses the input from the user
+      // Informs the user when an error occurs.
       protected DijkstraParser parser;
 
-      /**
+
+      // The GenericSection object
+      private GenericSection genSection;
+      /*
        * Panes
        **/
       // Contains the entire card
-      protected GridPane gPane;// vBox;
+      protected GridPane gPane;
       // Contains the upper Section
       private HBox upperHBox;
-      // contains the lower Section
+      // Contains the lower Section
       private final GridPane lowerGridP = new GridPane();
       // Contains the interactive indicator over the question
-      private Pane uPane;
+      private Pane interActiveQPane;
+      private StackPane uStackPane;
+
       // Contains the answer field
       private TextField userAnsField;
-      // The GenericSection object
-      private GenericSection genSection;
+
       // Answer Button
       private Button selectAnsButton;
       // The Mathmatical expression from/for the question
       protected String expression;
       // Problem as executed by DijkstraParser
       private static String[] ansComponents;
-      // Buttons
-      Button calcButton = new Button("Calc");
-      //final ButtoniKonClazz CALC_BUTTON = new ButtoniKonClazz("FIND", "Search for images, videos, animations, and tools", Entypo.MAGNIFYING_GLASS,UIColors.FM_WHITE);
+      // Controls unique to this CardType
+      final ButtoniKonClazz CHECK_BUTTON = new ButtoniKonClazz("CALCULATOR", "Check for formatting errors,\n and check the answer.", FontAwesomeSolid.CALCULATOR,UIColors.FM_WHITE, ButtoniKonClazz.SIZE_24);
+      private Button checkButton;
+      private long millis;
 
       /**
        * Default No-Args Constructor
@@ -111,32 +120,42 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
        * Builds the Test Editor Pane for this card
        *
        * @param flashList
-       * @param p         The formula for the math/Algebra/Trig/Calc problem
-       * @param r         The response when the EncryptedUser.EncryptedUser gets the answer wrong or correct.
+       * @param p The formula for the math/Algebra/Trig/Calc problem
+       * @param r The response when the EncryptedUser.EncryptedUser gets the answer wrong or correct.
        * @return Returns the Vbox with problem card and response card.
        */
       @Override
       public VBox getTEditorPane(ArrayList<FlashCardMM> flashList, SectionEditor p, SectionEditor r, Pane pane) {
+            setButtons();
             // Instantiate vBox and "set spacing" !important!!!
             VBox vBox = new VBox(2);
             StackPane sPane = new StackPane();
             p.sectionHBox.setPrefHeight(SceneCntl.calcCellHt());
             // Set prompt in Question/upperBox
             p.setPrompt("Enter Math Formula");
-            r.setPrompt("Enter the response if answered incorrectly. Use calc button below to check for errors. The response will be displayed " +
-                "in review / Q and A mode. Video and images may be used in this area and will be displayed during review mode or if the answer is " +
-                "incorrect during test mode.");
+            r.setPrompt("Enter an explanation on how to solve this problem. Use the 'CHECK ANSWER' button to check for format mistakes and " +
+                    " ensure the answer is what is expected. " +
+                    " \n\nThis area is displayed in the answer during Q&A Mode. During Test mode, it is shown along with " +
+                    " how FlashMonkey solved the problem when the user has entered an incorrect answer. " +
+                    " Video, images with annotations may be used in this area to assist with or provide an in depth explanation.");
 
             sPane.getChildren().add(p.sectionHBox);
             vBox.getChildren().addAll(sPane, r.sectionHBox);
-            vBox.getChildren().add(calcButton);
+            vBox.getChildren().add(checkButton);
 
-            calcButton.setOnAction(e -> {
+            this.checkButton.setOnAction(e -> {
                   expression = p.getText();
                   calcButtonAction(expression, p, r);
             });
 
             return vBox;
+      }
+
+      /* ------------------------------------------------- **/
+
+      private void setButtons() {
+            this.checkButton = CHECK_BUTTON.get();
+            this.checkButton.setId("blueButtonRndBdr");
       }
 
 
@@ -152,31 +171,44 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
       @Override
       public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
 
+            millis = System.currentTimeMillis();
             // Clear the Operator answer components arrayList
- //           if (Operator.hasOperators()) {
-                  Operator.clearAnsComponents();
- //           }
+            Operator.clearAnsComponents();
 
             genSection = GenericSection.getInstance();
             gPane = new GridPane();
             gPane.setVgap(2);
 
             // The Interactive Question pane.
-            // Contains circle pointer.
-            uPane = new Pane();
-            uPane.setMinHeight(SceneCntl.calcCellHt());
-            uPane.setMaxHeight(SceneCntl.calcCellHt());
+            // Contains line pointer.
+            uStackPane = new StackPane();
+            uStackPane.setAlignment(Pos.TOP_LEFT);
+            interActiveQPane = new Pane();
+            interActiveQPane.setStyle("-fx-background-color: TRANSPARENT");
+            interActiveQPane.setMaxWidth(ReadFlash.getInstance().getMasterBPane().getWidth() - 110);
+            interActiveQPane.setMaxHeight(100);
+
             // Answer button in Test Mode
-            selectAnsButton = ButtoniKon.getAnsSelect();
+            if (selectAnsButton == null) {
+                  selectAnsButton = ButtoniKon.getAnsSelect();
+            } else {
+                  selectAnsButton = ButtoniKon.getJustAns(selectAnsButton, "SELECT");
+            }
+
             selectAnsButton.setOnAction(e -> ansButtonAction(cc, parentPane));
 
             // The String expression displayed to the EncryptedUser.EncryptedUser
             // Stored in the currentCard.
             expression = cc.getQText();
 
-            double lowerHt = parentPane.getHeight() - 60;
-            upperHBox = genSection.sectionFactory(expression, cc.getQType(), 2, false, lowerHt, cc.getQFiles());
-            uPane.getChildren().add(upperHBox);
+            upperHBox = genSection.sectionFactory(expression, cc.getQType(), 3, true, 0, cc.getQFiles());
+            uStackPane.getChildren().addAll(upperHBox, interActiveQPane);
+
+            upperHBox.heightProperty().addListener( (o, h, n) -> {
+                  uStackPane.setMinHeight(n.doubleValue());
+                  uStackPane.setMaxHeight(n.doubleValue());
+            });
+
 
             /* ----------------------- **/
 
@@ -202,18 +234,26 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // how to fix the problem. Note that the button and
             // text field in the lowerStack are cleared by answerWrong().
             lowerGridP.add(lowerVBox, 0, 0, 2, 1);
+            HBox lowerHBox = genSection.sectionFactory("", SingleCellType.TEXT, 3, true, 0, null);
+
+            StackPane lstackP = new StackPane();
+            lstackP.setAlignment(Pos.CENTER);
+            lstackP.getChildren().addAll(lowerHBox, lowerGridP);
 
             gPane.getChildren().clear();
-            gPane.addRow(3, lowerGridP);
-            gPane.addRow(2, uPane); // upperHBox
+
+
+
+            gPane.addRow(2, uStackPane); // upperHBox
+            gPane.addRow(3, lstackP);
+
             // Transition for Question, Right & end button click
-            FMTransition.setQRight(FMTransition.transitionFmRight(uPane));
+            FMTransition.setQRight(FMTransition.transitionFmRight(uStackPane));
             // Transition for Question, left & start button click
-            FMTransition.setQLeft(FMTransition.transitionFmLeft(uPane));
+            FMTransition.setQLeft(FMTransition.transitionFmLeft(uStackPane));
             // Transition for Answer
-            FMTransition.setAWaitTop(FMTransition.waitTransFmTop(lowerVBox, 30, 300, 300));
+            FMTransition.setAWaitTop(FMTransition.waitTransFmTop(lstackP, 0, 300, 350));
             FMTransition.getQRight().play();
-            FMTransition.getAWaitTop().play();
 
             return gPane;
       } // END Test READ PANE
@@ -238,6 +278,12 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
       }
 
       @Override
+      public int getSeconds() {
+            long now = System.currentTimeMillis();
+            return (int) (now - millis) / 1000;
+      }
+
+      @Override
       public String getName() {
             return "Math Card";
       }
@@ -252,8 +298,8 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
        * @return
        */
       @Override
-      public char getCardLayout() {
-            return 'D'; // double horizontal
+      public CardLayout getCardLayout() {
+            return CardLayout.DOUBLE_HORIZ; // double horizontal
       }
 
       /* ------------------------------------------------- **/
@@ -270,7 +316,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
       @Override
       public Button getAnsButton() {
-            return selectAnsButton;
+            return this.selectAnsButton;
       }
 
       @Override
@@ -316,14 +362,18 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
 
       public void ansButtonAction(FlashCardMM cc, final Pane parentPane) {
+            String response = userAnsField.getText();
+            if (response.length() == 0) {
+                  userAnsField.setPromptText("Enter a valid response.");
+                  return;
+            }
             changed();
             // The users response
-            String response = userAnsField.getText();
 
             // Solves the expression
             parser = new DijkstraParser(expression);
-            double lowerHt = parentPane.getHeight();
-            double progress = ReadFlash.getInstance().getProgress();
+            final double lowerHt = parentPane.getHeight();
+            final double progress = ReadFlash.getInstance().getProgress();
 
             final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             final FlashCardOps fo = FlashCardOps.getInstance();
@@ -331,13 +381,11 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             rf.getProgGauge().moveNeedle(500, rf.incProg());
             // card from the arrayList - Used to update data in the ArrayList Card
             FlashCardMM listCard = fo.getFlashList().get(currentCard.getANumber());
+            listCard.setSeconds(getSeconds());
 
 
-            if (response.isEmpty()) {
-                  userAnsField.setPromptText("Enter a valid response.");
-            } else if (response.contains("/") && expression.contains("/")) {
+            if (response.contains("/") && expression.contains("/")) {
                   // It's a fraction
-
                   userAnsField.setEditable(false);
                   selectAnsButton.setDisable(true);
                   ExpNode exp = Operator.getLast();
@@ -412,23 +460,61 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // Parses the expresssion
             parser = new DijkstraParser(expression);
 
-            if (DijkstraParser.isInvalidInput()) {
+            if (parser.isInvalidInput()) {
+                  // If there is an error.
+                  String style = "-fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: 600;";
                   // Insert a temporary error message into the
                   // text area
+                  String msg01;
+                  String error = parser.getErrorStr();
+                  if(parser.isLetterError()) {
+                        msg01 = "I cannot solve for " + error;
+                  } else {
+                        msg01 = parser.getErrorMessage();
+                  }
 
-                  StringBuilder sb = new StringBuilder();
-                  sb.append(expression);
-                  sb.append("\n\n " + parser.getErrorMessage());
-                  FxNotify.notification("", " Hmmmm! " + sb, Pos.CENTER, 15,
-                      "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
+                  Text errorTxt = new Text(error);
+                  errorTxt.setStyle("-fx-font-family: Arial; -fx-font-size: 16px; -fx-font-weight: 800;");
+                  errorTxt.setFill(Color.RED);
+                  FMAlerts alert = new FMAlerts();
 
+                  int start = (parser.getErrorStrStartIdx());
+                  // subtract one from start;
+                  start--;
+                  // Prevent less than 0 for the 1st element problem.
+                  start = Math.max(start, 0);
+                  String firstStr = expression.substring(0, start);
+                  Text firstTxt = new Text(firstStr);
+                  int end = parser.getErrorStrEndIdx();
+                  // add one to the end
+                  end++;
+                  //end = end < expression.length() ? end : expression.length() - 1;
+                  Text secondTxt;
+                  if(end < expression.length() - 1) {
+                        String second = expression.substring(end);
+                        secondTxt = new Text(second);
+                  } else {
+                        secondTxt = new Text();
+                  }
+                  firstTxt.setStyle(style);
+                  secondTxt.setStyle(style);
+                  HBox expBox = new HBox(2);
+                  expBox.getChildren().addAll(firstTxt, errorTxt, secondTxt);
+                  FMAlerts alerts = new FMAlerts();
+                  VBox box = alerts.alertPane(msg01, expBox);
+                  alert.mathErrorAlert("Format Error", box);
             } else {
                   StringBuilder sb = new StringBuilder(lEditor.getText());
-                  sb.append("\n\nRESPONSE = ");
+                  sb.append("\nresult = ");
                   sb.append(parser.getResult());
                   sb.append("\n");
                   lEditor.setText(sb.toString());
             }
+            parser.clearErrors();
+      }
+
+      private String errorExpression(String expression, String errorStr) {
+            return expression.replace(errorStr, " <b>" + errorStr + "<\\b> ");
       }
 
       /* --------------------------------------------------------------------
@@ -454,8 +540,11 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // The upper section of the interactive that indicates
             // the math operator that is used.
             StackPane upperStack = new StackPane();
-            HBox uHBox = genSection.sectionFactory("", cc.getQType(), 2, false, lowerHt, cc.getQFiles());
+            upperStack.setAlignment(Pos.TOP_LEFT);
+
+            HBox uHBox = genSection.sectionFactory("", cc.getQType(), 2, true, 0, cc.getQFiles());
             HBox iq = interActiveQuestion(DijkstraParser.getWriterList());
+            iq.setMaxWidth(ReadFlash.getInstance().getMasterBPane().getWidth() - 100);
             iq.setPadding(new Insets(15));
             upperStack.getChildren().addAll(uHBox, iq);
             upperHBox.getChildren().clear();
@@ -464,7 +553,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // the lower section containing the list section that
             // the user's mouse is hovering over.
 
-            vBox.getChildren().add(new TextField("Solve L -> R using PERMDAS"));
+            vBox.getChildren().add(new TextField("Hover over the sub-answer"));
             vBox.getChildren().add(getResponseBox());
             vBox.setAlignment(Pos.TOP_LEFT);
 
@@ -510,19 +599,21 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
       // Used by lambda in getResponseBox
       private HBox expHBox = new HBox();
       private int prevIdx = 0;
-      private final Circle circle = new Circle(8);
+      private final Line line = new Line();
+
       //Rectangle rect = new Rectangle(18 , 22);
       ArrayList<TextField> textFAry;
 
       /**
-       * Provides the step by step evaluation of the math
-       * problem
+       * Provides the interactive step by step evaluation of the math
+       * problem that is set in the lower pane.
        *
        * @return returns a ScrollPane with an HBox containing the evaluations
        * in ordered form.
        */
       private ScrollPane getResponseBox() {
             VBox vBox = new VBox(2);
+            vBox.setStyle("-fx-background-color: WHITE");
             ScrollPane scrollPane = new ScrollPane();
 
             while ( ! Operator.hasOperators()) {
@@ -542,13 +633,11 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
                         tf.setStyle("-fx-border-color: TRANSPARENT; -fx-border-width: 2px;-fx-background-color: TRANSPARENT; -fx-text-fill: BLACK");
                   });
                   vBox.getChildren().add(tf);
-                  //vBox.setMaxWidth(exp.getExpSolved().length() + 4);
             }
-            //clear Operator for the next problem
-//            Operator.clearAnsComponents();
 
 
             scrollPane.setContent(vBox);
+            scrollPane.setStyle("-fx-background-color: WHITE");
             scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scrollPane.setFitToWidth(true);
             return scrollPane;
@@ -560,7 +649,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
 
       /**
-       * Sets the Interactive problem when the users response is answered incorrectly. It
+       * Shows the Interactive Circles  when the users response is answered incorrectly. It
        * adds a circle/rectangle over the operator when the EncryptedUser selects an answer part in
        * the response box.
        *
@@ -568,25 +657,27 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
        * @param expIdx
        */
       private void setIActiveStyle(int prevIdx, int expIdx) {
-            uPane.getChildren().remove(circle);
-            circle.setFill(Color.TRANSPARENT);
-            circle.setStroke(Color.web(UIColors.HIGHLIGHT_ORANGE));
-            circle.setStrokeWidth(2);
+            interActiveQPane.getChildren().remove(line);
+
+            line.setStroke(Color.web(UIColors.HIGHLIGHT_ORANGE));
+            line.setStrokeWidth(4);
             TextField tef = textFAry.get(expIdx);
-            double x = tef.getLayoutX() + (tef.getWidth() / 2);
-            double y = tef.getLayoutY() + (tef.getHeight() / 2);
-            circle.setCenterX(x);
-            circle.setCenterY(y);
-            //System.out.println("Circle center is x & y " + circle.getCenterX() + " " + circle.getCenterY() );
-            // Set the circle in the userPane. The problem UI field.
-            uPane.getChildren().add(circle);
+            double startX = tef.getLayoutX();
+            double endX = startX + tef.getWidth();
+            double y = tef.getLayoutY() + (tef.getHeight() + 2);
+            line.setStartX(startX);
+            line.setEndX(endX);
+            line.setStartY(y);//.setCenterY(y);
+            line.setEndY(y);
+            // Set the line in the userPane. The problem UI field.
+            interActiveQPane.getChildren().add(line);
 
       }
 
       /* ------------------------------------------------- **/
 
       private void mouseExitedExpBox() {
-            uPane.getChildren().remove(circle);
+            interActiveQPane.getChildren().remove(line);
       }
 
       /* ------------------------------------------------- **/

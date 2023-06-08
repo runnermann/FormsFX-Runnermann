@@ -17,15 +17,17 @@ import media.sound.SoundEffects;
 import multimedia.AnswerMM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
+import type.celltypes.CellLayout;
+import type.celltypes.DoubleCellType;
 import type.sectiontype.GenericSection;
 import uicontrols.ButtoniKon;
 import uicontrols.FxNotify;
 
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.stream.Collectors;
 
 //import static flashmonkey.ReadFlash.FLASH_CARD_OPS;
 
@@ -54,6 +56,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
       private Button prevAnsButton;
       private Button selectAnsButton;
       private HBox ansButtonBox;
+      private long millis;
 
       // testAnswer index, The array of 4 answers for this question.
       protected int taIndex = 0;
@@ -62,7 +65,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
        * Default No-Args Constructor
        */
       private MultiChoice() {
-            setScore(2);
+            setScore(2); // ???
       }
 
       /**
@@ -73,7 +76,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
        * @return
        */
       public static synchronized MultiChoice getInstance() {
-            LOGGER.info(" **** MULTICHOICE getInstance() called ****");
+            //LOGGER.setLevel(Level.ALL);
 
             if (CLASS_INSTANCE == null) {
                   CLASS_INSTANCE = new MultiChoice();
@@ -120,7 +123,9 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
       public GridPane getTReadPane(FlashCardMM currentCard, GenericCard genCard, Pane parentPane) {
             LOGGER.debug("\n\n*** GET-T-READ-PANE in multi-choice testcard ****");
 
-            // Each section is it's own object. Not using GenericCard
+            millis = System.currentTimeMillis();
+
+            // Each section is its own object. Not using GenericCard
             genSection = GenericSection.getInstance();
             GridPane gPane = new GridPane();
             gPane.setVgap(2);
@@ -152,13 +157,10 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                   selectAnsButton = ButtoniKon.getJustAns(selectAnsButton, "SELECT");
             }
             selectAnsButton.setOnAction(e -> ansButtonAction());
-
             // Set keyActions for the answerButtons. MasterPaneFrom ReadFlash
             ReadFlash.getInstance().setShowAnsNavBtns(true);
-
             // add the question to vBox
             upperHBox = genSection.sectionFactory(currentCard.getQText(), currentCard.getQType(), 2, true, 0, currentCard.getQFiles());
-
             // add the answer to the StackPane, add the answer button, and add the stackPane to the vBox.
             AnswerMM firstAns = test.ansAry[0];
             lowerHBox = genSection.sectionFactory(firstAns.getAText(), firstAns.getAType(), 2, true, 0, firstAns.getAFiles());
@@ -180,7 +182,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
 
             gPane.addRow(2, stackP);
             gPane.addRow(1, upperHBox);
-
+            // Transitions for this type. Set to play on the button press in ReadFlash.
             // Transition for Question, Right & end button click
             FMTransition.setQRight(FMTransition.transitionFmRight(upperHBox));
             // Transition for Question, left & start button click
@@ -218,8 +220,14 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
       }
 
       @Override
-      public char getCardLayout() {
-            return 'D'; // double horizontal
+      public int getSeconds() {
+            long now = System.currentTimeMillis();
+            return (int) (now - millis) / 1000;
+      }
+
+      @Override
+      public CardLayout getCardLayout() {
+            return CardLayout.DOUBLE_HORIZ; // double horizontal
       }
 
       @Override
@@ -258,18 +266,17 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
 
             // card from the arrayList - Used to update data in the ArrayList Card
             FlashCardMM listCard = fo.getFlashList().get(currentCard.getANumber());
+            listCard.setSeconds(getSeconds());
 
             rf.getProgGauge().moveNeedle(500, rf.incProg());
 
-            listCard.setSeconds((int) (test.time.getTotalTime() / 1000));
 
-            /** if the reference to the currentCard.answer == the users choice, question was answered correctly */
+            /* if the reference to the currentCard.answer == the users choice, question was answered correctly */
             if (test.getTheseAns()[taIndex] == currentCard.getAnswerMM()) {
                   rf.new RightAns(currentCard, this);
             } else {
                   rf.new WrongAns(currentCard, this);
             }
-            selectAnsButton.setDisable(true);
 
             double progress = ReadFlash.getInstance().getProgress();
             if (progress >= FMTWalker.getInstance().getCount()) {
@@ -301,7 +308,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             LOGGER.debug("\ttaIndex = " + taIndex);
             // Get the next answer, taIndex is already incremented
             String aTxt = test.ansAry[taIndex].getAText();
-            char cellType = test.ansAry[taIndex].getAType();// getMediaType();
+            CellLayout cellType = test.ansAry[taIndex].getAType();// getMediaType();
             String[] files = test.ansAry[taIndex].getAFiles();
             // Set the next answer in the lowerHBox
             lowerHBox.getChildren().clear();
@@ -324,7 +331,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
        */
       @Override
       public void prevAnsButtAction() {
-            SoundEffects.SLIDE_LEFT.play();
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             LOGGER.debug("\n~*~*~ prevAnsButtAction called ~*~*~");
             //selectAnsButton.setVisible(true);
             taIndex--;
@@ -337,7 +344,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                   }
             }
             String aTxt = test.ansAry[taIndex].getAText();
-            char cellType = test.ansAry[taIndex].getAType();// getMediaType();
+            CellLayout cellType = test.ansAry[taIndex].getAType();// getMediaType();
             String[] files = test.ansAry[taIndex].getAFiles();
             lowerHBox.getChildren().clear();
             HBox answerHBox = genSection.sectionFactory(aTxt, cellType, 2, true, 0, files);
@@ -459,7 +466,6 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             private HashSet<AnswerMM> buildQualifiedSet(ArrayList<FlashCardMM> flashList) {
                   // create hashset
                   HashSet<AnswerMM> qualifiedHashSet = new HashSet<>(20);
-                  int odd;
 
                   // loop through the flashList and if the int (testType) is larger
                   // than 32768 then it is qualifiedHashSet for the list.
@@ -481,7 +487,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
             }
 
 
-            SecureRandom secRandom = new SecureRandom();
+            private SecureRandom secRandom = new SecureRandom();
             /**
              * Creates a set of random answers
              * including the correctAnswer. Randomly
@@ -515,43 +521,29 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
 
                   int i = 0;
                   // Build the answer set by adding qualified
-                  // 3 additional answers fo make a total of 4
+                  // 3 additional answers to make a total of 4
                   try {
-                        while (ansHashSet.size() < 4 && i < 4) {
-                              int num = secRandom.nextInt(altSet.size() -1);
-                              AnswerMM answerMM = altSet.remove(num);
-                              LOGGER.debug("\tPrinting in while loop " + answerMM);
-                             boolean b = ansHashSet.add(new HashObj(answerMM));
-                             if(b) {
-                                   i++;
-                             }
+                        while (ansHashSet.size() < 4 && altSet.size() > 0) {
+                              if(altSet.size() ==1) {
+                                    ansHashSet.add(new HashObj(altSet.remove(0)));
+                              } else {
+                                    int num = secRandom.nextInt(altSet.size() - 1);
+                                    AnswerMM answerMM = altSet.remove(num);
+                                    LOGGER.debug("\tPrinting in while loop " + answerMM);
+                                    ansHashSet.add(new HashObj(answerMM));
+                              }
                         }
-                  } catch (NoSuchElementException e) {
                         if (ansHashSet.size() < 4) {
                               // display a popup
-                              Platform.runLater(() -> {
-                                    String msg = "  I didn't expect that." +
-                                        "\n  There are not enough Multi-Choice compatible questions for me to work.  " +
-                                        "\n  Please create more Multi-Choice questions.";
-
-                                    FxNotify.notification("", " ouch! " + msg, Pos.CENTER, 8,
-                                        "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
-
-                                    // disable the answer buttons
-                                    nextAnsButton.setDisable(true);
-                                    prevAnsButton.setDisable(true);
-                                    selectAnsButton.setDisable(true);
-                              });
-
-                              // Set the answer box to the correct answer
-                              AnswerMM ansMM = new AnswerMM();
-                              ansMM.setAText(correctAnswer.getAText());
-                              AnswerMM[] ansAry = new AnswerMM[1];
-                              ansAry[0] = ansMM;
-                              // return the answer array and end this method.
-                              return ansAry;
+                              return notifyErrorResponse(ansHashSet.size(), correctAnswer);
                         }
+                  } catch (NoSuchElementException e) {
+                        return notifyErrorResponse(ansHashSet.size(), correctAnswer);
+                  } catch (IllegalArgumentException e) {
+                        return notifyErrorResponse(ansHashSet.size(), correctAnswer);
                   }
+
+
                   // In case there are not enough multi-choice cards and the error
                   // was not caught previously.
 
@@ -580,6 +572,42 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
                         //@TODO remove system.exit if repeats occur in multichoice test.
                   }
                   return resultList;
+            }
+
+            private AnswerMM[] notifyErrorResponse(int ansHashSetSize, AnswerMM correctAnswer) {
+                  //if (ansHashSetSize < 4) {
+                        // display a popup
+                        Platform.runLater(() -> {
+                              notifyErrorResponseHelper(ansHashSetSize);
+                        });
+
+                        // Set the answer box to the correct answer
+                        AnswerMM ansMM = new AnswerMM();
+                        ansMM.setAText(correctAnswer.getAText());
+                        AnswerMM[] ansAry = new AnswerMM[1];
+                        ansAry[0] = ansMM;
+                        // return the answer array and end this method.
+                        return ansAry;
+                  //}
+            }
+
+            private void notifyErrorResponseHelper(int ansHashSetSize) {
+                  if (ansHashSetSize < 4) {
+                        // display a popup
+                        Platform.runLater(() -> {
+                              String msg = "  I didn't expect that." +
+                                      "\n  There are not enough Multi-Choice compatible questions for me to work.  " +
+                                      "\n  Please create more Multi-Choice questions.";
+
+                              FxNotify.notificationError("", " ouch! " + msg, Pos.CENTER, 8,
+                                      "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
+
+                              // disable the answer buttons
+                              nextAnsButton.setDisable(true);
+                              prevAnsButton.setDisable(true);
+                              selectAnsButton.setDisable(true);
+                        });
+                  }
             }
 
             /**

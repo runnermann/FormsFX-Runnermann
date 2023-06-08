@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 import flashmonkey.Answer;
 import flashmonkey.FlashMonkeyMain;
+import type.celltypes.CellLayout;
+import type.celltypes.SingleCellType;
 
 /**
  * @author Lowell Stadelman
@@ -15,7 +17,7 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
       /**
        * VARIABLES
        **/
-      private char aType;
+      private CellLayout aType;
       private String[] aFiles;
 
       /**
@@ -23,7 +25,7 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
        */
       public AnswerMM() {
             super("", 0, DEF_LIST);
-            this.aType = 't';
+            this.aType = SingleCellType.TEXT;
       }
 
       /**
@@ -36,7 +38,7 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
        * @param type   M = media (video and audio) , D = drawing, S = shape, defualt = null
        * @param ansSet
        */
-      public AnswerMM(String txt, int aNum, char type, ArrayList<Integer> ansSet, String[] fileAry) {
+      public AnswerMM(String txt, int aNum, CellLayout type, ArrayList<Integer> ansSet, String[] fileAry) {
             super(txt, aNum, ansSet);
             this.aType = type;
             //this.aFiles = fileAry;
@@ -62,7 +64,7 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
 
       /*** SETTERS ***/
 
-      public void setAType(char type) {
+      public void setAType(CellLayout type) {
             this.aType = type;
       }
 
@@ -81,7 +83,7 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
        *
        * @param type The char representing the type of media
        */
-      protected void setMediaType(char type) {
+      protected void setMediaType(CellLayout type) {
             this.aType = type;
       }
 
@@ -94,7 +96,7 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
        *
        * @return returns the media type
        */
-      public char getAType() {
+      public CellLayout getAType() {
             return this.aType;
       }
 
@@ -162,8 +164,21 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
             int a = (this.getAFiles().length + mediaFileAry.length);
             switch (a) {
                   case 0: { return true; }
-                  case 2: { return this.getAFiles()[0].equals(mediaFileAry[0]); }
-                  case 4: { return this.getAFiles()[0].equals(mediaFileAry[0]) && this.getAFiles()[1].equals(mediaFileAry[1]); }
+                  case 2:
+                  case 4: { return match(mediaFileAry); }
+                  default: { return false; }
+            }
+      }
+
+      // check for null, if only one is null return false,
+      // otherwise if they match return true;
+      private boolean match(String[] mediaFileAry) {
+            for(int i = 0; i < mediaFileAry.length; i++) {
+                  boolean oneNull = null == getAFiles()[i] ^ null == mediaFileAry[i];
+                  if(oneNull) { return false; }
+
+                  return null == getAFiles()[i] && null == mediaFileAry[i]
+                          || this.getAFiles()[0].equals(mediaFileAry[0]) && this.getAFiles()[1].equals(mediaFileAry[1]);
             }
             return false;
       }

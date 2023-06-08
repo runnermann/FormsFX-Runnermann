@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -26,6 +26,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 import java.io.Serializable;
 
@@ -55,7 +56,7 @@ public class FMText implements Serializable
       /**
        * Default constructor
        */
-      protected FMText() {
+      public FMText() {
             /* empty */
       }
 
@@ -104,4 +105,5 @@ public class FMText implements Serializable
       protected StackPane getStackPane() {
             return stackPane;
       }
+
 }

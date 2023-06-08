@@ -25,6 +25,9 @@ public final class DirectoryMgr {
       public static final String SYSTEM_DIR = getWorkingDirectory() + "/FlashMonkeyData/";
       public static final String CPR_DIR = getWorkingDirectory() + "/.cpr/FM/FlashMonkey/";
       public static final String EMOJI = "image/emojis/";
+      public static final String USER_ONE = "/resuone.enc";
+      public static final String USER_ZERO = "/resuzero.cpr";
+      public static final String LOGOUT = "/.cpr";
 
 
       public DirectoryMgr() {
@@ -45,7 +48,7 @@ public final class DirectoryMgr {
       }
 
       public static boolean resuExists() {
-            File file = new File(CPR_DIR + "/resuone.enc");
+            File file = new File(CPR_DIR + USER_ONE);
             return file.exists();
       }
 
@@ -91,11 +94,13 @@ public final class DirectoryMgr {
             switch (type) {
                   case 'C':
                   case 'D':
+                  case 'M':
+                  case 'V':
                   case 'c':
                   case 'd':
                   case 'i':
-                  case 'M':
-                  case 'm': {
+                  case 'm':
+                  case 'v': {
                         String folderStr = FlashCardOps.getInstance().getDeckLabelName();
                         if (folderStr.contains("default")) {
                               //folderStr = "";
@@ -103,11 +108,12 @@ public final class DirectoryMgr {
                               System.exit(1);
                         } else {
                               //folderStr = folderStr.substring(0, folderStr.length() -4);
-                              folderStr = folderStr.toLowerCase();
+                              folderStr = folderStr.strip().toLowerCase();
                               LOGGER.debug("deckName is: {}", folderStr);
                         }
                         return SYSTEM_DIR + getUserNameHash() + "/" + folderStr + "/media/";
                   }
+                  case 'a': // user avatar image
                   case 'z': {
                         return SYSTEM_DIR + getUserNameHash() + "/userData/";
                   }
@@ -116,10 +122,6 @@ public final class DirectoryMgr {
                   }
                   case 'p': {
                         return SYSTEM_DIR + getUserNameHash() + "/decks/image/";
-                  }
-                  case 'a': {
-                        // user avatar image stored in the usernames top level directory
-                        return SYSTEM_DIR + getUserNameHash();
                   }
                   case 't':
                   case 'T':

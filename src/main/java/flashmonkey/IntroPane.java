@@ -57,13 +57,15 @@ public class IntroPane extends Pane {
         spacer = new Pane();
         spacer1 = new Pane();
 
-        Text text1 = new Text("\nOn our app you can:");
-        String text2 =
-            "\n\t- Earn Money " +
-            "\n\t- Get Better Grades " +
-            "\n\t- Earn Credibility for Better Jobs";
-    //    text.setTextAlignment(TextAlignment.CENTER);
         msgLabel0 = new Label("WELCOME");
+        Text text1 = new Text("\nShow off who you are");
+        String text2 =
+            "\n\t- Get Better Grades " +
+            "\n\t- Earn Pay " +
+            "\n\t- And earn your Knowledge Credibility " +
+            "\n\t     Score\u2122 for better jobs";
+    //    text.setTextAlignment(TextAlignment.CENTER);
+
         msgLabel1 = new Label(text1.getText());
         msgLabel2 = new Label(text2);
 
@@ -91,12 +93,11 @@ public class IntroPane extends Pane {
 
         msgLabel0.setId("label24WhiteBld");
         msgLabel1.setId("label18WhiteLeft");
-        msgLabel2.setId("label18WhiteLeft");
+        msgLabel2.setId("label14white");
         signInBtn.setId("signInButton");
         signUpBtn.setId("signInButton");
         signUpBtn.setMaxWidth(Double.MAX_VALUE);
         signInBtn.setMaxWidth(Double.MAX_VALUE);
-
 
         buttonHBox.setAlignment(Pos.CENTER);
         buttonHBox.getChildren().addAll(signInBtn, signUpBtn);
@@ -106,7 +107,6 @@ public class IntroPane extends Pane {
 
         mainGridPane.addRow(0, msgVBox);
         mainGridPane.addRow(1, spacer);
-    //    mainGridPane.addRow(3, msgLabel1);
     //    mainGridPane.addRow(0, spacer1);
         mainGridPane.addRow(2, buttonHBox);
 

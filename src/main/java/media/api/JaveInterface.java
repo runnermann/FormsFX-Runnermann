@@ -36,11 +36,9 @@ public class JaveInterface implements EncoderProgressListener {
       }
 
 
-      public void transfer(File sourceFile, File outputFile, MultimediaInfo sourceInfo, MultimediaObject mmObject) throws EncoderException {
+      public void transfer( File outputFile, MultimediaInfo sourceInfo, MultimediaObject mmObject) throws EncoderException {
             LOGGER.debug("starting to transfer a video file");
 
-            // get the current video's attributes
-            VideoSize size = type.tools.video.Fit.size(sourceInfo);
             //Audio Attributes
             AudioAttributes audio = new AudioAttributes();
             audio.setCodec(AudioAttributes.DIRECT_STREAM_COPY);
@@ -60,6 +58,7 @@ public class JaveInterface implements EncoderProgressListener {
             }
 
             // set the size of the video in the metadata
+            VideoSize size = type.tools.video.Fit.size(sourceInfo);
             Map<String, String> map = new HashMap<>(6);
             map.put("Metadata", size.getWidth().toString() + "x" + size.getHeight().toString());
             mmObject.getInfo().setMetadata(map);

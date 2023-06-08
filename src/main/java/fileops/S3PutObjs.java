@@ -1,6 +1,7 @@
 package fileops;
 
 import authcrypt.UserData;
+import ch.qos.logback.classic.Level;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fileops.utility.FileExtension;
@@ -30,7 +31,7 @@ public class S3PutObjs {
 
 
       public S3PutObjs() {
-            //LOGGER.setLevel(Level.DEBUG);
+            //LOGGER.setLevel(Level.ALL);
             /* do nothing */
       }
 
@@ -49,7 +50,7 @@ public class S3PutObjs {
        * @param token
        */
       public boolean asyncPutMedia(ArrayList<MediaSyncObj> mediaObjs, String token) {
-            LOGGER.debug("asyncPutMedia called");
+           // LOGGER.debug("asyncPutMedia called");
             //long getTime = System.currentTimeMillis();
             boolean succeeded = false;
             // All media is stored in the same bucket in AWS
@@ -65,9 +66,7 @@ public class S3PutObjs {
                   return false;
             }
             succeeded = sendSignedURLs(signedUrls);
-            if (succeeded) {
-                  LOGGER.debug("asyncSend succeded to send files");
-            } else {
+            if (!succeeded) {
                   LOGGER.warn("asyncSend failed to send to s3");
             }
             return true;
@@ -81,7 +80,7 @@ public class S3PutObjs {
        */
       public void serialPutMedia(ArrayList<String> fileNames, String token, char bucket) {
             //LOGGER.setLevel(Level.DEBUG);
-            LOGGER.debug("serialPutMedia called");
+            // LOGGER.debug("serialPutMedia called");
             boolean succeeded = false;
             //long getTime = System.currentTimeMillis();
 
@@ -98,6 +97,7 @@ public class S3PutObjs {
 
       /**
        * Sends media to S3. The underlying methods send them as a Signed-URL.
+       * If unsuccessful attempts to resend.
        * @param signedUrls
        * @return
        */
@@ -111,7 +111,7 @@ public class S3PutObjs {
                   }
                   URI uploadS3URI = null;
                   try {
-                        LOGGER.debug("singedUrls({}) == {}", signedUrls.get(i));
+                        // LOGGER.debug("singedUrls({}) == {}", signedUrls.get(i));
                         uploadS3URI = new URI(signedUrls.get(i));
                   } catch (URISyntaxException e) {
                         e.printStackTrace();
@@ -168,13 +168,18 @@ public class S3PutObjs {
        */
       private String parseNameFromS3URL(URI s3PutURL) {
             AmazonS3URI s3URI = new AmazonS3URI(s3PutURL);
-            LOGGER.debug("s3.getBucketName() {}, s3.getKey: {}", s3URI.getBucket(), s3URI.getKey());
+            // LOGGER.debug("s3.getBucketName() {}, s3.getKey: {}", s3URI.getBucket(), s3URI.getKey());
             String str = s3URI.getKey();
             char bucket = str.charAt(str.length() - 5);
-            String toDiskDir = DirectoryMgr.getMediaPath(bucket);
+            String diskDir = DirectoryMgr.getMediaPath(bucket);
+            if(str.contains("qr")) {
+                  localURL = diskDir + str;
+                  return localURL;
+            }
             int count = str.lastIndexOf("/");
-            String localURL = toDiskDir + s3URI.getKey().substring(count + 1);
-            LOGGER.debug("toDiskDir: contains extra / ? ", toDiskDir);
+
+            String localURL = diskDir + s3URI.getKey().substring(count + 1);
+            LOGGER.debug("toDiskDir: contains extra / ? ", diskDir);
             return localURL;
       }
 
@@ -191,10 +196,10 @@ public class S3PutObjs {
             try {
                   return outWriterUploader(localURL, signedUrl, contentType);
             } catch (MalformedURLException e) {
-                  LOGGER.warn(e.getMessage());
+                  // LOGGER.warn(e.getMessage());
                   e.printStackTrace();
             } catch (IOException e) {
-                  LOGGER.warn(e.getMessage());
+                  // LOGGER.warn(e.getMessage());
                   e.printStackTrace();
             }
             return -1;
@@ -208,12 +213,12 @@ public class S3PutObjs {
        * @param token
        */
       public void putDeck(String key, String token) {
-            LOGGER.debug("putDeck called");
+            // LOGGER.debug("putDeck called");
             // get the file directory
             String toDiskDir = DirectoryMgr.getMediaPath('t');
             deckDir = new File(toDiskDir);
             if (!deckDir.exists()) {
-                  LOGGER.warn("Directory {}, does not exist", deckDir);
+                  // LOGGER.warn("Directory {}, does not exist", deckDir);
                   System.exit(1);
             }
 
@@ -222,27 +227,27 @@ public class S3PutObjs {
             ArrayList<String> signedUrl = getDeckURL(key, token);
 
             if (signedUrl.isEmpty() || signedUrl.get(0).startsWith("fail")) {
-                  LOGGER.warn("put deck failed: SignedUrls was empty or returned fail");
+                  // LOGGER.warn("put deck failed: SignedUrls was empty or returned fail");
             } else {
                   try {
                         int response = outWriterUploader(localURL, signedUrl.get(0), null);
                         if (response == -1) {
-                              LOGGER.warn("WARNING: deck failed to upload to S3");
+                              // LOGGER.warn("WARNING: deck failed to upload to S3");
                         } else if (response == 0) {
                               response = outWriterUploader(localURL, signedUrl.get(0), null);
                               if (response != 1) {
                                     String message = "Deck failed to upload";
 
-                                    FxNotify.notification("", " Ooops! " + message, Pos.CENTER, 3,
+                                    FxNotify.notificationError("", " Ooops! " + message, Pos.CENTER, 3,
                                     "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
 
                               }
                         }
                   } catch (MalformedURLException e) {
-                        LOGGER.warn(e.getMessage());
+                        // LOGGER.warn(e.getMessage());
                         e.printStackTrace();
                   } catch (IOException e) {
-                        LOGGER.warn(e.getMessage());
+                        // LOGGER.warn(e.getMessage());
                         e.printStackTrace();
                   }
             }
@@ -253,7 +258,7 @@ public class S3PutObjs {
             try (BufferedInputStream bin = new BufferedInputStream(new FileInputStream(localURL));
                  ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(conn.getOutputStream())))  // file output stream
             {
-                  LOGGER.debug("S3put request built ... sending to s3...");
+                  // LOGGER.debug("S3put request built ... sending to s3...");
 
                   byte[] readBuffArr = new byte[4096];
                   int readBytes = 0;
@@ -263,13 +268,13 @@ public class S3PutObjs {
                   }
                   out.flush();
                   conn.getResponseCode();
-                  LOGGER.debug("response code: {}", conn.getResponseCode());
+                  // LOGGER.debug("response code: {}", conn.getResponseCode());
                   //conn.disconnect();
                   //conn.disconnect();
                   return conn.getResponseCode() == 200;
             } catch (FileNotFoundException e) {
-                  LOGGER.warn("\tFile Not Found exception");
-                  LOGGER.warn(e.getMessage());
+                  // LOGGER.warn("\tFile Not Found exception");
+                  // LOGGER.warn(e.getMessage());
                   e.printStackTrace();
             }
             return false;
@@ -289,7 +294,7 @@ public class S3PutObjs {
       private int outWriterUploader(String localURL, String signedUrl, String contentType) throws IOException {
             int timeoutValue = 4000;
             try {
-                  LOGGER.debug("signedUrl: {}", signedUrl);
+                  // LOGGER.debug("signedUrl: {}", signedUrl);
                   URL url = new URL(signedUrl);
                   HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                   conn.setDoOutput(true);
@@ -318,8 +323,8 @@ public class S3PutObjs {
                               }
                         }
                         out.flush();
-                        LOGGER.debug("Num reads: {}", numReads);
-                        LOGGER.debug("response code: {}", conn.getResponseCode());
+                        // LOGGER.debug("Num reads: {}", numReads);
+                        // LOGGER.debug("response code: {}", conn.getResponseCode());
                         if (conn.getResponseCode() != 200) {
                               return 0;
                         }
@@ -422,7 +427,7 @@ public class S3PutObjs {
       }
 
       private ArrayList<String> getMediaPutURLsSerial(ArrayList<String> fileNames, String token, char bucket) {
-            LOGGER.debug("getMediaPutURLs called");
+            // LOGGER.debug("getMediaPutURLs called");
             // cerate array of download names
             String keys = "";
             switch (bucket) {
@@ -440,6 +445,10 @@ public class S3PutObjs {
                         keys = getCardsMediaKeys(fileNames, bool);
                         break;
                   }
+                  case 'q': {
+                        keys = "qr/" + fileNames.get(0);
+                        break;
+                  }
                   default:
                   {
                         throw new IllegalArgumentException("Please provide a proper bucket p for public deck imgs, a for avatar, or c for deck media.");
@@ -453,6 +462,7 @@ public class S3PutObjs {
             }
             // create a JsonArray with token and keys
             String json = "[{\"token\":\"" + token + "\"},{\"key\":\"" + keys + "\"}]";
+            //bucket = bucket == 'q' ? 'p' : bucket;
             return httpFetchPresignedUrls(json, bucket);
       }
 
@@ -466,7 +476,7 @@ public class S3PutObjs {
        */
       private ArrayList<String> getMediaPutURLs(ArrayList<MediaSyncObj> mediaObjs, String token) {
             // create array of download names
-            LOGGER.debug("getMediaPutURLs called, next call to getUrlsHelper");
+            // LOGGER.debug("getMediaPutURLs called, next call to getUrlsHelper");
             String keys = getMediaKeys(mediaObjs);  // create getMediaKeys(deckKey)
             if (!Utility.isConnected()) {
                   LOGGER.warn("I am not connected... returning nothing");
@@ -517,7 +527,7 @@ public class S3PutObjs {
             if (!file.exists() && !localURL.endsWith(".dec")) {
                   LOGGER.warn("Could not find file: " + file + " exiting ...");
             } else {
-                  LOGGER.debug("getDeckURL called");
+                  // LOGGER.debug("getDeckURL called");
                   String base64Str = null;
                   try {
                         base64Str = Utility.md5AsBase64(new FileInputStream(file));
@@ -538,9 +548,9 @@ public class S3PutObjs {
             String jsonArray = "[{\"token\":\"" + token + "\"},{\"hash\":\"" + md5hash + "\"},{\"key\":\"" + key + "\"}]";
 
 
-            LOGGER.debug("the keys look like: " + key);
-            LOGGER.debug("The token should not be in JSON format. Token looks like: <{}>", token);
-            LOGGER.debug("The JSON string looks like: " + jsonArray);
+            // LOGGER.debug("the keys look like: " + key);
+            // LOGGER.debug("The token should not be in JSON format. Token looks like: <{}>", token);
+            // LOGGER.debug("The JSON string looks like: " + jsonArray);
             return jsonArray; // one element jsonArray
       }
 
@@ -552,7 +562,7 @@ public class S3PutObjs {
        * @return Returns an arrayList of presignedURLs
        */
       private ArrayList<String> httpFetchPresignedUrls(String jsonArray, char type) {
-            LOGGER.debug("httpFetchPresignedUrls called");
+            // LOGGER.debug("httpFetchPresignedUrls called");
 
             final HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
@@ -568,6 +578,7 @@ public class S3PutObjs {
                         req = mediaRequest(jsonArray, "/33D334/user-img-put");
                         break;
                   }
+                  case 'q':
                   case 'p': {
                         req = mediaRequest(jsonArray, "/77D774/deck-img-put");
                         break;
@@ -576,24 +587,22 @@ public class S3PutObjs {
                   case 'i':
                   case 'm': {
                         req = mediaRequest(jsonArray, "/media-s3-put");
-                        LOGGER.debug("media S3put request built ... sending...");
                         break;
                   }
                   default: {
                         req = deckRequest(jsonArray);
-                        LOGGER.debug("deck S3put request built ... sending...");
                   }
             }
 
-            LOGGER.debug("sending: {}", jsonArray);
+            // LOGGER.debug("sending: {}", jsonArray);
 
             // send the name list to vertx, and process the response.
             try {
                   HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
                   String s = response.body();
                   //s = s.substring(2, s.length() - 2);
-                  LOGGER.debug("response code {}", response.statusCode());
-                  LOGGER.debug("response body: {}", s);  // signedUrl
+                  // LOGGER.debug("response code {}", response.statusCode());
+                  // LOGGER.debug("response body: {}", s);  // signedUrl
                   if (response.body().length() > 1) {
                         Set resSet = ProcessingUtility.httpParse(s);
                         // The hashSet is converted by the arrayList constructor. :)
@@ -608,7 +617,7 @@ public class S3PutObjs {
                   LOGGER.warn(e.getMessage());
                   e.printStackTrace();
             } catch (InterruptedException e) {
-                  LOGGER.debug(e.getMessage());
+                  // LOGGER.debug(e.getMessage());
             }
             // failed return an empty string
             return new ArrayList<String>();

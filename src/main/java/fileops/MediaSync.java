@@ -3,7 +3,6 @@ package fileops;
 import ch.qos.logback.classic.Level;
 import flashmonkey.FlashCardMM;
 import flashmonkey.FlashCardOps;
-import flashmonkey.ReadFlash;
 import flashmonkey.Timer;
 import fmannotations.FMAnnotations;
 import org.slf4j.Logger;
@@ -25,8 +24,8 @@ import static habanero.edu.rice.pcdp.PCDP.*;
  */
 public class MediaSync {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(MediaSync.class);
-      //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaSync.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(MediaSync.class);
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MediaSync.class);
 
       private final ArrayList<MediaSyncObj> download = new ArrayList<>();
       private final ArrayList<String> delete = new ArrayList<>();
@@ -39,6 +38,7 @@ public class MediaSync {
 
 
       public MediaSync() {
+            LOGGER.setLevel(Level.ALL);
             /* no args constructor */
       }
 
@@ -81,7 +81,6 @@ public class MediaSync {
       public static void syncMedia(ArrayList<FlashCardMM> flashList) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug(" *** syncMedia called ***");
-            Timer.getClassInstance().begin();
             MediaSync ms = new MediaSync();
             // get local media
             ArrayList<MediaSyncObj> syncObjs = ms.getLocalMediaList();
@@ -95,8 +94,8 @@ public class MediaSync {
                   ms.syncCloudMediaAction();
             }
             FlashCardOps.getInstance().setMediaIsSynced(true);
-            Timer.getClassInstance().end();
-            long time = Timer.getClassInstance().getTotalTime();
+
+            long time = Timer.getClassInstance().getFMTotalTime();
             LOGGER.info("MediaSync: Time to sync and put files in S3: " + time);
       }
 
@@ -436,7 +435,6 @@ public class MediaSync {
       public MediaSync syncMediaTester(ArrayList<FlashCardMM> flashList, MediaSync ms) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("syncMedia called");
-            Timer.getClassInstance().begin();
             //MediaSync ms = new MediaSync();
             // get local media
             ArrayList<MediaSyncObj> syncObjs = ms.getLocalMediaList();

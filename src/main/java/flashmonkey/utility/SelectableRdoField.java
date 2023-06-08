@@ -93,9 +93,10 @@ public class SelectableRdoField extends ToggleButton {
 
                   deckRdoBox.getChildren().addAll(arrowView, textBox, syncView, dateBox);
                   deckRdoBox.setId("#" + tempName);
+                  deckRdoBox.setStyle("-fx-end-margin: 10px; -fx-start-margin: 10px");
 
                   deckRdoBox.setOnMouseEntered(e -> {
-                        deckRdoBox.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.WEBSITE_BLUE), CornerRadii.EMPTY, Insets.EMPTY)));
+                        deckRdoBox.setBackground(new Background(new BackgroundFill(UIColors.convertColor(UIColors.WEBSITE_BLUE), new CornerRadii(2), Insets.EMPTY)));
                         FlashMonkeyMain.getPrimaryWindow().getScene().setCursor(Cursor.HAND);
                   });
 

@@ -1,7 +1,5 @@
 package fileops;
 
-import ch.qos.logback.classic.Level;
-import flashmonkey.FlashCardOps;
 import flashmonkey.Timer;
 import fmhashtablechain.PriorityHashTable;
 import org.slf4j.Logger;
@@ -11,10 +9,14 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Client class.
- * Aggregates the files from the local system and the cloud, and returns an
+ * <p>Primarily used to aggregate and provide a link to decks that are either in remote storage. S3. or
+ *  on the Client system or both. This class helps to determine the most recent version of a deck for a
+ *  user to open. The objects that are shown in the FileSelectPane are either remote, or local, and
+ *  this class determines and provides the link objects for the FileSelectPane in FlashMonkeyMain.</p>
+ *
+ * <p>Aggregates the files from the local system and the cloud, and returns an
  * ArrayList of LinkObjects. Link Objects contain a name, and a link to either
- * local files, or files from the server.
+ * local files, or files from the server.</p>
  *
  * <P>Problem: This class does not do a comparison of each individual card. If the EncryptedUser
  * makes a change to a card on one of their systems, ie their iPad. And it does
@@ -22,18 +24,18 @@ import java.util.*;
  * are not uploaded. The current system will only check the last timeMils the cards
  * were accessed. Not when an individual makes a change to each card. If the
  * EncryptedUser then opens the deck(flashCard file) from the iPad, the changes that were
- * not uploaded will be deleted.
- * <p>
- * Solution: Either create a separate file, with an array that tracks changes
+ * not uploaded will be deleted.</p>
+ *
+ * <p> Solution: Either create a separate file, with an array that tracks changes
  * to each individual card. And when changes are made but not immediately uploaded, an update
  * program will make changes to each card that are in the cloud when the EncryptedUser.EncryptedUser connects
  * at a later time. This probably means that the program will need to check the
  * timeMils that the card was changed. b) A second solution is to simply do the comparison
- * /changes when the EncryptedUser.EncryptedUser clicks on the file, and do the conversion/update when
- * as the file is loaded into the flashTree. Thus sparing extra, potentially
+ * /changes when the EncryptedUser clicks on the file, and do the conversion/update when
+ * the file is loaded into the flashTree. Thus sparing extra, potentially
  * unnecessary processing and memory. </p>
- * <p>
- * <p>
+ *
+ * <pre>
  * STICKING POINT.... What is returned from the searchNCompare method.
  * - a hyperlink
  * - a file
@@ -48,7 +50,7 @@ import java.util.*;
  * is created for remote files. As the CompareFile.getAllFiles() method chooses which file is
  * the most recent, it simply inserts either a linkObj to the local file or the
  * remote file.
- * <p>
+ *
  * Flow... For this iteration.
  * loop O(n)
  * 1) Compare files dates and names for the most recent file. O(log(n))
@@ -56,15 +58,15 @@ import java.util.*;
  * - If file is not on server, provide file and name to LinkObj
  * - If file is on server, provide FTPlink and name to LinkObj
  * - If file is within 90 Days? set in recent list
- * <p>
+ * </pre>
  * Algorithm description: This class imports the PriorityQueue from the Java 8 lib
  * as the queue. As a File name on the remote system is the same as the file name
  * on the client system, the comparator sets the file with the most recent timeMils
  * as the higher value. The most recent file is inserted into the priority queue.
  * <p>
- * For a convient UX, The priority queue is then processed for the most recent
+ * For a convent UX, The priority queue is then processed for the most recent
  * files which are stored in the "recent" array in order by timeMils, Older files
- * are in alphabetical order in the "older" array.
+ * are in alphabetical order in the "older" array.</p>
  *
  * @author Lowell Stadelman
  */
@@ -109,6 +111,13 @@ public class AgrFileList {
        */
       public AgrFileList() {
             /* no args */
+      }
+
+      public void clear() {
+            recent = null;
+            older = null;
+            localFiles = null;
+            queue = null;
       }
 
       /**
@@ -212,17 +221,6 @@ public class AgrFileList {
             flashmonkey.Timer timer = Timer.getClassInstance();
             this.timeMils = timer.getMills(strDate, strTime);
       }
-
-      /**
-       * Helper method creates the flash scene. Note that this is to delay the call that is
-       * made prior to the classes initialization.
-       */
- /*   private static void createF() {
-        FlashMonkeyMain.getWindow().setScene(FlashMonkeyMain.createFlash.createFlashScene());
-        //FlashMonkeyMain.createButtonAction();
-    }
-    
-  */
 
       /**
        * Starter method. Splits PriorityQueue files/LinkObj's based on "timeMils"

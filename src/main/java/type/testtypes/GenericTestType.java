@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -25,6 +25,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import flashmonkey.FlashCardMM;
 //import javafx.scene.layout.VBox;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 
@@ -39,7 +40,7 @@ import java.util.ArrayList;
  * 2. add it's bitSet number to its bitset. Use the bottom tests
  * index of the setBit. The next test will be the left bitSet from
  * that one.
- * 3. Implement all of the neccessary methods from this interface.
+ * 3. Implement all of the necessary methods from this interface.
  * You can use a previously finished TestType as a guide.
  *
  * @author Lowell Stadelman
@@ -87,6 +88,18 @@ public interface GenericTestType<A extends GenericTestType> {
 
 
       /**
+       * Return the time until the answer
+       * was clicked. If answer was not clicked
+       * e.g. another button was clicked,
+       * this time should not be stored.
+       *
+       * @return
+       */
+      int getSeconds();
+
+
+
+      /**
        * Provides the card layout in a char.
        * layout: 'S' = single card layout,
        * 'D' = double horizontal card, and
@@ -94,7 +107,7 @@ public interface GenericTestType<A extends GenericTestType> {
        *
        * @return
        */
-      char getCardLayout();
+      CardLayout getCardLayout();
 
       GenericTestType getTest();
 
@@ -160,8 +173,6 @@ public interface GenericTestType<A extends GenericTestType> {
        * that should be cleared.
        */
       void reset();
-
-
 
 
       //public abstract void nextQButtonAction();  THESE ARE IN READFLASH not in tests

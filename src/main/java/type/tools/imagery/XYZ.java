@@ -23,44 +23,11 @@ public class XYZ {
       private char markTxt = 'A';
       private static boolean isSet = false;
 
-
-//      public void start(Stage primaryStage) throws Exception {
-//            ap = new AnchorPane();
-//            Image img = new Image("https://upload.wikimedia.org/wikipedia/commons/d/dc/Medical_X-Ray_imaging_SEQ07_nevit.jpg");
-//            imgView = new ImageView(img);
-//
-//            ScrollPane sp = new ScrollPane(imgView);
-//            AnchorPane.setTopAnchor(sp, 0.0);
-//            AnchorPane.setLeftAnchor(sp, 0.0);
-//            AnchorPane.setBottomAnchor(sp, 0.0);
-//            AnchorPane.setRightAnchor(sp, 0.0);
-//
-//            ap.getChildren().add(sp);
-//
-//            imgView.setOnMouseClicked(this::onClick);
-//            imgView.setOnScroll(this::imageScrolled);
-//            Scene scene = new Scene(ap);
-//            primaryStage.setTitle("Zoom Image");
-//            primaryStage.setScene(scene);
-//            primaryStage.show();
-//      }
-
       public void onClick(MouseEvent event) {
             if (event.getButton() == MouseButton.PRIMARY) {
                   placeMarker(event.getSceneX(), event.getSceneY());
             }
       }
-
-//      private void imageScrolled(ScrollEvent event) {
-//            // When holding CTRL mouse wheel will be used for zooming
-//            if (event.isControlDown()) {
-//                  double delta = event.getDeltaY();
-//                  double adjust = delta / 1000.0;
-//                  double zoom = Math.min(10, Math.max(0.1, imgView.getScaleX() + adjust));
-//                  setImageZoom(zoom);
-//                  event.consume();
-//            }
-//      }
 
       private void placeMarker(double sceneX, double sceneY) {
             Circle circle = new Circle(2);

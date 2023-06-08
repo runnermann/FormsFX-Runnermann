@@ -1,26 +1,26 @@
 package campaign;
 
-import authcrypt.Auth;
-import authcrypt.UserData;
-import authcrypt.Verify;
+//import authcrypt.Auth;
+//import authcrypt.UserData;
+//import authcrypt.Verify;
 
 import campaign.db.DBConnect;
-import campaign.db.Table;
+//import campaign.db.Table;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.github.jasync.sql.db.Connection;
-import com.github.jasync.sql.db.QueryResult;
-
-import flashmonkey.FlashMonkeyMain;
-import forms.utility.Alphabet;
+//import com.github.jasync.sql.db.QueryResult;
+//
+//import flashmonkey.FlashMonkeyMain;
+//import forms.utility.Alphabet;
 
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+//import java.util.concurrent.CompletableFuture;
+//import java.util.concurrent.ExecutionException;
 
 public class ReportError extends AppenderBase<ILoggingEvent> {
       // Haaaa Haaaa!!! cannot use logger here. Causes an initialization error.
@@ -125,7 +125,7 @@ public class ReportError extends AppenderBase<ILoggingEvent> {
             } else {
                   connectedAlready = false;
                   try {
-                        String url = "https://www.flashmonkey.xyz";
+                        String url = "https://www.flashmonkey.co";
                         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
                         connection.setRequestMethod("HEAD");
                         int responseCode = connection.getResponseCode();

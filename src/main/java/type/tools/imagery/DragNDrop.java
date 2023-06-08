@@ -1,24 +1,19 @@
 package type.tools.imagery;
 
 import authcrypt.UserData;
-import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import fileops.FileNaming;
-import fileops.FileOperations;
 import fileops.FileOpsUtil;
 import fileops.utility.FileExtension;
 import flashmonkey.CreateFlash;
 import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -26,11 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.FxNotify;
 import ws.schild.jave.EncoderException;
-import ws.schild.jave.MultimediaObject;
-import ws.schild.jave.info.MultimediaInfo;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +39,7 @@ public class DragNDrop {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DragNDrop.class);
 
       // p for public
-      public static final char MKT_IMG = 'p';
+      public static final char DECK_IMG = 'p';
       // a for avatar
       public static final char AVATAR_IMG = 'a';
 
@@ -72,15 +63,6 @@ public class DragNDrop {
       public StringProperty getMediaNameProperty() {
             return mediaNameProperty;
       }
-
-      /**
-       * Once the dragNDrop has completed. It provides the complete
-       * media URL for the local file. Returns the String URL.
-       * @return
-       */
-//      public String getMediaURL() {
-//            return mediaURLProperty.get();
-//      }
 
       public String getMediaName() {
             return mediaNameProperty.get();
@@ -125,34 +107,34 @@ public class DragNDrop {
             //LOGGER.setLevel(Level.DEBUG);
             boolean isCompleted = false;
 
-                  LOGGER.info("\n *** In dragDropped(dragevent e) *** ");
-                  // Transfer the data to the target
-                  Dragboard dragboard = e.getDragboard();
+            LOGGER.info("\n *** In dragDropped(dragevent e) *** ");
+            // Transfer the data to the target
+            Dragboard dragboard = e.getDragboard();
 
-                  if (dragboard.hasImage()) {
-                        LOGGER.debug("\t dragBoard has Image");
-                        String str = dragboard.getUrl();
-                        // handle .gif animations differently
-                        String ending = str.substring(str.length() - 3);
-                        isCompleted = this.transferImage(dragboard.getImage(), ending, bucket);
+            if (dragboard.hasImage()) {
+                  LOGGER.debug("\t dragBoard has Image");
+                  String str = dragboard.getUrl();
+                  // handle .gif animations differently
+                  String ending = str.substring(str.length() - 3);
+                  isCompleted = this.transferImage(dragboard.getImage(), ending, bucket);
+            }
+            else if (dragboard.hasFiles()) {
+                  LOGGER.debug("\t dragboard hasFiles: ");
+                  //iView = null;
+                  try {
+                        isCompleted = transferMediaFile(dragboard.getFiles(), bucket);
+                  } catch (Exception ex) {
+                        LOGGER.warn("WARNING: transferMedia(...) Unable to copy video from dragboard");
+                        ex.printStackTrace();
                   }
-                  else if (dragboard.hasFiles()) {
-                        LOGGER.debug("\t dragboard hasFiles: ");
-                        //iView = null;
-                        try {
-                              isCompleted = transferMediaFile(dragboard.getFiles(), bucket);
-                        } catch (Exception ex) {
-                              LOGGER.warn("WARNING: transferMedia(...) Unable to copy video from dragboard");
-                              ex.printStackTrace();
-                        }
-                  }
-                  else {
-                        LOGGER.warn("\nDragboard does not contain an image or media \nin the expected format: Image, File, URL");
-                  }
+            }
+            else {
+                  LOGGER.warn("\nDragboard does not contain an image or media \nin the expected format: Image, File, URL");
+            }
 
-                  LOGGER.debug("dragDropped isCompleted: <{}>", isCompleted);
-                  //Notify DragEvent if successful.
-                  e.setDropCompleted(isCompleted);
+            LOGGER.debug("dragDropped isCompleted: <{}>", isCompleted);
+            //Notify DragEvent if successful.
+            e.setDropCompleted(isCompleted);
 
             e.consume();
             CreateFlash.getInstance().setFlashListChanged(true);
@@ -205,7 +187,7 @@ public class DragNDrop {
                   String errorMessage = " That's a drag. That didn't work." +
                       "\n Try dragging to the desktop first. " +
                       "\n then drag from the desk top";
-                  FxNotify.notification("OUCH!!!!", errorMessage, Pos.CENTER, 7,
+                  FxNotify.notificationError("OUCH!!!!", errorMessage, Pos.CENTER, 7,
                       "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
             } else {
                   String mediaPath = DirectoryMgr.getMediaPath(bucket);
@@ -239,9 +221,6 @@ public class DragNDrop {
             String fromPath = fromDrag.toPath().toString();
             LOGGER.debug(" mimeType should be image or video: {}", fromPath);
 
-            //MultimediaObject mmObject = new MultimediaObject(new File(fromPath));
-            //MultimediaInfo sourceInfo = mmObject.getInfo();
-
             if (fromPath == null) {
                   return false;
             }
@@ -268,9 +247,7 @@ public class DragNDrop {
       private boolean transferImageURL(String imageURL, char bucket) {
             try {
                   LOGGER.info("in transferImageURL");
-
                   copyMediaFile(imageURL, bucket);
-                  //setShapeFile(null);
                   return true;
             } catch (Exception e) {
 
@@ -278,7 +255,7 @@ public class DragNDrop {
                   String errorMessage = " That's a drag. That didn't work." +
                       "\n Try dragging to the desktop first. " +
                       "\n then drag from the desk top";
-                  FxNotify.notification("OUCH!!!!", errorMessage, Pos.CENTER, 7,
+                  FxNotify.notificationError("OUCH!!!!", errorMessage, Pos.CENTER, 7,
                       "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
                   e.printStackTrace();
             }

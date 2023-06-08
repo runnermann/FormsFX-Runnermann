@@ -116,7 +116,7 @@ public class ResetTwoModel {
         switch (res) {
             case -1: {
                 String msg = "That didn't work.";
-                FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 4,
+                FxNotify.notificationError("", " Hmmmm! " + msg, Pos.CENTER, 4,
                         "image/Flash_hmm_75.png", FlashMonkeyMain.getPrimaryWindow());
                 SimpleFormParentPane.resetDescriptor.clear();
                 this.clear();
@@ -124,7 +124,7 @@ public class ResetTwoModel {
             }
             case 0: {
                 String msg = " Please check your connection to the internet";
-                FxNotify.notification("", " Hmmmm! " + msg, Pos.CENTER, 4,
+                FxNotify.notificationError("", " Hmmmm! " + msg, Pos.CENTER, 4,
                         "image/flashFaces_smirking_75.png", FlashMonkeyMain.getPrimaryWindow());
 //                FlashMonkeyMain.showResetTwoPane();
                 SimpleFormParentPane.resetDescriptor.clear();
@@ -133,7 +133,7 @@ public class ResetTwoModel {
             }
             case 1: {
                 String msg = " That worked.";
-                FxNotify.notification("", " Yay " + msg, Pos.CENTER, 4,
+                FxNotify.notificationNormal("", " Yay " + msg, Pos.CENTER, 4,
                         "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
                 SimpleFormParentPane.resetDescriptor.clear();
                 this.clear();

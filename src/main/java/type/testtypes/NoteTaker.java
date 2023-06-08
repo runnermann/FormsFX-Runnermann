@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -27,6 +27,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import flashmonkey.FlashCardMM;
@@ -129,10 +130,23 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
             return 0b0010000000000000;
       }
 
+      /**
+       * Return the time until the answer
+       * was clicked. If answer was not clicked
+       * e.g. another button was clicked,
+       * this time should not be stored.
+       *
+       * @return
+       */
       @Override
-      public char getCardLayout() {
+      public int getSeconds() {
+            return -99;
+      }
+
+      @Override
+      public CardLayout getCardLayout() {
             // Single pane card
-            return 'S';
+            return CardLayout.SINGLE;
       }
 
       @Override

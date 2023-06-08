@@ -1,20 +1,15 @@
 package media.sound;
 
 import javafx.scene.media.AudioClip;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 
-import javax.sound.sampled.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public enum SoundEffects {
     APP_START{
         public void play() {
-            sound = "sound/intro_one.wav";
-            go(.1);
+            sound = "sound/techno_glitch_logo.wav";
+            go(.3);
         }
     },
     APP_END{
@@ -29,17 +24,38 @@ public enum SoundEffects {
             go(.2);
         }
     },
-    ERROR{
+    ATTENTION {
         public void play() {
             //@TODO setup sound
-            sound = "sound/message_notice.wav";
+            sound = "sound/robot_warning.wav";
+            go(.3);
+        }
+    },
+    BAD_ERROR {
+        public void play() {
+            //@TODO setup sound
+            sound = "sound/robot_warning.wav";
+            go(.3);
+        }
+    },
+    ERROR{
+        public void play() {
+            //sound = "sound/digital_phonering.wav";
+            sound = "sound/notification.wav";
+            go(.3);
+        }
+    },
+    FART {
+        public void play() {
+            //@TODO setup sound
+            sound = "sound/Fart_BW.61633.wav";
             go(.3);
         }
     },
     WRONG_ANSWER_1{
         public void play() {
             sound = "sound/wrong_answer.wav";
-            go(.6);
+            go(.4);
         }
     },
     WRONG_ANSWER_2{
@@ -55,46 +71,46 @@ public enum SoundEffects {
     CORRECT_ANSWER{
         public void play() {
             sound = "sound/soft_magic_glow.wav";
-            go(.6);
+            go(.4);
         }
     },
     GOTO_FILE_SELECT{
         public void play() {
             //@TODO setup sound
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     GOTO_MENU{
         public void play() {
             //@TODO setup sound
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     PRESS_BUTTON_COMMON{
         public void play() {
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     PRESS_STUDY{
         public void play() {
             //@TODO setup sound
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     PRESS_CREATE{
         public void play() {
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     PRESS_FLASHCARD{
         public void play() {
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     PRESS_TEST{
@@ -105,8 +121,8 @@ public enum SoundEffects {
     },
     TREE_PRESS_NODE{
         public void play() {
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     DECK_END_HIGHSCORE{
@@ -130,45 +146,39 @@ public enum SoundEffects {
     NOTIFICATION_NORM{
         public void play() {
             //@TODO setup sound
-            sound = "sound/message_notice.wav";
-            go(.3);
-        }
-    },
-    ATTENTION{
-        public void play() {
-            //@TODO setup sound
-            sound = "sound/robot_warning.wav";
-            go(.3);
+            sound = "sound/notification.wav";
+//            sound = "sound/transition_pop.wav";
+            go(.4);
         }
     },
     SLIDE_LEFT {
         public void play() {
-            sound = "sound/transition_pop.mp3";
+            sound = "sound/transition_pop.wav";
             go(.6);
         }
     },
     SLIDE_RIGHT {
         public void play() {
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     GOTO_START {
         public void play() {
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     GOTO_END {
         public void play() {
-            sound = "sound/transition_pop.mp3";
-            go(.6);
+            sound = "sound/transition_pop.wav";
+            go(.5);
         }
     },
     ROBOT_SERVO {
         public void play() {
-            sound = "sound/robot-servo.mp3";
-            go(.6);
+            sound = "sound/robot-servo4.wav";
+            go(.5);
         }
     },
     ROBOT_SERVO_2 {
@@ -179,20 +189,26 @@ public enum SoundEffects {
     },
     ROBOT_SERVO_3 {
         public void play() {
-            sound = "sound/ServoMotor_2c8ln_09.mp3";
+            sound = "sound/ServoMotor_2c8ln_09.wav";
             go(.2);
         }
     },
     ROBOT_SERVO_START {
         public void play() {
-            sound = "sound/RobotServo_znM6w_18.mp3";
+            sound = "sound/RobotServo_znM6w_18.wav";
+            go(.2);
+        }
+    },
+    Yeah_ITS_COOL {
+        public void play() {
+            sound = "sound/Yeah_Its_Cool_vocal_Short.wav";
             go(.2);
         }
     };
 
     // ^^^^^^^^^^^^^^^ COMMON ^^^^^^^^^^^^^^^^^^ //
 
-    String sound = "sound/transition_pop.mp3";
+    String sound = "sound/transition_pop.wav";
 
     public abstract void play();
 

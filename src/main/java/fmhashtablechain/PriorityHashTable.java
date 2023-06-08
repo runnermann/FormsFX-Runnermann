@@ -34,8 +34,6 @@ public class PriorityHashTable<K extends String, V extends LinkObj> extends Hash
        */
       @Override
       public V put(K key, V value) {
-
-            LOGGER.info("PriorityHashTable.put() called: ");
             //	System.out.println("value.getCLoudLink.getName: " + ((LinkObj) value).getCloudLink().getName());
 
             int index = key.hashCode() & (table.length - 1);

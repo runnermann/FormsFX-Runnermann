@@ -223,23 +223,33 @@ public abstract class SimpleFormParentPane extends Pane implements ViewMixin {
         this.lower2HBox.getChildren().add(node);
     }
 
+    /**
+     * Displays the message provided. msg is an array of strings that will be
+     * shown on the screen in rows. Separate each string by a comma.
+     * @param msg
+     */
     public void setMessageLabel(String ... msg) {
         String style = msgLabelStyle;// != null ? msgLabelStyle : "label14white";
         for(String s : msg) {
-                msgLabel = new Label(s);
-                //msgLabel.setId(style);
-                msgVBox.getChildren().add(msgLabel);
-                if(style.equals("white14")) {
-                    msgLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 16px; -fx-text-alignment: CENTER;");
-                }else {
-                    msgLabel.setStyle("-fx-font-size: 20px; -fx-text-alignment: CENTER;");
-                }
+            msgLabel = new Label(s);
+            //msgLabel.setId(style);
+            msgVBox.getChildren().add(msgLabel);
+            if(style.equals("white14")) {
+                msgLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 16px; -fx-text-alignment: CENTER;");
+            } else if (style.equals("white12")){
+                msgLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 14px; -fx-text-alignment: CENTER;");
+                // msgLabel.setWrapText(true); doesn't work on windows Dec 30 2022
+            } else {
+                msgLabel.setStyle("-fx-font-size: 20px; -fx-text-alignment: CENTER;");
+            }
+            // alignment center in setStyle DOESN'T work. sigh!
+            msgLabel.setAlignment(Pos.CENTER);
         }
     }
 
     /**
      * Provide the desired style for the message
-     * The default it white 14.
+     * The default is white 20.
      * @param style
      */
     public void setMessageLabelStyle(String style) {

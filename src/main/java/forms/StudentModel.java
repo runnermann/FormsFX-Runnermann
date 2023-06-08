@@ -4,10 +4,14 @@ package forms;
 import authcrypt.UserData;
 import authcrypt.user.EncryptedPerson;
 import authcrypt.user.EncryptedStud;
-import campaign.db.DBFetchUnique;
 import campaign.db.DBInsert;
 import campaign.db.DBUpdate;
-import ch.qos.logback.classic.Level;
+import flashmonkey.FlashMonkeyMain;
+import forms.utility.Alphabet;
+import forms.utility.StudentDescriptor;
+import ecosystem.QrCode;
+import uicontrols.FxNotify;
+
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -15,11 +19,15 @@ import com.dlsc.formsfx.model.structure.Section;
 import com.dlsc.formsfx.model.validators.RegexValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
-import flashmonkey.FlashMonkeyMain;
-import forms.utility.Alphabet;
-import forms.utility.StudentDescriptor;
+import com.google.zxing.WriterException;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.geometry.Pos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * <p> On distributed systems where data may remain on public
@@ -42,8 +50,9 @@ public class StudentModel extends ModelParent {
       // Use for detailed logging and use setLevel(Level.debug)
       // Slows app performance significantly!!!
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StudentModel.class);
-      // Other wise use for normal logging
+      // Otherwise use for normal logging
       private static final Logger LOGGER = LoggerFactory.getLogger(StudentModel.class);
+      private StringProperty qrFilePathProperty = new SimpleStringProperty();
 
       private StudentDescriptor descriptor;// = new StudentDescriptor();
       private final String allCountryRegex = "^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$";
@@ -93,7 +102,7 @@ public class StudentModel extends ModelParent {
                             .required("required_error_message")
                             .placeholder("age_placeholder")
                             .validate(StringNumRangeValidator.between(1, 120, "omg_age_error")),
-                        // current email  -- Move this to change log in information form.
+                        // current email  -- Move this to change login information form.
 						/*Field.ofStringType(descriptor.currentEmailProperty())
 							.label("label_current_email")
 							.placeholder("current_email_placeholder")
@@ -170,14 +179,41 @@ public class StudentModel extends ModelParent {
             student.setOrigUserEmail(descriptor.getOrigEmail().toLowerCase());
             student.setCurrentUserEmail(descriptor.getCurrentEmail().toLowerCase());
             student.setAvatarName(descriptor.getAvatarName().toLowerCase());
+            student.setPhotoLink(descriptor.getPhotoLink());
 
             // We are not storing personal information to the users system
             // It is sent to the cloud.
             if (doAction(student)) {
-                  FlashMonkeyMain.closeActionWindow();
+                  try {
+                        String qrFilePath = QrCode.createSaveUserQRCode();
+                        qrFilePathProperty.setValue(qrFilePath);
+                        String msg = "You're profile has been saved.";
+                        FxNotify.notificationNormal("Success", msg, Pos.CENTER, 15,
+                                "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
+                  } catch (WriterException e) {
+                        e.printStackTrace();
+                        errorPopup();
+                  } catch (IOException e) {
+                        e.printStackTrace();
+                        errorPopup();
+                  }
             } else {
                   LOGGER.warn("Student data creation Form failed to be sent to the database for userName: {}", descriptor.getOrigEmail());
+                  errorPopup();
             }
+      }
+
+      private void errorPopup() {
+            String msg = "That didn't get updated in the ecosystem. " +
+                    "\nTo update so others may access " +
+                    "\nand purchase your deck, please check your"  +
+                    "\nconnection and try again.";
+            FxNotify.notificationError("Ooops", msg, Pos.CENTER, 15,
+                    "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
+      }
+
+      public StringProperty getQrFIlePathProperty() {
+            return this.qrFilePathProperty;
       }
 
       /**
@@ -218,20 +254,5 @@ public class StudentModel extends ModelParent {
       public void formAction() {
             /* stub */
       }
-
-      // REMOVE THIS.... It is not used.
-//      private long fetchStudentID(EncryptedStud student) {
-//            String[] strs = {student.getOrigUserEmail()};
-//            String[] response = DBFetchUnique.STUDENT_ENCRYPTED_DATA.query(strs);
-//            //String[] strAry = response.split(",");
-//
-//            LOGGER.debug("fetchStudentID.strAry");
-//
-//            if (response[0].equals("EMPTY")) {
-//                  return -1;
-//            } else {
-//                  return Long.parseLong(response[0]);
-//            }
-//      }
 
 }

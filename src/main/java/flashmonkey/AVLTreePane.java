@@ -28,6 +28,9 @@ import javafx.util.Duration;
 import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import type.celltypes.CellLayout;
+import type.celltypes.DoubleCellType;
+import type.celltypes.SingleCellType;
 import type.testtypes.GenericTestType;
 import type.testtypes.QandA;
 import type.testtypes.TestList;
@@ -227,7 +230,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
             String str = "";
             Text text1;
-            if (((FlashCardMM) root.getData()).getQType() == 't' && ((FlashCardMM) root.getData()).getQText().isEmpty()) {
+            if (((FlashCardMM) root.getData()).getQType().get() == 't' && ((FlashCardMM) root.getData()).getQText().isEmpty()) {
                   str = " ! \n" + (((FlashCardMM) root.getData()).getANumber() + 1);
 
                   text1 = new Text(x - (str.length()), y - 4, str);
@@ -288,21 +291,24 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
 
             circle.setOnMouseEntered((MouseEvent event) -> {
                   FlashCardMM currentCard = (FlashCardMM) node.getData();
-                  String num = String.valueOf(circleArray.size());
- //                 String qTipText = currentCard.getQText() + " idx: " + num;
-                  String qTipText = currentCard.toString();
+                  CellLayout mediaType = currentCard.getQType();
+                  int num = currentCard.getCNumber() + 1;//String.valueOf(circleArray.size());
+                  // Set the text for qTip based on if media only or text and media.
+                  String qTipTxt = num + ".";
+                  if(mediaType != SingleCellType.CANVAS || mediaType != SingleCellType.AV) {
+                        qTipTxt = num + ". " + currentCard.getQText();
+                  }
+
                   Tooltip qTip = new Tooltip();
-                  qTip.setPrefSize(400, 800);
+                  qTip.setPrefSize(200, 90);
                   qTip.setContentDisplay(ContentDisplay.RIGHT);
                   qTip.setWrapText(true);
                   qTip.setShowDuration(Duration.INDEFINITE);
- //                 qTip.setTextOverrun(OverrunStyle.ELLIPSIS);
+                  qTip.setTextOverrun(OverrunStyle.ELLIPSIS);
 
                   String[] imagePaths = currentCard.getQFiles();
-                  char c = currentCard.getQType();
-
                   Image image = null;
-                  if (c == 'c' || c == 'C') {
+                  if (mediaType == DoubleCellType.CANVAS || mediaType == SingleCellType.CANVAS) {
                         image = new Image("File:" + DirectoryMgr.getMediaPath('C') + imagePaths[0]);
                         ImageView iView = new ImageView(image);
                         iView.setPreserveRatio(true);
@@ -310,7 +316,7 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                         iView.setSmooth(true);
                         qTip.setGraphic(iView);
                         // Video or Audio
-                  } else if (c == 'm' || c == 'M') {
+                  } else if (mediaType == DoubleCellType.AV || mediaType == SingleCellType.AV) {
                         Image playImg = new Image("File:src/image/vidCamera.png");
                         ImageView iView = new ImageView(playImg);
                         iView.setSmooth(true);
@@ -334,8 +340,8 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
                         }
                   }
 
-                  if ( ! qTipText.isEmpty()) {
-                        qTip.setText(qTipText);
+                  if( ! qTipTxt.isEmpty()) {
+                      qTip.setText(qTipTxt);
                   } else {
                         qTip.setText("This flashcard has no content");
                   }
@@ -389,10 +395,9 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             //    If there is a save event the tree should remain the same number of nodes.
             boolean moveOK = cfp.cardOnExitActions(true,  false, false);
             if ( moveOK ) {
-    //              SoundEffects.TREE_PRESS_NODE.play();
                   // Set the treeWalker current node to the new reference for
                   // the selected node.
-                  selectedCard = (FlashCardMM) CreateFlash.getInstance().getCreatorList().get(idx);
+                  selectedCard = (FlashCardMM) CreateFlash.getInstance().getCreatorList().get(idx); // what is the idx, who sets it.
 
                   FlashCardOps fco = FlashCardOps.getInstance();
                   fco.getTreeWalker().setCurrentNodeReferance(selectedCard);
@@ -456,7 +461,6 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
             FlashCardMM currentCard = (FlashCardMM) node.getData();
             int numSeen = currentCard.getSessionSeen();
             int numRt = currentCard.getNumRight();
-            //ZonedDateTime rtDate = currentCard.getRtDate();
             int remember = currentCard.getRemember();
 
 //            if (node == FMTWalker.getInstance().getCurrentNode()) { // node currently viewed.
@@ -511,13 +515,9 @@ public class AVLTreePane<E extends Comparable<E>> extends Pane {
        * @return Returns the circle as a Shape
        */
       private Shape circleLine(double centerX, double centerY, double parentX, double parentY, FMTree.Node node) {
-
             Line line = new Line(parentX, parentY, centerX, centerY);
-
             Circle c = new Circle(centerX, centerY, UNSELECTED);
-
             Shape s = Shape.union(line, c);
-
             s.setFill(fillColor(node));
             s.setStroke(lineColor(node));
             return s;

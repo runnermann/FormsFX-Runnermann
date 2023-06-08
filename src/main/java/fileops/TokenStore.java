@@ -22,4 +22,9 @@ public enum TokenStore {
                 " Token length: " + tkn.length());
             token = tkn;
       }
+
+      public static void clearToken() {
+            token = "123456789123456789123456789";
+            token = null;
+      }
 }

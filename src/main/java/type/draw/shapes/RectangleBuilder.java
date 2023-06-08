@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -261,7 +261,6 @@ public class RectangleBuilder extends GenericBuilder<FMRectangle, RectangleBuild
                         int wd = (int) getOverlayPane().getWidth();
                         int ht = (int) getOverlayPane().getHeight();
 
-                        //getRightPane().getChildren().add( fmCirc.getScaledShape());
                         editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, wd, ht);
 
                         setNewShape(false);

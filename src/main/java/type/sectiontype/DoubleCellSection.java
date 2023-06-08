@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2022. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2022. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -23,6 +23,7 @@ import flashmonkey.FlashMonkeyMain;
 import flashmonkey.ReadFlash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import type.celltypes.CellLayout;
 import uicontrols.SceneCntl;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -43,30 +44,26 @@ public class DoubleCellSection //extends GenericSection
       private final HBox sectionHBox = new HBox();
 
       //@Override
-      public HBox sectionView(String txt, char type, int numHSections, boolean isEqual, double otherHt, String... fileName) {
+      HBox sectionView(String txt, CellLayout type, int numHSections, boolean isEqual, double otherHt, String... fileName) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("in sectionView for DoubleCellSection. ");
 
-            GenericCell gc = new GenericCell();
+            //GenericCell gc = new GenericCell();
             int wd = SceneCntl.getCenterWd() - RIGHT_PANE_WD;
             int ht = (int) ReadFlash.getInstance().getMasterBPane().getHeight();
             // text cell
-            leftCell = gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
+            leftCell = GenericCell.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
 
             rightCell.getChildren().clear();
 
             // Set the rightCell initial width and height from SceneCntl
-            rightCell = gc.cellFactory(type, rightCell, SceneCntl.getRightCellWd(), SceneCntl.calcCellHt(), fileName);
+            rightCell = GenericCell.cellFactory(type, rightCell, SceneCntl.getRightCellWd(), SceneCntl.calcCellHt(), fileName);
             rightCell.setMinWidth(SceneCntl.getRightCellWd());
             rightCell.setMaxWidth(SceneCntl.getRightCellWd());
             sectionHBox.getChildren().addAll(leftCell, rightCell);
             sectionHBox.setStyle("-fx-background-color: WHITE; -fx-background-radius: 3");
             rightCell.setStyle("-fx-background-color: TRANSPARENT; -fx-background-radius: 0 3 3 0; -fx-border-radius: 0 3 3 0; -fx-padding: 4");
             leftCell.setStyle("-fx-background-color: TRANSPARENT;");
-            // Set the initial section height
-  //          double no = SceneCntl.calcCenterHt(30, 244, FlashMonkeyMain.getPrimaryWindow().getHeight());
-  //          sectionHBox.setPrefHeight(no / numHSections);
-
   //          leftCell.setPrefHeight(no / numHSections);
             leftCell.setPrefWidth(ReadFlash.getInstance().getMasterBPane().widthProperty().get() - RIGHT_PANE_WD);
 
@@ -100,7 +97,7 @@ public class DoubleCellSection //extends GenericSection
        *
        * @return Returns the HBox containing this section
        */
-      public HBox getSectionHBox() {
+      HBox getSectionHBox() {
             return sectionHBox;
       }
 

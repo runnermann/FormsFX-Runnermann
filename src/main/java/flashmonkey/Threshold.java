@@ -123,7 +123,7 @@ public class Threshold {
                   fc.setNumRight(4);
                   fc.setRemember(threshold + (fc.getANumber() * 10));
                   fc.setRtDate(ZonedDateTime.now(zID));
-                  fc.setSeconds(17);
+      //            fc.setSeconds(17);
             }
             //return fc;
       }

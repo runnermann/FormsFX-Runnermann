@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -25,7 +25,11 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.transform.Scale;
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
 
@@ -35,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.draw.FMTextEditor;
 import type.draw.FontAttributes;
+import uicontrols.UIColors;
 
 
 import static uicontrols.UIColors.convertColor;
@@ -55,15 +60,10 @@ public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
       private double y; // minY
       private double wd;
       private double ht;
-
-
       // Stroke and fill
       private double strokeWidth;
-      // The shape's stroke color
       private String strokeColor;
-      // The shape's fill color
       private String fillColor;
-
       // A shape knows its index in the
       // shape array
       private int shapeAryIdx;
@@ -114,7 +114,7 @@ public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
       /**
        * *********************************************************************************************************** ***
        * *
-       * SETTERS
+       * *                                      SETTERS
        * *
        * * ************************************************************************************************************
        **/
@@ -156,6 +156,7 @@ public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
        */
       @Override
       public void setStrokeColor(String strokeClr) {
+            super.fontStroke = strokeClr;
             this.strokeColor = strokeClr;
       }
 
@@ -189,7 +190,7 @@ public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
        * shape in getShape();
        */
       public FMTextEditor getTextEditor() {
-            String prompt = "Enter text. To exit and save, press cmd or control and enter ";
+            String prompt = "Enter text";
             FMTextEditor txtArea = new FMTextEditor(prompt, x, y, wd, ht);
             txtArea.setText(text);
 
@@ -234,11 +235,12 @@ public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
             Text txt = new Text(x, y, this.text);
             txt.setLineSpacing(lineSpacing);
             txt.setTextAlignment(textAlign);
-            txt.setFont(font);
+     //       txt.setFont(font);
+            txt.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.REGULAR, fontSize));
 
             txt.setWrappingWidth(wd);
             //	txt.setFill(super.getFontFill());
-            txt.setStroke(super.getFontStroke());
+            txt.setFill(super.getFontStroke());
             return txt;
       }
 
@@ -253,18 +255,23 @@ public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
       @Override
       public Shape getScaledShape(double scaleY) {
             Text t = new Text(
-                (this.getX() * scaleY) - 100,
-                (this.getY() * scaleY) - 20,
                 this.text
             );
-            t.setScaleY(scaleY);
-            t.setScaleX(scaleY);
+            t.wrappingWidthProperty().set(100);
+            // size of text not position
+            Scale scale = new Scale();
+            scale.setX(scaleY);
+            scale.setY(scaleY);
 
-            t.setLineSpacing(lineSpacing);
-            t.setTextAlignment(textAlign);
-            t.setFont(font);
-            t.setWrappingWidth(wd);
-            t.setStroke(super.getFontStroke());
+            t.getTransforms().add(scale);
+            t.setTranslateX(x * scaleY);
+            t.setTranslateY(y * scaleY);
+            t.setTranslateZ(1 * scaleY);
+            t.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.REGULAR, fontSize));
+            //t.setFill(super.getFontFill());
+
+            t.setStroke(convertColor(this.getStrokeColor()));
+            //t.setFill(convertColor(this.getFillColor()));
 
             return t;
       }
@@ -327,7 +334,8 @@ public class FMLetter extends FontAttributes<FMLetter> implements Serializable {
                 draw.getOverlayPane(),
                 editor,
                 this.strokeColor,
-                this.fillColor
+                this.fillColor,
+                (int) this.fontSize
             );
       }
 

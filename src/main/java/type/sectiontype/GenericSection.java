@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -26,6 +26,8 @@ package type.sectiontype;
  */
 
 import javafx.scene.layout.HBox;
+import type.celltypes.CellLayout;
+import type.celltypes.SingleCellType;
 
 public final class GenericSection {
 
@@ -62,11 +64,12 @@ public final class GenericSection {
        * @param path  The filePath w/ fileName for a file
        * @return Returns E as a VBox.
        */
-      public HBox sectionFactory(String txt, char cType, int numHSections, boolean isEqual, double otherHt, String... path) {
-            switch (cType) {
+      public HBox sectionFactory(String txt, CellLayout cType, int numHSections, boolean isEqual, double otherHt, String... path) {
+            switch (cType.get()) {
                   case 'C':   // image
                   case 'D':   // drawing
                   case 'M':   // media audio or video
+                  case 'L':   // latex, math latex
                   {
                         DoubleCellSection s = new DoubleCellSection();
                         return s.sectionView(txt, cType, numHSections, isEqual, otherHt, path);
@@ -75,6 +78,7 @@ public final class GenericSection {
                   case 'c': // image
                   case 'd': // drawing
                   case 'm': // media
+                  case 'l': // latex, math latex
                   case 't': // text
                   default: {
                         SingleCellSection s = new SingleCellSection();

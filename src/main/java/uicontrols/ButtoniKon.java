@@ -23,8 +23,8 @@ public enum ButtoniKon { //extends Button {
       // FlashMonkey Main Buttons
       BACK("BACK", "Select Files", FontAwesomeSolid.REPLY, UIColors.FM_WHITE, 16),
       // Answer Nav buttons for example Multi-choice Tests
-      QA_ANS_SELECT("SHOW ANSWER", "Show the answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE),
-      ANS_SELECT("SELECT", "Select this answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE),
+      QA_ANS_SELECT("SHOW ANSWER", "Show the answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE, 20),
+      ANS_SELECT("SELECT", "Select this answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE, 20),
       ANS_PREV("", "Previous answer", FontAwesomeSolid.CHEVRON_LEFT, UIColors.FOCUS_BLUE_OPAQUE),
       ANS_NEXT("", "Next answer", FontAwesomeSolid.CHEVRON_RIGHT, UIColors.FOCUS_BLUE_OPAQUE),
       // Question nav buttons
@@ -46,7 +46,7 @@ public enum ButtoniKon { //extends Button {
       MENU("MENU", "Back to the Select, study, or create menu. Leaves this study session.", FontAwesomeSolid.REPLY, UIColors.FM_WHITE, 20),
       // Create card unique buttons
       NEW_CARD("", "Add a new card", FontAwesomeSolid.PLUS, UIColors.FM_WHITE, 20),
-      INSERT_CARD("", "Insert a new card to the end of the deck", FontAwesomeSolid.PLUS, UIColors.FM_WHITE, 20),
+      INSERT_CARD("", "Insert a new card to the end of the deck", FontAwesomeSolid.CHEVRON_DOWN, UIColors.FM_WHITE, 20),
       DELETE_CARD("", "Delete this card", FontAwesomeSolid.TIMES, UIColors.FM_WHITE, 20),
       SAVE_DECK_RETURN("", "Save changes to the deck\n& return to menu", FontAwesomeSolid.SHARE_SQUARE, UIColors.FM_WHITE, 20),
       UNDO_DECK_CHANGES("", "Don't save any changes to the deck\n and return to menu", FontAwesomeSolid.TRASH_RESTORE, UIColors.FM_WHITE, 20),
@@ -54,7 +54,7 @@ public enum ButtoniKon { //extends Button {
       CREATE_Q_PREV("", "Previous card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_LEFT, UIColors.FM_WHITE, 20),
       CREATE_Q_NEXT("", "Next card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_RIGHT, UIColors.FM_WHITE, 20),
       UNDO_CARD_CHANGES("", "Undo changes to \nthis card", FontAwesomeSolid.ERASER, UIColors.FM_WHITE, 20),
-      SELL_BUTTON("EARN", "Add a description, and select to earn money from this deck.", FontAwesomeSolid.MONEY_BILL, UIColors.HIGHLIGHT_GREEN, 28),
+      SELL_BUTTON("EARN", "Add a description, and select to earn pay from this deck.", FontAwesomeSolid.MONEY_BILL, UIColors.HIGHLIGHT_GREEN, 28),
       PURCHASE(" CHECKOUT ", "Go to checkout.", FontAwesomeSolid.SHOPPING_CART, UIColors.FM_WHITE),
       // I got paid pane buttons
       WALLET_BUTTON("WALLET", "See what you can spend", FontAwesomeSolid.MONEY_BILL_WAVE, UIColors.FM_WHITE),
@@ -62,8 +62,9 @@ public enum ButtoniKon { //extends Button {
       // Profile menu buttons
       PROFILE_BUTTON("My Profile", "Update your profile information.", FontAwesomeSolid.USER_COG, UIColors.FM_WHITE),
       PAY_SYS_BUTTON("Pay System", "Edit or update your account information with Stripe.", FontAwesomeSolid.MONEY_BILL_WAVE, UIColors.FM_WHITE),
-      SUBSCRIBE_BUTTON("Advanced", "Subscribe to FlashMonkey Advanced.", FontAwesomeSolid.USERS, UIColors.FM_WHITE),
+      SUBSCRIBE_BUTTON("Set Up", "Subscribe and Set Up to earn on FlashMonkey.", FontAwesomeSolid.USERS, UIColors.FM_WHITE),
       ACCOUNT_BUTTON("Access and update your profile and Stripe information.", FontAwesomeSolid.COGS, UIColors.FM_WHITE, 40),
+      STATS_BUTTON("My Stats", "Your study and earning stats", FontAwesomeSolid.CHART_BAR, UIColors.FM_WHITE),
       PAY_ACCT_BUTTON("", "Disabled: Shows when you've been paid", "/image/qww_1.png", UIColors.FM_WHITE, 48),
       // MetaDataForm button
       QR_SHARE_BUTTON("SAVE TO DESKTOP", "Share this QR-Code so others can purchase your deck", FontAwesomeSolid.QRCODE, UIColors.FM_WHITE),
@@ -326,6 +327,14 @@ public enum ButtoniKon { //extends Button {
             return button;
       }
 
+      public static Button getStatsPaneButton() {
+            Button button = STATS_BUTTON.get();
+            button.setId("blueButtonSquare");
+            button.setMaxWidth(SceneCntl.getFileSelectPaneWd());
+            button.setMinWidth(SceneCntl.getFileSelectPaneWd());
+            return button;
+      }
+
       // READ BUTTONS
       public static Button getQFirstButton() {
             Button button = Q_FIRST.get();
@@ -353,25 +362,25 @@ public enum ButtoniKon { //extends Button {
 
       public static Button getAnsSelect() {
             Button button = ANS_SELECT.get();
-            button.setId("navButtonLight");
+            button.setId("navButtonAns");
             return button;
       }
 
       public static Button getQAAnsSelect() {
             Button button = QA_ANS_SELECT.get();
-            button.setId("navButtonLight");
+            button.setId("navButtonAns");
             return button;
       }
 
       public static Button getAnsNext() {
             Button button = ANS_NEXT.get();
-            button.setId("navButtonLight");
+            button.setId("navButtonAns");
             return button;
       }
 
       public static Button getAnsPrev() {
             Button button = ANS_PREV.get();
-            button.setId("navButtonLight");
+            button.setId("navButtonAns");
             return button;
       }
 
@@ -408,14 +417,6 @@ public enum ButtoniKon { //extends Button {
 
 
       // EXIT BOX BUTTONS
-	
-/*	public static Button getExitButton() {
-		Button button = EXIT_BUTTON.get();
-		button.setId("blueButtonSquare");
-		//button.setMaxWidth(150);
-		//button.setMinWidth(240);
-		return button;
-	}*/
 
       public static Button getMenuButton() {
             Button button = MENU.get();

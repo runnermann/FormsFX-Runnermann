@@ -54,7 +54,7 @@ public class Fit {
        *
        * @param sourceInfo the sourceInfo object
        * @param minutes
-       * @return True if the video is <= the minutes provided in the param
+       * @return True if the video is <code> <= </code> the minutes provided in the param
        */
       public static boolean checkDuration(MultimediaInfo sourceInfo, int minutes) {
             long time = sourceInfo.getDuration();

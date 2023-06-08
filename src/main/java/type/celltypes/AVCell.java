@@ -98,6 +98,8 @@ public class AVCell implements MediaPlayerInterface {
 
                   return rightPane;
             } else { // media file cannot be found, show problem img currently poop img.
+                  System.out.println("AVCell line 101 mediaFile: " + mediaFile);
+                  Thread.dumpStack();
                   LOGGER.warn("media/audio does not exist, calling oops.png: filePath: ", mediaFile.toURI());
                   String imagePath = "File:" + "src/image/poop_img_problem.png";
                   mediaFile = new File(imagePath);
@@ -157,6 +159,7 @@ public class AVCell implements MediaPlayerInterface {
                               mediaViewer.setFitWidth(toWd);
                               mediaViewer.setFitHeight(toHt);
                               StackPane viewerPane = new StackPane(mediaViewer);
+                         //     viewerPane.setId("aviMediaCellPane");
                               viewerPane.setAlignment(Pos.CENTER);
                               playIconImgView.setImage(playIcon);
                               viewerPane.getChildren().add(playIconImgView);

@@ -1,6 +1,8 @@
 package type.tools.calculator;
 
 
+import flashmonkey.CreateFlash;
+import org.slf4j.LoggerFactory;
 import queue.ArrayQueue;
 
 import java.util.ArrayList;
@@ -12,19 +14,21 @@ import java.util.Stack;
  *
  * Parses an expression based on Edsgar W. Dijkstra's Shunting Yard
  * algorithm. The class prioritizes operators and sub-expressions ensuring that the
- * expression maintains PERMDAS order. Allows the EncryptedUser.EncryptedUser to use pipes for
+ * expression maintains PERMDAS order. Allows the EncryptedUser to use pipes for
  * Absolute Value when entering a string expression.
  *
  * *** NOTE:
  * !!! To print the problem for the EncryptedUser in a simple and understandable format, We first create an object for each element
- *  *   that can be referanced and display a result to the EncryptedUser. Otherwise if we printed the results in the order they
+ *  *   that can be referenced and display a result to the EncryptedUser. Otherwise if we printed the results in the order they
  *  *   are executed, although they are in left to right PERMDAS order, a 9 * 9 may not provide a good hint if there isn't
  *  *   a 9 * 9 in the original string. ie in the problem, 9 * 3 ^ 2 - 2 -{ 3 ^ 2 ( 5 + 1 ) } } / ...
- *  *   9 * 9 does not appear in the original string. Niether would 2 * -1 which is used to calcuate the results of the
+ *  *   9 * 9 does not appear in the original string. Neither would 2 * -1 which is used to calculate the results of the
  *  *   2 -{ ...}. To create an easy to understand display when the EncryptedUser gets the answer wrong, due to ordering, or to
  *  *   help the EncryptedUser understand the order that is used to solve problems in this calculator, the expression is
- *  *   parsed into a expNode (Expression Node) to be used as a referance. The referance may be used later for displaying and creating
+ *  *   parsed into a expNode (Expression Node) to be used as a reference. The reference may be used later for displaying and creating
  *  *   behaviors that assist with understanding.
+ *
+ *  NOT THREAD SAFE.
  *
  * Algorithm:
  *   - Determine if the equation is balanced… based on parantheseis , brackets, and braces. Simply go through the
@@ -37,12 +41,12 @@ import java.util.Stack;
  * -	If the token is a number, it is offered (placed) to the outQueue and waits for the next token
  * -	If the token is an operator,
  *      - It checks the operator on the top of the opStack.
- *          - If the operator on the top of the stack is higher than it's precedence. The operator on the top of the
+ *          - If the operator on the top of the stack is higher than its precedence. The operator on the top of the
  *          opStack is pooped from the opStack and offered to the outQueue until it can be placed on the opStack.
  *          - If the operator is an open enclosure it is always placed on the opStack.
  *              - If it is a negitive enclosure, a -1 is offered to the outQueue and a multiply is pushed onto the
  *              opQueue with the same rules for precedence.
- *          - If the operator is a closing enclosure, it poops the operators from the opStack until it has pooped the
+ *          - If the operator is a closing enclosure, it pops the operators from the opStack until it has pooped the
  *          opening enclosure
  *
  *  After the string is read, the outQueue is evaluated in postFix order.
@@ -56,11 +60,11 @@ import java.util.Stack;
  *      -	Set priority
  *          o	Immidiate = 3
  *          	Power = execute immidiatley –
- *              •	Create thread, hold any processing if this ref is needed until it’s finished
+ *              •	Hold any processing if this ref is needed until it’s finished
  *              •	Pop last token, set it to left integer
  *              •	Get next token, (maybe place it on the stack), remove it from the original string/structure
  *              •	Evaluate and place on the stack
- *          	Rigth brackets, paran, brace: " ) " or " ] " or " } "
+ *          	Rigth brackets, paran, brace: " ) " or " ] " or " } " and pipe " | " if absBool is true.
  *              •	Create new thread, hold any processing if this ref is needed
  *              •	Execute operators from the top of the stack until the next left bracket, paran, brace " ( " or " [ " or " { "
  *          	Pipe “ | “ Absolute Value
@@ -86,7 +90,10 @@ import java.util.Stack;
  **********************************************************************************************************************/
 
 
-public class DijkstraParser implements OperatorInterface {
+public class DijkstraParser {
+
+      private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(CreateFlash.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(CreateFlash.class);
 
       private double result;
       // Combination of numbers and ExpNodes
@@ -98,9 +105,17 @@ public class DijkstraParser implements OperatorInterface {
       // Message if input is illegal
       private static String message;
       // Flag for invalid input
-      private static boolean invalidInput;
+      private static boolean invalidInputBool;
       // Size of subExpList
       private static int size;
+      // The location, we guess of the idx of the
+      // expression.
+      private static int expressionIdx;
+      // The string that is an error
+      private static int errorEndIdx;
+      private static int errorStartIdx;
+      private static String errorStr;
+      private static boolean letterErrorBool;
 
 
       /**
@@ -161,26 +176,34 @@ public class DijkstraParser implements OperatorInterface {
 
 
       /**
-       * Evaluates the String expresion in the argument
+       * Evaluates the String expression in the argument
        *
-       * @param string The string expression to be evaluated
+       * @param expression The expression expression to be evaluated
        * @return Returns the result
        */
-      private double evaluate(String string) {
-
-            // Working on sending a message to the EncryptedUser when they do not provide
-            //    clean input. Try catch currently implemented but is not very
-            //    good.
-
+      private double evaluate(String expression) {
+            errorStr = "";
             try {
-                  if (parseStrExpression(string)) {
-                        parseIntoRPN(subExpList);
-                        return execute(outQueue);
+                  if (parseStrExpression(expression)) {
+                        parseIntoRPN(subExpList, expression);
+                        return execute(outQueue, expression);
                   }
-
+            } catch (EmptyStackException e) {
+                  invalidInputBool = true;
+                  errorStr = errorStr.length() == 0 ? "ERROR!  " : errorStr;
+                  System.err.println("Exception: Line 190 DijkstraParser");
+                  //e.printStackTrace();
+                  clearStructures();
+            } catch (IllegalStateException e) {
+                  invalidInputBool = true;
+                  clearStructures();
+                  errorStr = errorStr.length() == 0 ? "ERROR!  " : errorStr;
             } catch (Exception e) {
+                  invalidInputBool = true;
+                  //errorStr = "UNKNOWN ERROR: Exception in DijkstraParser.";
+                  System.err.println("Exception: Line 197 DijkstraParser");
+                  e.printStackTrace();
 
-                  // @todo Exception for invalid operator. Handle this error in DijkstraParser line 164 evaluate
                   clearStructures();
             }
             return 0;
@@ -192,66 +215,54 @@ public class DijkstraParser implements OperatorInterface {
        * @param outQ ..
        * @return returns the solution
        */
-      public double execute(ArrayQueue outQ) {
-
-            //System.out.println("\n *!*!* in Parser.execute() *!*!* ");
+      public double execute(ArrayQueue outQ, String expression) throws EmptyStackException, Exception {
             Stack<Double> resultStack = new Stack<>();
 
-            double x;
-            double y;
-            while (!outQ.isEmpty()) {
-
-                  if (outQ.peek().getClass().isInstance(1.1)) {
-
-                        //System.out.println("\n\t inserting: " + outQ.peek() + " into resultStack");
-
-                        // queue element is a number
-                        resultStack.push((double) outQ.poll());
-
-                  } else {
-                        // queue element is an operator
-
-                        //System.out.println("\n\t OPERATOR: " + ((ExpNode) outQ.peek()).getOp().getSymbol());
-
-                        if (!((ExpNode) outQ.peek()).getOp().isUnaryOp()) {
-
-                              y = resultStack.pop();
-                              x = resultStack.pop();
-                              ExpNode exp = (ExpNode) outQ.poll();
-
-                              double result = exp.getOp().execute(exp, x, y);
-
-                              //System.out.println("binary operator inserting: " + result + " into resultStack");
-                              //System.out.println("ResultStack size is now: " + resultStack.size());
-
-                              resultStack.push(result);
-
+            double x = 0;
+            double y = 0;
+            ExpNode exp = null;
+            while ( !outQ.isEmpty()) {
+                  try {
+                        if (outQ.peek().getClass().isInstance(1.1)) {
+                              // queue element is a number
+                              resultStack.push((double) outQ.poll());
                         } else {
-
-                              //System.out.println(" !~!~! in DijkstraParser execute() !~!~! \n " +
-                              //         "symbol is " + ((ExpNode) outQ.peek()).getOp().getSymbol());
-
-                              x = resultStack.pop();
-                              ExpNode exp = (ExpNode) outQ.poll();
-
-                              double result = exp.getOp().execute(exp, x, 0);
-
-                              resultStack.push(result);
-
-                              //System.out.println("unary operator inserting: " + result + " into resultStack");
-                              //System.out.println("ResultStack size is now: " + resultStack.size());
+                              // queue element is an operator
+                              if ( ! ((ExpNode) outQ.peek()).getOp().isUnaryOp() ) {
+                                    exp = (ExpNode) outQ.poll();
+                                    y = resultStack.pop();
+                                    x = resultStack.pop();
+                                    double result = exp.getOp().execute(exp, x, y);
+                                    resultStack.push(result);
+                              } else {
+                                    x = resultStack.pop();
+                                    exp = (ExpNode) outQ.poll();
+                                    double result = exp.getOp().execute(exp, x, 0);
+                                    resultStack.push(result);
+                              }
                         }
+                  } catch (Exception e) {
+                        invalidInputBool = true;
+                        int endIdx = exp.getExpressionStartIdx() + exp.getOp().getSymbol().length();
+                        //endIdx = endIdx < expression.length() ? endIdx : expression.length() - 1;
+                        errorStr = exp.getOp().getSymbol();
+                        errorMessageIsBrack();
+                        errorStartIdx = exp.getExpressionStartIdx();
+                        errorEndIdx = endIdx;
+                        return 0;
                   }
             }
 
             if (resultStack.size() == 1) {
-
                   return resultStack.pop();
 
             } else {
-
-                  //System.err.println("\nERROR: DijkstraParser resultStack has more than one" +
-                  //        "\n answer left in the stack \n");
+                  invalidInputBool = true;
+                  errorStr = "UNKNOWN ERROR: IDK?";
+                  message = "";
+                  clearStructures();
+                  System.err.println("\nERROR: DijkstraParser resultStack has more than one" +
+                          "\n answer left in the stack \n");
                   return 99999999;
             }
       }
@@ -261,43 +272,70 @@ public class DijkstraParser implements OperatorInterface {
        * of String elements containing each element of the
        * expression.
        *
-       * @param expression The string expresion
+       * @param paramExpression The string expression
        * @return true if succeeded
        * @throws Exception if operator input is invalid.
+       * @throws EmptyStackException if there is a problem with the order of the brackets, braces, etc...
        */
-      public boolean parseStrExpression(String expression) throws Exception {
+      public boolean parseStrExpression(String paramExpression) throws EmptyStackException, Exception {
 
-            // clean whitespace from start
-            expression = expression.trim();
+            // To be informative to the user, we must guess where to insert the error.
+            // This is a best effort and is thrown off by the user if there is extra white
+            // space. We must guess, since we've split the strings using white spaces.
+            // StrIdx represents the end of the string index counting the chars of the
+            // element and the white space. Note that the index is incremented for
+            // white space at the end of the loop so that the inserted strIdx is correct
+            // for the param for operator and ExpNode.
+            int strIdx = 0;
+            // clean whitespace from start and extra white spaces. Causes a problem
+            // with location of the error, but user friendly when we don't have errors
+            // due to extra white spaces.
+            String expression = paramExpression.trim();
+            // clean repeated white spaces
+            expression = expression.replaceAll("\\s+", " ");
             String element;
             String[] elements = expression.split(" ");
 
             for (int i = 0; i < elements.length; i++) {
                   element = elements[i];
-                  element.trim();
-                  // Expression length,
-                  // used to determine if number or op
+                  // So we can show where the error occurred,
+                  // prevent downstream array overrun errors.
+                  int guardLength = paramExpression.length();
+
+                  strIdx = strIdx < guardLength ? strIdx : guardLength - 1;
+                  // Set the class variable
+                  expressionIdx = strIdx;
+                  // trim the element afterwards
+                  // element.trim();
                   int length = element.length();
                   char c;
-
-                  //System.out.println("parsing string, element is: " + element);
-
                   // classify the element as a number or operator
                   // and add it to the subExpList.
-                  // - Check last char in case it's a negitive number
-                  if (length > 1) {
-                        c = element.charAt(length - 1);
-                  } else {
+                  // - Check if it's a number and account for negative numbers
+                  if (Character.isDigit(element.charAt(0)) || length > 1 && Character.isDigit(element.charAt(1)) ) {
+                        try{
+                              double num = Double.parseDouble(element);
+
+                              subExpList.add(num);
+                              System.out.println("subExpList.add: " + num);
+                              size++;
+                        } catch (NumberFormatException e) {
+
+                              System.err.println("NumberFormatException. line 285. I'm still running.");
+
+                              letterErrorBool = Utility.isAsciiLetter(element.charAt(0));
+                              errorStr = "" + element;
+                              // The element's start idx in the expression
+                              errorStartIdx = strIdx;
+                              // the element's end idx in the expression
+                              errorEndIdx = strIdx + element.length();
+                              invalidInputBool = true;
+                              errorMessageIsFormating(element);
+                              clearStructures();
+                              return false;
+                        }
+                  } else { // it's an operator, or it will fail
                         c = element.charAt(0);
-                  }
-
-                  // Classify, seperate, and add to subExpList
-                  if (Character.isDigit(c)) {
-                        double num = Double.parseDouble(element);
-                        subExpList.add(num);
-                        size++;
-
-                  } else { // it's an operator
 
                         /*
                          * Add the binomial operator and its values (in an unexecuted state)
@@ -307,43 +345,54 @@ public class DijkstraParser implements OperatorInterface {
                         String y = "";
                         OperatorInterface operator = getOperator(element);
 
-                        if (operator.getPriority() == 8) { // DEFAULT OPERATOR
+                        if(invalidInputBool) {
+                              clearStructures();
+                              System.err.println("invalidInputBool was triggered. line 306" );
+                              return false;
+                        }
 
-                              // System.err.println("parseStrExp is return false !!!");
+                        if (operator.getPriority() == 8) { // DEFAULT OPERATOR
+                              System.err.println("parseStrExp is return false !!! line 311");
                               return false;
                         }
                         if (i < 0) {
-                              //System.err.println("ERROR: There are not enough numbers for the " + operator.getSymbol() +
-                              //        " operation. \nCheck the format of the expression.");
+                              System.err.println("ERROR: There are not enough numbers for the " + operator.getSymbol() +
+                                      " operation. \nCheck the format of the expression. line 316");
                               if (operator.getPriority() != 0) {
+                                    System.out.println("Throwing empty stack exception line 319 DijkstraParser");
                                     throw new EmptyStackException();
                               }
                         }
                         if (operator.isUnaryOp()) { // sqrt, abs,
-
                               // for printing values prior to execution
                               x = elements[i + 1];
 
-                              //System.out.println("op " + operator + "is unary, x: " + x);
+                              System.out.println("op " + operator + "is unary, x: " + x);
 
                         } else if (i > 1 && i < elements.length - 1) {
                               // for printing values prior to execution
                               x = elements[i - 1];
                               y = elements[i + 1];
                         } else {
-                              if (operator.getPriority() != 0) {
-                                    // throw new EmptyStackException();
-                              }
+                              // keep going
+
                         }
 
                         // for display when answered incorrectly
-                        String strOrigSubExp = getStrExpr(x, y, operator);
+                        String strOrigSubExp = operator.getStrExpr(x, y, operator);
                         ExpNode exp = new ExpNode(operator, strOrigSubExp, i);
+                        exp.setExpressionEndIdx(strIdx);
 
-                        // add the expression to the sub-expession list
+                        // add the expression to the sub-expression list
                         subExpList.add(exp);
+
+                        System.out.println("subExpList.add: " + exp);
+
                         size++;
                   }
+                  // Increase the strIdx by element length
+                  // and add 1 for white space.
+                  strIdx += element.length() + 1;
             }
             return true; // The number of elements in subExpList
       }
@@ -355,23 +404,23 @@ public class DijkstraParser implements OperatorInterface {
        * @param subExpressList ...
        * @throws Exception ..
        */
-      public void parseIntoRPN(ArrayList subExpressList) throws Exception {
+      public void parseIntoRPN(ArrayList subExpressList, String expression) throws EmptyStackException, IllegalStateException, Exception {
 
             // - Work on parsing larger doubles including other real numbers.
-            //System.out.println("\n\n ~*~*~ parseIntoRPN ~*~*~");
+            System.out.println("\n\n ~*~*~ parseIntoRPN ~*~*~");
 
             outQueue.clear();
             opStack.clear();
 
             /*
-             * Set prevObject to + to prevent MULTIPLY from being added to the opStack
-             * at the start
+             * SpecialCase! Set prevObject to + to prevent MULTIPLY from being added to the opStack
+             * at the start.
              **/
-
             OperatorInterface operator = getOperator("+");
             ExpNode exp = new ExpNode(operator, "", 0);
 
             Object prevObject = exp;
+            BracketError bracketError = new BracketError();
 
             for (int i = 0; i < subExpressList.size(); i++) {
                   Object ob = subExpressList.get(i);
@@ -388,15 +437,80 @@ public class DijkstraParser implements OperatorInterface {
                         operator = exp.getOp();
                         // The reOrdering call
                         operator.stackAction(prevObject, exp, outQueue, opStack, i);
+                        if(operator.isCloseEnclosure() || operator.isOpenEnclosure()) {
+                              bracketError.matchCheckNHandler(exp, expression);
+                        }
                         // Set the prevObject to the operator
                         prevObject = exp;
                   }
             }
+            bracketError.stackNotEmptyCheckNHandler(expression);
             while (!opStack.isEmpty()) {
                   outQueue.offer(opStack.pop());
             }
-            // testing
-            //outQueue.print();
+      }
+
+
+      private class BracketError {
+
+            private Stack<ExpNode> bracketStack;
+
+            private BracketError() {
+                  bracketStack = new Stack<>();
+            }
+
+            private void matchCheckNHandler(ExpNode expNode, String expression) throws EmptyStackException {
+                  OperatorInterface op = expNode.getOp();
+                  if (op.isOpenEnclosure()) {
+                        bracketStack.push(expNode);
+                  } else {
+                        ExpNode stackNode = null;
+                        // bracketStack not empty error
+                        if(bracketStack.size() > 0) {
+                              stackNode = bracketStack.pop();
+                              if (!stackNode.getOp().isMatch(op.getSymbol().charAt(0))) {
+                                    int startIdx = stackNode.getExpressionStartIdx();
+                                    int endIdx = expNode.getIndex() + expNode.getOp().getSymbol().length();
+                                    //endIdx =  endIdx < expression.length() ? endIdx : expression.length() - 1;
+                                    errorHandler(expression, startIdx, endIdx);
+                              }
+                        } else {
+                              // bracketStack is empty error
+                              int startIdx = expNode.getExpressionStartIdx();
+                              int endIdx = expNode.getExpressionStartIdx() + expNode.getOp().getSymbol().length();
+                              errorHandler(expression, expNode.getExpressionStartIdx(), endIdx);
+                              throw new EmptyStackException();
+                        }
+                  }
+            }
+
+            private void stackNotEmptyCheckNHandler(String expression) throws IllegalStateException {
+                  if(bracketStack.size() > 0) {
+                        // error!
+                        ExpNode stackNode = bracketStack.pop();
+                        int startIdx = stackNode.getExpressionStartIdx();
+                        int endIdx = startIdx + expression.length();
+                        errorHandler(expression, startIdx, endIdx);
+                        throw new IllegalStateException("The bracketStack should be empty");
+                  }
+                  // else all is good
+            }
+
+            /**
+             * Handle messaging for stack not empty and stack is empty errors.
+             * @param expression The expression the user has given.
+             * @param startIdx The error elements start idx of the Expression
+             * @param endIdx The error elements end idx of the Expression
+             */
+            private void errorHandler(String expression, int startIdx, int endIdx) {
+                  invalidInputBool = true;
+                  endIdx = endIdx < expression.length() ? endIdx : expression.length() -1;
+                  errorStr = expression.substring(startIdx, endIdx + 1);
+                  errorMessageIsBrack();
+                  errorStartIdx = startIdx;
+                  errorEndIdx = endIdx;
+                  clearStructures();
+            }
       }
 
       /*
@@ -416,10 +530,10 @@ public class DijkstraParser implements OperatorInterface {
        * @return ..
        * @throws Exception ..
        */
-      public static OperatorInterface getOperator(String stOperator) throws Exception {
+      public OperatorInterface getOperator(String stOperator) throws Exception {
 
             /** Priority from 0 to 4. Higher number == higher priority **/
-            invalidInput = false;
+            invalidInputBool = false;
 
             switch (stOperator) {
                   case "–": // cut and paste from ms word.
@@ -527,7 +641,6 @@ public class DijkstraParser implements OperatorInterface {
                   }
                   case "|": {
                         // Need to check how many pipes exist already since they all look the same
-
                         if (pipeOpen) {
                               pipeOpen = false;
                               return Close_Enclosure.CLOSE_PIPE; // priority 4
@@ -538,15 +651,27 @@ public class DijkstraParser implements OperatorInterface {
                   }
                   default: {
                         // Default is filtered out in DijkstraParser parseStrExpression()
-                        //System.err.println("\n *~*~* in DijkstraParser.getOperator default. Setting invalidInput to true\n\n");
-                        // @todo problem with string entries being received in parse instead of doubles... needs to be handled
+                        letterErrorBool = Utility.isAsciiLetter(stOperator.charAt(0));
+                        invalidInputBool = true;
+                        errorStr = stOperator;
 
-                        invalidInput = true;
-                        message = "ERROR: Input not recognized. "
-                            + "\nPlease replace \"" + stOperator + "\" with valid input.";
-                        throw new Exception("ERROR: Operator Not recognized " + stOperator);
+                        errorStartIdx = expressionIdx;
+                        errorEndIdx = expressionIdx + stOperator.length();
+                        errorMessageIsFormating(stOperator);
+                        clearStructures();
+                        return null;
                   }
             }
+      }
+
+      private static void errorMessageIsFormating(String stOperator) {
+            message = "ERROR: Input not recognized. \nEnsure there is a space between the operator and the" +
+                    "\n value. \nEXAMPLE: { 2 * 4 -( 3 - 1 ) } / { | ( 4 - sqrt 9 ) - 2 | }"
+                    + "\n\nPlease replace \"" + stOperator + "\" with valid input.";
+      }
+
+      private static void errorMessageIsBrack() {
+            message = "ERROR: There is an error in bracket {}, brace [], parenthesis(), or Absolute Value Pipe || ordering";
       }
 
       /**
@@ -558,13 +683,29 @@ public class DijkstraParser implements OperatorInterface {
             return message;
       }
 
+      public int getErrorStrEndIdx() {
+            return errorEndIdx;
+      }
+
+      public int getErrorStrStartIdx() {
+            return errorStartIdx;
+      }
+
+      public String getErrorStr() {
+            return errorStr;
+      }
+
+      public boolean isLetterError() {
+            return letterErrorBool;
+      }
+
       /**
        * Returns the invalidInput flag
        *
        * @return if invalid, true
        */
-      public static boolean isInvalidInput() {
-            return invalidInput;
+      public boolean isInvalidInput() {
+            return invalidInputBool;
       }
 
       /**
@@ -587,74 +728,10 @@ public class DijkstraParser implements OperatorInterface {
             }
       }
 
-
-      /** ************************************************************************************************************ **/
-      /**                                         FOR THE OPERATOR INTERFACE                                           **/
-      /**                                                 not used                                                     **/
-      /** ************************************************************************************************************ **/
-
-      /**
-       * For OperatorInterface... Method not used
-       *
-       * @return string
-       */
-      @Override
-      // For OperatorInterface... Method not used
-      public String getSymbol() {
-            //System.err.println("ERROR: Dijkstra Parser wrong getSymbol()");
-            return "not the getSymbol you wanted";
+      public void clearErrors() {
+            errorStr = "";
+            errorEndIdx = 0;
+            errorStartIdx = 0;
       }
 
-      /**
-       * For OperatorInterface... Method not used
-       *
-       * @return int
-       */
-      @Override
-      // For OperatorInterface... Method not used
-      public int getPriority() {
-            //System.err.println("ERROR: Dijkstra Parser, wrong getPriority()");
-            return 999;
-      }
-
-      /**
-       * For OperatorInterface... Method not used
-       *
-       * @return double
-       */
-      @Override
-      // For OperatorInterface... Method not used
-      public double execute(ExpNode exp, double x, double value) {
-            // do nothing
-            return .77;
-      }
-
-      /**
-       * For OperatorInterface... Method not used
-       */
-      @Override
-      // For OperatorInterface... Method not used
-      public void stackAction(Object previous, ExpNode op, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
-            // do nothing
-      }
-
-      /**
-       * For OperatorInterface... Method not used
-       *
-       * @return string
-       */
-      @Override
-      public String getStrExpr(String x, String y, OperatorInterface op) {
-            return x + " " + op.getSymbol() + " " + y;
-      }
-
-      /**
-       * For OperatorInterface... Method not used
-       *
-       * @return boolean
-       */
-      @Override
-      public boolean isUnaryOp() {
-            return false;
-      }
 }

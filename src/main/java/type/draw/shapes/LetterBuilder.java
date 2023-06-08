@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -21,6 +21,8 @@ package type.draw.shapes;
 
 
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
@@ -36,14 +38,17 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import media.sound.SoundEffects;
+import org.controlsfx.control.PrefixSelectionComboBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.celleditors.DrawTools;
 import type.celleditors.SectionEditor;
+import type.draw.FMText;
 import type.draw.FMTextEditor;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
       private static final Logger LOGGER = LoggerFactory.getLogger(LetterBuilder.class);
@@ -59,6 +64,7 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
 
       private String fillColor;
       private String strokeColor;
+      private int fontSize;
 
       // No Args constructor
       public LetterBuilder() { /* empty */}
@@ -74,13 +80,14 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
        * @param strokeClr
        * @param fillClr
        */
-      public LetterBuilder(Canvas c, GraphicsContext graphC, Pane overlayPane, SectionEditor editor, String strokeClr, String fillClr) {
+      public LetterBuilder(Canvas c, GraphicsContext graphC, Pane overlayPane, SectionEditor editor, String strokeClr, String fillClr, int fontSize) {
             super(c, graphC, overlayPane, editor);
 
             LOGGER.info("TxtBuilder full constructor called strokeColor: {}", strokeClr);
 
             this.strokeColor = strokeClr;
             this.fillColor = fillClr;
+            this.fontSize = fontSize;
       }
 
 
@@ -97,8 +104,6 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
       public LetterBuilder(FMLetter fmLetters, Canvas c, GraphicsContext graphC, Pane pane, SectionEditor editor) {
             super(c, graphC, pane, editor);
             Text fxText = fmLetters.getShape();
-            //this.anchorX = fmLetters.getX();
-            //this.anchorY = fmLetters.getY();
 
             LOGGER.info("TxtBuilder basic constructor called ");
 
@@ -151,13 +156,9 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
                         deltaY = deltaY * -1;
                         anchorX = e.getSceneX();
                         anchorY = e.getSceneY();
-
-                        if (e.isAltDown()) // create text
-                        {
+                        if (e.isAltDown()) {// create text
                               gC.strokeRect(anchorX, anchorY, deltaX, deltaX);
-
                         } else { // create an text
-
                               gC.strokeRect(anchorX, anchorY, deltaX, deltaY);
                         }
                   } else if (deltaX < 0) {
@@ -226,7 +227,6 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
                                   ""
                               );
                         } else {
-
                               fmLetters = new FMLetter(
                                   anchorX,
                                   anchorY,
@@ -256,6 +256,7 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
 
                         saveButton.setOnAction(e -> {
                               fmLetters.setText(textEditor.getText());
+                              fmLetters.setStrokeColor(this.strokeColor);
                               getOverlayPane().getChildren().remove(textEditor.getTextEditor());
                               setFxTextShape(fmLetters);
                         });
@@ -271,7 +272,10 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
                               textEditor.requestFocus();
                         });
 
-                        textEditor.addButtons(saveButton, exitButton, clearButton);
+                        // Font size selector
+                        PrefixSelectionComboBox<Integer> entryComboBox = idk(fmLetters);
+
+                        textEditor.addButtons(entryComboBox, saveButton, exitButton, clearButton);
 
                         // add it to the overlayPane
                         getOverlayPane().getChildren().add(textEditor.getTextEditor());
@@ -354,12 +358,46 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
 
       /**
        * Helper method from setFxTextShape and restFxTextShape
+       * Used on key press actions.
        */
       private void addToRightPane() {
             int wd = (int) getOverlayPane().getWidth();
             int ht = (int) getOverlayPane().getHeight();
 
             editorRef.setShapesInRtPane(gbcopyArrayOfFMShapes, wd, ht);
+      }
+
+      private PrefixSelectionComboBox idk(FMLetter fmLetters) {
+            // Font size
+            int[] n = {12, 14, 16, 18, 20, 24, 28, 32, 48, 64, 80, 96, 128};
+            ArrayList<Integer> intAry = new ArrayList<>();
+            for(Integer i : n) {
+                  intAry.add(i);
+            }
+            ObservableList<Integer> nums = FXCollections.observableArrayList(intAry);
+            PrefixSelectionComboBox<Integer> entryComboBox = new PrefixSelectionComboBox<>();
+            entryComboBox.getItems().addAll(nums);
+            if(fontSize > 0) {
+                  entryComboBox.setValue(fontSize);
+            }
+            entryComboBox.setTooltip(new Tooltip("Select the test mode for this card." +
+                    "\nEffects the card layout. " +
+                    "\n** Type a card name in for rapid search"));
+            // Set prefered width and height of combo box
+            entryComboBox.setMaxWidth(Double.MAX_VALUE);
+            entryComboBox.setPrefHeight(18);
+            entryComboBox.setPromptText("Font Size");
+            // set number of rows visible
+            entryComboBox.setVisibleRowCount(5);
+
+            entryComboBox.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
+                  int size = entryComboBox.getValue();
+                  fontSize = size;
+                  fmLetters.setFontSize(size);
+            });
+
+            return entryComboBox;
       }
 
 
@@ -398,116 +436,18 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
        *                                               and other mouse actions
        *                                                                                                                  *
        ** ************************************************************************************************************ ***/
-
+      InnerClass cl = new InnerClass();
+      public void shapeClicked(MouseEvent mouse, GenericShape gs, Shape shape) {
+            cl.shapeClicked(mouse, gs, shape);
+      }
 
       /**
-       * On click, Creates the editor for this
-       * Text object.
-       *
-       * @param mouse
-       * @param gs    The generic shape
-       * @param shape fx text shape
+       * Clears the listeners for shape fill and stroke color changes
        */
-      public void shapeClicked(MouseEvent mouse, GenericShape gs, Shape shape) {
-            DrawTools draw = DrawTools.getInstance();
-            draw.setShapeNotSelected(false);
-
-            // @TODO finish adding shapePressed/shapeClicked in LetterBuilder
-            // @TODO finish adding shapePressed/shapeClicked in LetterBuilder
-            // @TODO finish adding shapePressed/shapeClicked in LetterBuilder
-
-            LOGGER.info("shapeCLicked()");
-
-            if (mouse.isSecondaryButtonDown()) {
-                  shapeRightPress(mouse, gs, shape);
-            } else {
-                  FMLetter fmLetters = (FMLetter) gs;
-                  FMTextEditor textEditor = fmLetters.getTextEditor(shape);
-
-                  // Used for shape drag
-                  // set the delta between the shapes x,y location for a point,
-                  // and the mouse's x,y location. Then use delta x & y later
-                  // for comparison.
-                  deltaX = gs.getX() - mouse.getSceneX();
-                  deltaY = gs.getY() - mouse.getSceneY();
-
-                  Button exitButton;
-                  exitButton = new Button("quit");
-                  exitButton.setFocusTraversable(true);
-                  exitButton.setTooltip(new Tooltip("exit, edits not saved"));
-                  // Action
-                  exitButton.setOnAction(e -> getOverlayPane().getChildren().remove(textEditor.getTextEditor()));
-
-                  Button saveButton;
-                  saveButton = new Button("save");
-                  saveButton.setFocusTraversable(true);
-                  saveButton.setTooltip(new Tooltip("Save and exit"));
-                  // Action
-                  saveButton.setOnAction(e -> {
-                        fmLetters.setText(textEditor.getText());
-                        getOverlayPane().getChildren().remove(textEditor.getTextEditor());
-                        //getOverlayPane().getChildren().add(fmLetters.getShape());
-
-                        resetFxTextShape(gs, fmLetters, shape);
-                  });
-
-                  Button clearButton;
-                  clearButton = new Button("x");
-                  clearButton.setFocusTraversable(false);
-                  clearButton.setTooltip(new Tooltip("Clear the text area"));
-                  // Action
-                  clearButton.setOnAction((ActionEvent e) ->
-                  {
-                        textEditor.setText("");
-                        textEditor.requestFocus();
-                  });
-
-                  textEditor.addButtons(saveButton, exitButton, clearButton);
-
-                  // add it to the overlayPane
-                  getOverlayPane().getChildren().add(textEditor.getTextEditor());
-                  // allow the user to press x or escape to exit editor
-                  textEditor.getTextEditor().setOnKeyPressed((KeyEvent e) -> {
-                        if (e.isControlDown()) {
-                              if (e.getCode() == KeyCode.ENTER) {
-                                    //LOGGER.info("space and control pressed, removing TextArea and calling setFxTextShape(...)");
-                                    fmLetters.setText(textEditor.getText());
-                                    getOverlayPane().getChildren().remove(textEditor.getTextEditor());
-                                    // sets the mouseActions for this shape.
-                                    resetFxTextShape(gs, fmLetters, shape);
-                              }
-                        }
-                  });
-            }
-      }
-
-      // ***************** LISTENERS ********************
-
-      private static final Text fxL = new Text();
-
-      public static void strokeChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
-            fxL.setStroke(Color.web(newVal));
-      }
-
-      public static void fillChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
-            fxL.setFill(Color.web(newVal));
-      }
-
       @Override
       public void clearListeners() {
-            DrawTools draw = DrawTools.getInstance();
-            draw.getFillProperty().removeListener(LetterBuilder::strokeChanged);
-            draw.getStrokeProperty().removeListener(LetterBuilder::fillChanged);
+            cl.clearListeners();
       }
-
-
-      /** ************************************************************************************************************ **
-       *                                                                                                                  *
-       *                                                 PANNING the shape
-       *                                               and other mouse actions
-       *                                                                                                                  *
-       ** ************************************************************************************************************ ***/
-
 
       /**
        * This is different from normal shapes. Most editing functions is provided by shapeClick().
@@ -518,27 +458,160 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
        */
       @Override
       public void shapePressed(MouseEvent mouse, GenericShape gs, Shape shape) {
-            SoundEffects.ROBOT_SERVO_START.play();
-            shape.setStrokeWidth(shape.getStrokeWidth() + 2);
-
-            // Clear the resize nodes if they are present
-            DrawTools draw = DrawTools.getInstance();
-            draw.setShapeNotSelected(false);
-            draw.clearNodes();
-            if (mouse.isSecondaryButtonDown()) {
-                  shapeRightPress(mouse, gs, shape);
-            } else {
-                  gs.setX(((Text) shape).getX());
-                  gs.setY(((Text) shape).getY());
-                  // Used for shape drag
-                  // set the delta between the shapes x,y location for a point,
-                  // and the mouse's x,y location. Then use delta x & y later
-                  // for comparison.
-                  deltaX = gs.getX() - mouse.getSceneX();
-                  deltaY = gs.getY() - mouse.getSceneY();
-            }
-            mouse.consume();
+            cl.shapePressed(mouse, gs, shape);
       }
+
+      class InnerClass {
+
+            private FMLetter fmLetters = new FMLetter();
+            /**
+             * On click, Creates the editor for this
+             * Text object.
+             *
+             * @param mouse
+             * @param gs    The generic shape
+             * @param shape fx text shape
+             */
+            public void shapeClicked(MouseEvent mouse, GenericShape gs, Shape shape) {
+                  DrawTools draw = DrawTools.getInstance();
+                  draw.setShapeNotSelected(false);
+
+                  // @TODO finish adding shapePressed/shapeClicked in LetterBuilder
+                  // @TODO finish adding shapePressed/shapeClicked in LetterBuilder
+                  // @TODO finish adding shapePressed/shapeClicked in LetterBuilder
+
+                  LOGGER.info("shapeCLicked()");
+
+                  if (mouse.isSecondaryButtonDown()) {
+                        shapeRightPress(mouse, gs, shape);
+                  } else {
+                        fmLetters = (FMLetter) gs;
+                        FMTextEditor textEditor = fmLetters.getTextEditor(shape);
+
+                        // Used for shape drag
+                        // set the delta between the shapes x,y location for a point,
+                        // and the mouse's x,y location. Then use delta x & y later
+                        // for comparison.
+                        deltaX = gs.getX() - mouse.getSceneX();
+                        deltaY = gs.getY() - mouse.getSceneY();
+
+                        Button exitButton;
+                        exitButton = new Button("quit");
+                        exitButton.setFocusTraversable(true);
+                        exitButton.setTooltip(new Tooltip("exit, edits not saved"));
+                        // Action
+                        exitButton.setOnAction(e -> getOverlayPane().getChildren().remove(textEditor.getTextEditor()));
+
+                        Button saveButton;
+                        saveButton = new Button("save");
+                        saveButton.setFocusTraversable(true);
+                        saveButton.setTooltip(new Tooltip("Save and exit"));
+                        // Action
+                        saveButton.setOnAction(e -> {
+                              fmLetters.setText(textEditor.getText());
+                              fmLetters.setFontSize(fontSize);
+                              getOverlayPane().getChildren().remove(textEditor.getTextEditor());
+                              resetFxTextShape(gs, fmLetters, shape);
+                        });
+
+                        Button clearButton;
+                        clearButton = new Button("x");
+                        clearButton.setFocusTraversable(false);
+                        clearButton.setTooltip(new Tooltip("Clear the text area"));
+                        // Action
+                        clearButton.setOnAction((ActionEvent e) ->
+                        {
+                              textEditor.setText("");
+                              textEditor.requestFocus();
+                        });
+
+                        // Font size selector
+                        PrefixSelectionComboBox<Integer> entryComboBox = idk(fmLetters);
+
+                        textEditor.addButtons(entryComboBox, saveButton, exitButton, clearButton);
+
+                        // add it to the overlayPane
+                        getOverlayPane().getChildren().add(textEditor.getTextEditor());
+                        // allow the user to press x or escape to exit editor
+                        textEditor.getTextEditor().setOnKeyPressed((KeyEvent e) -> {
+                              if (e.isControlDown()) {
+                                    if (e.getCode() == KeyCode.ENTER) {
+                                          //LOGGER.info("space and control pressed, removing TextArea and calling setFxTextShape(...)");
+                                          fmLetters.setText(textEditor.getText());
+                                          getOverlayPane().getChildren().remove(textEditor.getTextEditor());
+                                          // sets the mouseActions for this shape.
+                                          resetFxTextShape(gs, fmLetters, shape);
+                                    }
+                              }
+                        });
+                  }
+            }
+
+            // ***************** LISTENERS ********************
+
+
+
+            public void strokeChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
+                  fmLetters.getShape().setStroke(Color.web(newVal));
+                  fmLetters.getShape().setFill(Color.web(newVal));
+                  fmLetters.setStrokeColor(newVal);
+                  strokeColor = newVal;
+            }
+
+            public void fillChanged(ObservableValue<? extends String> prop, String oldVal, String newVal) {
+                  fmLetters.getShape().setFill(Color.web(newVal));
+                  fmLetters.setFillColor(newVal);
+                  fillColor = newVal;
+            }
+
+
+            public void clearListeners() {
+                  DrawTools draw = DrawTools.getInstance();
+                  draw.getFillProperty().removeListener(this::strokeChanged);
+                  draw.getStrokeProperty().removeListener(this::fillChanged);
+            }
+
+            public void shapePressed(MouseEvent mouse, GenericShape gs, Shape shape) {
+                  SoundEffects.ROBOT_SERVO_START.play();
+                  shape.setStrokeWidth(shape.getStrokeWidth() + 2);
+
+                  // Clear the resize nodes if they are present
+                  DrawTools draw = DrawTools.getInstance();
+                  draw.setShapeNotSelected(false);
+                  draw.clearNodes();
+                  if (mouse.isSecondaryButtonDown()) {
+                        shapeRightPress(mouse, gs, shape);
+                  } else {
+                        gs.setX(((Text) shape).getX());
+                        gs.setY(((Text) shape).getY());
+                        // Used for shape drag
+                        // set the delta between the shapes x,y location for a point,
+                        // and the mouse's x,y location. Then use delta x & y later
+                        // for comparison.
+                        deltaX = gs.getX() - mouse.getSceneX();
+                        deltaY = gs.getY() - mouse.getSceneY();
+                  }
+                  draw.getFillProperty().addListener(this::fillChanged);
+                  draw.getStrokeProperty().addListener(this::strokeChanged);
+
+                  mouse.consume();
+            }
+      }
+
+
+
+
+
+
+      /** ************************************************************************************************************ **
+       *                                                                                                                  *
+       *                                                 PANNING the shape
+       *                                               and other mouse actions
+       *                                                                                                                  *
+       ** ************************************************************************************************************ ***/
+
+
+
 
       @Override
       public void shapeDragged(MouseEvent mouse, GenericShape gs, Shape shape) {
@@ -634,6 +707,8 @@ public class LetterBuilder extends GenericBuilder<FMLetter, LetterBuilder> {
       public void verticyXYDragged(MouseEvent mouse, GenericShape gs, ArrayList<Circle> vertArry, Shape shape) {
 
       }
+
+
 
       /**
        * <p>CopyPaste interface copyAction:</p>

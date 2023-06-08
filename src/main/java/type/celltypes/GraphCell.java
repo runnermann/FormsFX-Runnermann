@@ -3,21 +3,21 @@ package type.celltypes;
 import javafx.scene.layout.VBox;
 
 /*
- * Build the background graph,
- * Build the line on top of it
+* Build the background graph,
+* Build the line on top of it
  */
 public class GraphCell {
 
-      //Variables
+    //Variables
 
-      /**
-       * Default Constructor
-       */
-      public GraphCell() {
+    /**
+     * Default Constructor
+     */
+    public GraphCell() {
 
-      }
+    }
 
-      public final VBox buildCell() {
-            return new VBox();
-      }
+    public final VBox buildCell() {
+        return new VBox();
+    }
 }

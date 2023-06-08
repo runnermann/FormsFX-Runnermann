@@ -48,7 +48,7 @@ public class ProfessorPane extends FormParentPane {
 
       @Override
       public void setupValueChangedListeners() {
-
+		/* stub */
       }
 
       @Override

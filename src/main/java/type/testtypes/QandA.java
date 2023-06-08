@@ -1,11 +1,8 @@
 package type.testtypes;
 
 
-import flashmonkey.FMTransition;
-import flashmonkey.FlashCardMM;
-import flashmonkey.ReadFlash;
+import flashmonkey.*;
 
-import flashmonkey.Threshold;
 import fmannotations.FMAnnotations;
 import fmtree.FMTWalker;
 import javafx.geometry.Bounds;
@@ -14,8 +11,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
+import media.sound.SoundEffects;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
+import type.celltypes.SingleCellType;
 import type.sectiontype.GenericSection;
 import uicontrols.ButtoniKon;
 
@@ -33,6 +33,7 @@ import java.util.ArrayList;
  */
 public abstract class QandA extends TestTypeBase implements GenericTestType<QandA> {
 
+      private static long millis;
       // The lower HBox used in TReadPane lambda
       private static HBox lowerHBox;
       private static HBox upperHBox;
@@ -73,6 +74,7 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
       @Override
       public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
 
+            millis = System.currentTimeMillis();
             ReadFlash rf = ReadFlash.getInstance();
 
             // Local variables
@@ -82,22 +84,23 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
             gPane.setVgap(2);
 
             GenericTestType test = TestList.selectTest(cc.getTestType());
-            char sections = test.getCardLayout();
+            CardLayout sections = test.getCardLayout();
 
-
-            switch (sections) {
+            switch (sections.get()) {
+                  // One section only
                   case ('S'): {
                         upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 1, false, 0, cc.getQFiles());
                         //gPane.getChildren().clear();
                         gPane.addRow(1, upperHBox);
                         break;
                   }
+                  // Two sections
                   default:
                   case ('D'): {
                         upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 2, true, 0, cc.getQFiles());
                         // Using 'T' in the cType(Cell type) to start off with a defualt empty answer string
                         // in the answer section.
-                        lowerHBox = genSection.sectionFactory("", 't', 2, true, 0, cc.getAFiles());
+                        lowerHBox = genSection.sectionFactory("", SingleCellType.TEXT, 2, true, 0, cc.getAFiles());
 
                         stackP.setAlignment(Pos.BOTTOM_CENTER);
 
@@ -107,10 +110,8 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
                               answerButton = ButtoniKon.getJustAns(answerButton, "Show Answer");
                         }
 
-                        //stackP.getChildren().clear();
                         stackP.getChildren().add(lowerHBox);
                         stackP.getChildren().add(answerButton);
-                        //gPane.getChildren().clear();
                         gPane.addRow(2, stackP);
                         gPane.addRow(1, upperHBox);
                         // The answer btn action
@@ -156,8 +157,8 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
        * @return returns 'D' for a double horizontal card
        */
       @Override
-      public char getCardLayout() {
-            return 'D'; // double horizontal
+      public CardLayout getCardLayout() {
+            return CardLayout.DOUBLE_HORIZ; // double horizontal
       }
 
       @Override
@@ -181,10 +182,14 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
 
       @Override
       public void ansButtonAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             lowerHBox.getChildren().clear();
-            GenericSection genSection = GenericSection.getInstance();
+            final GenericSection genSection = GenericSection.getInstance();
             final FlashCardMM cc = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
             final ReadFlash rf = ReadFlash.getInstance();
+            final FlashCardOps fo = FlashCardOps.getInstance();
+            final FlashCardMM listCard = fo.getFlashList().get(cc.getANumber());
+            listCard.setSeconds(getSeconds());
             FMTransition.nodeFadeIn = FMTransition.ansFadePlay(lowerHBox, 1, 750, 0, false);
 
             lowerHBox.getChildren().add(genSection.sectionFactory(cc.getAText(), cc.getAType(), 2, true, 0, cc.getAFiles()));
@@ -289,7 +294,7 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
                   upperHBox = genSection.sectionFactory(cc.getQText(), cc.getQType(), 2, true, 0, cc.getQFiles());
                   // Using 'T' in the cType(Cell type) to start off with a defualt empty answer string
                   // in the answer section.
-                  lowerHBox = genSection.sectionFactory("", 't', 2, true, 0, cc.getAFiles());
+                  lowerHBox = genSection.sectionFactory("", SingleCellType.TEXT, 2, true, 0, cc.getAFiles());
 
                   rf.setShowAnsNavBtns(false);
                   // The answer btn action
@@ -315,6 +320,20 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
                   FMTransition.nodeFadeIn.play();
 
                   return gPane;
+            }
+
+            /**
+             * Return the time until the answer
+             * was clicked. If answer was not clicked
+             * e.g. another button was clicked,
+             * this time should not be stored.
+             *
+             * @return
+             */
+            @Override
+            public int getSeconds() {
+                  long now = System.currentTimeMillis();
+                  return (int) (now - millis) / 1000;
             }
       }
 
@@ -351,6 +370,19 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
             @Override
             public void changed() {
                   ReadFlash.getInstance().isChanged();
+            }
+
+            /**
+             * Return the time until the answer
+             * was clicked. If answer was not clicked
+             * e.g. another button was clicked,
+             * this time should not be stored.
+             *
+             * @return
+             */
+            @Override
+            public int getSeconds() {
+                  return 0;
             }
 
 

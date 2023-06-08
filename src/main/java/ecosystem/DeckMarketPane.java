@@ -15,6 +15,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import media.sound.SoundEffects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uicontrols.ButtoniKon;
@@ -112,6 +113,7 @@ public class DeckMarketPane {
 
         purchaseButton = ButtoniKon.getPurchasButton();
         purchaseButton.setOnAction(e -> {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             ConsumerPane.EcoPurchase.purchaseAction(cartList);
         });
         setLowerBar();
@@ -152,7 +154,7 @@ public class DeckMarketPane {
                 imageAry.add(new Image(s3link, true));
             }
             setTeaserPanes();
-            //int width = SceneCntl.getFileSelectPaneWd();
+
             teaserScroll.setId("teaser");
 
             teaserScroll.setStyle("-fx-background-color: TRANSPARENT");

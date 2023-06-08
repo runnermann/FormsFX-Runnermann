@@ -14,19 +14,32 @@ import java.util.Stack;
 public enum Open_Enclosure implements OperatorInterface {
 
       OPEN_BRACE("[", 0) {
-            // @Override
-            // double execute(double x, double y) { return x; }// not used
+
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == ']';
+            }
       },
       OPEN_BRACK("{", 0) {
-            // @Override
-            // double execute(double x, double y) { return x; }// not used
+
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == '}';
+            }
       },
       OPEN_PARAN("(", 0) {
-            // @Override
-            // double execute(double x, double y) { return x; }// not used
+
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == ')';
+            }
       },
       OPEN_PIPE("|", 0) {
 
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == '|';
+            }
       },
       /**
        * Multiplies by -1
@@ -41,6 +54,11 @@ public enum Open_Enclosure implements OperatorInterface {
             public String getStrExpr(String x, String y, OperatorInterface op) {
                   return x + " " + op;
             }
+
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == ']';
+            }
       },
       /**
        * Multiplies by -1
@@ -54,6 +72,11 @@ public enum Open_Enclosure implements OperatorInterface {
             @Override
             public String getStrExpr(String x, String y, OperatorInterface op) {
                   return x + " " + op;
+            }
+
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == '}';
             }
 
       },
@@ -71,6 +94,11 @@ public enum Open_Enclosure implements OperatorInterface {
                   return x + " " + op;
             }
 
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == ')';
+            }
+
       },
       /**
        * Multiplies by -1
@@ -85,7 +113,14 @@ public enum Open_Enclosure implements OperatorInterface {
             public String getStrExpr(String x, String y, OperatorInterface op) {
                   return x + " " + op;
             }
+
+            @Override
+            public boolean isMatch(char operatorSymbol) {
+                  return operatorSymbol == '|';
+            }
       };
+
+
 
       // Fields
       private final String symbol;
@@ -144,7 +179,7 @@ public enum Open_Enclosure implements OperatorInterface {
       private static void negStackAction(Object previous, ExpNode exp, ArrayQueue outQueue, Stack<ExpNode> opStack, int index) {
             // If there is not an operator previous to the negitive opening enclosure
             // add a multiply prior to the -1
-            if (!previous.getClass().getName().contains("Exp")) {
+            if ( ! previous.getClass().getName().contains("Exp")) {
 
                   ExpNode expLocal = new ExpNode(Operator.MULTIPLY, " * ", index);
                   cPriorityNPush(opStack, outQueue, expLocal);
@@ -200,4 +235,17 @@ public enum Open_Enclosure implements OperatorInterface {
       public boolean isUnaryOp() {
             return false;
       }
+
+      @Override
+      public boolean isOpenEnclosure() {
+            return true;
+      }
+
+      @Override
+      public boolean isCloseEnclosure() {
+            return false;
+      }
+
+      @Override
+      public abstract boolean isMatch(char operatorSymbol);
 }

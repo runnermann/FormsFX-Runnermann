@@ -33,8 +33,6 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     HOVER: #BAEEFF;
     BUTTON_WHITE: #FFFFFF;
     /*BUTTON_PURPLE_50: #48206E; !*rgba(72, 32, 110, .5);*!*/
-
-
     /*ICON_PURPLE: #79489C;*/
     ICON_YELLOW: #F2E529;
     ICON_GOLD: #F2C230;
@@ -102,6 +100,22 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
 }
 #newDeckButton {
     -fx-margin-bottom: 10;
+}
+#navButtonAns {
+    -fx-border-color: #F7F7F790;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-base: #FFFFFF; /* BUTTON_WHITE; */
+    -fx-font-weight: 900;
+    -fx-background-radius: 4;
+    -fx-text-fill: FOCUS_BLUE;
+    -fx-background-color: derive(-fx-base,80%);
+}
+#navButtonAns:hover {
+    -fx-base: FM_SETTINGS_BCKGND;
+    -fx-font-weight: 900;
+    -fx-background-color: derive(-fx-base,10%);
+    -fx-border-color: TRANSPARENT;
 }
 #navButtonLight {
     -fx-base: BUTTON_WHITE;

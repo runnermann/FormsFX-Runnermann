@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -20,14 +20,14 @@
 package type;
 
 //import flashmonkey.FlashCard;
-
 import flashmonkey.FMTransition;
 
-public interface AnimaterInterface<T extends FMTransition> {
-      //   public void rightAction(char action, FlashCard nextCard);
+public interface AnimaterInterface<T extends FMTransition>
+{
+ //   public void rightAction(char action, FlashCard nextCard);
 
-      //   public void leftAction(char action, FlashCard prevCard);
+ //   public void leftAction(char action, FlashCard prevCard);
 
-      //   public void answerRightAction(FlashCard nextCard);
+ //   public void answerRightAction(FlashCard nextCard);
 
 }

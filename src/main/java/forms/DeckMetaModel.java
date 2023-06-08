@@ -2,9 +2,7 @@ package forms;
 
 import authcrypt.UserData;
 import authcrypt.user.EncryptedAcct;
-import authcrypt.user.EncryptedStud;
 import campaign.Report;
-import campaign.db.DBInsert;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
@@ -14,6 +12,7 @@ import com.dlsc.formsfx.model.validators.StringNumRangeValidator;
 import com.dlsc.formsfx.view.util.ColSpan;
 import com.google.zxing.WriterException;
 import ecosystem.QrCode;
+import fileops.CloudOps;
 import fileops.DirectoryMgr;
 import fileops.FileNaming;
 import fileops.utility.Utility;
@@ -22,8 +21,6 @@ import flashmonkey.FlashCardOps;
 import flashmonkey.FlashMonkeyMain;
 import forms.utility.MetaDescriptor;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
@@ -38,6 +35,7 @@ import uicontrols.FxNotify;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class is used for the deck meta data form and holds all the necessary data. This
@@ -53,8 +51,13 @@ public class DeckMetaModel extends ModelParent {
       private final MetaDescriptor descriptor = new MetaDescriptor();
       private long deck_id;
       private static String deckImgName;
+      private String qrImagePathName;
 
       private StringProperty vertxQRLinkProperty = new SimpleStringProperty();
+
+      public void setQRImageFileName(String qrImageFileName) {
+            this.qrImagePathName = qrImageFileName;
+      }
 
 
       /**
@@ -62,11 +65,9 @@ public class DeckMetaModel extends ModelParent {
        */
       @Override
       public void createForm() {
-
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("DeckMetaModel createForm called");
             // For search by Class, Search by keyword, search by book, search by Prof, search by catagory subcatagory, university bldg classroom
-
             formInstance = Form.of(
                     Group.of(
                         Field.ofStringType(descriptor.priceProperty())
@@ -131,12 +132,12 @@ public class DeckMetaModel extends ModelParent {
 
       /**
        * Asynchronous.
-       * call to the formActionAsyncHelper
+       * call to the formActionAsyncHelper.
+       * Called by the form button action. A form's Parent is the FormParentPane and the FormModel. Note: with exception to some forms.
        * */
       @Override
       public void formAction(FormData data) {
             DeckMetaData metaData = buildMetaData(data);
-
             ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
             Runnable task = () -> {
                   formActionAsyncHelper(metaData);
@@ -147,8 +148,8 @@ public class DeckMetaModel extends ModelParent {
 
       /**
        * If the deckMetaData is successfully submitted to the DB,
-       * Gets the deckID from the insert or update. Biulds the QR Code
-       * and then saves it to file.
+       * Gets the deckID from the insert or update. Builds the QR Code
+       * and then saves the QRFile to disk.
        * @param metaData
        */
       private void formActionAsyncHelper(DeckMetaData metaData) {
@@ -158,12 +159,17 @@ public class DeckMetaModel extends ModelParent {
                   // CreateFlash.getInstance().closeMetaWindow();
                   // create QR code
                   String deckQRname = FileNaming.getQRFileName(FlashCardOps.getInstance().getDeckFileName());
-                  String dir = DirectoryMgr.getMediaPath('q');
+                  String qrDir = DirectoryMgr.getMediaPath('q');
+                  //String qrFileName = deckQRname.substring(0, deckQRname.length() - 4) + ".png";
+
+                  String pathName = qrDir + deckQRname;
                   try {
                         // deck_id is set by doAction.
                         // Predicessor Chain, get chain hash from db.
-                        String link = QrCode.buildDeckQrCode(deck_id, dir, deckQRname, UserData.getUserName());
-                        vertxQRLinkProperty.set(link);
+                        String qrlink = QrCode.buildSaveDeckQrCode(deck_id, pathName, UserData.getUserName());
+                        vertxQRLinkProperty.set(qrlink);
+                        send('q', deckQRname);
+
                         // set the form action completed listener to true;
                   } catch (WriterException e) {
                         LOGGER.warn("ERROR: WriterException caused by {} ", e.getMessage());
@@ -181,9 +187,34 @@ public class DeckMetaModel extends ModelParent {
                       "\nTo update so others may access " +
                       "\nand purchase your deck, please check your"  +
                       "\nconnection and try again.";
-                  FxNotify.notification("Ooops", msg, Pos.CENTER, 15,
+                  FxNotify.notificationError("Ooops", msg, Pos.CENTER, 15,
                       "image/flashFaces_sunglasses_60.png", FlashMonkeyMain.getPrimaryWindow());
             }
+      }
+
+      /**
+       * Asynchronously sends media to cloud. verifies if the item is there,
+       * and re-attempts if it did not succeed.
+       */
+      private void send(char bucket, String qrPath) {
+            AtomicInteger count = new AtomicInteger(); // increased to 5, for bad networks.
+            if (fileops.utility.Utility.isConnected()) {
+                  String[] uploads = new String[1];
+                  uploads[0] = qrPath;
+                  sendMedia(uploads, bucket);
+            }
+      }
+
+      /**
+       * Sends the media to s3, then checks to ensure
+       * it exists. If not, returns false.
+       * <p>Will overwrite the media if this is allowed by the bucket policies in the cloud.</p>
+       * @param uploads
+       * @param bucket either 'p' for public: the deck descript img, or 'a' for the avatar.
+       * @return
+       */
+      private void sendMedia(String[] uploads, char bucket) {
+            CloudOps.putMedia(uploads, bucket);
       }
 
       @Override
@@ -220,18 +251,20 @@ public class DeckMetaModel extends ModelParent {
       @Override
       public boolean doAction(final FormData data) {
             DeckMetaData metaData = (DeckMetaData) data;
-            String path = DirectoryMgr.getMediaPath('z') + FlashCardOps.getInstance().getMetaFileName();
+     //       String path = DirectoryMgr.getMediaPath('t') + FlashCardOps.getInstance().getMetaFileName();
             // Save the metadata to file.
-            FlashCardOps.getInstance().setMetaInFile(metaData, path);
+     //       FlashCardOps.getInstance().setMetaInFile(metaData, path);
             // Save it to the cloud.
-
             if( Utility.isConnected()) {
                   try {
                         // send to database
-                        deck_id = Report.getInstance().reportDeckMetadata(metaData);
+                        deck_id = Report.getInstance().formUpsertDeckMetadata(metaData);
                         if (deck_id > 0) {
-                              String msg = "You're updates have been saved to the cloud and should be viewable.";
-                              Platform.runLater(() -> CreateFlash.getInstance().metaAlertPopup(msg));
+                              Platform.runLater(() -> {
+                                    String msg = "You're learning materials have been saved to the ecosystem. Be sure to select sell so other's can see and purchase it.";
+                                    FxNotify.notificationItsCool("Oh Yeah", msg, Pos.CENTER, 15,
+                                            "image/flashFaces_sunglasses_60.png", CreateFlash.getInstance().getMetaWindow());
+                              });
                               return true;
                         }
                   } catch (Exception e) {
@@ -243,22 +276,33 @@ public class DeckMetaModel extends ModelParent {
             return false;
       }
 
+      /**
+       * Verify if user is a member and membership is current. Else will not allow to sell.
+       * @param sellSwitch
+       * @param shareSwitch
+       */
       public void sellSwitchAction(ToggleSwitch sellSwitch, ToggleSwitch shareSwitch) {
             if (!current()) {
-
                   boolean b = getAlert();
                   if (b) {
                         // if true send to create subscription.
                         FlashMonkeyMain.getSubscribeWindow();
                   } else {
                         sellSwitch.setSelected(false);
+                        descriptor.sellDeckProperty().set(false);
+                        DeckMetaData.getInstance().setSellDeck(false);
                   }
-                  if (current()) {
-                        sellSwitch.selectedProperty().bindBidirectional(descriptor.sellDeckProperty());
-                        shareSwitch.selectedProperty().bindBidirectional(descriptor.shareDeckProperty());
-                  } else {
-                        sellSwitch.setSelected(false);
-                  }
+//                  if (current()) {
+//                        sellSwitch.selectedProperty().bindBidirectional(descriptor.sellDeckProperty());
+//                        shareSwitch.selectedProperty().bindBidirectional(descriptor.shareDeckProperty());
+//                  } else {
+//                        sellSwitch.setSelected(false);
+//                        descriptor.sellDeckProperty().set(false);
+//                        CreateFlash.getInstance().metaAlertPopup("Ooph!", "Please update your membership to allow earning.");
+//                  }
+            } else {
+                  descriptor.sellDeckProperty().bind(sellSwitch.selectedProperty());
+                  descriptor.shareDeckProperty().bind(shareSwitch.selectedProperty());
             }
       }
 
@@ -269,7 +313,7 @@ public class DeckMetaModel extends ModelParent {
             String str3 = "Click OK to Begin";
             FMAlerts alerts = new FMAlerts();
             VBox box = alerts.alertPane(str01, str2, str3);
-            boolean b = alerts.choicePanePopup(" START EARNING ", " ", box, "image/logo/vertical_logo_blue_480.png",
+            boolean b = alerts.choicePanePopup(" START EARNING ", " ", box, "image/qww_1.png",
                 null);
             return b;
       }
@@ -277,11 +321,6 @@ public class DeckMetaModel extends ModelParent {
       private boolean current() {
             EncryptedAcct acct = new EncryptedAcct();
             return acct.isCurrent();
-      }
-
-      // package private
-      void setDeckImgName(String imgName) {
-            deckImgName = imgName;
       }
 
 
@@ -313,6 +352,8 @@ public class DeckMetaModel extends ModelParent {
 
             return metaData;
       }
+
+
 
       @Override
       public void formAction() {

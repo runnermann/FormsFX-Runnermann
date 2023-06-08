@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2023. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -19,6 +19,7 @@
 
 package type.draw;
 
+import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -46,15 +47,12 @@ public class FMTextEditor extends FMText //implements Serializable
        * @param prompt The prompt that will exist before the EncryptedUser.EncryptedUser begins typing
        */
       public FMTextEditor(String prompt, Double x, double y, double wd, double ht) {
-            super(prompt, x, y, wd, ht);
-
+            super(prompt, x, y, wd, 60);
             textArea.setEditable(true);
             textArea.requestFocus();
             textArea.setStyle("-fx-background-color: TRANSPARENT");
             buttonBox = new HBox(2);
-            //buttonBox.setPadding(new Insets(2, 2, 2, 2));
             buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
-
             stackPane.getChildren().add(buttonBox);
       }
 
@@ -82,7 +80,8 @@ public class FMTextEditor extends FMText //implements Serializable
        * Adds a button at index 0 to the buttonBox
        * in the bottom right corner.
        */
-      public void addButtons(Button... buttons) {
+      public void addButtons(Node node, Button... buttons) {
+            this.buttonBox.getChildren().add(node);
             this.buttonBox.getChildren().addAll(buttons);
       }
 
@@ -98,5 +97,4 @@ public class FMTextEditor extends FMText //implements Serializable
       public void requestFocus() {
             textArea.requestFocus();
       }
-
 }

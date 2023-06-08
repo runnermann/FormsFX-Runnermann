@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * This class is for queries where it is expected
- * to return multiple results/rows. If results are unique
+ * to return multiple results/rows. When the needed results are unique
  * use DBFetchUnique.
  */
 public enum DBFetchMulti {
@@ -133,7 +133,7 @@ public enum DBFetchMulti {
 
       private static void connectionErrorMessage() {
             String msg = "    Please check your connection.   ";
-            FxNotify.notification("OUCH!", msg, Pos.TOP_CENTER, 15,
+            FxNotify.notificationError("OUCH!", msg, Pos.TOP_CENTER, 15,
                 "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
       }
 }

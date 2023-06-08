@@ -13,7 +13,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -32,7 +31,9 @@ import type.testtypes.*;
 import type.tools.imagery.Fit;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
+import uicontrols.UIColors;
 
+import javax.swing.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.floor;
@@ -81,7 +82,7 @@ public final class ReadFlash implements BaseInterface {
 
       // **** PANES **** //
       // The main scene object & pane
-      private Scene masterScene;
+//      private Scene masterScene;
       private static BorderPane masterBPane;// = new BorderPane();
       // Titles and messages in rpNorth
       private static HBox rpNorth;
@@ -129,12 +130,19 @@ public final class ReadFlash implements BaseInterface {
       private static int progress = 0;
       private static MGauges progGauge;
       private static MGauges scoreGauge;
+      private static MGauges timerGauge;
+      private static MGauges durationGauge;
       private static GridPane pGaugePane;
       private static GridPane sGaugePane;
+      private static GridPane timerPane;
+      private static GridPane durationPane;
       private static int origNumCards;
+      private static long startTime;
 
       // *** FLAGS ***
       private static boolean hasChanged;
+      // Has the session been sent as an update to DB?
+      private static boolean isReported;
 
 
       /**
@@ -175,6 +183,7 @@ public final class ReadFlash implements BaseInterface {
        * EncryptedUser is presented a question and one of the test cards.
        */
       public BorderPane readScene() {
+            isReported = false;
             LOGGER.info("\n\n **** createReadScene() called ****");
             //LOGGER.setLevel(Level.DEBUG);
 
@@ -197,18 +206,18 @@ public final class ReadFlash implements BaseInterface {
 
             menuButton = ButtoniKon.getMenuButton();
             exitBox = new GridPane();
-            exitBox.setHgap(2);
+            //exitBox.setHgap(2);
             // For the lower panel on modeSelectPane window */
             ColumnConstraints col0 = new ColumnConstraints();
             col0.setPercentWidth(50);
             exitBox.getColumnConstraints().add(col0);
-            exitBox.setVgap(2);
+            //exitBox.setVgap(2);
             exitBox.setPadding(new Insets(15, 15, 15, 15));
             exitBox.addColumn(1, menuButton);
             exitBox.setId("buttonBox");
 
             deckNameLabel = new Label(FlashCardOps.getInstance().getDeckLabelName());
-            deckNameLabel.setId("label16White");
+            deckNameLabel.setId("label16blue");
 
             rpNorth.getChildren().add(deckNameLabel);
 
@@ -221,22 +230,15 @@ public final class ReadFlash implements BaseInterface {
             LOGGER.debug("readflash masterBPane width: " + masterBPane.widthProperty());
 
             // *** BUTTON ACTIONS ***
-            menuButton.setOnAction(e -> {
-                  SoundEffects.GAME_OVER.play();
-                  //leaveAction();
-                  // calls leaveAction
-                  saveOnExit();
-                  FlashMonkeyMain.setWindowToModeMenu();
-            });
-
-            qaButton.setOnAction((ActionEvent e) -> qaButtonAction());
-            testButton.setOnAction((ActionEvent e) -> testButtonAction());
+            menuButton.setOnAction(e -> menuButtonAction());
+            qaButton.setOnAction(e -> qaButtonAction());
+            testButton.setOnAction(e -> testButtonAction());
             /*
              * Navigation buttons, handles actions for first, last, next, and previous
-             * buttons.
+             * buttons. Sound effects in action methods.
              */
-            nextQButton.setOnAction((ActionEvent e) -> nextQButtonAction());
-            prevQButton.setOnAction((ActionEvent e) -> prevQButtonAction());
+            nextQButton.setOnAction(e -> nextQButtonAction());
+            prevQButton.setOnAction(e -> prevQButtonAction());
             endQButton.setOnAction(this::lastQButtonAction);
             firstQButton.setOnAction(this::firstQButtonAction);
             /*
@@ -322,13 +324,6 @@ public final class ReadFlash implements BaseInterface {
        */
       private GridPane buildStudyModeMenuPane() {
             LOGGER.debug("listHasCardsAction() called");
-
-//            int flSize = FlashCardOps.getInstance().getFlashList().size();
-//            int highestScore = FMTWalker.getInstance().highestPossibleScore() / 10;
-//            progGauge = new MGauges(120, 120);
-//            scoreGauge = new MGauges(120, 120);
-//            pGaugePane = progGauge.makeGauge("COMPLETED", 0, flSize, 0);
-//            sGaugePane = scoreGauge.makeGauge("SCORE", 0, highestScore, -1 * highestScore);
 
             Label label = new Label("Study Mode");
             label.setId("label24White");
@@ -443,9 +438,7 @@ public final class ReadFlash implements BaseInterface {
        */
       private void navButtonActionCommon() {
             SoundEffects.PRESS_BUTTON_COMMON.play();
-            // Get the previous node in treeWalker
 
-            //Node currentNode = FMTWalker.getCurrentNode();
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             rpCenter.getChildren().clear();
@@ -458,7 +451,14 @@ public final class ReadFlash implements BaseInterface {
                   rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
             }
             masterBPane.setBottom(manageSouthPane(mode));
+            // Set the timer gauge
 
+            int seconds = getCardSeconds(currentCard);
+            //durationGauge.setConsumedTime();
+            timerGauge.setTimerTime(seconds);
+            timerGauge.start();
+
+            // Answer button fade in
             if (null != test.getAnsButton()) {
                   test.getAnsButton().setDisable(false);
                   FMTransition.nodeFadeIn = FMTransition.ansFadePlay(test.getAnsButton(), 1, 750, 500, false);
@@ -470,7 +470,6 @@ public final class ReadFlash implements BaseInterface {
             ansQButtonSet(currentCard.getIsRightColor(), test);
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashMonkeyMain.AVLT_PANE.displayTree();
-            buttonDisplay(FMTWalker.getInstance().getCurrentNode());
 
             if (null != FMTransition.getAWaitTop()) {
                   try {
@@ -504,10 +503,23 @@ public final class ReadFlash implements BaseInterface {
       private void initGauges() {
             int flSize = FlashCardOps.getInstance().getFlashList().size();
             int highestScore = FMTWalker.getInstance().highestPossibleScore() / 10;
+            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
+
             progGauge = new MGauges(120, 120);
             scoreGauge = new MGauges(120, 120);
+            timerGauge = new MGauges(120, 120);
+            durationGauge = new MGauges(366, 40 );
             pGaugePane = progGauge.makeGauge("COMPLETED", 0, flSize, 0);
             sGaugePane = scoreGauge.makeGauge("SCORE", 0, highestScore, -1 * highestScore);
+            timerPane = timerGauge.makeTimer("TIMER", getCardSeconds(currentCard));
+            durationGauge.setStartTime();
+            durationPane = durationGauge.makeDurTimer(startTime);
+      }
+
+      private int getCardSeconds(FlashCardMM currentCard) {
+            int seconds = currentCard.getSeconds();
+            seconds = seconds > 0 ? seconds : 30;
+            return seconds;
       }
 
 
@@ -520,8 +532,9 @@ public final class ReadFlash implements BaseInterface {
        * is recreated from new showing any new files.
        */
       protected void deckSelectButtonAction() {
+            timerGauge.stop();
             SoundEffects.GOTO_FILE_SELECT.play();
-            // save metadata and
+            // save metadata to local, and
             // send metadata to the db.
             // save flashlist changes.
             //leaveAction();
@@ -555,9 +568,14 @@ public final class ReadFlash implements BaseInterface {
        * treeWalker navigation tree. :)</p>
        */
       protected void testButtonAction() {
-            SoundEffects.PRESS_BUTTON_COMMON.play();
+            startTime = System.currentTimeMillis();
+
+            deckNameLabel.setId("label16blue");
+
+            masterBPane.setId("readFlashPane");
+
             LOGGER.info(" testButtonAction called ");
-            Timer.getClassInstance().startTime();
+            Timer.getClassInstance().startTestTime();
 
             if (!rpCenter.getChildren().isEmpty()) {
                   rpCenter.getChildren().clear();
@@ -568,35 +586,32 @@ public final class ReadFlash implements BaseInterface {
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
             FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
-            //System.err.println("\tis CurrentCard data null? " + (currentCard.getQText() == null));
             mode = 't';
-
-            // All of the work is accessed from selectTest()
-            GenericTestType test = TestList.selectTest(currentCard.getTestType());
-            rpCenter.getChildren().add(test.getTReadPane(currentCard, GEN_CARD, rpCenter));
-            // clear the answer button from previous tests
-            ansQButtonSet(currentCard.getIsRightColor(), test);
 
             VBox topVBox = new VBox();
 
-            //String name = FlashCardOps.getInstance().getDeckFileName();
             FlashCardOps.getInstance().resetDeckLabelName();
-            deckNameLabel = new Label("Deck: " + FlashCardOps.getInstance().getDeckLabelName());
-            deckNameLabel.setId("label16white");
+            deckNameLabel = new Label(FlashCardOps.getInstance().getDeckLabelName());
+
             topVBox.getChildren().add(deckNameLabel);
             topVBox.setAlignment(Pos.CENTER);
 
             masterBPane.setTop(topVBox);
+            VBox rpSouth = manageSouthPane('t');
+            masterBPane.setBottom(rpSouth);
+
+            // Set center last so top and bottom heights are
+            // already calculated.
             masterBPane.setCenter(rpCenter);
-            masterBPane.setBottom(manageSouthPane('t'));
-            masterBPane.setId("readFlashPane");
+
 
             if (!FlashMonkeyMain.treeWindow.isShowing()) {
                   FlashMonkeyMain.buildTreeWindow();
             }
-            FlashMonkeyMain.AVLT_PANE.displayTree();
-      }
 
+            navButtonActionCommon();
+            FMTransition.getQRight().play();
+      }
 
       /**
        * QAndA BUTTON ACTION
@@ -607,34 +622,53 @@ public final class ReadFlash implements BaseInterface {
        * Uses treeWalker.
        */
       protected void qaButtonAction() {
+            // zero timer and start to give credit
+            // for studying this session.
+            Timer.getClassInstance().startTestTime();
+            startTime = System.currentTimeMillis();
+
             if (!rpCenter.getChildren().isEmpty()) {
                   rpCenter.getChildren().clear();
             }
             SoundEffects.PRESS_BUTTON_COMMON.play();
             initGauges();
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
-            //String name = FlashCardOps.getInstance().getDeckFileName();
+
             VBox topVBox = new VBox();
             FlashCardOps.getInstance().resetDeckLabelName();
-            deckNameLabel = new Label("Deck: " + FlashCardOps.getInstance().getDeckLabelName());
-            deckNameLabel.setId("label16white");
+            deckNameLabel = new Label(FlashCardOps.getInstance().getDeckLabelName());
+            deckNameLabel.setId("label16blue");
             topVBox.getChildren().add(deckNameLabel);
             topVBox.setAlignment(Pos.CENTER);
 
             masterBPane.setTop(topVBox);
-            rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
-            //studyButton.setText("Back");
-            masterBPane.setId("readFlashPane");
-            masterBPane.setCenter(rpCenter);
-            mode = 'q';
-            masterBPane.setBottom(manageSouthPane('q'));
 
+            masterBPane.setId("readFlashPane");
+
+            mode = 'q';
+            VBox rpSouth = manageSouthPane('q');
+            masterBPane.setBottom(rpSouth);
+
+            // Set center last so top and bottom heights are
+            // already calculated.
+            // rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
+            masterBPane.setCenter(rpCenter);
             if (!FlashMonkeyMain.treeWindow.isShowing()) {
                   FlashMonkeyMain.buildTreeWindow();
             }
 
+            navButtonActionCommon();
+            FMTransition.getQRight().play();
+
             FlashMonkeyMain.AVLT_PANE.displayTree();
+      }
+
+      private void menuButtonAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
+            //leaveAction();
+            // calls leaveAction
+            saveOnExit();
+            FlashMonkeyMain.setWindowToModeMenu();
       }
 
       /**
@@ -643,20 +677,25 @@ public final class ReadFlash implements BaseInterface {
       public void leaveAction() {
             DeckMetaData meta = DeckMetaData.getInstance();
             try {
-                  LOGGER.debug("trying to enter data to the DB for exit event");
+                  if( ! isReported) {
+                        LOGGER.debug("trying to enter data to the DB for exit event");
 
-                  Timer.getClassInstance().testTimeStop();
-
-                  // May be an uneccessry call
-                  // since we only update test score.
-                  meta.setDataFmFile();
-                  meta.appendToScoresArry(progress, score.get() / 10);
-                  // set metadata to
-                  meta.updateDataMap();
-                  FlashCardOps.getInstance().setMetaInFile(meta, FlashCardOps.getInstance().getDeckFileName());
-                  // send test metadata to database
-                  Report.getInstance().reportTestMetaData(meta.getDataMap());
-                  Report.getInstance().endSessionTime();
+                        Timer.getClassInstance().testTimeStop();
+                        if(timerGauge != null)
+                        {
+                              timerGauge.stop();
+                        }
+                        // May be an uneccessary call
+                        // since we only update test score.
+                        meta.setDataFmFile();
+                        meta.appendToScoresArry(progress, score.get() / 10);
+                        // set metadata to
+                        meta.updateDataMap();
+                        FlashCardOps.getInstance().setMetaInFile(meta, FlashCardOps.getInstance().getDeckFileName());
+                        // send test metadata to database
+                        Report.getInstance().reportTestMetaData(meta.getDataMap());
+                        Report.getInstance().sendSessionTime();
+                  }
 
             } catch (Exception f) {
                   LOGGER.error("Error when exiting: ");
@@ -692,6 +731,7 @@ public final class ReadFlash implements BaseInterface {
       @Override
       public void onClose() {
             FlashMonkeyMain.treeWindow.close();
+            timerGauge.stop();
             if(SceneCntl.Dim.APP_MAXIMIZED.get() == 0) {
                   SceneCntl.getAppBox().setX((int)FlashMonkeyMain.getPrimaryWindow().getX());
                   SceneCntl.getAppBox().setY((int)FlashMonkeyMain.getPrimaryWindow().getY());
@@ -742,10 +782,6 @@ public final class ReadFlash implements BaseInterface {
       public Pane getMasterBPane() {
             return masterBPane;
       }
-
-//      public ReadOnlyDoubleProperty getRpCenterHeightProperty() {
-//            return rpCenter.heightProperty();
-//      }
 
       public ReadOnlyDoubleProperty getRPCenterWidthProperty() {
             return rpCenter.widthProperty();
@@ -832,9 +868,10 @@ public final class ReadFlash implements BaseInterface {
             // padding top, right, bottom, left
             buttonBox.setPadding(new Insets(0, 0, 10, 0));
             buttonBox.setSpacing(15);
+            buttonBox.setAlignment(Pos.CENTER);
             FMTWalker.getInstance().getCurrentNode().getData();
-            BorderPane contrlsBPane = new BorderPane();
-            contrlsBPane.setId("studyBtnPane");
+//            BorderPane contrlsBPane = new BorderPane();
+//            contrlsBPane.setId("studyBtnPane");
 
             switch (charMode) {
                   case 't': {// Test charM
@@ -845,37 +882,53 @@ public final class ReadFlash implements BaseInterface {
                         scoreLabel = new Label("Points");
                         scoreTextF.setMaxWidth(50);
                         scoreTextF.setEditable(false);
-                        //HBox boxR = new HBox();
                         buttonBox.getChildren().clear();
                         buttonBox.getChildren().add(navBtnHbox);
                         buttonBox.setAlignment(Pos.CENTER);
 
-                        HBox gaugeBox = new HBox();
-                        gaugeBox.setSpacing(3);
-                        gaugeBox.setAlignment(Pos.CENTER);
-                        gaugeBox.getChildren().addAll(sGaugePane, pGaugePane);
+                        // Three gauges
+                        HBox gauge3Box = new HBox(3);
+                        gauge3Box.setAlignment(Pos.CENTER);
+                        gauge3Box.getChildren().addAll(sGaugePane, pGaugePane, timerPane);
+                        gauge3Box.setStyle("-fx-background-color: TRANSPARENT");
 
+                        VBox gaugeVBox = new VBox(3);
+                        gaugeVBox.setAlignment(Pos.CENTER);
+                        gaugeVBox.getChildren().addAll(durationPane, gauge3Box);
+                        gaugeVBox.setStyle("-fx-background-color: TRANSPARENT");
+
+
+                        // Contains gauges and buttons
                         BorderPane bottomBPane = new BorderPane();
+                        bottomBPane.setId("gaugeBox");
+                        bottomBPane.setMaxWidth(366);
+                        bottomBPane.setMaxHeight(233);
                         bottomBPane.setPadding(new Insets(10, 10, 10, 10));
                         bottomBPane.setTop(buttonBox);
-                        bottomBPane.setBottom(gaugeBox);
+                        bottomBPane.setBottom(gaugeVBox);
                         bottomBPane.setMinHeight(SceneCntl.Dim.SOUTH_BPANE_HT.get());
-                        VBox vBox = new VBox();
-                        vBox.setId("studyBtnPane");
-                        vBox.getChildren().addAll(bottomBPane, exitBox);
-                        return vBox;
+
+                        VBox bottomVBox = new VBox(6);
+                        bottomVBox.setAlignment(Pos.CENTER);
+                        //vBox.setPadding(new Insets(10, 10, 10, 10));
+                        bottomVBox.setId("studyBtnPane");
+                        bottomVBox.getChildren().addAll(bottomBPane, exitBox);
+                        return bottomVBox;
                   }
                   default:
                   case 'a': {// Q&A charM
-                        VBox v1Box = new VBox(10);
-                        v1Box.setPadding(new Insets(20, 10, 20, 10));
+                        VBox controlsVBox = new VBox(10);
+                        controlsVBox.setPadding(new Insets(20, 10, 20, 10));
+                        controlsVBox.setId("gaugeBox");
+                        controlsVBox.setMaxWidth(240);
+                        controlsVBox.setAlignment(Pos.CENTER);
+
                         SearchPane searchPane = SearchPane.getInstance(rpCenter.getHeight(), rpCenter.getWidth());
                         buttonBox.getChildren().clear();
-                        buttonBox.setAlignment(Pos.CENTER);
+
                         // Sets the results from the search pane in the
                         // center section.
-                        searchPane.getSearchField().setOnAction(e ->
-                        {
+                        searchPane.getSearchField().setOnAction(e -> {
                               rpCenter.getChildren().clear();
                               rpCenter.getChildren().add(searchPane.getResultPane());
                         });
@@ -884,7 +937,7 @@ public final class ReadFlash implements BaseInterface {
                         gaugeBox.setSpacing(3);
                         gaugeBox.setAlignment(Pos.CENTER);
                         scoreTextF.setEditable(false);
-                        gaugeBox.getChildren().addAll(pGaugePane);
+                        gaugeBox.getChildren().addAll(pGaugePane, timerPane);
 
                         // Navigation buttons
                         navBtnHbox.getChildren().clear();
@@ -896,13 +949,14 @@ public final class ReadFlash implements BaseInterface {
                         // BorderPane bottomBPane = new BorderPane();
                         HBox hBox = new HBox(searchPane.getSearchBox(FMTWalker.getInstance(), FlashCardOps.getInstance().getFlashList()));
                         hBox.setAlignment(Pos.CENTER);
-                        v1Box.setAlignment(Pos.CENTER);
-                        v1Box.getChildren().addAll(hBox, navBtnHbox, gaugeBox);
+                        controlsVBox.setAlignment(Pos.CENTER);
+                        controlsVBox.getChildren().addAll(hBox, navBtnHbox, gaugeBox);
 
                         VBox vBox = new VBox();
                         vBox.setId("studyBtnPane");
+                        vBox.setAlignment(Pos.CENTER);
                         // Returning the bottom section BorderPane
-                        vBox.getChildren().addAll(v1Box, exitBox);
+                        vBox.getChildren().addAll(controlsVBox, exitBox);
                         return vBox;
                   }
             }
@@ -927,7 +981,9 @@ public final class ReadFlash implements BaseInterface {
       protected static void ansQButtonSet(int isRight, GenericTestType test) {
             try {
                   if (isRight != 0) {
-                        test.getAnsButton().setDisable(true);
+                        if(mode == 't') {
+                              test.getAnsButton().setDisable(true);
+                        }
 
                         switch (isRight) {
                               case -1: // button set to red
@@ -954,7 +1010,7 @@ public final class ReadFlash implements BaseInterface {
                   } else {
                         test.getAnsButton().setDisable(false);
                         test.getAnsButton().setVisible(true);
-                        test.getAnsButton().setStyle("-fx-color: #FFFFFF;");
+                        test.getAnsButton().setStyle("-fx-background-color: RGBA(255, 255, 255, .7); -fx-text-fill: " + UIColors.FOCUS_BLUE_OPAQUE + ";");
                   }
             } catch (NullPointerException f) {
                   // print an error message
@@ -1076,7 +1132,7 @@ public final class ReadFlash implements BaseInterface {
                   // Update in permenent version.
                   listCard.setNumRight(listCard.getNumRight() + 1);
 
-                  if (listCard.getNumRight() > 3) {
+                  if (listCard.getNumRight() > 2) {
                         // set remember to a higher num = lower priority.
                         remAction(currentCard, listCard);
                         currentCard.setIsRightColor(1);
@@ -1119,6 +1175,8 @@ public final class ReadFlash implements BaseInterface {
                   FlashCardMM listCard = FlashCardOps.getInstance().getFlashList().get(currentCard.getANumber());
 
                   SoundEffects.CORRECT_ANSWER.play();
+                  timerGauge.stop();
+                  durationGauge.setConsumedTime();
                   LOGGER.debug("/n*** rightAns called ***");
                   // add points if 1st visit or greater than
                   // 1st visit.
@@ -1150,8 +1208,6 @@ public final class ReadFlash implements BaseInterface {
                   FlashMonkeyMain.AVLT_PANE.displayTree();
                   masterBPane.setBottom(manageSouthPane(mode));
                   masterBPane.requestFocus();
-            //      Button btn = genTest.getAnsButton();
-            //      btn = ButtoniKon.getAnsNext();
             }
 
             /**
@@ -1161,10 +1217,6 @@ public final class ReadFlash implements BaseInterface {
             private void correctNodActions(Button selectAnsBtn, GenericTestType test) {
                   FMTransition.goodNod = FMTransition.nodUpDownFade(selectAnsBtn, 250);
                   FMTransition.goodNod.play();
-                  // ensure the selectAns button
-                  // has the correct look.
-
-
             }
 
             /**
@@ -1202,6 +1254,8 @@ public final class ReadFlash implements BaseInterface {
              */
             public WrongAns(FlashCardMM currentCard, GenericTestType test) {
 
+                  timerGauge.stop();
+                  durationGauge.setConsumedTime();
                   /**  Should animate the avlTreePane, the current circle should fade to red or green depending on
                    if the answer is wright or wrong.
 

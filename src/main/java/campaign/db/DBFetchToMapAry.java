@@ -1,22 +1,18 @@
 package campaign.db;
 
-import ch.qos.logback.classic.Level;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.general.ArrayRowData;
 import forms.utility.Alphabet;
-//import javafx.scene.image.Image;
-//import lombok.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-//import java.util.Arrays;
 import java.util.HashMap;
-//import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public enum DBFetchToMapAry {
+      // For deckmetadata
       DECK_METADATA_SINGLE() {
             @Override
             public ArrayList<HashMap<String, String>> query(String... whereStatement) {
@@ -28,7 +24,7 @@ public enum DBFetchToMapAry {
                   return map;
             }
       },
-
+      // For market place
       DECK_METADATA_MULTIPLE() {
             @Override
             public ArrayList<HashMap<String, String>> query(String... whereStatement) {

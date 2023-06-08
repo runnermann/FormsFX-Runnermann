@@ -6,9 +6,11 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import flashmonkey.FlashCardMM;
+import type.celltypes.CanvasCell;
 import type.sectiontype.GenericSection;
 import uicontrols.ButtoniKon;
 
@@ -129,9 +131,22 @@ public class FillnTheBlank extends TestTypeBase implements GenericTestType<Filln
             return 0b0000000000100000;
       }
 
+      /**
+       * Return the time until the answer
+       * was clicked. If answer was not clicked
+       * e.g. another button was clicked,
+       * this time should not be stored.
+       *
+       * @return
+       */
       @Override
-      public char getCardLayout() {
-            return 'S'; // Single pane card
+      public int getSeconds() {
+            return 0;
+      }
+
+      @Override
+      public CardLayout getCardLayout() {
+            return CardLayout.SINGLE; // Single pane card
       }
 
       @Override

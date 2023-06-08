@@ -211,6 +211,9 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     src: url("../font/Roboto-Bold.ttf")
 }
 
+.aviMediaCellPane {
+    -fx-background-radius: 2px;
+}
 
 .cfpCenter {
     -fx-font-size: 15pt;
@@ -365,10 +368,16 @@ Line spacing in text area.
     -fx-background-color: FM_GREEN_RIGHT;
 }
 
-#whiteCurvedContainer {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 2;
-    -fx-border-radius: 2;
+#liteCurvedContainer {
+    -fx-background-color: #F5F5F5;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+#gaugeBox {
+    -fx-background-color: #E3E3E3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
 }
 
 #deckNameLabel {
@@ -474,6 +483,13 @@ label14white {
     -fx-wrap-text: true;
     -fx-text-fill: ICON_BLUE;
     -fx-padding: 32 16 16 0;
+    -fx-text-alignment: CENTER;
+}
+#label16blue {
+    -fx-font-size: 16px;
+    -fx-wrap-text: true;
+    -fx-text-fill: ICON_BLUE;
+    -fx-padding: 16 0 16 0;
     -fx-text-alignment: CENTER;
 }
 
@@ -594,8 +610,7 @@ hyperlink14white {
 }
 
 #readFlashPane {
-    -fx-border-color: TRANSPARENT;
-    -fx-background-color: FM_GREY;
+    -fx-background-color: #D6D6D6;
 }
 
 /* The study mode selection pane */
@@ -609,10 +624,12 @@ hyperlink14white {
 }
 
 #studyBtnPane {
-    -fx-background-color: #0064e195;
+    /*-fx-background-color: #0064e195;*/
     -fx-margin-top: 4;
     -fx-margin-bottom: 4;
     -fx-padding: 0, 10, 0, 10;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
 }
 
 #resultPane {
@@ -710,7 +727,7 @@ hyperlink14white {
 
 /*  Background image  */
 #bckgnd_image {
-    -fx-background-image: url("/image/FlashMonkeyAchieveBCKGND.png");
+    -fx-background-image: url("/image/NASA_SpaceWalk.png");
     -fx-background-repeat: stretch;
     /*-fx-background-size: 500 810;*/
     -fx-background-position: center center;

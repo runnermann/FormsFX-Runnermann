@@ -26,21 +26,38 @@ public class VertxIO {
       public VertxIO() { /* no args constructor */ }
 
       /**
+       * Generates the token and bonaFides, and formats message into JSON
+       * @param x1 email
+       * @param x2 password
+       * @return
+       */
+      protected String ou812CreateNewUser(String x1, String x2) {
+            // token
+            String tkn = FMToken.createUserToken(x1, 4);
+            // bonafides
+            String bf = genCode(tkn);
+            return "{\"x1\":\"" + x1 + "\",\"x4\":\"" + x2 + "\",\"x6\":\"" + tkn + "\",\"x3\":\"" + bf + "\"}";
+      }
+
+      /**
        * User create process.
        * Provides the necessary information to be sent to Vertx to create a user
        * based on Vertx bona-fides challenge q.
+       * The JsonArray follows the following format
        * <p>x1: email, x2: code, x3: bona-fides, x4: password, x5: userName, x6: token</p>
        *
-       * @param code      Code entered by user
-       * @param email     Users orig_email
-       * @param firstName ..
-       * @param password  entered pw
+       * @param x1     Users orig_email
+       * @param x2  The entered password
+       * @param x3      Code entered by user
+       * @param x4 firstName ..
        * @return Returns the json object String to be sent to Vertx.
        */
-      protected String ou812confirm(String code, String email, String firstName, String password) {
-            String token = FMToken.createUserToken(email, 4);
-            String bonaFides = genCode(token);
-            return "{\"x2\":\"" + code + "\",\"x1\":\"" + email + "\",\"x4\":\"" + password + "\",\"x5\":\"" + firstName + "\",\"x6\":\"" + token + "\",\"x3\":\"" + bonaFides + "\"}";
+      protected String ou812confirm( String x1, String x2, String x3, String x4) {
+            // token
+            String tkn = FMToken.createUserToken(x1, 4);
+            // Bonafides
+            String bf = genCode(tkn);
+            return "{\"x2\":\"" + x3 + "\",\"x1\":\"" + x1 + "\",\"x4\":\"" + x2 + "\",\"x5\":\"" + x4 + "\",\"x6\":\"" + tkn + "\",\"x3\":\"" + bf + "\"}";
       }
 
 
@@ -52,16 +69,16 @@ public class VertxIO {
        * returns false.
        * <p>x1: email, x2: code, x3: bona-fides, x4: password, x5: userName, x6: token</p>
        *
-       * @param email,   the users encypted original email.
-       * @param password The new password. Encrypted
-       * @param code     The code provided by the user from form entry
+       * @param x1,   the users encypted original email.
+       * @param x2 The new password. Encrypted
+       * @param x3     The code provided by the user from form entry
        * @return Returns the json object String to be sent to Vertx.
        */
-      protected String ou812reset(String email, String password, String code) {
-            String token = FMToken.createUserToken(email, 4);
-            String bonaFides = genCode(token);
+      protected String ou812reset(String x1, String x2, String x3) {
+            String tkn = FMToken.createUserToken(x1, 4);
+            String bf = genCode(tkn);
 
-            return "{\"x2\":\"" + code + "\",\"x1\":\"" + email + "\",\"x4\":\"" + password + "\",\"x6\":\"" + token + "\",\"x3\":\"" + bonaFides + "\"}";
+            return "{\"x2\":\"" + x3 + "\",\"x1\":\"" + x1 + "\",\"x4\":\"" + x2 + "\",\"x6\":\"" + tkn + "\",\"x3\":\"" + bf + "\"}";
       }
 
       protected String ou812cancel(String email, String password, String token) {
@@ -190,7 +207,7 @@ public class VertxIO {
                   imgAry = bos.toByteArray();
                   bos.close();
             } catch (IOException e) {
-                  LOGGER.debug("IOException: Could not find 82");
+                  LOGGER.debug("IOException: Could not find 193");
             }
             return imgAry;
       }

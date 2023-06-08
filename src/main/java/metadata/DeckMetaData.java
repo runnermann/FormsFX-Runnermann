@@ -56,6 +56,7 @@ public class DeckMetaData implements FormData {
 	private String deckFileName;
 	private String descript;
 	private String deckImgName;
+	private String deckPhotoName;
 	private int numImg;
 	private int numVideo;
 	private int numAudio;
@@ -71,7 +72,6 @@ public class DeckMetaData implements FormData {
 	private String lastScore;
 	private String testTypes;
 	private String courseCode;
-	private String deckPhotoName;
 	// Ecosystem related
 	private boolean sellDeck;
 	private boolean shareDistro;
@@ -177,7 +177,6 @@ public class DeckMetaData implements FormData {
 
 	// Double-checked locking for singleton class
 	public static synchronized DeckMetaData getInstance() {
-
 		//LOGGER.setLevel(Level.DEBUG);
 		if(CLASS_INSTANCE == null) {
 			synchronized (DeckMetaData.class) {
@@ -191,17 +190,12 @@ public class DeckMetaData implements FormData {
 
 	@Override
 	public void init() {
-		//metaObj = new MetaObj();
 		initMetaObj();
 		deckMetaDataMap = new HashMap<String, String>();
-		// set flag
-//		fileExists = false;
-		//LOGGER.debug("init() called, metaObj should exist? {}", metaObj != null);
 	}
 	
 	@Override
 	public boolean set() {
-
 		boolean dateIsZero = Long.parseLong(deckMetaDataMap.get("last_date").trim()) == 0;
 		boolean descriptIsEmpty = deckMetaDataMap.get("deck_descript").isEmpty();
 		if( dateIsZero || descriptIsEmpty ) {
@@ -237,6 +231,8 @@ public class DeckMetaData implements FormData {
 		setShareDistro(map.get("share_distro") == "true");
 		setPrice(Integer.parseInt(map.get("price")));
 		setNumStars(Integer.parseInt(map.get("deck_numstars")));
+		setDeckImgName(map.get("deck_photo"));
+		setDeckPhotoName(map.get("deck_photo"));
 	}
 	
 	
@@ -281,9 +277,7 @@ public class DeckMetaData implements FormData {
 	@Override
 	public void updateDataMap() {
 		LOGGER.debug("updateMetaData() called");
-		//System.out.println("DeckMetaData updateMetaAry() called.");
-	//	LOGGER.debug("is metaObj null: {}", this.metaObj == null);
-	//	LOGGER.debug("this.metaObj: {}", this.metaObj.toString());
+
 		deckMetaDataMap.put("last_date", Long.toString(this.lastDate));
 		deckMetaDataMap.put("deck_descript", getDescript());
 		deckMetaDataMap.put("creator_email", getCreatorEmail());

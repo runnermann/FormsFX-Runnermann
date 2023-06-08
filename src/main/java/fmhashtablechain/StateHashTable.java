@@ -8,8 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedList;
 
 public class StateHashTable<K extends String, V extends MediaSyncObj> extends HashTableChain<K, V> {
-
-      private static final Logger LOGGER = LoggerFactory.getLogger(StateHashTable.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(StateHashTable.class);
 
       public StateHashTable() {
             super();
@@ -29,15 +28,11 @@ public class StateHashTable<K extends String, V extends MediaSyncObj> extends Ha
        */
       @Override
       public V put(K key, V value) {
-
-            LOGGER.debug("StateHashTable() called:");
-
             int index = key.hashCode() & (table.length - 1);
 
             if (index < 0) {
                   index += table.length;
             }
-
             if (table[index] == null) {
                   table[index] = new LinkedList<>();
             }
@@ -50,9 +45,6 @@ public class StateHashTable<K extends String, V extends MediaSyncObj> extends Ha
                         MediaSyncObj newVal = entry.getValue();// + (MediaSyncObj) value;
                         newVal.setState(newVal.getState() + value.getState());
                         entry.setValue((V) newVal);
-
-				LOGGER.debug("valueName: " + value.getFileName() + ", state value: " + newVal.getState());;
-
                         return entry.getValue();
                   }
             }
@@ -60,12 +52,9 @@ public class StateHashTable<K extends String, V extends MediaSyncObj> extends Ha
             table[index].addFirst(new SimpleEntry<>(key, value));
             numKeys++;
 
-            LOGGER.debug("valueName: " + value.getFileName() + " state: " + value.getState());
-
             if (numKeys > (LOAD_THRESHOLD * table.length)) {
                   rehash();
             }
-
 
             return null;
       }

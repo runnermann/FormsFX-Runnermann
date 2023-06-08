@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -28,7 +28,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.TextAlignment;
 
+import java.io.File;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public abstract class FontAttributes<T extends FontAttributes> extends GenericShape<T> implements Serializable {
@@ -52,16 +54,16 @@ public abstract class FontAttributes<T extends FontAttributes> extends GenericSh
        * Sets all variables to default values.
        */
       public FontAttributes() {
-            this.fontFamily = "Roboto-Regular";
+            this.fontFamily = "digital";
             //this.fontWeight = "15";
             this.fontStyle = FontPosture.REGULAR;
             this.fontStroke = UIColors.HIGHLIGHT_PINK;
-            this.fontFill = UIColors.TRANSPARENT;
-            this.fontSize = 16;
+            this.fontFill = UIColors.HIGHLIGHT_PINK;
+            this.fontSize = 32;
             this.lineSpacing = 6;
             this.textAlign = TextAlignment.LEFT;
             // works in windows!!!
-            URL url = this.getClass().getClassLoader().getResource("font/" + fontFamily + ".ttf");
+            URL url = getClass().getClassLoader().getResource("font/" + fontFamily + ".ttf");
 
             String urlStr = url.toExternalForm();
             this.font = Font.loadFont(urlStr, fontSize);
@@ -87,7 +89,7 @@ public abstract class FontAttributes<T extends FontAttributes> extends GenericSh
             this.fontStyle = fontStyle;
             this.fontStroke = fontStroke;
             this.fontFill = fontFill;
-            this.fontSize = fontSize;
+            this.fontSize = 20;
             this.lineSpacing = lineSpacing;
             this.textAlign = textAlign;
       }

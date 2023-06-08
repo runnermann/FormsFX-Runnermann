@@ -49,19 +49,18 @@ public class EndGame {
                   }
                   case 'B': {
                         b = alert.choiceOnlyActionPopup("GOOD", null, sb.toString(),
-                                "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.GAME_OVER);
+                                "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.PRESS_BUTTON_COMMON);
                         break;
                   }
                   case 'C': {
                         b = alert.choiceOnlyActionPopup("COMPLETE", null, sb.toString(),
-                                "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.GAME_OVER);
+                                "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.PRESS_BUTTON_COMMON);
                         break;
                   }
                   default:
                   case 'Z': {
                         b = alert.choiceOnlyActionPopup("GAME OVER", null, sb.toString(),
-                                "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.GAME_OVER);
-
+                                "image/i_got_paid.png", UIColors.ICON_ELEC_BLUE, SoundEffects.PRESS_BUTTON_COMMON);
                   }
             }
 

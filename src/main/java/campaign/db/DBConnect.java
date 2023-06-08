@@ -46,6 +46,8 @@ public final class DBConnect {
                   // s3 accessKey = errors[0] and s3 secretKey = errors[1]
                   final String[] errors = dang.getS3Errors();
 
+                  
+
                   connection = PostgreSQLConnectionBuilder
                       .createConnectionPool(errors[0]);
             } catch (Exception e) {

@@ -47,7 +47,7 @@ public class EncryptedAcct {
 			// check if user account exists
 			getAccountData();
 		}
-
+		// ???
         return !map.get("empty").equals("true");
 	}
 	
@@ -72,7 +72,7 @@ public class EncryptedAcct {
 					return false;
 				}
 				// catagroy == premium
-				if (map.get("catagory").contains("preem")) {
+				if (map.get("catagory").equals("preem_distro")) {
 					if (verify(map.get("paid_date"), map.get("account_status"))) {
 						map.put("isCurrent", "true");
 						return true;

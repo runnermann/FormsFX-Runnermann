@@ -383,8 +383,9 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
                   // Parse the response, set metaAry,
                   // & set the DeckMetaData object.
                   DeckMetaData meta = DeckMetaData.getInstance();
+                  // set the map obj in DeckMetaData
                   meta.setDataMap(response.get(0));
-
+                  // Set the fields
                   meta.set(response.get(0));
                   return true;
             }
@@ -396,7 +397,6 @@ public class MetaDescriptor implements Descriptor<DeckMetaData> {
        */
       @Override
       public void clear() {
-
             deckDescript.setValue("");
             deckBook.setValue("");
             deckClass.setValue("");

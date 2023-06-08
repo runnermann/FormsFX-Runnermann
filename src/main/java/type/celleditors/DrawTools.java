@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -96,7 +96,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>ArrayOfFMShapes.get(0) and GBCopyOfArrayOfFMShapes contains the size of the window for DrawPad. </p>
  * @author Lowell Stadelman
  */
-public class DrawTools implements BaseInterface//extends SectionEditor //implements CopyPasteInterface
+public class DrawTools implements BaseInterface
 {
       private static DrawTools CLASS_INSTANCE;
 
@@ -105,7 +105,8 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       private static final Logger LOGGER = LoggerFactory.getLogger(DrawTools.class);
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DrawTools.class);
 
-      // A reference to the right pane in the ass!!!
+      // Includes a reference to the right pane. Note in this case
+      // pane should be spelled pain. As in the right 'Pain in the arse!'.
       private static SectionEditor classEditorRef;
 
       // For the overlay window. The window that shapes
@@ -244,8 +245,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
       /**
        * Called by SectionEditor rightPane when card exists, for editing a
-       * card as opposed to creating a new card. For canvas ie shapes and image
-       * (Image & Shapes).
+       * card as opposed to creating a new card. For canvas ie shapes and image.
        * Creates a popup.
        *
        * @param shapeFileName    ..
@@ -377,26 +377,14 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
                   onClose();
             });
 
-
             // Class SectionEditor referance
             classEditorRef = paramEditor;
-            // Object instantiation and pane assignment for the Drawing area
 
             overlayPane = new Pane();
             overlayPane.setPrefSize(wd, ht);
-//            overlayPane.setMinWidth(wd);
-//            overlayPane.setMaxWidth(wd);
-//            overlayPane.setMinHeight(ht);
-//            overlayPane.setMaxHeight(ht);
-            // scene ht
-            // overlay Window settings
- //           drawPadWindow.setMinHeight(windowHt);
- //           drawPadWindow.setMaxHeight(windowHt);
             drawPadWindow.setHeight(windowHt);
-            //drawPadWindow.setWidth(wd);
             drawPadWindow.setX(x);
             drawPadWindow.setY(y);
-            //drawPadWindow.setScene(overlayScene);
             drawPadWindow.setAlwaysOnTop(true);
             popUpTools(paramEditor, drawPadWindow);
 
@@ -602,7 +590,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             FMPolyLine fmLine = new FMPolyLine(linePts, 3, strokeBTNProperty.getValue(), fillBTNProperty.getValue(), 0);
             FMPolyLine fmArrow = new FMPolyLine(arrowPts, 3, strokeBTNProperty.getValue(), fillBTNProperty.getValue(), 0);
             FMPolygon fmPolygon = new FMPolygon(polyPts, 3, strokeBTNProperty.getValue(), fillBTNProperty.getValue(), 0);
-
+            // Shapes for button symbols
             Ellipse btnCircle = fmCirc.getShape();
             Rectangle btnSqr = fmRect.getShape();
             Polygon btnTri = fmTri.getShape();
@@ -968,9 +956,6 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
       private void setShapesColors() {
             if (!classEditorRef.getArrayOfFMShapes().isEmpty()) {
                   FMRectangle r = (FMRectangle) classEditorRef.getArrayOfFMShapes().get(0);
- //                 double wd = r.getWd();
- //                 double ht = r.getHt();
- //                 classEditorRef.setShapesInRtPane(classEditorRef.getArrayOfFMShapes(), wd, ht);
             }
       }
 
@@ -1193,7 +1178,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             clearListeners();
             // Clear the overlayPane of any resize nodes if they exist
             clearNodes();
-            LetterBuilder letterBuilder = new LetterBuilder(overlayCanvas, toolGC, overlayPane, ed, strokeProperty.getValue(), fillProperty.getValue());
+            LetterBuilder letterBuilder = new LetterBuilder(overlayCanvas, toolGC, overlayPane, ed, strokeProperty.getValue(), fillProperty.getValue(), 16);
             overlayScene.setOnMousePressed(letterBuilder::mousePressed);
             overlayScene.setOnMouseDragged(letterBuilder::mouseDragged);
             overlayScene.setOnMouseReleased(letterBuilder::mouseReleased);
@@ -1248,7 +1233,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             if(ImageTools.instanceExists()) {
                   ImageTools.getInstance().saveOnExit(paramEditor);
             }
-            // The '0' element is the size of the drawpad. Shapes start at
+            // The '0' element is the size of the drawpad when it is full scale. Shapes start at
             // '1'
             saveShapesToFile(shapeFileName, paramEditor);
       }
@@ -1273,7 +1258,9 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
             if(null != classEditorRef) {
                   classEditorRef.setDrawPadClosed();
                   toolMainPane.getChildren().clear();
-                  overlayWindow.close();
+                  if(overlayWindow != null) {
+                        overlayWindow.close();
+                  }
                   toolWindow.close();
             }
 
@@ -1283,6 +1270,7 @@ public class DrawTools implements BaseInterface//extends SectionEditor //impleme
 
             CreateFlash cfp = CreateFlash.getInstance();
             cfp.enableButtons();
+            CLASS_INSTANCE = null;
       }
 
       /**

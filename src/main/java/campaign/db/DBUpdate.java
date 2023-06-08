@@ -30,8 +30,8 @@ public enum DBUpdate {
                     ", current_email = '" + Alphabet.encrypt(authcrypt.UserData.getUserName()) + btw +
                     ", institution = '" + student.getInstitution() + btw +
                     ", descript = '" + student.getDescript() + btw +
-                    ", photo_link = '" + "photo link" + btw +
-                    ", avatar_name = '" + student.getAvatarName() + "' " +
+                    ", photo_link = '" + student.getPhotoLink() + btw +
+                    ", avatar_name = '" + student.getAvatarName() + btw +
                     whereStatement + ";" +
                     " UPDATE Student SET " +
                     " education_level = '" + student.getEducationLevel() + btw +

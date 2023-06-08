@@ -3,13 +3,11 @@ package authcrypt;
 
 import campaign.db.DBFetchUnique;
 import campaign.db.errors.ModelError;
-import ch.qos.logback.classic.Level;
+//import ch.qos.logback.classic.Level;
 import fileops.DirectoryMgr;
 import fileops.utility.Utility;
 import flashmonkey.FlashCardOps;
-import forms.utility.Alphabet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import forms.utility.Alphabet;
 
 import java.io.File;
 
@@ -19,9 +17,9 @@ import java.io.File;
  * Security sensitive classes should not be serializable. See JavaDocs Security vulnerabilities at:
  * https://www.oracle.com/java/technologies/javase/seccodeguide.html
  */
-public class Verify {
+final class Verify {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(Verify.class);
+      //private static final Logger LOGGER = LoggerFactory.getLogger(Verify.class);
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Verify.class);
 
 
@@ -45,16 +43,12 @@ public class Verify {
        *            will not fail if the user does not exist.
        */
       protected Verify(String x1, String x2, char loc) {
-            //LOGGER.setLevel(Level.DEBUG);
-            LOGGER.info("Verify constructor( ... ) called");
-
             loc = loc == 0 ? 'b' : loc;
 
             int remoteState = 0;
             // verify if the user exists locally, then set the bits
             int localState = validateLocal(x2, x1);
             // if localState == 0 pw or name is malformed
-            LOGGER.debug("localState: {}", localState);
             if (localState == 0) {
                   return;
             }
@@ -64,13 +58,14 @@ public class Verify {
                   remoteState = validateRemote(x2, x1);
             }
             validInt = remoteState + localState;
-            LOGGER.debug("validInt: " + validInt);
       }
 
 
 
       /**
-       * Assumes that the user is connected to the internet. Must check
+       * Note!!! It is possible that the connection to the DB has an error.
+       * If so, will return the same response as if the PW was wrong.
+       * This method Assumes that the user is connected to the internet. Must check
        * prior to the use of this method.
        *
        * @param x1 email
@@ -81,26 +76,37 @@ public class Verify {
        */
       private int validateRemote(String x1, String x2) {
             if (x1.length() > 5 && x2.length() > 7) {
-                  if (existsRemote(x1)) {
-                        /*
-                        * return either 1 or 128
-                        * - Fade out log in here.
-                        */
-                        s3res = FlashCardOps.getInstance().setObjsFmS3(x1, x2);
-                        switch (s3res) {
-                              case 1: {
-                                    // correct
-                                    return 128;
-                              }
-                              default:
-                              case 0: {
-                                    // wrong password
-                                    return 1;
+                  //int exists = existsInRemoteStudents(x1);
+                  switch(existsInRemoteStudents(x1)) {
+                        // true
+                        case 1: {
+                              /*
+                               * return either 1 or 128
+                               * - Fade out log in here.
+                               */
+                              s3res = FlashCardOps.getInstance().setObjsFmS3(x1, x2);
+                              switch (s3res) {
+                                    case 1: {
+                                          // correct
+                                          return 128;
+                                    }
+                                    default:
+                                    case 0: {
+                                          // wrong password
+                                          return 1;
+                                    }
                               }
                         }
-                  } else {
-                        // does not exist
-                        return 16;
+                        case 0:
+                        case -2: {
+                              return 16;
+                        }
+                        default:
+                        case -1: {
+                              // There is an error connecting to the DB.
+                              // Have the user try again.
+                              return 1;
+                        }
                   }
             } else {
                   // bad pw, log in again
@@ -157,10 +163,10 @@ public class Verify {
             //		a. deck list will be downloaded
             //		b. and user is validated in one single trip.
             // 4. If user does not pass remotely, then notify user to retry creating user, or reset remote password.
-            // 5. If user does not exist remotely, !?!?!?!!!! And they are connected.
+            // 5. If user does not exist remotely, And they are connected.
             // 		-- create user remotely
             String errorMessage = "";
-            // save user auth info
+            // save user auth info locally
             if (DirectoryMgr.getWorkingDirectory() != null) {
                   new DirectoryMgr();
             }
@@ -202,15 +208,35 @@ public class Verify {
             return "Something isn't right.";
       }
 
-      private boolean existsRemote(String name) {
-            //LOGGER.info("existsRemote called");
+      /**
+       * Checkks if the user exists remote.
+       * @param name
+       * @return 1 if the user exists, 0 if not found, and -1 if there was an error.
+       */
+      private int existsInRemoteStudents(String name) {
+            //LOGGER.info("existsInRemoteStudents called");
             String[] args = {name};
             String[] columnData = DBFetchUnique.STUDENTS_UUID.query(args);
             // as of 01-20-2022 If the user has just been created, pw will be
             // set to AAAAA in step 1. It is possible that they
             // will exist in a state that they cannot create a new password.
-            // Thus we request pw and check for default of AAAAA.
-            return !columnData[0].equals("EMPTY") && !columnData[1].equals("AAAAA");
+            // Thus, we request pw and check for default of AAAAA.
+            //return !columnData[0].contains("EMPTY") && !columnData[1].contains("AAAAA");
+            switch (columnData[0]) {
+                  case "EMPTY": {
+                        return -2;
+                  }
+                  case "AAAAA": {
+                        return 0;
+                  }
+                  case "ERROR": {
+                        return -1;
+                  }
+                  // it's correct
+                  default: {
+                        return 1;
+                  }
+            }
       }
 
       /**
@@ -265,7 +291,7 @@ public class Verify {
        * ************************************* ***
        * INNER CLASS
        * NOTE: Security sentitive classes should not use
-       * serializable. removed 08-10-2021
+       * serializable. removed serializable on 08-10-2021
        * * **************************************
        ***/
       private static class UserAuthInfo {

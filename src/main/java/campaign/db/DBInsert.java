@@ -59,17 +59,15 @@ public enum DBInsert {
 
             @Override
             public boolean doInsert(Object notUsed) {
-                  //EncryptedStud student = (EncryptedStud) s;
-
-                  String name = UserData.getUserName() != null ? Alphabet.encrypt(UserData.getUserName()) : "not set yet";
+                  // EncryptedStud student = (EncryptedStud) s;
+                  String hash = UserData.getUserName() != null ? UserData.getUserMD5Hash() : "not set yet";
 
                   String statement = "INSERT INTO sessions (uhash, event_localtime, note) " +
                       " VALUES ('" +
-                      name + btw +
+                      hash + btw +
                       fmTimer.getBeginTime() + btw +
                       fmTimer.getNote() +
                       "'); ";
-
                   return query(statement);
             }
 

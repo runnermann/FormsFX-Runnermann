@@ -1,7 +1,6 @@
 package type.celleditors;
 
 import fileops.BaseInterface;
-import flashmonkey.FlashCardOps;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -14,17 +13,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import org.apache.http.MethodNotSupportedException;
 import uicontrols.ButtoniKon;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.util.Locale;
-
-//import java.awt.geom.AffineTransform;
-//import java.awt.image.AffineTransformOp;
-//import java.awt.image.BufferedImage;
 
 /**
  * Class provides the popup to modify an image. Uses the SectionEditor Reference
@@ -214,7 +207,7 @@ public class ImageTools implements BaseInterface {
         iViewFmSectionEditor.setFitHeight(rotated.getHeight());
         iViewFmSectionEditor.setFitWidth(rotated.getWidth());
 
-        sectionEditor.setImageHelper(rotated);
+        sectionEditor.setImageHelperForRPane(rotated);
     }
 
 }

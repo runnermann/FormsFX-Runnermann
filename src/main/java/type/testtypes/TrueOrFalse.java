@@ -1,6 +1,8 @@
 package type.testtypes;
 
 import flashmonkey.*;
+import media.sound.SoundEffects;
+import type.cardtypes.CardLayout;
 import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 import fmtree.FMTWalker;
@@ -38,6 +40,8 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       private Button selectAnsButton;
       private RadioButton trueRdoBtn;
       private RadioButton falseRdoBtn;
+
+      private long millis;
 
       /**
        * Singleton private constructor
@@ -83,6 +87,7 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       @Override
       public GridPane getTReadPane(FlashCardMM currentCard, GenericCard genCard, Pane parentPane) {
             // Each section is its' own object. Not using GenericCard
+            millis = System.currentTimeMillis();
             genSection = GenericSection.getInstance();
             GridPane gPane = new GridPane();
             gPane.setVgap(2);
@@ -156,14 +161,28 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       }
 
       /**
+       * Return the time until the answer
+       * was clicked. If answer was not clicked
+       * e.g. another button was clicked,
+       * this time should not be stored.
+       *
+       * @return
+       */
+      @Override
+      public int getSeconds() {
+            long now = System.currentTimeMillis();
+            return (int) (now - millis) / 1000;
+      }
+
+      /**
        * Sets the card to a double horizontal. Method used during saves. Saves the
        * card type
        *
        * @return Returns the char 'd'
        */
       @Override
-      public char getCardLayout() {
-            return 'D'; // double vertically stacked
+      public CardLayout getCardLayout() {
+            return CardLayout.DOUBLE_HORIZ; // double horizontal
       }
 
       @Override
@@ -199,11 +218,14 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
 
       @Override
       public void ansButtonAction() {
+            SoundEffects.PRESS_BUTTON_COMMON.play();
             changed();
-//            FlashCardOps fcOps = FlashCardOps.getInstance();
-            ReadFlash rf = ReadFlash.getInstance();
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
-//            FlashCardMM listCard = fcOps.getFlashList().get(currentCard.getANumber());
+            final  FlashCardOps fcOps = FlashCardOps.getInstance();
+            final ReadFlash rf = ReadFlash.getInstance();
+            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
+            final FlashCardMM listCard = fcOps.getFlashList().get(currentCard.getANumber());
+            listCard.setSeconds(getSeconds());
+
             rf.getProgGauge().moveNeedle(500, rf.incProg());
             double progress = rf.getProgress();
             if ((trueRdoBtn.isSelected() && currentCard.getAText().equals("T"))
@@ -228,6 +250,7 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
       public void prevAnsButtAction() {
             // stub
       }
+
 
 
       /**
@@ -275,9 +298,11 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             // Set the default value.
             editor.tCell.getTextArea().setText("F");
             trueRdoBtn.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   editor.tCell.getTextArea().setText("T");
             });
             falseRdoBtn.setOnAction(e -> {
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   editor.tCell.getTextArea().setText("F");
             });
 

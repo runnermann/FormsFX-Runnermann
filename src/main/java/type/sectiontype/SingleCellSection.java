@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -23,6 +23,7 @@ import flashmonkey.FlashMonkeyMain;
 import flashmonkey.ReadFlash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import type.celltypes.CellLayout;
 import uicontrols.SceneCntl;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
@@ -73,11 +74,11 @@ public class SingleCellSection //extends GenericSection
        * @return Returns an HBox containing this section if it is
        */
       //@Override
-      public HBox sectionView(String txt, char type, int numHSections, boolean isEqual, double otherHt, String... paths) {
+      public HBox sectionView(String txt, CellLayout type, int numHSections, boolean isEqual, double otherHt, String... paths) {
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.info("in SingleCellSection.sectionView(string,char,string... )");
 
-            //Only a single pane but is the text pane or left pane in double section;
+            //Single section still has a left cell.
             leftCell = buildPaneSwitch(txt, type, numHSections, isEqual, (int) otherHt, paths);
             leftCell.setPrefWidth(ReadFlash.getInstance().getMasterBPane().widthProperty().get());
 
@@ -122,7 +123,6 @@ public class SingleCellSection //extends GenericSection
        * @return
        */
       public HBox sectionView(Pane lowerPane) {
-
             //LOGGER.setLevel(Level.DEBUG);
             LOGGER.debug("in singleCellSection.sectionView(Pane localPane)");
             HBox sectionHBox = new HBox();
@@ -139,12 +139,12 @@ public class SingleCellSection //extends GenericSection
             return sectionHBox;
       }
 
-      private Pane buildPaneSwitch(String txt, char type, int numHSections, boolean isEqual, int otherHt, String... paths) {
+      private Pane buildPaneSwitch(String txt, CellLayout type, int numHSections, boolean isEqual, int otherHt, String... paths) {
 
-            GenericCell gc = new GenericCell();
+            //GenericCell gc = new GenericCell();
             int wd = SceneCntl.getCenterWd();
             int ht = (int) ReadFlash.getInstance().getMasterBPane().getHeight();
-            switch (type) {
+            switch (type.get()) {
                   // Audio Video = m / media
                   //case 'M': // should not be called here
                   // Canvas = images and shapes/drawings
@@ -152,13 +152,13 @@ public class SingleCellSection //extends GenericSection
                   case 'c':
                   case 'm': {
                         GridPane singlePane = new GridPane();
-                        return gc.cellFactory(type, singlePane, wd, ht, paths);
+                        return GenericCell.cellFactory(type, singlePane, wd, ht, paths);
                   }
                   case 't': // Text only in this view
                   default: {
                         LOGGER.debug("SingleSection switch: at default == text singlePane. ");
                         LOGGER.debug("in SingleSection, setting ht to: " + ht);
-                        return gc.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
+                        return GenericCell.cellFactory(txt, wd, ht, numHSections, isEqual, otherHt);
                   }
             }
       }

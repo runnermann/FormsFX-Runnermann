@@ -1,6 +1,7 @@
 package type.testtypes;
 
 import flashmonkey.*;
+import fmtree.FMTWalker;
 import javafx.application.Application;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -14,15 +15,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
-import org.apache.http.MethodNotSupportedException;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.celleditors.SectionEditor;
 import type.tools.calculator.DijkstraParser;
 import type.tools.calculator.ExpNode;
 import type.tools.calculator.Graph;
 import type.tools.calculator.OperatorInterface;
-import uicontrols.ButtoniKon;
-import uicontrols.FxNotify;
 import uicontrols.SceneCntl;
 import uicontrols.UIColors;
 
@@ -31,10 +30,7 @@ import java.util.ArrayList;
 import java.util.EmptyStackException;
 
 
-// scilab jlatex math
-//import org.scilab.forge.jlatexmath.TeXConstants;
-//import org.scilab.forge.jlatexmath.TeXFormula;
-//import org.scilab.forge.jlatexmath.TeXIcon;
+
 
 
 /**
@@ -75,6 +71,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
       private static DijkstraParser parser;
       //private static SectionEditor upperEditor;
       private final Button calcButton = new Button("Calc");
+      private long millis;
 
       private final Color[] colors = {Color.BLUEVIOLET, Color.FUCHSIA, Color.GREENYELLOW, Color.DEEPSKYBLUE, Color.MEDIUMPURPLE,
           Color.ORANGERED, Color.CRIMSON, Color.ALICEBLUE, Color.CYAN, Color.DEEPPINK};
@@ -193,6 +190,8 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
        */
       //   @Override
       public GridPane getTReadPane(FlashCardMM cc, GenericCard genCard, Pane parentPane) {
+
+            millis = System.currentTimeMillis();
             GridPane parentGrid = new GridPane();
             StackPane stack = new StackPane();
             GridPane localGPane = new GridPane();
@@ -271,6 +270,12 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
       }
 
       @Override
+      public int getSeconds() {
+            long now = System.currentTimeMillis();
+            return (int) (now - millis) / 1000;
+      }
+
+      @Override
       public String getName() {
             return "Graph Card";
       }
@@ -285,8 +290,8 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
        * @return
        */
       @Override
-      public char getCardLayout() {
-            return 'D';
+      public CardLayout getCardLayout() {
+            return CardLayout.DOUBLE_HORIZ;
       }
 
 
@@ -327,6 +332,10 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
 
       @Override
       public void ansButtonAction() {
+            final FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
+            final FlashCardOps fo = FlashCardOps.getInstance();
+            FlashCardMM listCard = fo.getFlashList().get(currentCard.getANumber());
+            listCard.setSeconds(getSeconds());
             changed();
             /* stub */
       }
@@ -661,24 +670,35 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
 
                   try {
                         subExpList = parse(expression, x);
-                        parser.parseIntoRPN(subExpList);
+                        parser.parseIntoRPN(subExpList, expression);
                   } catch (Exception e) {
-                        // Handle operator bad input exception in GraphCard line 401
+                        // @todo Handle operator bad input exception in GraphCard line 401
                   }
 
-                  if (DijkstraParser.isInvalidInput()) {
-                        // Insert a temporary error message into the
-                        // text area
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(expression);
-                        sb.append("\n\n " + parser.getErrorMessage());
+                  if (parser.isInvalidInput()) {
+                        // ERROR should already be handled in parser.
+                        // StringBuilder sb = new StringBuilder();
+                        // sb.append(expression);
+                        // sb.append("\n\n " + parser.getErrorMessage());
 
-                        FxNotify.notification("What !?!", sb.toString(), Pos.CENTER, 20,
-                            "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
+                        // FxNotify.notificationError("What !?!", sb.toString(), Pos.CENTER, 20,
+                        //    "emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
 
                         return 0;
                   } else {
-                        return parser.execute(DijkstraParser.getOutQueue());
+                        try {
+                              return parser.execute(DijkstraParser.getOutQueue(), expression);
+                        } catch (Exception e) {
+
+                              // @todo Finish this with correct error handling in parser
+
+                              // FxNotify.notificationError("What !?!", " ERROR! ", Pos.CENTER, 20,
+                              //"emojis/Flash_headexplosion_60.png", FlashMonkeyMain.getPrimaryWindow());
+                              //      e.printStackTrace();
+                              //      return 0;
+                              // should already be handled in parser
+                              return 0;
+                        }
                   }
             }
 
@@ -738,7 +758,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
 
                         } else { // it's an operator
 
-                              OperatorInterface operator = DijkstraParser.getOperator(element);
+                              OperatorInterface operator = parser.getOperator(element);
 
                               if (i < 0) {
                                     System.err.println("ERROR: There are not enough numbers for the " + operator.getSymbol() +
@@ -762,7 +782,7 @@ public class GraphCard extends TestTypeBase implements GenericTestType<GraphCard
                               }
 
                               // for display when answered incorrectly
-                              String strOrigSubExp = parser.getStrExpr(strX, strY, operator);
+                              String strOrigSubExp = operator.getStrExpr(strX, strY, operator);
                               ExpNode exp = new ExpNode(operator, strOrigSubExp, i);
 
                               // add the expression to the sub-expession list

@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import search.Search;
+import type.cardtypes.CardLayout;
 import type.cardtypes.GenericCard;
 import type.testtypes.QandA;
 //import type.testtypes.QandAMain;
@@ -273,7 +274,7 @@ public final class SearchPane {
                             flashCardMM.getQType(),
                             flashCardMM.getAText(),
                             flashCardMM.getAType(),
-                            'D',
+                            CardLayout.DOUBLE_HORIZ,
                             flashCardMM.getQFiles(),
                             flashCardMM.getAFiles()));
 

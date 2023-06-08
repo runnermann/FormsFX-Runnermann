@@ -20,7 +20,7 @@ public abstract class Menu {
     Label subLabel;
 
     Menu() {
-        buttonBox = new VBox(2);
+        buttonBox = new VBox(4);
         gridPane = new GridPane();
         label = new Label("MENU");
         subLabel = new Label();
@@ -47,6 +47,7 @@ public abstract class Menu {
         label.setId("label24White");
         subLabel.setId("label16White");
         subLabel.setWrapText(true);
+        subLabel.setAlignment(Pos.CENTER); // needed by windows
 
         buttonBox.setAlignment(Pos.TOP_CENTER);
 

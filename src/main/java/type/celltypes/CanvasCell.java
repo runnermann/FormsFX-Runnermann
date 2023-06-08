@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.xyz) All rights reserved.
+ * Copyright (c) 2019 - 2021. FlashMonkey Inc. (https://www.flashmonkey.co) All rights reserved.
  *
  * License: This is for internal use only by those who are current employees of FlashMonkey Inc, or have an official
  *  authorized relationship with FlashMonkey Inc..
@@ -20,10 +20,20 @@
 package type.celltypes;
 
 import ch.qos.logback.classic.Level;
+
+//import eu.hansolo.medusa.Gauge;
+import eu.hansolo.medusa.Gauge;
+import eu.hansolo.medusa.GaugeBuilder;
+import eu.hansolo.medusa.Gauge.SkinType;
+import eu.hansolo.tilesfx.runnermann.Tile;
+import eu.hansolo.tilesfx.runnermann.TileBuilder;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import type.draw.shapes.FMRectangle;
 import type.draw.shapes.GenericShape;
 import fileops.FileOpsShapes;
@@ -49,7 +59,7 @@ import java.util.ArrayList;
  *
  * @author Lowell Stadelman
  */
-public class CanvasCell extends GenericCell implements Serializable {
+public class CanvasCell implements Serializable {
       private static final long serialVersionUID = FlashMonkeyMain.VERSION;
       // THE LOGGER
       // Logging reporting level is set in src/main/resources/logback.xml
@@ -67,8 +77,11 @@ public class CanvasCell extends GenericCell implements Serializable {
        * files. The first element is a rectangle that is the size of
        * the original pane.
        */
-      public Pane buildCell(Pane canvasPane, double toWd, double toHt, String... canvasPaths) {
+      private double finalHt = 0;
+      private double finalWd = 0;
+      public Pane buildCell(Pane canvasPane, double toWd, final double otherHt, String... canvasPaths) {
             //LOGGER.setLevel(Level.DEBUG);
+            int toHt = SceneCntl.calcCellHt();
             LOGGER.info("called, img and canvasPath: {}", canvasPaths);
             canvasPane.setId("rightPaneWhite");
             // clear the fields
@@ -89,56 +102,72 @@ public class CanvasCell extends GenericCell implements Serializable {
                               LOGGER.info("mouse clicked on Media popup with image. shapesPath: " + shapesPath);
                               MediaPopUp.getInstance().popUpScene(InnerShapesClass.getShapesPane(shapesPath, false, false, toWd, toHt));
                         });
-
+                  // Image or image and shapes
                   } else {
-                        Image image = new Image("File:" + imagePath, true);
-                        ProgressIndicator prog = new ProgressIndicator();
-                        prog.progressProperty().bind(image.progressProperty());
-                        Pane finalCanvasPane = canvasPane;
-                        finalCanvasPane.getChildren().addAll(prog);
+                        File file = new File("File:" + imagePath);
+                        if( file.canRead()) { // Set to the reverse 2022-11-4. In windows, the opposite is true
+                              System.out.println("Image file WILL NOT read: " + imagePath);
+                        }
+                        else {
+                              Image image = new Image("File:" + imagePath, true);
 
-                        image.progressProperty().addListener((observable, oldValue, progress) -> {
-                              if ((Double) progress == 1.0 && !image.isError()) {
-                                    scaledView[0] = processImage(image, toWd, toHt);
-                                    finalCanvasPane.getChildren().clear();
-                                    finalCanvasPane.getChildren().addAll(scaledView[0]);
-                                    finalCanvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false, toWd, toHt));
-                                    finalCanvasPane.setOnMouseClicked(e -> {
-                                          LOGGER.info("mouse clicked on Media popup with image. imageFilePath: " + imagePath + ", shapesPath: " + shapesPath);
-                                          MediaPopUp.getInstance().popUpScene(imagePath,
-                                              InnerShapesClass.getShapesPane(shapesPath, false, false, toWd, toHt));
-                                    });
-                              } else {
+                              ProgressIndicator prog = new ProgressIndicator();
+                              prog.progressProperty().bind(image.progressProperty());
+                              Pane finalCanvasPane = canvasPane;
 
-                              }
-                        });
+                              Tile colorTile = TileBuilder.create().skinType(Tile.SkinType.COLOR)
+                                      .prefSize(toWd - 20, 40)
+                                      .title("progress")
+                                      .chartGridColor(Color.TRANSPARENT)
+                                      //.backgroundColor(Color.TRANSPARENT)
+                                      .barBackgroundColor(Tile.RED)
+                                      .textVisible(false)
+                                      .description("Downloading")
+                                      .animated(true)
+                                      .build();
 
+                              image.progressProperty().addListener((observable, oldValue, progress) -> {
+                                    if ((Double) progress == 1.0 && !image.isError()) {
+                                          scaledView[0] = Fit.viewResize(image, toWd, toHt);
+                                          scaledView[0].setSmooth(true);
+
+                                          colorTile.setBarBackgroundColor(Color.TRANSPARENT);
+                                          finalCanvasPane.getChildren().add(scaledView[0]);
+                                          finalCanvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false, toWd, toHt));
+                                          // Avoid lambda's memory commitment
+                                          finalCanvasPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                                                @Override
+                                                public void handle(MouseEvent event) {
+                                                      MediaPopUp.getInstance().popUpScene(imagePath,
+                                                              InnerShapesClass.getShapesPane(shapesPath, false, false, toWd, toHt));
+                                                }
+                                          });
+                                          // Responsive sizing maybe???
+
+                                          ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, old, change) -> {
+                                                finalHt = (change.doubleValue() / 2) - (48 + SceneCntl.getBottomHt()); // minus (topLabelHt + bottom ht)
+                                                scaledView[0] = Fit.viewResize(image, finalWd, finalHt);
+                                          });
+                                          ReadFlash.getInstance().getRPCenterWidthProperty().addListener((obs, old, change) -> {
+                                                finalWd = change.doubleValue();
+                                                scaledView[0] = Fit.viewResize(image, finalWd, finalHt);
+                                          });
+                                    } else {
+                                          colorTile.setValue(progress.doubleValue());
+                                          //Image errorImage = new Image("image/vidCamera.png");
+                                          //scaledView[0] = processImage(errorImage, toWd, toHt);
+                                          //finalCanvasPane.getChildren().clear();
+                                          if (!finalCanvasPane.getChildren().contains(colorTile)) {
+                                                finalCanvasPane.getChildren().addAll(colorTile);
+                                          }
+                                    }
+                              });
+                        }
                   }
             }
             return canvasPane;
       } // --- end buildCell ---
 
-
-      /**
-       * Helper method to buildCell(). Processes and scales an image to the
-       * size of it's container. Checks if media files are synchronized.
-       *
-       * @param image The path to the image
-       * @param toWd
-       * @param toHt
-       * @return Returns an ImageView containing a scaled
-       * image that was provided in the parameter. Resizes if scalable is true
-       * else it does not rescale if it's container is resized after its initial
-       * size.
-       */
-      private static ImageView processImage(Image image, double toWd, double toHt) {
-
-            ImageView iView = Fit.viewResize(image, toWd, toHt);
-            iView.setPreserveRatio(true);
-            iView.setSmooth(true);
-
-            return iView;
-      }
 
 
       // *** GETTERS ***
@@ -153,7 +182,6 @@ public class CanvasCell extends GenericCell implements Serializable {
       public void resizeSVG(Shape svgShape, int h, int w) {
             double originalWidth = h;
             double originalHeight = w;
-
             double scaleX = w / originalWidth;
             double scaleY = h / originalHeight;
 
@@ -228,6 +256,7 @@ public class CanvasCell extends GenericCell implements Serializable {
                         // Check if files are the most current
                         // MediaSync.syncMedia();
                   }
+
                   return shapesPane;
             }
 

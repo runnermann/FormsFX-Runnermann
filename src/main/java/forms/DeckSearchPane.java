@@ -60,7 +60,7 @@ public class DeckSearchPane extends FormParentPane {
 
       @Override
       public void setupValueChangedListeners() {
-
+            /* stub */
       }
 
       @Override
