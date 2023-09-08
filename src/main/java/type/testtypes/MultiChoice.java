@@ -232,7 +232,7 @@ public class MultiChoice extends TestTypeBase implements GenericTestType<MultiCh
 
       @Override
       public GenericTestType getTest() {
-            return new MultiChoice();
+            return getInstance();
       }
 
       @Override

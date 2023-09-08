@@ -154,7 +154,7 @@ public class SectionEditor implements DnDInterface {
 
       private final ButtoniKonClazz FIND = new ButtoniKonClazz("FIND", "Search for images, videos, animations, and tools", FontAwesomeSolid.SEARCH, UIColors.FM_WHITE, ButtoniKonClazz.SIZE_24);
       private final ButtoniKonClazz CAMERA = new ButtoniKonClazz("", "Take a snapshot from your camera", FontAwesomeSolid.CAMERA, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_24);
-      private final ButtoniKonClazz SNAPSHOT = new ButtoniKonClazz("", "Take a snapshot from your screen", "icon/24/snapshot_blue4.png", UIColors.EDITOR_BTNS, 0);
+      private final ButtoniKonClazz SNAPSHOT = new ButtoniKonClazz("", "Take a snapshot from your screen", FontAwesomeSolid.VECTOR_SQUARE, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_24);
       private final ButtoniKonClazz DRAWPAD = new ButtoniKonClazz("", "Draw shapes only", FontAwesomeSolid.DRAW_POLYGON, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_24);
       private final ButtoniKonClazz CLEAR_TEXT = new ButtoniKonClazz("", "Clear text", FontAwesomeSolid.BACKSPACE, UIColors.EDITOR_BTNS, ButtoniKonClazz.SIZE_24);
       private final ButtoniKonClazz CLEAR_T_AREA = new ButtoniKonClazz("", "Remove text area", FontAwesomeSolid.MINUS_CIRCLE, UIColors.FOCUS_BLUE_OPAQUE, ButtoniKonClazz.SIZE_24);
@@ -321,7 +321,7 @@ public class SectionEditor implements DnDInterface {
       private HBox sectionEditorButtons() {
             // Add the Find button
             this.findBtn = FIND.get();
-            this.findBtn.setId("navButtonWhtLetters");
+            this.findBtn.setId("c");
             this.findBtn.setFocusTraversable(false);
             this.findBtn.setOnAction(e -> {
                   /* stub for later */
@@ -907,7 +907,7 @@ public class SectionEditor implements DnDInterface {
        * @param cID            cardID, does not change.
        */
       public void setSectionMedia(String[] mediaFileNames, CellLayout mediaType, char qOrA, final String cID) {
-            DirectoryMgr dirMgr = new DirectoryMgr();
+            //DirectoryMgr dirMgr = new DirectoryMgr();
             LOGGER.info(" setSectionMedia() called \n");
             this.sectionType = mediaType;
 
@@ -1491,7 +1491,7 @@ public class SectionEditor implements DnDInterface {
             //@TODO remove the repitiion with file naming between image path and shapes path.
             // The naming and path for image and shapes files.
             // Shapes file ending must be changed later.
-            DirectoryMgr dirMgr = new DirectoryMgr();
+            //DirectoryMgr dirMgr = new DirectoryMgr();
             String path = DirectoryMgr.getMediaPath('C');
 
             String name = UserData.getUserName();
@@ -1614,7 +1614,7 @@ public class SectionEditor implements DnDInterface {
             DrawObj drawObj = new DrawObj();
             drawObj.setDems(minX, minY, 400, 400);
 
-            DirectoryMgr dirMgr = new DirectoryMgr();
+            //DirectoryMgr dirMgr = new DirectoryMgr();
             String mediaPath = DirectoryMgr.getMediaPath('C');
 
             String deckName = FlashCardOps.getInstance().getDeckLabelName();
@@ -1714,10 +1714,11 @@ public class SectionEditor implements DnDInterface {
                   String[] mediaFileNames = dragAndDrop.setMediaFileNames(new DnDNode(this));
                   if(dragAndDrop.isVid()) {
                         // builds from a file
-                        if(!dragAndDrop.isJave()) {
-                              setVideoHelper(dragAndDrop.getAviURLProperty().get(), 100, 100);
-                        }
-                        } else {
+                        //if(!dragAndDrop.isJave()) {
+                        // @todo Move this to all versions
+                        setVideoHelper(dragAndDrop.getAviURLProperty().get(), 100, 100);
+                        //}
+                  } else {
                         // builds from an image
                         setImageHelperForRPane(dragAndDrop.getImage());
                   }

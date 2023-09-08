@@ -1,12 +1,9 @@
-package media.api;
+package media.video;
 
-import ch.qos.logback.classic.Level;
-import forms.utility.StudentDescriptor;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import type.celleditors.SectionEditor;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
@@ -38,7 +35,6 @@ public class JaveInterface implements EncoderProgressListener {
 
       public void transfer( File outputFile, MultimediaInfo sourceInfo, MultimediaObject mmObject) throws EncoderException {
             LOGGER.debug("starting to transfer a video file");
-
             //Audio Attributes
             AudioAttributes audio = new AudioAttributes();
             audio.setCodec(AudioAttributes.DIRECT_STREAM_COPY);
@@ -84,7 +80,6 @@ public class JaveInterface implements EncoderProgressListener {
             //System.out.println("\n\t *** Jave called JaveInterface.sourceInfo(): " + multimediaInfo.toString() + " ***\n");
       }
 
-
       @Override
       public void progress(int permil) {
             progress += permil;
@@ -97,7 +92,6 @@ public class JaveInterface implements EncoderProgressListener {
       }
 
       public double getProgress() {
-
             return this.progress;
       }
 
@@ -108,5 +102,4 @@ public class JaveInterface implements EncoderProgressListener {
       public String buildMetaDataString(int wd, int ht) {
             return "Video: h264 (High), yuv420p, " + wd + "x" + ht + ", ";
       }
-
 }

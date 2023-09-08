@@ -33,6 +33,8 @@
     </properties>
 
     <dependencies>
+
+
         <!-- latex -->
         <dependency>
             <groupId>org.jfree</groupId>
@@ -128,7 +130,7 @@
         <dependency>
             <groupId>xyz.flashmonkey</groupId>
             <artifactId>formsfx-core-runnermann</artifactId>
-            <version>8.4.0</version>
+            <version>17.0.2</version>
         </dependency>
         <!-- QR Code generator -->
         <dependency>
@@ -254,8 +256,8 @@
         <!-- MEDIA NAMING - SIMILAR IMAGE HAS SIMILAR NAME -->
         <dependency>
             <groupId>dev.brachtendorf</groupId>
-            <artifactId>JImageHash</artifactId>
-            <version>1.0.0</version>
+            <artifactId>JImageHash-17</artifactId>
+            <version>1.17.0</version>
         </dependency>
 
         <!-- JJWT -->

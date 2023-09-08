@@ -27,7 +27,6 @@ package type.sectiontype;
 
 import javafx.scene.layout.HBox;
 import type.celltypes.CellLayout;
-import type.celltypes.SingleCellType;
 
 public final class GenericSection {
 

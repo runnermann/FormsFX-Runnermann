@@ -140,7 +140,7 @@ public class FxNotify {
                           .owner(owner)
                           .showWarning();
 
-                  SoundEffects.Yeah_ITS_COOL.play();
+                  SoundEffects.NOTIFICATION_NORM.play();
       }
 
 

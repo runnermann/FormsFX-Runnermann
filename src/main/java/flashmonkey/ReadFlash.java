@@ -33,7 +33,6 @@ import uicontrols.ButtoniKon;
 import uicontrols.SceneCntl;
 import uicontrols.UIColors;
 
-import javax.swing.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.floor;
@@ -132,10 +131,12 @@ public final class ReadFlash implements BaseInterface {
       private static MGauges scoreGauge;
       private static MGauges timerGauge;
       private static MGauges durationGauge;
+      private static MGauges percentTimeGauge;
       private static GridPane pGaugePane;
       private static GridPane sGaugePane;
       private static GridPane timerPane;
       private static GridPane durationPane;
+      private static GridPane percentTimePane;
       private static int origNumCards;
       private static long startTime;
 
@@ -450,13 +451,13 @@ public final class ReadFlash implements BaseInterface {
             } else {
                   rpCenter.getChildren().add(QandA.QandASession.getInstance().getTReadPane(currentCard, GEN_CARD, rpCenter));
             }
-            masterBPane.setBottom(manageSouthPane(mode));
+            //masterBPane.setBottom(manageSouthPane(mode));
             // Set the timer gauge
 
             int seconds = getCardSeconds(currentCard);
             //durationGauge.setConsumedTime();
             timerGauge.setTimerTime(seconds);
-            timerGauge.start();
+            timerGauge.countdownStart();
 
             // Answer button fade in
             if (null != test.getAnsButton()) {
@@ -508,17 +509,19 @@ public final class ReadFlash implements BaseInterface {
             progGauge = new MGauges(120, 120);
             scoreGauge = new MGauges(120, 120);
             timerGauge = new MGauges(120, 120);
-            durationGauge = new MGauges(366, 40 );
+            durationGauge = new MGauges(126, 40 );
+            percentTimeGauge = new MGauges(270, 40);
             pGaugePane = progGauge.makeGauge("COMPLETED", 0, flSize, 0);
             sGaugePane = scoreGauge.makeGauge("SCORE", 0, highestScore, -1 * highestScore);
             timerPane = timerGauge.makeTimer("TIMER", getCardSeconds(currentCard));
             durationGauge.setStartTime();
             durationPane = durationGauge.makeDurTimer(startTime);
+            percentTimePane = percentTimeGauge.makePercentTime(FlashCardOps.getInstance().getDuration());
       }
 
       private int getCardSeconds(FlashCardMM currentCard) {
             int seconds = currentCard.getSeconds();
-            seconds = seconds > 0 ? seconds : 30;
+            seconds = seconds >= 406143 || seconds == 0 ? 30 : seconds;
             return seconds;
       }
 
@@ -532,7 +535,7 @@ public final class ReadFlash implements BaseInterface {
        * is recreated from new showing any new files.
        */
       protected void deckSelectButtonAction() {
-            timerGauge.stop();
+            timerGauge.countdownStop();
             SoundEffects.GOTO_FILE_SELECT.play();
             // save metadata to local, and
             // send metadata to the db.
@@ -569,9 +572,7 @@ public final class ReadFlash implements BaseInterface {
        */
       protected void testButtonAction() {
             startTime = System.currentTimeMillis();
-
             deckNameLabel.setId("label16blue");
-
             masterBPane.setId("readFlashPane");
 
             LOGGER.info(" testButtonAction called ");
@@ -582,9 +583,8 @@ public final class ReadFlash implements BaseInterface {
             }
 
             initGauges();
-
             buttonDisplay(FMTWalker.getInstance().getCurrentNode());
-            FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
+      //      FlashCardMM currentCard = (FlashCardMM) FMTWalker.getInstance().getCurrentNode().getData();
 
             mode = 't';
 
@@ -683,7 +683,7 @@ public final class ReadFlash implements BaseInterface {
                         Timer.getClassInstance().testTimeStop();
                         if(timerGauge != null)
                         {
-                              timerGauge.stop();
+                              timerGauge.countdownStop();
                         }
                         // May be an uneccessary call
                         // since we only update test score.
@@ -731,7 +731,7 @@ public final class ReadFlash implements BaseInterface {
       @Override
       public void onClose() {
             FlashMonkeyMain.treeWindow.close();
-            timerGauge.stop();
+            timerGauge.countdownStop();
             if(SceneCntl.Dim.APP_MAXIMIZED.get() == 0) {
                   SceneCntl.getAppBox().setX((int)FlashMonkeyMain.getPrimaryWindow().getX());
                   SceneCntl.getAppBox().setY((int)FlashMonkeyMain.getPrimaryWindow().getY());
@@ -886,6 +886,10 @@ public final class ReadFlash implements BaseInterface {
                         buttonBox.getChildren().add(navBtnHbox);
                         buttonBox.setAlignment(Pos.CENTER);
 
+                        HBox durationBox = new HBox(3);
+                        durationBox.getChildren().addAll(percentTimePane, durationPane);
+                        durationBox.setStyle("-fx-background-color: TRANSPARENT");
+
                         // Three gauges
                         HBox gauge3Box = new HBox(3);
                         gauge3Box.setAlignment(Pos.CENTER);
@@ -894,9 +898,8 @@ public final class ReadFlash implements BaseInterface {
 
                         VBox gaugeVBox = new VBox(3);
                         gaugeVBox.setAlignment(Pos.CENTER);
-                        gaugeVBox.getChildren().addAll(durationPane, gauge3Box);
+                        gaugeVBox.getChildren().addAll(durationBox, gauge3Box);
                         gaugeVBox.setStyle("-fx-background-color: TRANSPARENT");
-
 
                         // Contains gauges and buttons
                         BorderPane bottomBPane = new BorderPane();
@@ -910,9 +913,9 @@ public final class ReadFlash implements BaseInterface {
 
                         VBox bottomVBox = new VBox(6);
                         bottomVBox.setAlignment(Pos.CENTER);
-                        //vBox.setPadding(new Insets(10, 10, 10, 10));
                         bottomVBox.setId("studyBtnPane");
                         bottomVBox.getChildren().addAll(bottomBPane, exitBox);
+
                         return bottomVBox;
                   }
                   default:
@@ -1175,8 +1178,8 @@ public final class ReadFlash implements BaseInterface {
                   FlashCardMM listCard = FlashCardOps.getInstance().getFlashList().get(currentCard.getANumber());
 
                   SoundEffects.CORRECT_ANSWER.play();
-                  timerGauge.stop();
-                  durationGauge.setConsumedTime();
+                  timerGauge.countdownStop();
+                  //durationGauge.setConsumedTime();
                   LOGGER.debug("/n*** rightAns called ***");
                   // add points if 1st visit or greater than
                   // 1st visit.
@@ -1254,8 +1257,8 @@ public final class ReadFlash implements BaseInterface {
              */
             public WrongAns(FlashCardMM currentCard, GenericTestType test) {
 
-                  timerGauge.stop();
-                  durationGauge.setConsumedTime();
+                  timerGauge.countdownStop();
+ //                 durationGauge.setConsumedTime();
                   /**  Should animate the avlTreePane, the current circle should fade to red or green depending on
                    if the answer is wright or wrong.
 

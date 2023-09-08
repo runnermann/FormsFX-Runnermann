@@ -16,7 +16,7 @@ public class UIColors {
       public static final String BELIZE_BLUE_QUARTER = "rgba(48,128,185,0.2)";
       public static final String BELIZE_BLUE_OPAQUE = "rgba(48,128,185,1)";// "#2980b9";
       public static final String FOCUS_BLUE_OPAQUE = "rgba(0,150,201,1)";// 0096C9
-      //public static final String ELECTRIC_BLUE        = "rgba(76,237,245,1.0)"; // #4CEDF5
+      public static final String ELECTRIC_BLUE        = "rgba(76,237,245,1.0)"; // #4CEDF5
       public static final String CREATE_PANE_BLUE = "rgba(41,128,185,1.0)";// #2980B9
       public static final String FILE_PANE_BLUE = "rgba()"; //
       public static final String FM_RED_WRONG_OPAQUE = "rgba(210,0,53,1)"; // D20035
@@ -29,8 +29,11 @@ public class UIColors {
       public static final String EDITOR_COMP_CLR = "rgba(63, 74, 219, 1.0)"; // 3F4ADB
       public static final String FM_PURPLE = "rgba(129, 70, 182, 1.0)";// #8146B6
       public static final String FM_GREY = "rgba(57, 62, 70, 1.0)";  // 393E46
+      public static final String GREY_4D = "rgba(140, 140, 140, 1.0)"; // lighter than FM_GREY
       public static final String GREY_BLUE = "rgba(48, 77, 115, 1.0)"; // 304D73
-      public static final String EDITOR_BTNS = "rgba(52, 152, 219, 1.0)"; // 3498db
+
+      public static final String EDITOR_BTNS = "rgba(55,161,232,1.0)"; // #cccccc// 3498db
+      public static final String TOOL_BAR_BTNS = "rgba(93, 101, 115, 1.0)"; // #393E46
       public static final String FM_WHITE = "rgba(248, 251, 255, 1.0)";// FFFE40, F8FBFF
       public static final String FLASH_PURPLE = "rgba(146, 118, 172, 1.0)";// 9276AC light purple
       public static final String GRAPH_BGND = "rgba(178, 178, 178, 0.6)";// 170117

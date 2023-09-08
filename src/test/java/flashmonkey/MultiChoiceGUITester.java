@@ -74,8 +74,8 @@ public class MultiChoiceGUITester extends ApplicationTest
 	private int delta_Y = 10;
 
 	FxRobot robot = new FxRobot();
-	SleepRobotImpl sleep = new SleepRobotImpl();
-	DirectoryMgr directory = new DirectoryMgr();
+	//SleepRobotImpl sleep = new SleepRobotImpl();
+	//DirectoryMgr directory = new DirectoryMgr();
 	String strPath = "../flashMonkeyFile/TestingDeck.dec";
 	Path filePath = Paths.get(strPath);
 	// for the background stage

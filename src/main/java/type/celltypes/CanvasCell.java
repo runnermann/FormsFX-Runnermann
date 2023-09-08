@@ -19,39 +19,32 @@
 
 package type.celltypes;
 
-import ch.qos.logback.classic.Level;
-
-//import eu.hansolo.medusa.Gauge;
-import eu.hansolo.medusa.Gauge;
-import eu.hansolo.medusa.GaugeBuilder;
-import eu.hansolo.medusa.Gauge.SkinType;
-import eu.hansolo.tilesfx.runnermann.Tile;
-import eu.hansolo.tilesfx.runnermann.TileBuilder;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.animation.TranslateTransition;
 import javafx.event.EventHandler;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import type.draw.shapes.FMRectangle;
 import type.draw.shapes.GenericShape;
 import fileops.FileOpsShapes;
 import flashmonkey.FlashMonkeyMain;
-import flashmonkey.ReadFlash;
 import fmannotations.FMAnnotations;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Shape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import type.tools.imagery.Fit;
+import uicontrols.MediaWait;
 import uicontrols.SceneCntl;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -79,14 +72,14 @@ public class CanvasCell implements Serializable {
        */
       private double finalHt = 0;
       private double finalWd = 0;
-      public Pane buildCell(Pane canvasPane, double toWd, final double otherHt, String... canvasPaths) {
+      public Pane buildCell(Pane canvasPane, double toWd, final double notUsed, String... canvasPaths) {
             //LOGGER.setLevel(Level.DEBUG);
             int toHt = SceneCntl.calcCellHt();
             LOGGER.info("called, img and canvasPath: {}", canvasPaths);
             canvasPane.setId("rightPaneWhite");
             // clear the fields
-            canvasPane.getChildren().clear();
-            String imagePath = canvasPaths[0];
+
+            final String imagePath = canvasPaths[0];
             final ImageView[] scaledView = new ImageView[1];
             // Process shapes if present.
             // Get the shapes file from the second element
@@ -104,92 +97,100 @@ public class CanvasCell implements Serializable {
                         });
                   // Image or image and shapes
                   } else {
-                        File file = new File("File:" + imagePath);
+                        final File file = new File("File:" + imagePath);
                         if( file.canRead()) { // Set to the reverse 2022-11-4. In windows, the opposite is true
                               System.out.println("Image file WILL NOT read: " + imagePath);
-                        }
-                        else {
-                              Image image = new Image("File:" + imagePath, true);
+                        } else {
 
-                              ProgressIndicator prog = new ProgressIndicator();
-                              prog.progressProperty().bind(image.progressProperty());
-                              Pane finalCanvasPane = canvasPane;
+                              // ********** NEW ********** //
+                              final Pane finalCanvasPane = canvasPane;
+                              ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+                              AtomicInteger ct = new AtomicInteger();
+                              Pane finalCanvasPane1 = canvasPane;
+                              Runnable task = () -> {
+                                    // crate image
+                                    Image image = new Image("File:" + imagePath, true);
+                                    scaledView[0] = Fit.viewResize(image, toWd, toHt);
+                                    scaledView[0].setSmooth(true);
 
-                              Tile colorTile = TileBuilder.create().skinType(Tile.SkinType.COLOR)
-                                      .prefSize(toWd - 20, 40)
-                                      .title("progress")
-                                      .chartGridColor(Color.TRANSPARENT)
-                                      //.backgroundColor(Color.TRANSPARENT)
-                                      .barBackgroundColor(Tile.RED)
-                                      .textVisible(false)
-                                      .description("Downloading")
-                                      .animated(true)
-                                      .build();
+                                    image.progressProperty().addListener((obs, ov,  nv) -> {
 
-                              image.progressProperty().addListener((observable, oldValue, progress) -> {
-                                    if ((Double) progress == 1.0 && !image.isError()) {
-                                          scaledView[0] = Fit.viewResize(image, toWd, toHt);
-                                          scaledView[0].setSmooth(true);
+                                          if(nv.doubleValue() == 1 && !image.isError()) {
+                                                finalCanvasPane1.getChildren().clear();
+                                                scheduledExecutor.shutdownNow();
 
-                                          colorTile.setBarBackgroundColor(Color.TRANSPARENT);
-                                          finalCanvasPane.getChildren().add(scaledView[0]);
-                                          finalCanvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false, toWd, toHt));
-                                          // Avoid lambda's memory commitment
-                                          finalCanvasPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                                                @Override
-                                                public void handle(MouseEvent event) {
-                                                      MediaPopUp.getInstance().popUpScene(imagePath,
-                                                              InnerShapesClass.getShapesPane(shapesPath, false, false, toWd, toHt));
-                                                }
-                                          });
-                                          // Responsive sizing maybe???
+                                                scaledView[0] = Fit.viewResize(image, toWd, toHt);
+                                                scaledView[0].setSmooth(true);
 
-                                          ReadFlash.getInstance().getMasterBPane().heightProperty().addListener((obs, old, change) -> {
-                                                finalHt = (change.doubleValue() / 2) - (48 + SceneCntl.getBottomHt()); // minus (topLabelHt + bottom ht)
-                                                scaledView[0] = Fit.viewResize(image, finalWd, finalHt);
-                                          });
-                                          ReadFlash.getInstance().getRPCenterWidthProperty().addListener((obs, old, change) -> {
-                                                finalWd = change.doubleValue();
-                                                scaledView[0] = Fit.viewResize(image, finalWd, finalHt);
-                                          });
-                                    } else {
-                                          colorTile.setValue(progress.doubleValue());
-                                          //Image errorImage = new Image("image/vidCamera.png");
-                                          //scaledView[0] = processImage(errorImage, toWd, toHt);
-                                          //finalCanvasPane.getChildren().clear();
-                                          if (!finalCanvasPane.getChildren().contains(colorTile)) {
-                                                finalCanvasPane.getChildren().addAll(colorTile);
+                                                finalCanvasPane.getChildren().clear();
+                                                finalCanvasPane.getChildren().add(scaledView[0]);
+                                                finalCanvasPane.getChildren().add(InnerShapesClass.getShapesPane(shapesPath, true, false, toWd, toHt));
+
+                                                finalCanvasPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                                                      @Override
+                                                      public void handle(MouseEvent event) {
+                                                            MediaPopUp.getInstance().popUpScene(imagePath,
+                                                                    InnerShapesClass.getShapesPane(shapesPath, false, false, toWd, toHt));
+                                                      }
+                                                });
+
+
+                                          } else if (ct.get() < 1){
+                                                ct.set(1);
+                                                finalCanvasPane.getChildren().clear();
+                                                // show working screen.
+                                                //scaledView[0] = MediaWait.getPreBlur(finalWd, finalHt);
+                                                finalCanvasPane.getChildren().add(MediaWait.getPreBlur(toWd));
                                           }
-                                    }
-                              });
+                                    });
+
+                                    return;
+                              };
+
+                              scheduledExecutor.scheduleWithFixedDelay(task, 434, 300, TimeUnit.MILLISECONDS);
                         }
                   }
             }
             return canvasPane;
       } // --- end buildCell ---
 
+//      public static void setPlayLeft(TranslateTransition trx) {
+//            MediaWait.playLeft = trx;
+//      }
+
+      public static TranslateTransition transitionFmLeft(Node node) {
+            // Transition the textframe
+            final TranslateTransition trans = new TranslateTransition(Duration.millis(1400), node);
+            trans.setFromX(-500f);
+            trans.setToX(0);
+            trans.setCycleCount(TranslateTransition.INDEFINITE);
+            trans.setAutoReverse(false);
+
+            return trans;
+      }
+
 
 
       // *** GETTERS ***
 
-      /**
-       * Resizes an SVG shape. Not finished
-       *
-       * @param svgShape
-       * @param h
-       * @param w
-       */
-      public void resizeSVG(Shape svgShape, int h, int w) {
-            double originalWidth = h;
-            double originalHeight = w;
-            double scaleX = w / originalWidth;
-            double scaleY = h / originalHeight;
-
-            svgShape.setTranslateY((h - 100) / 2);
-            svgShape.setTranslateX((w - 100) / 2);
-            svgShape.setScaleX(scaleX);
-            svgShape.setScaleY(scaleY);
-      }
+//      /**
+//       * Resizes an SVG shape. Not finished
+//       *
+//       * @param svgShape
+//       * @param h
+//       * @param w
+//       */
+//      public void resizeSVG(Shape svgShape, int h, int w) {
+//            double originalWidth = h;
+//            double originalHeight = w;
+//            double scaleX = w / originalWidth;
+//            double scaleY = h / originalHeight;
+//
+//            svgShape.setTranslateY((h - 100) / 2);
+//            svgShape.setTranslateX((w - 100) / 2);
+//            svgShape.setScaleX(scaleX);
+//            svgShape.setScaleY(scaleY);
+//      }
 
       /*************************************************************
        INNER CLASS
@@ -212,7 +213,7 @@ public class CanvasCell implements Serializable {
             public static Pane getShapesPane(String drawingPath, boolean scaled, boolean drawingOnly, double toWd, double toHt) {
 
                   LOGGER.debug("getShapesPane called");
-                  Pane shapesPane = new Pane();
+                  final Pane shapesPane = new Pane();
                   fmShapesAry = new ArrayList<>();
                   if (drawingOnly) {
                         shapesPane.setId("rightPaneWhite");
@@ -222,11 +223,11 @@ public class CanvasCell implements Serializable {
 
                   // If a shapeFile is not uploaded, do not crash the system with null.
                   // If the shapesPath is not null
-                  File check = drawingPath != null ? new File(drawingPath) : new File("pathDoesNotExist");
+                  final File check = drawingPath != null ? new File(drawingPath) : new File("pathDoesNotExist");
                   LOGGER.info("file check = " + check.exists() + " drawingPath: " + drawingPath);
 
                   if (check.exists()) {
-                        FileOpsShapes fo = new FileOpsShapes();
+                        final FileOpsShapes fo = new FileOpsShapes();
                         fmShapesAry = fo.getListFromPath(drawingPath);
                         LOGGER.info("getShapesPane() getListFromFile request using drawingPath: {}", drawingPath);
 
@@ -236,11 +237,10 @@ public class CanvasCell implements Serializable {
                               // The first shape, or shapesPaths[0], is the FMRectangle containing the
                               // resizable drawpad/pane size. Use FMRectagnel's getWd and getHt from
                               // the first shape.
-                              double origWd = ((FMRectangle) fmShapesAry.get(0)).getWd();
-                              double origHt = ((FMRectangle) fmShapesAry.get(0)).getHt();
+                              final double origWd = ((FMRectangle) fmShapesAry.get(0)).getWd();
+                              final double origHt = ((FMRectangle) fmShapesAry.get(0)).getHt();
                               if (scaled) {
-                                    double scale;
-                                    scale = Fit.calcScale(origWd, origHt, toWd, toHt);
+                                    final double scale = Fit.calcScale(origWd, origHt, toWd, toHt);
                                     for (int i = 1; i < fmShapesAry.size(); i++) {
                                           shapesPane.getChildren().add(fmShapesAry.get(i).getScaledShape(scale));
                                     }

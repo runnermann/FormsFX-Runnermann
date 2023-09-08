@@ -23,7 +23,10 @@ public final class DirectoryMgr {
       //private final static ch.qos.logback.classic.Logger LOGGER = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(DirectoryMgr.class);
 
       public static final String SYSTEM_DIR = getWorkingDirectory() + "/FlashMonkeyData/";
-      public static final String CPR_DIR = getWorkingDirectory() + "/.cpr/FM/FlashMonkey/";
+      // co.flashmonkey directory
+      public static final String CPR_DIR = getWorkingDirectory() + "/.cpr/co/FlashMonkey/";
+      // app.topscholar directory
+      // public static final String CPR_2_DIR = getWorkingDirectory() + "/.cpr/app/TopScholar/";
       public static final String EMOJI = "image/emojis/";
       public static final String USER_ONE = "/resuone.enc";
       public static final String USER_ZERO = "/resuzero.cpr";

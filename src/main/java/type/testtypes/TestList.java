@@ -57,7 +57,8 @@ public final class TestList {
           //new DrawOnImage(),
           MathCard.getInstance(),
           //GraphCard.getInstance(),
-          NoteTaker.getInstance(),// end
+          NoteTaker.getInstance(),
+          VideoCard.getInstance(),    // end
       };
 
 

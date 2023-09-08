@@ -66,8 +66,8 @@ public class RobotDemo extends ApplicationTest {
     private int delta_Y = 10;
 
     FxRobot robot = new FxRobot();
-    SleepRobotImpl sleep = new SleepRobotImpl();
-    DirectoryMgr directory = new DirectoryMgr();
+    //SleepRobotImpl sleep = new SleepRobotImpl();
+    //DirectoryMgr directory = new DirectoryMgr();
     String strPath = "../flashMonkeyFile/TestingDeck.dec";
     // image paths
     String imgPath = "src/resources/testing/TestImage.png";

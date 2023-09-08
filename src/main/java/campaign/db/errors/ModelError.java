@@ -23,7 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>It is expected that the Main method of this class is used to encrypt the DB keys that will
  * be used to queries from the DB. Encryption should be done when a new set
  * of keys for the DB are created. The key may be placed in the Error class. After encrypted
- * two files are saved to the root. The .cpr file which contains the Cipher Encryption key ysed to
+ * two files are saved to the root. The .cpr file which contains the Cipher Encryption key used to
  * decrypt the s3 keys. The encrypted s3 keys are stored in the .enc file. 1) uncomment the main
  * class and the Error class. 2) replace the key with the new keys. 3) run the main method.
  * 4) comment out the main method and the Error class when completed.</p>
@@ -31,7 +31,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * NOTE! Comment out the plain text keys from the Error class before shipping!!!!!
  * <p>
  * NOTE: if there is an error during runtime. Check that the keysfiles created are from the same
- * version. This is a serializable class. Files that are not built by the same version will cause a
+ * version. This class should not be serializable.
+ * <p>NOTE: Files that are not built by the same version will cause a
  * runtime crash when FlashMonkey is initialized.
  */
 public class ModelError {
@@ -174,7 +175,6 @@ public class ModelError {
             Syekic encodedFile = new Syekic();
             InnerOps<Syekic> innoDec1 = new InnerOps<Syekic>();
             encodedFile = innoDec1.getResuSyekFile(userCypherKeyFile.getName());
-
             // 1. Retrieve PW and store in memory
             InnerOps<Syek> innoDec2 = new InnerOps<Syek>();
             // double byte array

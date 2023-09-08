@@ -126,7 +126,7 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
       @Override
       public int getTestType() {
             // 8192
-            // if this is reset, also set this in FlashCardOps setPriority.
+            // if this is changed, also set this in FlashCardOps setPriority.
             return 0b0010000000000000;
       }
 
@@ -151,7 +151,7 @@ public class NoteTaker extends TestTypeBase implements GenericTestType<NoteTaker
 
       @Override
       public GenericTestType getTest() {
-            return new NoteTaker();
+            return getInstance();
       }
 
       @Override

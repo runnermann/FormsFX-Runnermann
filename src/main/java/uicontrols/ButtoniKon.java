@@ -24,7 +24,7 @@ public enum ButtoniKon { //extends Button {
       BACK("BACK", "Select Files", FontAwesomeSolid.REPLY, UIColors.FM_WHITE, 16),
       // Answer Nav buttons for example Multi-choice Tests
       QA_ANS_SELECT("SHOW ANSWER", "Show the answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE, 20),
-      ANS_SELECT("SELECT", "Select this answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE, 20),
+      ANS_SELECT("SELECT", "Select this answer", FontAwesomeRegular.CIRCLE, UIColors.FOCUS_BLUE_OPAQUE),
       ANS_PREV("", "Previous answer", FontAwesomeSolid.CHEVRON_LEFT, UIColors.FOCUS_BLUE_OPAQUE),
       ANS_NEXT("", "Next answer", FontAwesomeSolid.CHEVRON_RIGHT, UIColors.FOCUS_BLUE_OPAQUE),
       // Question nav buttons
@@ -45,16 +45,16 @@ public enum ButtoniKon { //extends Button {
       EXIT_BUTTON("EXIT", "Done! Finito!, I'll be back!", FontAwesomeSolid.SHARE_SQUARE, UIColors.FM_WHITE, 20),
       MENU("MENU", "Back to the Select, study, or create menu. Leaves this study session.", FontAwesomeSolid.REPLY, UIColors.FM_WHITE, 20),
       // Create card unique buttons
-      NEW_CARD("", "Add a new card", FontAwesomeSolid.PLUS, UIColors.FM_WHITE, 20),
-      INSERT_CARD("", "Insert a new card to the end of the deck", FontAwesomeSolid.CHEVRON_DOWN, UIColors.FM_WHITE, 20),
-      DELETE_CARD("", "Delete this card", FontAwesomeSolid.TIMES, UIColors.FM_WHITE, 20),
-      SAVE_DECK_RETURN("", "Save changes to the deck\n& return to menu", FontAwesomeSolid.SHARE_SQUARE, UIColors.FM_WHITE, 20),
-      UNDO_DECK_CHANGES("", "Don't save any changes to the deck\n and return to menu", FontAwesomeSolid.TRASH_RESTORE, UIColors.FM_WHITE, 20),
-      RESET_ORDER("", "resets the deck back\nto it's original order", FontAwesomeSolid.RETWEET, UIColors.FM_WHITE, 20),
-      CREATE_Q_PREV("", "Previous card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_LEFT, UIColors.FM_WHITE, 20),
-      CREATE_Q_NEXT("", "Next card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_RIGHT, UIColors.FM_WHITE, 20),
-      UNDO_CARD_CHANGES("", "Undo changes to \nthis card", FontAwesomeSolid.ERASER, UIColors.FM_WHITE, 20),
-      SELL_BUTTON("EARN", "Add a description, and select to earn pay from this deck.", FontAwesomeSolid.MONEY_BILL, UIColors.HIGHLIGHT_GREEN, 28),
+      NEW_CARD("", "Add a new card", FontAwesomeSolid.PLUS, UIColors.TOOL_BAR_BTNS, 20),
+      INSERT_CARD("", "Insert a new card to the end of the deck", FontAwesomeSolid.CHEVRON_DOWN, UIColors.TOOL_BAR_BTNS, 20),
+      DELETE_CARD("", "Delete this card", FontAwesomeSolid.TIMES, UIColors.TOOL_BAR_BTNS, 20),
+      SAVE_DECK_RETURN("", "Save changes to the deck\n& return to menu", FontAwesomeSolid.SHARE_SQUARE, UIColors.TOOL_BAR_BTNS, 20),
+      UNDO_DECK_CHANGES("", "Don't save any changes to the deck\n and return to menu", FontAwesomeSolid.TRASH_RESTORE, UIColors.TOOL_BAR_BTNS, 20),
+      RESET_ORDER("", "resets the deck back\nto it's original order", FontAwesomeSolid.RETWEET, UIColors.TOOL_BAR_BTNS, 20),
+      CREATE_Q_PREV("", "Previous card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_LEFT, UIColors.TOOL_BAR_BTNS, 20),
+      CREATE_Q_NEXT("", "Next card\n Saves edits to the \n current card", FontAwesomeSolid.CHEVRON_RIGHT, UIColors.TOOL_BAR_BTNS, 20),
+      UNDO_CARD_CHANGES("", "Undo changes to \nthis card", FontAwesomeSolid.ERASER, UIColors.TOOL_BAR_BTNS, 20),
+      SELL_BUTTON("DESCRIBE", "Add a description, and select to earn pay from this deck.", FontAwesomeSolid.MONEY_BILL, UIColors.TOOL_BAR_BTNS, 28),
       PURCHASE(" CHECKOUT ", "Go to checkout.", FontAwesomeSolid.SHOPPING_CART, UIColors.FM_WHITE),
       // I got paid pane buttons
       WALLET_BUTTON("WALLET", "See what you can spend", FontAwesomeSolid.MONEY_BILL_WAVE, UIColors.FM_WHITE),
@@ -514,8 +514,6 @@ public enum ButtoniKon { //extends Button {
             Button b = CREATE_Q_PREV.get();
             b.setId("blueButtonRndBdr");
             b.setFocusTraversable(false);
-            // start with prevQButton enabled
-            //b.setDisable(false);
             return b;
       }
 
@@ -523,8 +521,6 @@ public enum ButtoniKon { //extends Button {
             Button b = CREATE_Q_NEXT.get();
             b.setId("blueButtonRndBdr");
             b.setFocusTraversable(false);
-            // start with nextQButton disabled
-            //b.setDisable(true);
             return b;
       }
 
@@ -532,8 +528,6 @@ public enum ButtoniKon { //extends Button {
             Button b = UNDO_CARD_CHANGES.get();
             b.setId("blueButtonRnd");
             b.setFocusTraversable(false);
-            // start with revertQButton disabled
-            //b.setDisable(true);
             return b;
       }
 

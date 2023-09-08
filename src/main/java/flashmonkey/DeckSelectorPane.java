@@ -37,7 +37,8 @@ public class DeckSelectorPane {
       private static final Logger LOGGER = LoggerFactory.getLogger(DeckSelectorPane.class);
       protected VBox paneForFiles = new VBox(4);
       // For the file does not exist window
-      private TextField newNameField;   // new name field
+      //private TextField newNameField;   // new name field
+      protected TranslateTransition textLeft;
 
       //*** VIEW PANE CONSTRUCTOR ***
       //* File select pane
@@ -63,7 +64,6 @@ public class DeckSelectorPane {
 
             ArrayList<LinkObj> currentList = agrList.getRecentFiles();
             ArrayList<LinkObj> oldList = agrList.getOlderFiles();
-
 
             // Check if folder exists and has more than one file .
             // first file is default file.
@@ -115,18 +115,16 @@ public class DeckSelectorPane {
                   GaussianBlur blur = new GaussianBlur();
                   blur.setRadius(5);
                   fieldBox.setEffect(blur);
-                  //fieldBox.setPadding(new Insets(12));
 
                   StackPane stack = new StackPane();
                   stack.getChildren().addAll(fieldBox, gradientPane);
 
-                  //paneForFiles.setPadding(new Insets(0, 10, 0, 10));
                   paneForFiles.getChildren().add(stack);
                   textLeft.play();
             }
       }
 
-      protected TranslateTransition textLeft;
+
 
       public void setTextLeft(TranslateTransition trx) {
             textLeft = trx;
@@ -144,7 +142,6 @@ public class DeckSelectorPane {
       }
 
       private void addChildren(ArrayList<LinkObj> list, Label label) {
-
             SelectableRdoField rdoField = new SelectableRdoField();
             paneForFiles.getChildren().add(label);
             for (LinkObj lObject : list) {

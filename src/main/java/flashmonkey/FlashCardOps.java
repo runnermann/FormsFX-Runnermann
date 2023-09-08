@@ -59,6 +59,9 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
 
       //** The current threshold from the last time the tree was built.
       private static Threshold thresh;
+      // The total test time used by
+      // gauges
+      private long duration = 0;
 
       // --- FLAGS ---
       // File synchronization flag. If media files have been synchronized with the cloud, don't do it again unless
@@ -488,6 +491,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                         // Add the card to the tree. The tree will use the comparitor
                         // to set the cards location in the tree based on it's QNumber.
                         TREE_WALKER.add(localCard);
+                        this.duration += localCard.getSeconds();
                   }
             }
       }
@@ -508,7 +512,12 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             for (FlashCardMM cd : cardList) {
                   cd.setCNumber(count++);
                   TREE_WALKER.add(cd);
+                  this.duration += cd.getSeconds();
             }
+      }
+
+      public long getDuration() {
+            return this.duration;
       }
 
       /**
@@ -523,6 +532,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                   cd.setCNumber(count);
                   TREE_WALKER.add(cd);
                   count++;
+                  this.duration += cd.getSeconds();
             }
       }
 
@@ -546,27 +556,16 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
             // Set the QNumber for the flash card according to it's index
             // remember/priority, & date last right.
             try {
-//                  NoteCards
-//                  if(fc.getTestType() == 0b0010000000000000) {
-//                        fc.setCNumber(i * 10);
-//                        return fc;
-//                  }
-                  //If the card has not been seen before,
-//                  if (fc.getNumSeen() == 0) {
-//                        fc.setCNumber(i * 10 -100); // =  i * 10;
-//                        return fc;
-//                  }
                   // if card has been answered wrong,
                   // getRemember is less than 0.
                   // Set it at the start
                   if (fc.getRemember() < 0) {
-                        //fc.setCNumber( i * -10 + (size * -1) );
                         fc.setCNumber(10 * (fc.getRemember()));
                         return fc;
                   }
                   // If card has a seen date after card #1, qNumber = 10 * list.size()
                   else if (lastDate.compareTo(fc.getRtDate()) <= 0) {
-                        fc.setCNumber(20 * (idx + fc.getRemember() + size));// = ( 10 * (i + fc.getRemember() + flashListMM.size()));
+                        fc.setCNumber(20 * (idx + fc.getRemember() + size));
                         return fc;
                   }
                   // For the case where the card is stale, or has a last correct date
@@ -577,12 +576,11 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                   // if card getRight date is less than card 1's date
                   // set the qNum to the index number * 10 + flashList size.
                   else {
-                        //fc.setQNumber( flashList.size() + (i + fc.getRemember()) * 10);
                         fc.setCNumber(idx * 10);
                         return fc;
                   }
             } catch (NullPointerException e) {
-                  fc.setCNumber(10 * (fc.getRemember() + idx));// = 10 * (fc.getRemember() + i);
+                  fc.setCNumber(10 * (fc.getRemember() + idx));
                   return fc;
             }
       }
@@ -595,7 +593,6 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
        * @return returns false if flashList is less than 3 or is null, else it returns true.
        */
       private static boolean checkFList() {
-          //ReadFlash.tPaneObj.answerText.setText(ReadFlash.test.getTheseAns()[ReadFlash.taIndex].toString());
           return flashListMM != null && flashListMM.size() >= 3;
       }
 
@@ -698,7 +695,7 @@ public class FlashCardOps extends FileOperations implements Serializable {//< T 
                   if (flashListMM.size() > 0) {
                         SoundEffects.PRESS_BUTTON_COMMON.play();
                         // Send user to main menu
-                        FlashMonkeyMain.setPaneToModeMenu();
+                        FlashMonkeyMain.fromFCO_SetPaneToModeMenu();
                   }
             }
       }

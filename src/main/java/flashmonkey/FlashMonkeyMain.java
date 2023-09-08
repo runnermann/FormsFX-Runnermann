@@ -80,7 +80,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       @SuppressWarnings("rawtypes")
 
       // The publicly known version
-      public static final String VERSION_STR = "1.4.8";
+      public static final String VERSION_STR = "2.0.0";
       // for serializing objects to file. The serial version.
       // Used with "serialVersionUID"
       public static final long VERSION = 20200612;
@@ -209,10 +209,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
 
             } catch (BackingStoreException e) {
                   LOGGER.warn(e.getMessage());
-                  //e.printStackTrace();
             } catch (Exception e) {
                   LOGGER.warn(e.getMessage());
-                  //e.printStackTrace();
             }
       } // ******** END START ******* //
 
@@ -264,7 +262,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
        * E.G. from FileSelectPane when a new file is
        * selected.
        */
-      public static void setPaneToModeMenu() {
+      public static void fromFCO_SetPaneToModeMenu() {
             isInEditMode = false;
             InnerScene.setToModeMenuPane();
       }
@@ -283,7 +281,6 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             LOGGER.debug("\n *** getNavigationScene() ***");
             Label label = new Label("Action Menu");
             label.setId("label24White");
-
             // *** CENTER MENU BUTTONS ***
             // go back to file select pane
             Button deckSelectButton = ButtoniKon.getDeckSelectButton();
@@ -603,7 +600,7 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
             HBox buttonBox = getButtonBox(newDeckButton);
             GridPane gridPane1 = new GridPane();
             gridPane1.setPadding(new Insets(20, 0, 0, 0));
-            Label selectLabel = new Label("SELECT A STUDY DECK");
+            Label selectLabel = new Label("MAKE A SELECTION");
             selectLabel.setId("label24White");
             gridPane1.setId("opaqueMenuPaneDark");
             gridPane1.setAlignment(Pos.TOP_CENTER);
@@ -616,8 +613,8 @@ public class FlashMonkeyMain extends Application implements BaseInterface {
       }
 
       private static HBox getButtonBox(Button newDeckButton) {
-            // The search for resources button
             backButton = ButtoniKon.getBackButton();
+            // The search for resources button
             searchButton = ButtoniKon.getSearchRsc();
             searchButton.setOnAction(e -> {
                   SoundEffects.PRESS_BUTTON_COMMON.play();

@@ -20,8 +20,8 @@ import type.sectiontype.GenericSection;
  */
 public class DoubleHorzCard extends GenericCard
 {
-    public HBox qBox = new HBox();
-    public HBox ansBox = new HBox();
+    private HBox qBox = new HBox();
+    private HBox ansBox = new HBox();
 
     //private VBox vBox = new VBox();
     private GridPane gPane;

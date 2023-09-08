@@ -157,7 +157,7 @@ public class EditShapesIsSavedTest extends ApplicationTest {
 
         javafx.scene.shape.Shape[][][] shapesEditedTplArry = new javafx.scene.shape.Shape[4][2][];
 
-        final DirectoryMgr dirMgr = new DirectoryMgr();
+        //final DirectoryMgr dirMgr = new DirectoryMgr();
         //final String mediaPath = dirMgr.getMediaPath('C');
         final ReadFlash rf = ReadFlash.getInstance();
 

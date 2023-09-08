@@ -178,7 +178,7 @@ public class AnswerMM extends Answer implements Serializable, Comparable {
                   if(oneNull) { return false; }
 
                   return null == getAFiles()[i] && null == mediaFileAry[i]
-                          || this.getAFiles()[0].equals(mediaFileAry[0]) && this.getAFiles()[1].equals(mediaFileAry[1]);
+                          || this.getAFiles()[i].equals(mediaFileAry[i]);// && this.getAFiles()[1].equals(mediaFileAry[1]);
             }
             return false;
       }

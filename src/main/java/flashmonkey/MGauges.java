@@ -38,9 +38,11 @@ public class MGauges {
     //private double value;
     private final double width;
     private final double height;
-    private AnimationTimer animationTimer;
+    private AnimationTimer countdownAnimationTimer;
+    private AnimationTimer percentDurationTimer;
     private Tile countdownTile;
     private Tile durationTile;
+    private Tile percentDurationTile;
     private long timerTime;
     private long durationStartTime;
 
@@ -106,6 +108,16 @@ public class MGauges {
         return pane;
     }
 
+    public GridPane makePercentTime(long duration) {
+        pane.setPrefSize(width, height);
+        pane.setAlignment(Pos.CENTER);
+        pane.setId("liteCurvedContainer");
+        pane.setPadding(new Insets(0));
+        gaugeVBox = getPercentDurationTile(duration, (int) width, (int) height);
+        pane.add(gaugeVBox, 2, 4);
+        return pane;
+    }
+
     public void setMaxVal(long duration, int num) {
         gauge.setMaxValue(num);
         gauge.setAnimationDuration(duration);
@@ -166,11 +178,11 @@ public class MGauges {
     private VBox getDurationTimer(int wd, int ht) {
 
         Duration dur = getDurationTime();
-        int seconds = dur.toSecondsPart() < 10 ? 10 : dur.toSecondsPart();
+        int seconds = Math.max(dur.toSecondsPart(), 10);
 
         durationTile = TileBuilder.create()
                 .skinType(Tile.SkinType.TIME)
-                .prefSize(wd, ht - 12)
+                .prefSize(wd - 4, ht - 12)
                 .duration(LocalTime.of(dur.toHoursPart(), dur.toMinutesPart(), seconds))
                 .backgroundColor(Color.web("#FFFFFF00"))
                 .valueColor(Color.web("383838"))
@@ -185,19 +197,45 @@ public class MGauges {
         vBox.setStyle("-fx-background-color: TRANSPARENT"); //#2A2A2A
         vBox.setAlignment(Pos.CENTER);
         return vBox;
+    }
 
+    final long[] percentDurTime = {System.currentTimeMillis()};
+    VBox getPercentDurationTile(long duration, int wd, int ht) {
+        percentDurationTile = TileBuilder.create()
+                .skinType(Tile.SkinType.PERCENT_TIME)
+                .prefSize(width, height - 12)
+                .backgroundColor(Color.web("FFFFFF00"))
+                .valueColor(Color.web("383838"))
+                .titleColor(Color.web("383838"))
+                .barColor(Tile.BLUE)
+                .barBackgroundColor(Color.web("E3E3E3"))
+                .title("Total time, last study")
+                .maxValue(duration)
+                .build();
+
+        VBox vBox = new VBox(percentDurationTile);
+        vBox.setMinSize(wd, ht);
+        vBox.setMaxSize(wd, ht);
+        vBox.setStyle("-fx-background-color: TRANSPARENT"); //#2A2A2A
+        vBox.setAlignment(Pos.CENTER);
+        // Start the timer
+        percentDurationTimerStart();
+        return vBox;
+    }
+
+    void setPercentDurationGaugeValue(double value) {
+        percentDurationTile.setValue(value);
     }
 
 
-    void setConsumedTime() {
-        System.out.println("setConsumedTime");
-        Duration dur = getDurationTime();
-        int seconds = dur.toSecondsPart() < 10 ? 10 : dur.toSecondsPart();
-        durationTile.setDuration(LocalTime.of(dur.toHoursPart(), dur.toMinutesPart(), seconds));
-    }
+//    void setConsumedTime() {
+//        System.out.println("setConsumedTime");
+//        Duration dur = getDurationTime();
+//        int seconds = Math.max(dur.toSecondsPart(), 10);
+//        durationTile.setDuration(LocalTime.of(dur.toHoursPart(), dur.toMinutesPart(), seconds));
+//    }
 
     final long[] lastTimerCall = {System.currentTimeMillis()};
-    private static final int WD = 120;
     /**
      * @param time The duration of time until the clock resets.
      * @return
@@ -228,12 +266,9 @@ public class MGauges {
                 .strokeWithGradient(true)
                 .timePeriod(Duration.ofSeconds(time))
                 .fixedYScale(true)
-                .onAlarm(e -> {
-                    System.out.println("Alarm");
-                })
                 .build();
 
-        start();
+        countdownStart();
 
         VBox vBox = new VBox(countdownTile);
         vBox.setMinSize(width, height);
@@ -242,22 +277,29 @@ public class MGauges {
         return vBox;
     }
 
-    public void stop() {
-        //countdownTile.stop();
+    /**
+     * Stops the countDownTimer time
+     * The countdown timer is independent of the duration timers.
+     */
+    public void countdownStop() {
         if(countdownTile != null) {
             countdownTile.setRunning(false);
         }
-        animationTimer.stop();
+        countdownAnimationTimer.stop();
     }
 
-    public void start() {
-        if (animationTimer != null) {
+    /**
+     * Resets and starts the countdownTimer
+     * The countdown timer is independent of the duration timers.
+     */
+    public void countdownStart() {
+        if (countdownAnimationTimer != null) {
             countdownTile.setRunning(false);
             lastTimerCall[0] = 0l;
-            animationTimer.stop();
+            countdownAnimationTimer.stop();
         }
 
-        animationTimer = new AnimationTimer() {
+        countdownAnimationTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 if(timerTime != -99) {
@@ -269,12 +311,30 @@ public class MGauges {
                         lastTimerCall[0] = now;
                     }
                 } else {
-                    animationTimer.stop();
+                    countdownAnimationTimer.stop();
                 }
             }
         };
 
-        animationTimer.start();
+        countdownAnimationTimer.start();
+    }
+
+    public void percentDurationTimerStart() {
+        if(percentDurationTimer != null) {
+            percentDurationTimer.stop();
+        }
+
+        percentDurationTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                // hello :)
+                long t = System.currentTimeMillis() - percentDurTime[0];
+                setPercentDurationGaugeValue(t);
+            }
+        };
+
+        percentDurationTimer.start();
+
     }
 
     public void setTimerTime(int seconds) {

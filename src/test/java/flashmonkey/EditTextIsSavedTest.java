@@ -170,8 +170,8 @@ public class EditTextIsSavedTest extends ApplicationTest {
 
         Image[][] textImages = new Image[4][2];
 
-        final DirectoryMgr dirMgr = new DirectoryMgr();
-        final String mediaPath = dirMgr.getMediaPath('C');
+        //final DirectoryMgr dirMgr = new DirectoryMgr();
+        final String mediaPath = DirectoryMgr.getMediaPath('C');
         final ReadFlash rf = ReadFlash.getInstance();
         final CreateFlash cfp = CreateFlash.getInstance();
         snapParams.setViewport(new Rectangle2D(+10,0, 100, 35));

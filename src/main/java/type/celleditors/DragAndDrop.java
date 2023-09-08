@@ -18,7 +18,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.media.MediaPlayer;
-import media.api.JaveInterface;
+import media.video.JaveInterface;
 import org.slf4j.LoggerFactory;
 import type.celltypes.DoubleCellType;
 import type.tools.imagery.Fit;
@@ -532,7 +532,7 @@ public class DragAndDrop {
         //Rename the file. Get the ending of the file.
         final int idx = source.lastIndexOf('.');
         final String ending = if4LetterImg( source.substring(idx + 1) );
-        final DirectoryMgr dirMgr = new DirectoryMgr();
+        //final DirectoryMgr dirMgr = new DirectoryMgr();
         final String mediaPath = DirectoryMgr.getMediaPath(mediaType);
         LOGGER.debug("mediaPath: " + mediaPath);
 

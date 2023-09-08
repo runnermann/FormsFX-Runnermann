@@ -88,7 +88,7 @@ public class SignInModel {
             //LOGGER.debug("formAction() userName from form: {}", descriptor.getSiOrigEmail().toLowerCase());
 
             if (validate()) {
-                  SoundEffects.ACCESS_GRANTED.play();
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   // Does not affect log-in, only for stop.
                   FlashMonkeyMain.setLoggedinToTrue();
                   UserData.setFirstName(descriptor.getSiFirstName());

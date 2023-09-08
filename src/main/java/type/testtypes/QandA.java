@@ -332,8 +332,7 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
              */
             @Override
             public int getSeconds() {
-                  long now = System.currentTimeMillis();
-                  return (int) (now - millis) / 1000;
+                  return 1;
             }
       }
 
@@ -382,7 +381,8 @@ public abstract class QandA extends TestTypeBase implements GenericTestType<Qand
              */
             @Override
             public int getSeconds() {
-                  return 0;
+                  //long now = System.currentTimeMillis();
+                  return 1;
             }
 
 

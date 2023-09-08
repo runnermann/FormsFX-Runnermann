@@ -685,8 +685,8 @@ public class CreateMediaTester extends ApplicationTest {
         sleep(200);
 
         // should see card 1 in Q&A
-        DirectoryMgr dirMgr = new DirectoryMgr();
-        String mediaPath = dirMgr.getMediaPath('C');
+        //DirectoryMgr dirMgr = new DirectoryMgr();
+        String mediaPath = DirectoryMgr.getMediaPath('C');
 
 
         FileOpsUtil.folderExists(new File(mediaPath));

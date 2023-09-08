@@ -99,13 +99,13 @@ public class AVCell implements MediaPlayerInterface {
                   return rightPane;
             } else { // media file cannot be found, show problem img currently poop img.
                   System.out.println("AVCell line 101 mediaFile: " + mediaFile);
-                  Thread.dumpStack();
+                  //Thread.dumpStack();
                   LOGGER.warn("media/audio does not exist, calling oops.png: filePath: ", mediaFile.toURI());
-                  String imagePath = "File:" + "src/image/poop_img_problem.png";
-                  mediaFile = new File(imagePath);
+                  //String imagePath = "File:" + "src/image/poop_img_problem.png";
+                  //mediaFile = new File(imagePath);
                   //LOGGER.info("poopImoji imagePath exists: " + mediaFile.exists());
-                  ImageView iView = new ImageView(imagePath);
-                  rightPane.getChildren().add(iView);
+                  //ImageView iView = new ImageView(imagePath);
+                  //rightPane.getChildren().add(iView);
 
                   return rightPane;
             }
@@ -130,7 +130,7 @@ public class AVCell implements MediaPlayerInterface {
       private synchronized Pane buildRightCell(Double toWd, Double toHt) {
             // temp fix for Java-Bug ??? for windows. Video does not always load in win 10/11
 
-            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(4);
+            ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
 
             VBox mediaVBox = new VBox();
             Image playIcon = new Image("image/play_blue3.png");

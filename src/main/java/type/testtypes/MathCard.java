@@ -158,7 +158,6 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             this.checkButton.setId("blueButtonRndBdr");
       }
 
-
       /* ------------------------------------------------- **/
 
       /**
@@ -182,18 +181,16 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // The Interactive Question pane.
             // Contains line pointer.
             uStackPane = new StackPane();
+            uStackPane.setStyle("-fx-background-color: TRANSPARENT");
             uStackPane.setAlignment(Pos.TOP_LEFT);
             interActiveQPane = new Pane();
             interActiveQPane.setStyle("-fx-background-color: TRANSPARENT");
             interActiveQPane.setMaxWidth(ReadFlash.getInstance().getMasterBPane().getWidth() - 110);
             interActiveQPane.setMaxHeight(100);
-
-            // Answer button in Test Mode
-            if (selectAnsButton == null) {
-                  selectAnsButton = ButtoniKon.getAnsSelect();
-            } else {
-                  selectAnsButton = ButtoniKon.getJustAns(selectAnsButton, "SELECT");
-            }
+            uStackPane.setMinHeight(SceneCntl.calcCellHt());
+            uStackPane.setMaxHeight(SceneCntl.calcCellHt());
+            // Answer button
+            selectAnsButton = ButtoniKon.getJustAns(new Button(), "ANSWER");
 
             selectAnsButton.setOnAction(e -> ansButtonAction(cc, parentPane));
 
@@ -201,13 +198,31 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
             // Stored in the currentCard.
             expression = cc.getQText();
 
-            upperHBox = genSection.sectionFactory(expression, cc.getQType(), 3, true, 0, cc.getQFiles());
-            uStackPane.getChildren().addAll(upperHBox, interActiveQPane);
+            upperHBox = genSection.sectionFactory(expression, cc.getQType(), 2, true, 0, cc.getQFiles());
 
             upperHBox.heightProperty().addListener( (o, h, n) -> {
                   uStackPane.setMinHeight(n.doubleValue());
                   uStackPane.setMaxHeight(n.doubleValue());
             });
+
+            LatexView latex = new LatexView("\\frac{ 7 ( \\frac{ 8 }{ 4 } ) ( \\frac{ [ 8 * 2 ] }{ 4 ^ 2 } ) }{ 2 + ( \\frac{ 20 }{ [ \\frac{ 10 }{ 2 } ] } ) }");
+            latex.setSize(30);
+
+            VBox vbox = new VBox(upperHBox);
+            vbox.setAlignment(Pos.CENTER);
+            vbox.setStyle("-fx-background-color: WHITE; -fx-background-radius: 3");
+
+            vbox.getChildren().add(latex);
+
+            upperHBox.heightProperty().addListener( (o, h, n) -> {
+                  uStackPane.setMinHeight(n.doubleValue());
+                  uStackPane.setMaxHeight(n.doubleValue());
+            });
+
+            int ht = SceneCntl.calcCellHt()   ;
+
+            vbox.setMinHeight(ht);
+            vbox.setMaxHeight(ht);
 
 
             /* ----------------------- **/
@@ -242,7 +257,7 @@ public class MathCard extends TestTypeBase implements GenericTestType<MathCard> 
 
             gPane.getChildren().clear();
 
-
+            uStackPane.getChildren().addAll(vbox, interActiveQPane);
 
             gPane.addRow(2, uStackPane); // upperHBox
             gPane.addRow(3, lstackP);

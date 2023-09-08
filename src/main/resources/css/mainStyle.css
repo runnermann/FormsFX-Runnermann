@@ -195,6 +195,10 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-background-color: linear-gradient(to right, #256C9B 0%, #256C9B60 28%, #256C9B20 30%, #256C9B20 40%, #256C9B60 45%, #256C9B 100%);
 }
 
+#gradient-grey {
+    -fx-background-color: linear-gradient(to right, #070707 0%, #07070700 100% );;
+}
+
 /* FONTS */
 @font-face{
     font-family: 'Raleway-Medium';
@@ -533,7 +537,7 @@ hyperlink14white {
 
 /* the CreateFlash cfpNorthPanel where the label is placed */
 #cfpNorthPane {
-    -fx-background-color: #3498db;
+    -fx-background-color: #393E46; /* // FM_GREY DARK //#3498db; */
     -fx-padding: 4;
     -fx-border-radius: 2;
     -fx-background-radius: 2;
@@ -562,7 +566,7 @@ hyperlink14white {
 
 /* The createFlash MasterPane */
 #cfMasterPane {
-    -fx-background-color: BTN_BOX_BLUE;
+    -fx-background-color: #D9D9D9; /* //#768091; */
     -fx-padding: 2 2 3 2;
 }
 
@@ -724,11 +728,10 @@ hyperlink14white {
     -fx-border-width: 2;
 }
 
-
-/*  Background image  */
 #bckgnd_image {
     -fx-background-image: url("/image/NASA_SpaceWalk.png");
     -fx-background-repeat: stretch;
+    -fx-background-color: FM_GREY;
     /*-fx-background-size: 500 810;*/
     -fx-background-position: center center;
     /*-fx-effect: dropshadow(gaussian, black, 10, 1.0, 100, 100);*/
@@ -740,6 +743,17 @@ hyperlink14white {
     -fx-background-color: FM_GREY;
     /*-fx-background-size: 500 810;*/
     -fx-background-position: center center;
+}
+
+#index_logo_font {
+    -fx-font-family: "Courier New";
+    -fx-font-size: 44px;
+    -fx-text-fill: #FFF0ED;
+    /*-fx-font-style: BOLD;*/
+}
+
+#logo_text {
+    -fx-padding: 0 0 0 10px;
 }
 
 

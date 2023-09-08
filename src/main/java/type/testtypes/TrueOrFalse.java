@@ -115,11 +115,11 @@ public class TrueOrFalse extends TestTypeBase implements GenericTestType<TrueOrF
             ReadFlash.getInstance().setShowAnsNavBtns(false);
             // T or F buttons do not have any visible actions. Select ansBtn
             // will provide feed back and save the answer, like MultiChoice actions.
-            if (selectAnsButton == null) {
-                  selectAnsButton = ButtoniKon.getAnsSelect();
-            } else {
-                  selectAnsButton = ButtoniKon.getJustAns(selectAnsButton, "SELECT");
-            }
+            //if (selectAnsButton == null) {
+            //      selectAnsButton = ButtoniKon.getAnsSelect();
+            //} else {
+                  selectAnsButton = ButtoniKon.getJustAns(new Button(), "SELECT");
+            //}
             selectAnsButton.setOnAction(e -> ansButtonAction());
 
             lowerStackP.getChildren().add(lowerHBox);

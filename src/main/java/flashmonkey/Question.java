@@ -4,8 +4,6 @@
 
 package flashmonkey;
 
-import javafx.application.Platform;
-
 import java.io.*;
 
 /**

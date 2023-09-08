@@ -38,7 +38,7 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
       private LongProperty netDate;
       // Institutions - Professors - Course Codes
       private ObjectProperty<CSVUtil.SchoolObj> selectedTut;
-      private ListProperty<CSVUtil.SchoolObj> allTuts;
+      private final ListProperty<CSVUtil.SchoolObj> allTuts = new SimpleListProperty<>(FlashCardOps.getInstance().getSchoolObjs());
       private ListProperty<String> professors;
       private ObjectProperty<String> selectedProf;
       private ListProperty<String> courseCodes;
@@ -217,7 +217,6 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
 		CSVUtil.SchoolObj schObj = new CSVUtil.SchoolObj("Texas A&M", "1 TAMU Ave, College Station, Tx 77840", "Texas");
 		*/
 
-
             //super.setProperitesDefault();
             friend = new SimpleStringProperty("");
             deckKey = new SimpleStringProperty("");
@@ -233,7 +232,7 @@ public class SearchRemoteDescriptor implements FormData, Descriptor<SearchRemote
             professors = new SimpleListProperty<>(FXCollections.observableArrayList());
             courseCodes = new SimpleListProperty<>(FXCollections.observableArrayList());
             // gets data from file
-            allTuts = new SimpleListProperty<>(FXCollections.observableArrayList());
+
             selectedTut = new SimpleObjectProperty<>();
             selectedProf = new SimpleObjectProperty<>();
             selectedCourseCode = new SimpleObjectProperty<>();

@@ -44,7 +44,7 @@ public class AccountProfileMenu extends Menu {
 
             Hyperlink logoutLink = new Hyperlink("LOG OUT");
             logoutLink.setOnAction(e -> {
-                  SoundEffects.GAME_OVER.play();
+                  SoundEffects.PRESS_BUTTON_COMMON.play();
                   FlashMonkeyMain.logOutAction();
             });
             logoutLink.setTextFill(Paint.valueOf("WHITE"));

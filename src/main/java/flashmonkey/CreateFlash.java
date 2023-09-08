@@ -1117,6 +1117,7 @@ public final class CreateFlash<C extends GenericCard> implements BaseInterface {
 //                  if (metaWindow != null) {
                         metaPane = new DeckMetaPane();
                         metaWindow = new Stage();
+                        metaWindow.setTitle("Create a good description");
 //                  }
                   if (!meta.getDataMap().isEmpty()) {
                         meta.getDataMap().clear();

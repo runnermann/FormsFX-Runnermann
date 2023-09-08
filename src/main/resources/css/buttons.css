@@ -20,6 +20,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     ICON_BLUE: #3498db;/*#304F8C; */
     /* New color for achieve */
     BTN_BOX_BLUE: #0B2D59;/*rgba(51,130,163,1.0);*/
+    BTN_BOX_GREY: #393E46;
     /* The text label color */
     FM_TEXT_LABEL: #FFFFFF; /* #F8B500 yellow */
     FM_WHITE: #F8FBFF;
@@ -45,7 +46,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-cursor: hand;
 }
 #buttonBox {
-    -fx-background-color: BTN_BOX_BLUE;
+    -fx-background-color: BTN_BOX_GREY;
     /*-fx-background-color: FLASH_RED; *//* FM Red #FC3C3C */
 }
 #toolBox {
@@ -54,7 +55,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-background-radius: 3 3 3 3;
 }
 #editorButtonBox {
-    -fx-background-color: FM_SETTINGS_COLOR;
+    -fx-background-color: "#B8B8B8";
 }
 #navButtonBox {
     -fx-base: TRANSPARENT;
@@ -121,11 +122,11 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-base: BUTTON_WHITE;
     -fx-font-weight: 900;
     -fx-background-radius: 4;
-    -fx-text-fill: FOCUS_BLUE;
+    -fx-text-fill: #404040; /* //FOCUS_BLUE; */
     -fx-background-color: derive(-fx-base,80%);
 }
 #navButtonLight:hover {
-    -fx-base: FM_SETTINGS_BCKGND;
+    -fx-base: #CCCCCC;
     -fx-font-weight: 900;
     -fx-background-color: derive(-fx-base,10%);
 }
@@ -133,7 +134,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-base: BUTTON_WHITE;
     -fx-font-weight: 900;
     -fx-background-radius: 0, 0, 0, 0;
-    -fx-text-fill: ICON_BLUE;
+    -fx-text-fill: #8C8C8C;
     -fx-background-color: BUTTON_WHITE;
 }
 #navButtonBlue:hover {
@@ -179,7 +180,7 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     -fx-border-color: derive(-fx-base,-10%);
 }
 #blueButtonRndBdr {
-    -fx-base: FM_SETTINGS_BCKGND;
+    -fx-base: #768091;
     -fx-border-width: 1;
     -fx-border-color: derive(-fx-base,-10%);
 }
@@ -188,10 +189,18 @@ https://github.com/openjdk/jfx/blob/fdc88341f1df8fb9c99356ada54b25124b77ea6e/mod
     /*-fx-base: FM_SETTINGS_BCKGND;*/
     -fx-border-radius: 2 2 2 2;
     -fx-font-weight: 900;
-    -fx-text-fill: FLASH_WHITE;
+    -fx-text-fill: #768091;
     /*-fx-border-color: derive(-fx-base,-10%);*/
     -fx-background-color: TRANSPARENT;/*derive(-fx-base,-10%);*/ /*#2980b9;*/
 }
+#blueButtonRndSell {
+    -fx-border-radius: 2 2 2 2;
+    -fx-font-weight: 900;
+    -fx-text-fill: FM_GREY;
+    /*-fx-border-color: derive(-fx-base,-10%);*/
+    -fx-background-color: TRANSPARENT;/*derive(-fx-base,-10%);*/ /*#2980b9;*/
+}
+#blueButtonRndSell:hover,
 #blueButtonRndBdr:hover,
 #blueButtonRnd:hover {
     -fx-base: FM_SETTINGS_BCKGND;
