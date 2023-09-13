@@ -54,7 +54,10 @@ Some primary differences are primarily because of our audiences expectations. In
 a. The AutoCompleteComboBox is performant. We provide a class and a main method to recompile a CSV file so that it may be
 used to search against. In the sample/demo there is a list of over 36,000 education institutions provided by the US
 department of education. The AutoCompleteComboBox entry field uses full keywords and provides a quick search at ~O(1) against this list. Performance may be improved  by taking advantage of memory if needed. 
-- Update 2023-09-12: This behavior may be changed to a letter by letter update by uncommenting changes in the java.com.constolsfx.control.tools.ComboboxAutoComplete class. The ComboBoxAutoComplete will use a letter by letter search if the list provided is less than 1000 items. This can be changed in this class. The push in Sept 2023 provides a demo of the letter by letter search capability. 
+- Update 2023-09-12: 1. This behavior may be changed to a letter by letter update by uncommenting changes in the java.com.constolsfx.control.tools.ComboboxAutoComplete class. The ComboBoxAutoComplete will use a letter by letter search if the list provided is less than 1000 items. This can be changed in this class. The push in Sept 2023 provides a demo of the letter by letter search capability. 2. We provide three possible demos. The most recent demo shows a VideoChat invite Form. The demo also includes the client side information to convert the Time and Date to the ICal Time according to the RFC5546 standard that is used in Calendars such as Outlook. The added classes are under formsfx-demo ... formsfx.demo.model,
+- VideoChatReqDescriptor - Contains the fields for the form
+- VideoChatReqModel -Contains the FormRenderer and Form action when the submit button is pressed
+- ICalTime
 
 b. Limitations. It is not a perfect experiance for the user when searching long lists using the full word search. in ComboBoxAUtoComplete the delay time to begin a search from
 the last keystroke is set to 1600 milliseconds. This could be lowered, however this will cause an undesireable effect. When the users hits the space bar, if time is over the 
