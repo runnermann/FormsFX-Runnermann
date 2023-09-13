@@ -53,11 +53,12 @@ Some primary differences are primarily because of our audiences expectations. In
 
 a. The AutoCompleteComboBox is performant. We provide a class and a main method to recompile a CSV file so that it may be
 used to search against. In the sample/demo there is a list of over 36,000 education institutions provided by the US
-department of education. The AutoCompleteComboBox entry field uses full keywords and provides a quick search at ~O(1) against this list. Performance may be improved  by taking advantage of memory if needed. This behavior may be changed to a letter by letter update by uncommenting changes in the class, but this was not well tested.
+department of education. The AutoCompleteComboBox entry field uses full keywords and provides a quick search at ~O(1) against this list. Performance may be improved  by taking advantage of memory if needed. 
+- Update 2023-09-12: This behavior may be changed to a letter by letter update by uncommenting changes in the java.com.constolsfx.control.tools.ComboboxAutoComplete class. The ComboBoxAutoComplete will use a letter by letter search if the list provided is less than 1000 items. This can be changed in this class. The push in Sept 2023 provides a demo of the letter by letter search capability. 
 
-b. Limitations. It is not a perfect experiance for the user. in ComboBoxAUtoComplete the delay time to begin a search from
-the last keystroke is set to 1600 milliseconds. This could be lowered, however this will cause an undesireable effect. When
-When the users hits the space bar, if time is over the threshold, it will clear to entry field and the ObservableList. The
+b. Limitations. It is not a perfect experiance for the user when searching long lists using the full word search. in ComboBoxAUtoComplete the delay time to begin a search from
+the last keystroke is set to 1600 milliseconds. This could be lowered, however this will cause an undesireable effect. When the users hits the space bar, if time is over the 
+threshold, it will clear the entry field and the results ObservableList. The
 user will have to retype thier entry.
 
 c. The data to be searched must be compiled by the using app. Store this data in resources. Our example is in the
